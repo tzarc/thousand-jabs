@@ -35,7 +35,11 @@ function private:CreateFrames()
     -- Set the geometry of the base frame
     baseFrame:SetWidth(totalWidth)
     baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
-    baseFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -180)
+    if private.db.x then
+        baseFrame:SetPoint("BOTTOMLEFT", UIParent, private.db.x, private.db.y)
+    else
+        baseFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -180)
+    end
     baseFrame:Hide()
 
     return baseFrame

@@ -84,6 +84,28 @@ function TJ:OnEnable()
     -- Create the frames
     if not private.actionsFrame then
         private.actionsFrame = private:CreateFrames()
+
+        -- Handle movement if enabled
+        private.actionsFrame:SetScript("OnMouseDown", function(self, button)
+            if private.movable and button == "LeftButton" and not self.isMoving then
+                self:StartMoving()
+                self.isMoving = true
+            end
+        end)
+        private.actionsFrame:SetScript("OnMouseUp", function(self, button)
+            if button == "LeftButton" and self.isMoving then
+                self:StopMovingOrSizing()
+                self.isMoving = false
+                private.db.x, private.db.y = self:GetLeft(), self:GetBottom()
+            end
+        end)
+        private.actionsFrame:SetScript("OnHide", function(self)
+            if self.isMoving then
+                self:StopMovingOrSizing()
+                self.isMoving = false
+                private.db.x, private.db.y = self:GetLeft(), self:GetBottom()
+            end
+        end)
     end
 
     -- Activate the profile

@@ -130,12 +130,6 @@ local tcache = {
 }
 private.tcache = tcache
 
-function TJ:DumpTableCache()
-    if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
-    DevTools_Dump({tcache=tcache})
-end
-TJ:RegisterChatCommand('dtc', 'DumpTableCache')
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Miscellaneous functions
 ------------------------------------------------------------------------------------------------------------------------
@@ -200,24 +194,56 @@ function private:GetProfiling()
     return s
 end
 
-function TJ:PrintProfiling()
-    if private.db.do_debug then
-        self:Print(private:GetProfiling())
-    else
-        self:Print('Profiling disabled. Enable with "|cFFFF6600/tj debug|r".')
-    end
-end
-TJ:RegisterChatCommand('tjp', 'PrintProfiling')
-
 function TJ:ConsoleCommand(args)
-    if args == "debug" then
+    if args == "move" then
+        if private.movable then
+            private.movable = false
+            self:Print('Frame movement disabled.')
+        else
+            private.movable = true
+            self:Print('Frame movement enabled.')
+        end
+        private.actionsFrame:SetMovable(private.movable)
+        private.actionsFrame:EnableMouse(private.movable)
+    elseif args == "resetpos" then
+        self:Print('Resetting position.')
+        private.actionsFrame:ClearAllPoints()
+        private.actionsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -180)
+        private.actionsFrame:SetMovable(private.movable)
+        private.actionsFrame:EnableMouse(private.movable)
+        private.db.x, private.db.y = private.actionsFrame:GetLeft(), private.actionsFrame:GetBottom()
+    elseif args == "_dbg" then
         if private.db.do_debug then
             private.db.do_debug = false
-            self:Print('Debugging info disabled. Enable with "|cFFFF6600/tj debug|r".')
+            self:Print('Debugging info disabled. Enable with "|cFFFF6600/tj _dbg|r".')
         else
             private.db.do_debug = true
-            self:Print('Debugging info enabled. Disable with "|cFFFF6600/tj debug|r".')
+            self:Print('Debugging info enabled. Disable with "|cFFFF6600/tj _dbg|r".')
         end
+    elseif args == "_prof" then
+        if private.db.do_debug then
+            self:Print('Dumping profiling information.')
+            self:Print(private:GetProfiling())
+        else
+            self:Print('Profiling disabled. Enable with "|cFFFF6600/tj _dbg|r".')
+        end
+    elseif args == "_dtc" then
+        self:Print("Dumping table cache metrics:")
+        if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
+        DevTools_Dump({tcache=tcache})
+    elseif args == "_db" then
+        self:Print("Dumping SavedVariables table:")
+        if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
+        DevTools_Dump({db=private.db})
+    else
+      self:Print("ThousandJabs chat commands:")
+      self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
+      self:Print("     |cFFFF6600/tj resetpos|r - Resets frame positioning to default.")
+      self:Print("ThousandJabs debugging:")
+      self:Print("     |cFFFF6600/tj _dbg|r - Toggles debug information gathering.")
+      self:Print("     |cFFFF6600/tj _prof|r - Dumps timing information.")
+      self:Print("     |cFFFF6600/tj _dtc|r - Dumps table cache information.")
+      self:Print("     |cFFFF6600/tj _db|r - Dumps SavedVariables table.")
     end
 end
 TJ:RegisterChatCommand('tj', 'ConsoleCommand')
