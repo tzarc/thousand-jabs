@@ -1,8 +1,6 @@
 local _, private = ...;
 local TJ = LibStub('AceAddon-3.0'):NewAddon('ThousandJabs', 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0')
 private.TJ = TJ
-_G['TJ'] = TJ
-_G['TJP'] = private
 
 local error = error
 local type = type
