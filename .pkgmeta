@@ -13,4 +13,4 @@ ignore:
     - Screenshots
     - cleanup.sh
     - perform-tag.sh
-    - update-apls.cmd
+    - update-apls.sh
