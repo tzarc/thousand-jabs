@@ -17,7 +17,7 @@ get_action_profiles_from_branch() {
     BRANCH=$1
     OIFS=$IFS
     IFS=$'\r\n'
-    (cd "${BASE_DIR}/simc" && git checkout "${BRANCH}")
+    (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git checkout "${BRANCH}")
     for tier_dir in $(gfind ./simc/profiles -mindepth 1 -maxdepth 1 -type d -name 'Tier*' | sort) ; do
         for file in $(gfind "${tier_dir}" \( -iname '*.simc' -and -not -iname 'generate_*' \) | sort) ; do
             BN=$(basename "$file")
