@@ -22,4 +22,5 @@ Main.lua
 UI.lua
 ActionProfileLists.lua
 Profile-Generic.lua
+Profile-DemonHunter.lua
 Profile-Monk.lua

@@ -119,6 +119,7 @@ local conditionalSubstitutions = {
     { " debuff%.", " aura." },
     { " energy ", " energy.curr " },
     { " chi ", " chi.curr " },
+    { " pain ", " pain.curr " },
     { " blood ", " blood.curr " },
     { " frost ", " frost.curr " },
     { " unholy ", " unholy.curr " },

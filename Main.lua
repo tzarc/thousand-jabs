@@ -419,23 +419,19 @@ function private:ExecuteActionProfile(actionProfile)
     DBG("Single Target")
     -- Calculate the single-target profiles
     private.st_state:Reset()
-    DBG("\nchi.curr = %d, chi.spent = %d, chi.gained = %d\n", private.st_state.env.chi.curr, private.st_state.env.chi.spent, private.st_state.env.chi.gained)
     local st1action = private.st_state:PredictNextAction() or "wait"
     self.results.single_target[1].actionName = st1action
     self.results.single_target[1].icon = private.st_state.env[st1action].icon
     --DBG("Time since incoming damage: %.2f", st_state.env_proxy.time_since_incoming_damage)
 
-    DBG("\nchi.curr = %d, chi.spent = %d, chi.gained = %d\n", private.st_state.env.chi.curr, private.st_state.env.chi.spent, private.st_state.env.chi.gained)
     local st2action = private.st_state:PredictActionFollowing(st1action) or "wait"
     self.results.single_target[2].actionName = st2action
     self.results.single_target[2].icon = private.st_state.env[st2action].icon
 
-    DBG("\nchi.curr = %d, chi.spent = %d, chi.gained = %d\n", private.st_state.env.chi.curr, private.st_state.env.chi.spent, private.st_state.env.chi.gained)
     local st3action = private.st_state:PredictActionFollowing(st2action) or "wait"
     self.results.single_target[3].actionName = st3action
     self.results.single_target[3].icon = private.st_state.env[st3action].icon
 
-    DBG("\nchi.curr = %d, chi.spent = %d, chi.gained = %d\n", private.st_state.env.chi.curr, private.st_state.env.chi.spent, private.st_state.env.chi.gained)
     local st4action = private.st_state:PredictActionFollowing(st3action) or "wait"
     self.results.single_target[4].actionName = st4action
     self.results.single_target[4].icon = private.st_state.env[st4action].icon

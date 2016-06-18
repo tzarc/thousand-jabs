@@ -4,6 +4,10 @@ local DBG = private.DBG
 local tcache = private.tcache
 local db = private.db
 
+-- Disabled for Legion - nothing tested for monks!
+local IsLegion = select(4, GetBuildInfo()) >= 70000
+if IsLegion then return end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Local variables
 ------------------------------------------------------------------------------------------------------------------------
@@ -451,7 +455,7 @@ local monk_talents = private:LogMissingAccess("monk_talents",{
         cooldownTime = 90,
 
         PerformCast = function(spell, env)
-            spell.expirationTime = env.currentTime + 10
+            spell.expirationTime = env.currentTime + 5
         end,
 
         talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.talentIDs[1], spell.talentIDs[2], GetActiveSpecGroup())) or false end,
@@ -773,7 +777,7 @@ private:RegisterProfile("Windwalker", 10, 3, private:MergeTables(monk_functions,
         "chi_sphere",
         "gift_of_the_ox",
     },
-    actionList = private.apls["Monk_Windwalker_1h_T17M.simc"],
+    actionList = private.apls["master::Tier17M::Monk_Windwalker_1h_T17M"],
 }))
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -785,5 +789,5 @@ private:RegisterProfile("Brewmaster", 10, 1, private:MergeTables(monk_functions,
         "chi_sphere",
         "gift_of_the_ox",
     },
-    actionList = private.apls["Monk_Brewmaster_2h_Serenity_T17M.simc"],
+    actionList = private.apls["master::Tier17M::Monk_Brewmaster_2h_CE_T17M"],
 }))

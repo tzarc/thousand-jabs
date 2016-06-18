@@ -75,59 +75,54 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- Table cache
 ------------------------------------------------------------------------------------------------------------------------
-local tcacheData = {}
-local tcacheFound = {}
-local tcache = {
-    uniques = 0,
-    acquired = 0,
-    released = 0,
-    difference = 0,
-    acquire = function(self)
-        local k,v
-        self.acquired = self.acquired + 1
-        for k,v in pairs(tcacheData) do
-            tcacheData[k] = nil
-            self.difference = self.acquired - self.released
-            return v
-        end
-        self.uniques = self.uniques + 1
-        self.difference = self.acquired - self.released
-        return {}
-    end,
-    release = function(self,tbl)
-        local k,v
-        if type(tbl) ~= 'table' then return end
-        if tcacheData[tbl] then return end
-        local findTables = function(t,searchFunc)
-            for k,v in pairs(t) do
-                if type(k) == 'table' then
-                    if not tcacheFound[k] then
-                        tcacheFound[k] = k
-                        searchFunc(k,searchFunc)
-                    end
-                end
-                if type(v) == 'table' then
-                    if not tcacheFound[v] then
-                        tcacheFound[v] = v
-                        searchFunc(v,searchFunc)
-                    end
-                end
+local tcacheTotalAllocated = 0
+local tcacheTotalAcquired = 0
+local tcacheTotalReleased = 0
+local tcacheFreeTables = {}
+local tcacheInUseTables = {}
+local tcacheTablesToRelease = {}
+local tcache = {}
+function tcache:acquire()
+    local k,v
+    for k,v in pairs(tcacheFreeTables) do
+        tcacheFreeTables[v] = nil
+        tcacheInUseTables[v] = v
+        tcacheTotalAcquired = tcacheTotalAcquired + 1
+        return v
+    end
+    v = {}
+    tcacheInUseTables[v] = v
+    tcacheTotalAcquired = tcacheTotalAcquired + 1
+    tcacheTotalAllocated = tcacheTotalAllocated + 1
+    return v
+end
+function tcache:release(tbl)
+    local k,v
+    if type(tbl) ~= 'table' then return end
+    if tcacheFreeTables[tbl] then return end
+    local function recursiveFindChildTables(t)
+        for k,v in pairs(t) do
+            if not tcacheTablesToRelease[k] and type(k) == 'table' then
+                tcacheTablesToRelease[k] = k
+                recursiveFindChildTables(k)
+            end
+            if not tcacheTablesToRelease[v] and type(v) == 'table' then
+                tcacheTablesToRelease[v] = v
+                recursiveFindChildTables(v)
             end
         end
-        wipe(tcacheFound)
-        tcacheFound[tbl] = tbl
-        findTables(tbl,findTables)
-        for k,v in pairs(tcacheFound) do
-            if tableNames and tableNames[v] then tableNames[v] = nil end
-            wipe(v)
-            setmetatable(v,nil)
-            tcacheData[v] = v
-            self.released = self.released + 1
-        end
-        wipe(tcacheFound)
-        self.difference = self.acquired - self.released
     end
-}
+    tcacheTablesToRelease[tbl] = tbl
+    recursiveFindChildTables(tbl)
+    for k,v in pairs(tcacheTablesToRelease) do
+        if tcacheInUseTables[v] then tcacheInUseTables[v] = nil end
+        wipe(v)
+        setmetatable(v,nil)
+        tcacheFreeTables[v] = v
+        tcacheTotalReleased = tcacheTotalReleased + 1
+    end
+    wipe(tcacheTablesToRelease)
+end
 private.tcache = tcache
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -228,13 +223,22 @@ function TJ:ConsoleCommand(args)
             self:Print('Profiling disabled. Enable with "|cFFFF6600/tj _dbg|r".')
         end
     elseif args == "_dtc" then
-        self:Print("Dumping table cache metrics:")
         if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
-        DevTools_Dump({tcache=tcache})
+        -- Print("Dumping tables acquired from cache:")
+        -- for k,v in pairs(tcacheInUseTables) do DevTools_Dump({tbl=v}) end
+        self:Print("Dumping table cache metrics:")
+        private:Print(" - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d", tcacheTotalAllocated, tcacheTotalAcquired, tcacheTotalReleased, tcacheTotalAcquired-tcacheTotalReleased)
+    elseif args == "_duc" then
+        self:Print("Dumping unit cache table:")
+        if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
+        DevTools_Dump({unitCache=unitCache})
     elseif args == "_db" then
         self:Print("Dumping SavedVariables table:")
         if not IsAddOnLoaded("Blizzard_DebugTools") then LoadAddOn("Blizzard_DebugTools") end
         DevTools_Dump({db=private.db})
+    elseif args == "_mem" then
+        UpdateAddOnMemoryUsage()
+        private:Print("Memory usage: %dkB", GetAddOnMemoryUsage("ThousandJabs"))
     else
       self:Print("ThousandJabs chat commands:")
       self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
@@ -243,7 +247,9 @@ function TJ:ConsoleCommand(args)
       self:Print("     |cFFFF6600/tj _dbg|r - Toggles debug information gathering.")
       self:Print("     |cFFFF6600/tj _prof|r - Dumps timing information.")
       self:Print("     |cFFFF6600/tj _dtc|r - Dumps table cache information.")
+      self:Print("     |cFFFF6600/tj _duc|r - Dumps unit cache information.")
       self:Print("     |cFFFF6600/tj _db|r - Dumps SavedVariables table.")
+      self:Print("     |cFFFF6600/tj _mem|r - Dumps addon memory usage.")
     end
 end
 TJ:RegisterChatCommand('tj', 'ConsoleCommand')
