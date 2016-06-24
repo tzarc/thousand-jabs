@@ -777,7 +777,7 @@ private:RegisterProfile("Windwalker", 10, 3, private:MergeTables(monk_functions,
         "chi_sphere",
         "gift_of_the_ox",
     },
-    actionList = private.apls["master::Tier17M::Monk_Windwalker_1h_T17M"],
+    actionList = private.apls["master::Tier17H::Monk_Windwalker_1h_T17H"],
 }))
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -789,5 +789,5 @@ private:RegisterProfile("Brewmaster", 10, 1, private:MergeTables(monk_functions,
         "chi_sphere",
         "gift_of_the_ox",
     },
-    actionList = private.apls["master::Tier17M::Monk_Brewmaster_2h_CE_T17M"],
+    actionList = private.apls["master::Tier17H::Monk_Brewmaster_2h_CE_T17H"],
 }))
