@@ -37,7 +37,7 @@ append_action_profiles_from_branch() {
     TIER=$2
     OIFS=$IFS
     IFS=$'\r\n'
-    (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git checkout "${BRANCH}" && git pull)
+    (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git clean -xfd && git checkout "${BRANCH}" && git pull)
     if [[ -z "${TIER}" ]] ; then
         for tier_dir in $(gfind "${BASE_DIR}/simc/profiles" -mindepth 1 -maxdepth 1 -type d -name 'Tier*' | sort) ; do
             append_action_profiles_from_dir "${BRANCH}" "${tier_dir}"

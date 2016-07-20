@@ -65,7 +65,6 @@ local dh_veng_base_abilities = private:LogMissingAccess("dh_veng_base_abilities"
     },
     shear = {
         abilityID = 203782,
-        spell_cast_time = 1,
         painGain = 12,
 
         PerformCast = function(spell, env)
