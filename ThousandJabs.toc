@@ -17,10 +17,15 @@ Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceTimer-3.0\AceTimer-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
 
+LibTableCache-1.0.lua
+LibProfiling-1.0.lua
+LibUnitCache-1.0.lua
+
 Base.lua
 Main.lua
+Events.lua
 UI.lua
 ActionProfileLists.lua
+Profile-APLParser.lua
 Profile-Generic.lua
-Profile-DemonHunter.lua
 Profile-Monk.lua

@@ -1,10 +1,14 @@
-local _, private = ...;
-local TJ = private.TJ
-local DBG = private.DBG
-local tcache = private.tcache
-local db = private.db
+local _, internal = ...;
+local Z = internal.Z
+local DBG = internal.DBG
+local LTC = LibStub('LibTableCache-1.0')
+local LUC = LibStub('LibUnitCache-1.0')
 
-private.apls["dummy::PrePatch::Monk_Brewmaster"] = [[
+------------------------------------------------------------------------------------------------------------------------
+-- Brewmaster profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+internal.apls['dummy::PrePatch::Monk_Brewmaster'] = [[
 actions=auto_attack
 
 actions+=/call_action_list,name=st,if=active_enemies<3
@@ -26,172 +30,120 @@ actions.aoe+=/blackout_strike
 actions.aoe+=/chi_wave,if=talent.chi_wave.enabled
 ]]
 
-------------------------------------------------------------------------------------------------------------------------
--- Local variables
-------------------------------------------------------------------------------------------------------------------------
-local padding = 4
-
-------------------------------------------------------------------------------------------------------------------------
--- Helper functions
-------------------------------------------------------------------------------------------------------------------------
-local function IsWindwalker()
-    return GetSpecialization() == 3 and true or false
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Monk energy/chi
-------------------------------------------------------------------------------------------------------------------------
-local monk_power = private:LogMissingAccess("monk_power",{
-    energy = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_ENERGY) or 0) end,
-        regen = function(power, env) return GetPowerRegen() end,
-        spent = 0,
-        curr = function(power,env) return power.sampled - power.spent + power.regen * env.predictionOffset end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_ENERGY) or 0) end,
-        time_to_max = function(power,env) return (power.max - power.curr) /power.regen end,
-    },
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Monk common functions
-------------------------------------------------------------------------------------------------------------------------
-local monk_functions = private:LogMissingAccess("monk_functions",{
-    Activate = function(self)
-    end,
-    Deactivate = function(self)
-    end,
-    PerformUpdate = function(self)
-    end,
-    CreateFrames = function(self, parent)
-    end,
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Monk event handler functions
-------------------------------------------------------------------------------------------------------------------------
-local monk_event_handlers = private:LogMissingAccess("monk_event_handlers",{
-    UNIT_POWER = function(self, eventName, unitID, powerType)
-    end,
-    UNIT_POWER_FREQUENT = function(self, eventName, unitID, powerType)
-        self:UNIT_POWER(eventName, unitID, powerType)
-    end,
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Common monk abilities
-------------------------------------------------------------------------------------------------------------------------
-local monk_common_abilities = private:LogMissingAccess("monk_common_abilities",{
-    expel_harm = {
-        abilityID = 115072,
-        energyCost = 15,
-        cooldownTime = 15,
-
-        PerformCast = function(spell, env)
-            env.energy.spent = env.energy.spent + spell.energyCost
-        end,
-
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((env.energy.curr >= spell.energyCost) and true or false) end,
-    },
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Monk talents
-------------------------------------------------------------------------------------------------------------------------
-local monk_talents = private:LogMissingAccess("monk_talents",{
-    chi_wave = {
-        talentIDs = { 1, 3 },
-        abilityID = 115098,
-        cooldownTime = 15,
-
-        talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.talentIDs[1], spell.talentIDs[2], GetActiveSpecGroup())) or false end,
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((spell.talent_selected and spell.cooldown_remains == 0) and true or false) end,
-    },
-    chi_burst = {
-        talentIDs = { 1, 1 },
-        abilityID = 123986,
-        cooldownTime = 30,
-
-        talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.talentIDs[1], spell.talentIDs[2], GetActiveSpecGroup())) or false end,
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((spell.talent_selected and spell.cooldown_remains == 0) and true or false) end,
-    },
-    rushing_jade_wind = {
-        talentIDs = { 6, 1 },
-        abilityID = 116847,
-        cooldownTime = function(spell,env) return (6.0 * env.playerHasteMultiplier) end,
-        talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.talentIDs[1], spell.talentIDs[2], GetActiveSpecGroup())) or false end,
-
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((spell.talent_selected and spell.cooldown_remains == 0) and true or false) end,
-    },
-    blackout_combo = {
-        talentIDs = { 7, 2 },
-        auraID = 228563,
-        auraMine = true,
-        auraUnit = 'player',
-
-        talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.talentIDs[1], spell.talentIDs[2], GetActiveSpecGroup())) or false end,
-    },
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Brewmaster-specific abilties
-------------------------------------------------------------------------------------------------------------------------
-local monk_brewmaster_abilities = private:LogMissingAccess("monk_brewmaster_abilities",{
-    tiger_palm = {
-        abilityID = 100780,
-        energyCost = 25,
-
-        PerformCast = function(spell, env)
-            env.energy.spent = env.energy.spent + spell.energyCost
-        end,
-
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((env.energy.curr >= spell.energyCost) and true or false) end,
-    },
+local brewmaster_base_overrides = {
     keg_smash = {
-        abilityID = 121253,
-        auraID = 121253,
-        auraMine = true,
-        auraUnit = 'target',
-        energyCost = 40,
-        cooldownTime = function(spell,env) return (8.0 * env.playerHasteMultiplier) end,
-
-        PerformCast = function(spell, env)
-            env.energy.spent = env.energy.spent + spell.energyCost
-        end,
-
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((env.energy.curr >= spell.energyCost and spell.cooldown_remains == 0) and true or false) end,
+        AuraID = 121253,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'keg_smash',
+        AuraApplyLength = 15,
     },
     blackout_strike = {
-        abilityID = 205523,
-        cooldownTime = 3,
-
-        PerformCast = function(spell, env)
-            env.blackout_combo.expirationTime = env.currentTime + 14
-        end,
-
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((spell.cooldown_remains == 0) and true or false) end,
+        AuraApplied = 'blackout_combo',
+        AuraApplyLength = 14,
     },
-    breath_of_fire = {
-        abilityID = 115181,
-        cooldownTime = 15,
+}
 
-        spell_cast_time = 1,
-        spell_can_cast = function(spell, env) return ((spell.cooldown_remains == 0) and true or false) end,
+local brewmaster_talent_overrides = {
+    blackout_combo = {
+        AuraID = 228563,
+        AuraMine = true,
+        AuraUnit = 'player',
     },
+}
+
+Z:RegisterProfile('Brewmaster', 10, 1, brewmaster_base_overrides, brewmaster_talent_overrides, {
+    gcdAbility = 100780, -- Tiger Palm
+    blacklistedActions = {},
+    actionProfile = 'dummy::PrePatch::Monk_Brewmaster',
+    energy = internal.resources.energy,
 })
 
 ------------------------------------------------------------------------------------------------------------------------
--- Brewmaster profile definition
+-- Windwalker profile definition
 ------------------------------------------------------------------------------------------------------------------------
-private:RegisterProfile("Brewmaster", 10, 1, private:MergeTables(monk_functions, monk_event_handlers, monk_power, monk_talents, monk_common_abilities, monk_brewmaster_abilities, {
+
+local windwalker_base_overrides = {
+    tiger_palm = {
+        PerformCast = function(spell, env)
+            env.chi.gained = env.chi.gained + 2
+            if env.power_strikes.aura_react then
+                env.chi.gained = env.chi.gained + 1
+            end
+        end,
+    },
+    blackout_kick = {
+        PerformCast = function(spell, env)
+            if env.bok_proc.aura_react then
+                env.chi.gained = env.chi.gained + spell.chi_cost -- refund the chi
+                env.bok_proc.expirationTime = 0                  -- remove the buff
+            end
+        end,
+    },
+    energizing_elixir = {
+        PerformCast = function(spell, env)
+            env.chi.gained = env.chi.gained + (env.chi.max - env.chi.curr)
+            env.energy.gained = env.energy.gained + (env.energy.max - env.energy.curr)
+        end
+    },
+    storm_earth_and_fire = {
+        AuraID = 137639,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'storm_earth_and_fire',
+        AuraApplyLength = 15,
+
+        CanCast = function(spell, env)
+            --DevTools_Dump{storm_earth_and_fire=env.storm_earth_and_fire}
+            return (not env.serenity.talent_selected) and (not spell.aura_react)
+        end,
+    },
+    bok_proc = {
+        AuraID = 116768,
+        AuraMine = true,
+        AuraUnit = 'player',
+    },
+    power_strikes = {
+        AuraID = 129914,
+        AuraMine = true,
+        AuraUnit = 'player',
+    },
+}
+
+local windwalker_talent_overrides = {
+    serenity = {
+        AuraID = 152173,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'serenity',
+        AuraApplyLength = 8,
+    },
+    whirling_dragon_punch = {
+        CanCast = function(spell, env)
+            return (env.fists_of_fury.cooldown_remains > 0) and (env.rising_sun_kick.cooldown_remains > 0)
+        end,
+    },
+}
+
+local windwalker_artifact_overrides = {
+    gale_burst = {
+        is_artifact = true,
+        artifact_selected = function(spell, env) return false end, -- TODO
+    },
+    strike_of_the_windlord = {
+        is_artifact = true,
+        artifact_selected = function(spell, env) return false end, -- TODO
+    },
+}
+
+Z:RegisterProfile('Windwalker', 10, 3, windwalker_base_overrides, windwalker_talent_overrides, windwalker_artifact_overrides, {
     gcdAbility = 100780, -- Tiger Palm
     blacklistedActions = {
     },
-    actionList = private.apls["dummy::PrePatch::Monk_Brewmaster"],
-}))
+    mappedActions = { -- ["simc_name"] = "ingame_slug"
+        ["invoke_xuen"] = "invoke_xuen_the_white_tiger",
+    },
+    actionProfile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
+    energy = internal.resources.energy,
+    chi = internal.resources.chi,
+})

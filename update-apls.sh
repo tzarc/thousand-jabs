@@ -7,8 +7,8 @@ if [[ ! -d "simc/.git" ]] ; then
     git clone https://github.com/simulationcraft/simc
 fi
 
-echo 'local _, private = ...' > ActionProfileLists.lua
-echo 'private.apls = {}' >> ActionProfileLists.lua
+echo 'local _, internal = ...' > ActionProfileLists.lua
+echo 'internal.apls = {}' >> ActionProfileLists.lua
 echo >> ActionProfileLists.lua
 
 append_action_profiles_from_dir() {
@@ -23,7 +23,7 @@ append_action_profiles_from_dir() {
         TD=$(basename "${TIER_DIR}")
         if [[ ! -z "${DATA}" ]] ; then
             echo "${file}"
-            echo "private.apls[\"${BRANCH}::${TD}::${BN}\"] = [[" >> ActionProfileLists.lua
+            echo "internal.apls[\"${BRANCH}::${TD}::${BN}\"] = [[" >> ActionProfileLists.lua
             echo "${DATA}" >> ActionProfileLists.lua
             echo "]]" >> ActionProfileLists.lua
             echo >> ActionProfileLists.lua
@@ -51,9 +51,9 @@ append_action_profiles_from_branch() {
     IFS=$OIFS
 }
 
-append_action_profiles_from_branch master Tier17H
-append_action_profiles_from_branch master Tier18H
-append_action_profiles_from_branch master Tier19H
+#append_action_profiles_from_branch master Tier17H
+#append_action_profiles_from_branch master Tier18H
+#append_action_profiles_from_branch master Tier19H
 append_action_profiles_from_branch legion-dev Tier19P
 append_action_profiles_from_branch legion-dev Tier19H
 

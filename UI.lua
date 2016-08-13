@@ -1,8 +1,8 @@
-local _, private = ...;
-local TJ = private.TJ
-local DBG = private.DBG
-local tcache = private.tcache
-local db = private.db
+local _, X = ...;
+local Z = X.Z
+local DBG = X.DBG
+local tcache = X.tcache
+local DB = X.DB
 
 -- Frames
 local actionsFrame = nil
@@ -14,7 +14,7 @@ local aoeFrameSizes = { 35, 20 }
 local padding = 4
 local totalWidth = padding * 7 + aoeFrameSizes[1] + cleaveFrameSizes[1] + stFrameSizes[1] + stFrameSizes[2] + stFrameSizes[3] + stFrameSizes[4]
 
-function private:CreateFrames()
+function Z:CreateFrames()
     -- Create the base frame
     local baseFrame = CreateFrame('Frame', 'ThousandJabs', UIParent)
     baseFrame:ClearAllPoints()
@@ -30,37 +30,37 @@ function private:CreateFrames()
     baseFrame:Show()
 
     -- Create the icon frames
-    baseFrame.iconFrames = private:CreateIconFrames(baseFrame)
+    baseFrame.iconFrames = Z:CreateIconFrames(baseFrame)
 
     -- Set the geometry of the base frame
     baseFrame:SetWidth(totalWidth)
     baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
-    if private.db.x then
-        baseFrame:SetPoint("BOTTOMLEFT", UIParent, private.db.x, private.db.y)
+    if Z.DB.x then
+        baseFrame:SetPoint("BOTTOMLEFT", UIParent, Z.DB.x, Z.DB.y)
     else
-        baseFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -180)
+        baseFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -80)
     end
     baseFrame:Hide()
 
     return baseFrame
 end
 
-function private:CreateIconFrames(parent)
+function Z:CreateIconFrames(parent)
     local frames = { singleTarget = {}, cleave = {}, aoe = {} }
     -- Create the icon frames
     local aoeHeight = aoeFrameSizes[1] + padding + aoeFrameSizes[2]
     local cleaveHeight = cleaveFrameSizes[1] + padding + cleaveFrameSizes[2]
     local xPos = padding
     local yPos = (-0.5*stFrameSizes[1])-padding + aoeHeight*0.5
-    frames.aoe[1] = private:CreateSingleIconFrame('ThousandJabs_AoE1', parent, aoeFrameSizes[1], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[1], yPos)
-    frames.aoe[2] = private:CreateSingleIconFrame('ThousandJabs_AoE2', parent, aoeFrameSizes[2], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[2], yPos - padding - aoeFrameSizes[1])
+    frames.aoe[1] = Z:CreateSingleIconFrame('ThousandJabs_AoE1', parent, aoeFrameSizes[1], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[1], yPos)
+    frames.aoe[2] = Z:CreateSingleIconFrame('ThousandJabs_AoE2', parent, aoeFrameSizes[2], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[2], yPos - padding - aoeFrameSizes[1])
     xPos = xPos + aoeFrameSizes[1] + padding
     yPos = (-0.5*stFrameSizes[1])-padding + cleaveHeight*0.5
-    frames.cleave[1] = private:CreateSingleIconFrame('ThousandJabs_Cleave1', parent, cleaveFrameSizes[1], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[1], yPos)
-    frames.cleave[2] = private:CreateSingleIconFrame('ThousandJabs_Cleave2', parent, cleaveFrameSizes[2], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[2], yPos - padding - cleaveFrameSizes[1])
+    frames.cleave[1] = Z:CreateSingleIconFrame('ThousandJabs_Cleave1', parent, cleaveFrameSizes[1], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[1], yPos)
+    frames.cleave[2] = Z:CreateSingleIconFrame('ThousandJabs_Cleave2', parent, cleaveFrameSizes[2], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[2], yPos - padding - cleaveFrameSizes[1])
     xPos = xPos + cleaveFrameSizes[1] + padding
     for i=1,4 do
-        frames.singleTarget[#frames.singleTarget+1] = private:CreateSingleIconFrame('ThousandJabs_ST'..i, parent, stFrameSizes[i], xPos, (0.5*stFrameSizes[i]) - (0.5*stFrameSizes[1]) - padding)
+        frames.singleTarget[#frames.singleTarget+1] = Z:CreateSingleIconFrame('ThousandJabs_ST'..i, parent, stFrameSizes[i], xPos, (0.5*stFrameSizes[i]) - (0.5*stFrameSizes[1]) - padding)
         xPos = xPos + stFrameSizes[i] + padding
     end
 
@@ -71,7 +71,7 @@ function private:CreateIconFrames(parent)
     return frames
 end
 
-function private:CreateSingleIconFrame(name, parent, size, xOffset, yOffset, bindPoint)
+function Z:CreateSingleIconFrame(name, parent, size, xOffset, yOffset, bindPoint)
     bindPoint = bindPoint or 'TOPLEFT'
     -- Create the background frame for this icon
     local frame = CreateFrame('Frame', name, parent)
