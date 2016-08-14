@@ -67,11 +67,16 @@ local conditionalSubstitutions = {
     { " rune ", " rune.curr " },
     { " runic_power ", " runic_power.curr " },
     { " burning_ember ", " burning_ember.curr " },
+    { " soul_fragments ", " soul_fragments.curr " },
 
+    { " duration ", " spell.THIS_SPELL.duration " },
+    { " delay ", " spell.THIS_SPELL.delay " },
+    { " remains ", " spell.THIS_SPELL.remains " },
     { " cast_time ", " spell.THIS_SPELL.cast_time " },
     { " time ", " time_since_combat_start " },
     { " gcd ", " gcd " },
     { " charges ", " spell.THIS_SPELL.charges " },
+    { " max_charges ", " spell.THIS_SPELL.max_charges " },
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
     { " stagger%.(%a+) ", " stagger.%1 == true " },
 
@@ -119,7 +124,7 @@ local conditionalSubstitutions = {
 -- APL parsing
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:ParseActionProfileList(aplString)
+function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
     local emptyEnvironment = setmetatable({}, { __index = function(tbl,key) return nil end })
     local profileLines = splitnewlines(aplString or "")
     local profileErrors = {}
@@ -174,21 +179,28 @@ function Z:ParseActionProfileList(aplString)
                 P(" initcond: %s", condition)
 
                 if condition ~= "(true)" then
-                    for k,s in pairs(conditionalSubstitutions) do
-                        -- Run the substitution
-                        local prev = condition
-                        condition = condition:gsub(s[1], s[2])
+                    local function applySubstitutions(substitutionsTable)
+                        for k,s in pairs(substitutionsTable) do
+                            -- Run the substitution
+                            local prev = condition
+                            condition = condition:gsub(s[1], s[2])
 
-                        -- Remove any double-spaces
-                        while condition:find("  ") do
-                            condition = condition:gsub("  "," ")
-                        end
+                            -- Remove any double-spaces
+                            while condition:find("  ") do
+                                condition = condition:gsub("  "," ")
+                            end
 
-                        if condition ~= prev then
-                            P("")
-                            P("    apply: '%s' => '%s'", tostring(s[1]), tostring(s[2]))
-                            P("     cond: %s", condition)
+                            if condition ~= prev then
+                                P("")
+                                P("    apply: '%s' => '%s'", tostring(s[1]), tostring(s[2]))
+                                P("     cond: %s", condition)
+                            end
                         end
+                    end
+
+                    applySubstitutions(conditionalSubstitutions)
+                    if extraParserSubstitutions then
+                        applySubstitutions(extraParserSubstitutions)
                     end
 
                     -- Replace 'THIS_SPELL' with the actual action name

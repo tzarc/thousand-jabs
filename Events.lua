@@ -92,10 +92,12 @@ function Z:PLAYER_TALENT_UPDATE(eventName)
     end
 end
 
-function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID)
+function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
     if unitID == 'player' then
+        -- Keep track of the last cast made
+        Z.lastCastTime[spellID] = GetTime()
         -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID)
+        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
     end
 end
 

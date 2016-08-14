@@ -163,8 +163,17 @@ function Z:CreateNewState(numTargets)
 
         local act = state.env[action]
         if act then
-            local newOffset = state.env.predictionOffset + act.spell_cast_time
+            -- Pretend we just casted the supplied action
+            if rawget(act, 'AbilityID') then
+                Z.lastCastTime[act.AbilityID] = state.env.predictionOffset
+            end
+
+            -- Perform the cast of the supplied action
             profile.actions[action].perform_cast(act, state.env)
+
+            -- Work out the new prediction offset given its cast time
+            local newOffset = state.env.predictionOffset + act.spell_cast_time
+            -- Predict the next action
             return state:PredictActionAtOffset(newOffset)
         end
 
@@ -212,11 +221,7 @@ function Z:CreateNewState(numTargets)
                 -- If we got a failure, then print out in the debugging and console
                 if not status then
 
-                    DBG("------------------------------------------------------------------------------------")
-                    DBG(ret or "(no return value for condition check)")
-                    DBG("--------------")
-                    DBG(action.condition)
-                    DBG("------------------------------------------------------------------------------------")
+                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
                     Z:PrintOnce("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.condition)
 
                 elseif ret == false then

@@ -32,6 +32,9 @@ Z.combatStart = 0
 Z.queuedUpdateTimer = nil
 Z.watchdogUpdateTimer = nil
 
+-- Cast tracking
+Z.lastCastTime = {}
+
 -- Incoming damage tracking
 Z.lastIncomingDamage = 0
 Z.damageTable = {}

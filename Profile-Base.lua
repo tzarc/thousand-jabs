@@ -34,7 +34,7 @@ function Z:RegisterPlayerClass(config)
         profile.actions = Z:MissingFieldTable(config.name, Z:MergeTables(internal.commonData, resources, unpack(config.actions)))
 
         -- Parse the APL for this class
-        profile.parsedActions = profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile])
+        profile.parsedActions = profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
 
         -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
         local actions = profile.actions
