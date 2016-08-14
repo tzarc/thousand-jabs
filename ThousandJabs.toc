@@ -4,7 +4,7 @@
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat
-## Version: 70000.05
+## Version: 70000.06
 
 ## SavedVariables: ThousandJabsDB
 
