@@ -144,14 +144,30 @@ function Z:GetSpellInfoFromTooltip(spellID)
     return lines
 end
 
-local PowerTypes = { 'energy', 'chi', 'pain', 'fury' }
+local PowerTypes = { 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power' }
 local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
 local PowerPatterns = {}
 for _,v in pairs(PowerTypes) do
     for _,s in pairs(PowerSuffixes) do
         local b = v:upper() .. s
         if _G[b] then
-            PowerPatterns[1+#PowerPatterns] = { b:gsub('_COST',''):lower(), '^' .. gsub(_G[b], '%%s', '([.,%%d]+)') .. '$'}
+            local function apply_substitutions(str, search, replace)
+            end
+            local t = _G[b]
+            t = t:gsub('%%s', '([.,%%d]+)')
+
+            local placeholder = '____PLACEHOLDER____'
+            local A, B
+            t = t:gsub('|4([^:]+):([^;]+);', function(a, b) -- (a or b - "|4aaa:bbb;")
+                A, B = a, b
+                return placeholder
+            end)
+            if A then
+                PowerPatterns[1+#PowerPatterns] = { b:gsub('_COST',''):lower(), '^' .. t:gsub(placeholder,A) .. '$'}
+                PowerPatterns[1+#PowerPatterns] = { b:gsub('_COST',''):lower(), '^' .. t:gsub(placeholder,B) .. '$'}
+            else
+                PowerPatterns[1+#PowerPatterns] = { b:gsub('_COST',''):lower(), '^' .. t .. '$'}
+            end
         end
     end
 end

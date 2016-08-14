@@ -68,9 +68,13 @@ local blood_base_abilities = {
             env.bone_shield.aura_stack = env.bone_shield.aura_stack + 3
         end,
     },
+    heart_strike = {
+        PerformCast = function(spell,env)
+            env.runic_power.gained = env.runic_power.gained + 5
+        end,
+    },
 }
 
---[[
 Z:RegisterPlayerClass({
     name = 'Blood',
     class_id = 6,
@@ -83,4 +87,3 @@ Z:RegisterPlayerClass({
     },
     blacklisted = {},
 })
-]]
