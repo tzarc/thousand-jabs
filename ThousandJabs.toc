@@ -25,7 +25,8 @@ Base.lua
 Main.lua
 Events.lua
 UI.lua
-ActionProfileLists.lua
+ActionProfileLists.xml
 Profile-APLParser.lua
 Profile-Generic.lua
 Profile-Monk.lua
+Profile-DemonHunter.lua

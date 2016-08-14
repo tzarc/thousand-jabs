@@ -28,6 +28,10 @@ local commonData = Z:MissingFieldTable('commonData', {
     },
     target = {
         exists = function(self,state) return UnitExists('target'), true end,
+        is_casting = function(self,state) return false end,
+    },
+    player = {
+        is_casting = function(self,state) return false end,
     },
 })
 
@@ -40,6 +44,7 @@ internal.resources = Z:MissingFieldTable('internal.resources', {
         curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_ENERGY) or 0) end,
         time_to_max = function(power, env) return (power.max - power.curr) /power.regen end,
+        deficit = function(power,env) return power.max - power.sampled end,
     },
     chi = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_CHI) or 0) end,
@@ -47,6 +52,30 @@ internal.resources = Z:MissingFieldTable('internal.resources', {
         gained = 0,
         curr = function(power, env) return power.sampled - power.spent + power.gained end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_CHI) or 0) end,
+        deficit = function(power,env) return power.max - power.sampled end,
+    },
+    pain = {
+        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_PAIN) or 0) end,
+        gained = 0,
+        spent = 0,
+        curr = function(power,env) return power.sampled - power.spent + power.gained end,
+        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_PAIN) or 0) end,
+        deficit = function(power,env) return power.max - power.sampled end,
+    },
+    fury = {
+        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_FURY) or 0) end,
+        gained = 0,
+        spent = 0,
+        curr = function(power,env) return power.sampled - power.spent + power.gained end,
+        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_FURY) or 0) end,
+        deficit = function(power,env) return power.max - power.sampled end,
+    },
+    soul_fragments = {
+        AuraID = 203981,
+        AuraUnit = 'player',
+        AuraMine = true,
+        spent = 0,
+        curr = function(power, env) return power.aura_stack - power.spent end,
     },
 })
 
@@ -222,6 +251,7 @@ function Z:RegisterProfile(profileName, classID, specID, ...)
                 end
 
                 -- Conditional if the spell has enough power to spend, as well as performing the spend when casting
+                costType = costType or rawget(v, 'cost_type')
                 if costType then
                     if not rawget(v, costType..'_cost') then
                         v[costType..'_cost'] = costBase
@@ -446,6 +476,7 @@ function Z:CreateNewState(numTargets)
         state.env.sampleTime = GetTime()
         state.env.active_enemies = numTargets
         state.env.spell_targets = numTargets
+        state.env.desired_targets = numTargets - 1
         state.env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
         state.env.player_level = UnitLevel('player')
 

@@ -20,6 +20,13 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local conditionalSubstitutions = {
+    { "debuff.casting.up", "target.is_casting" },
+    { "debuff.casting.down", "not target.is_casting" },
+    { "target.debuff.casting.up", "target.is_casting" },
+    { "target.debuff.casting.down", "not target.is_casting" },
+    { "buff.casting.up", "player.is_casting" },
+    { "buff.casting.down", "not player.is_casting" },
+
     { "!([%a%._]+)%.remains([^%a%._])", "%1.remains=0%2" }, -- Handle "!buff.blah.remains" -> "buff.blah.remains==0"
     --{ "([%a%._]+)%.remains([^%a%._<>=])", "%1.remains>0%2" }, -- Handle "buff.blah.remains" -> "buff.blah.remains>0"
     { "!([%a%._]+)%.enabled([^%a%._])", "%1.selected=false%2" }, -- Handle "!talent.blah.enabled" -> "talent.blah.selected==false"

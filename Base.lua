@@ -165,7 +165,7 @@ function Z:GetSpellInfoFromTooltip(spellID)
     return lines
 end
 
-local PowerTypes = { 'energy', 'chi' }
+local PowerTypes = { 'energy', 'chi', 'pain', 'fury' }
 local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
 local PowerPatterns = {}
 for _,v in pairs(PowerTypes) do

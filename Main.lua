@@ -32,6 +32,10 @@ Z.combatStart = 0
 Z.queuedUpdateTimer = nil
 Z.watchdogUpdateTimer = nil
 
+-- Incoming damage tracking
+Z.lastIncomingDamage = 0
+Z.damageTable = {}
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
@@ -323,3 +327,28 @@ function Z:OnDisable()
     self:UnregisterEvent('PLAYER_ENTERING_WORLD')
     self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED')
 end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Incoming damage tracking
+------------------------------------------------------------------------------------------------------------------------
+
+function Z:GetIncomingDamage(timestamp, secs)
+    local toDelete = LTC:Acquire()
+    local now = GetTime()
+    local value = 0
+    for entrytime, damage in pairs(self.damageTable) do
+        -- Delete entries more than 1 min old
+        if entrytime < now-60 then toDelete[1+#toDelete] = entrytime end
+
+        -- If this entry fulfils the time criteria, then add it
+        if entrytime > timestamp-secs then
+            value = value + damage
+        end
+    end
+
+    -- Perform deletes
+    for i=1, #toDelete do self.damageTable[toDelete[i]] = nil end
+    LTC:Release(toDelete)
+    return value
+end
+
