@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibProfiling-1.0", 3
+local MAJOR, MINOR = "LibProfiling-1.0", 4
 local LibProfiling, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 local type = type
