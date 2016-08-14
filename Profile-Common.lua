@@ -98,4 +98,39 @@ internal.resources = {
         spent = 0,
         curr = function(power, env) return power.aura_stack - power.spent end,
     },
+    rune = {
+        gained = 0,
+        spent = 0,
+        skipped = 0,
+        curr = function(power,env)
+            local r = power.sampled + power.gained - power.spent
+            --[[
+            local tx = { string.format("actual = %.2f, calculated = %.2f", GetTime(), env.currentTime) }
+            for i=1,6 do
+                local s,d,r = GetRuneCooldown(i)
+                local remaining = math.max(0, s + d - env.currentTime)
+                table.insert(tx, remaining > 0 and remaining or true)
+            end
+            table.insert(tx, r)
+            DevTools_Dump{tx=tx}
+            ]]
+            return r
+        end,
+
+        sampled = function(power,env)
+            local count = 0
+            for i=1,6 do
+                local s, d = GetRuneCooldown(i)
+                if env.currentTime >= (s + d) then count = count + 1 end
+            end
+            return count
+        end,
+    },
+    runic_power = {
+        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_RUNIC_POWER) or 0) end,
+        gained = 0,
+        spent = 0,
+        curr = function(power,env) return power.sampled - power.spent + power.gained + ((env.rune.spent-env.rune.skipped) * 10) end,
+        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_RUNIC_POWER) or 0) end,
+    },
 }

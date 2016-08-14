@@ -45,15 +45,15 @@ Z.damageTable = {}
 function Z:OnInitialize()
     -- Sort out the SavedVariables
     ThousandJabsDB = ThousandJabsDB or {
-        do_debug = true,
+        do_debug = false,
         aoe = {
-            enabled = true
+            enabled = true,
         },
         cleave = {
-            enabled = true
+            enabled = true,
         },
         single_target = {
-            enabled = true
+            enabled = true,
         },
     }
     Z.DB = ThousandJabsDB

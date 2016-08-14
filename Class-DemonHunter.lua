@@ -97,6 +97,7 @@ local vengeance_sigil_overrides = {
     sigil_of_chains = sigilInitialiser(8),
 }
 
+--[[
 Z:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
@@ -114,33 +115,6 @@ Z:RegisterPlayerClass({
         { " in_flight ", " infernal_strike.in_flight " },
         { " travel_time ", " 1 " }, -- infernal_strike.travel_time
         { " sigil_placed ", " any_sigil.placed " },
-    },
-})
-
-------------------------------------------------------------------------------------------------------------------------
--- Havoc profile definition
-------------------------------------------------------------------------------------------------------------------------
-
---[[
-local havoc_base_overrides = {
-}
-
-local havoc_talent_overrides = {
-}
-
-Z:RegisterPlayerClass({
-    name = 'Havoc',
-    class_id = 12,
-    spec_id = 1,
-    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Havoc_T19P',
-    gcd_ability = 'shear',
-    resources = { 'fury', 'soul_fragments' },
-    actions = {
-        havoc_base_overrides,
-        havoc_talent_overrides,
-    },
-    blacklisted = {
-        pick_up_fragment = true,
     },
 })
 ]]

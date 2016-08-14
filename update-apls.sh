@@ -61,7 +61,7 @@ append_action_profiles_from_branch() {
 gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) -delete
 
 for tier in Tier19P Tier19H legion ; do
-    for class in Demon_Hunter Monk ; do
+    for class in Death_Knight Demon_Hunter Monk ; do
         append_action_profiles_from_branch legion-dev ${tier} ${class}
     done
 done

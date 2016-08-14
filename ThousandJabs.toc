@@ -31,5 +31,6 @@ Profile-APLParser.lua
 Profile-Base.lua
 Profile-Common.lua
 State.lua
-Class-Monk.lua
+Class-DeathKnight.lua
 Class-DemonHunter.lua
+Class-Monk.lua
