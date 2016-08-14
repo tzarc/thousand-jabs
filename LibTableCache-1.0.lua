@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibTableCache-1.0", 6
+local MAJOR, MINOR = "LibTableCache-1.0", 7
 local LibTableCache, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 local tconcat = table.concat
