@@ -234,7 +234,7 @@ function Z:CreateNewState(numTargets)
             local action = actionList[i]
 
             -- Validate that it isn't blacklisted, and there's a valid check function
-            if tcontains(profile.blacklist, action.name) then
+            if tcontains(profile.blacklisted, action.name) then
 
                 DBG("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
 

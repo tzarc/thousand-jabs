@@ -2,5 +2,18 @@
 ..\FrameXML\UI.xsd">
     <Script file="ActionProfileLists-Death_Knight.lua"/>
     <Script file="ActionProfileLists-Demon_Hunter.lua"/>
+    <Script file="ActionProfileLists-Druid.lua"/>
+    <Script file="ActionProfileLists-Hunter.lua"/>
+    <Script file="ActionProfileLists-Mage.lua"/>
     <Script file="ActionProfileLists-Monk.lua"/>
+    <Script file="ActionProfileLists-Paladin.lua"/>
+    <Script file="ActionProfileLists-Priest.lua"/>
+    <Script file="ActionProfileLists-Rogue.lua"/>
+    <Script file="ActionProfileLists-Shaman.lua"/>
+    <Script file="ActionProfileLists-Warlock.lua"/>
+    <Script file="ActionProfileLists-Warrior.lua"/>
+    <Script file="Class-Death_Knight.lua"/>
+    <Script file="Class-Demon_Hunter.lua"/>
+    <Script file="Class-Monk.lua"/>
+    <Script file="Class-Warrior.lua"/>
 </Ui>

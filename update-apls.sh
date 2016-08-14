@@ -3,6 +3,8 @@
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${BASE_DIR}"
 
+LAST_BRANCH=zzzzzzzzzzzzzzzzzzzz
+
 if [[ ! -d "simc/.git" ]] ; then
     git clone https://github.com/simulationcraft/simc
 fi
@@ -44,7 +46,10 @@ append_action_profiles_from_branch() {
     CLASS=$3
     OIFS=$IFS
     IFS=$'\r\n'
-    (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git clean -xfd && git checkout "${BRANCH}" && git pull)
+    if [[ "${BRANCH}" != "${LAST_BRANCH}" ]] ; then
+        (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git clean -xfd && git checkout "${BRANCH}" && git pull)
+        LAST_BRANCH="${BRANCH}"
+    fi
     if [[ -z "${TIER}" ]] ; then
         for tier_dir in $(gfind "${BASE_DIR}/simc/profiles" -mindepth 1 -maxdepth 1 -type d -name 'Tier*' | sort) ; do
             append_action_profiles_from_dir "${BRANCH}" "${tier_dir}" "${CLASS}"
@@ -61,14 +66,14 @@ append_action_profiles_from_branch() {
 gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) -delete
 
 for tier in Tier19P Tier19H legion ; do
-    for class in Death_Knight Demon_Hunter Monk ; do
+    for class in Death_Knight Demon_Hunter Druid Hunter Mage Monk Paladin Priest Rogue Shaman Warlock Warrior ; do
         append_action_profiles_from_branch legion-dev ${tier} ${class}
     done
 done
 
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > ActionProfileLists.xml
 echo '..\FrameXML\UI.xsd">' >> ActionProfileLists.xml
-for file in $(gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) | sort) ; do
+for file in $(gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' -or -iname 'Class-*.lua' \) | sort) ; do
     echo "    <Script file=\"$(basename "${file}")\"/>" >> ActionProfileLists.xml
 done
 echo '</Ui>' >> ActionProfileLists.xml

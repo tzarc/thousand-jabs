@@ -142,12 +142,10 @@ lib.frame:RegisterEvent('PLAYER_TARGET_CHANGED')
 lib.frame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 
 function lib:PLAYER_ENTERING_WORLD(eventName, ...)
-    playerGUID = UnitExists('player') and UnitGUID('player') or nil
     lib:UpdateUnitCache('player', true)
 end
 
 function lib:PLAYER_TARGET_CHANGED(eventName, ...)
-    targetGUID = UnitExists('target') and UnitGUID('target') or nil
     lib:UpdateUnitCache('target', true)
 end
 

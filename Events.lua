@@ -5,6 +5,12 @@ local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Locals
+------------------------------------------------------------------------------------------------------------------------
+
+local playerGUID, targetGUID = nil, nil
+
+------------------------------------------------------------------------------------------------------------------------
 -- Events
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -37,6 +43,8 @@ function Z:UNIT_HEALTH(eventName, unitID)
 end
 
 function Z:PLAYER_ENTERING_WORLD(eventName)
+    -- Save the player GUID
+    playerGUID = UnitExists('player') and UnitGUID('player') or nil
     -- Deactivate the current profile
     self:DeactivateProfile()
     -- Activate the new profile if present
@@ -95,15 +103,17 @@ end
 function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
     if unitID == 'player' then
         -- Keep track of the last cast made
-        Z.lastCastTime[spellID] = GetTime()
+        self.lastCastTime[spellID] = GetTime()
         -- Update the GCD amount if possible
-        Z:TryDetectUpdateGlobalCooldown(spellID)
+        self:TryDetectUpdateGlobalCooldown(spellID)
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
     end
 end
 
 function Z:PLAYER_REGEN_ENABLED(eventName)
+    -- Reset the last autoattack
+    self.lastAutoAttack = 0
     -- Reset combat
     self.combatStart = 0
     -- Notify the profile
@@ -111,6 +121,8 @@ function Z:PLAYER_REGEN_ENABLED(eventName)
 end
 
 function Z:PLAYER_REGEN_DISABLED(eventName)
+    -- Reset the last autoattack
+    self.lastAutoAttack = GetTime()
     -- Start combat
     self.combatStart = GetTime()
     -- Notify the profile
@@ -118,6 +130,8 @@ function Z:PLAYER_REGEN_DISABLED(eventName)
 end
 
 function Z:PLAYER_TARGET_CHANGED(eventName)
+    -- Save the target GUID
+    targetGUID = UnitExists('target') and UnitGUID('target') or nil
     -- Force a target cache update
     forceUpdateTarget = true
     -- Notify the profile
@@ -154,5 +168,10 @@ function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCa
 
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+    end
+
+    if sourceGUID == playerGUID and combatEvent == 'SWING_DAMAGE' then
+        -- We succeeded in an auto-attack, save the timestamp
+        self.lastAutoAttack = GetTime()
     end
 end

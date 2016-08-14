@@ -4,14 +4,15 @@ local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
+local floor = math.floor
 
 internal.global_blacklisted_abilities = {
-    auto_attack = true,
-    potion = true,
-    blood_fury = true,
-    berserking = true,
-    bloodlust = true,
-    arcane_torrent = true,
+    'auto_attack',
+    'potion',
+    'blood_fury',
+    'berserking',
+    'bloodlust',
+    'arcane_torrent',
 }
 
 internal.baseEnvironment = {
@@ -65,6 +66,22 @@ internal.resources = {
         curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_ENERGY) or 0) end,
         time_to_max = function(power, env) return (power.max - power.curr) /power.regen end,
+        deficit = function(power,env) return power.max - power.sampled end,
+    },
+    rage = {
+        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_RAGE) or 0) end,
+        spent = 0,
+        gained = 0,
+        gained_from_autoattacks = function(spell,env)
+            local swingspeed = UnitAttackSpeed('player')
+            if Z.lastAutoAttack < GetTime() - swingspeed then Z.lastAutoAttack = GetTime() end
+            local predicted = floor((env.currentTime - Z.lastAutoAttack) / swingspeed)
+            DBG("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, Z.lastAutoAttack, (env.currentTime - Z.lastAutoAttack))
+            predicted = (predicted > 0) and predicted or 0
+            return predicted * 25
+        end,
+        curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent + power.gained end,
+        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_RAGE) or 0) end,
         deficit = function(power,env) return power.max - power.sampled end,
     },
     chi = {

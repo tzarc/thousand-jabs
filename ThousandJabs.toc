@@ -25,11 +25,8 @@ Main.lua
 SpellData.lua
 Events.lua
 UI.lua
-ActionProfileLists.xml
 Profile-APLParser.lua
 Profile-Base.lua
 Profile-Common.lua
 State.lua
-Class-DeathKnight.lua
-Class-DemonHunter.lua
-Class-Monk.lua
+ActionProfileLists.xml

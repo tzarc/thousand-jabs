@@ -10,7 +10,7 @@ function Z:RegisterPlayerClass(config)
     local k,v,k2,v2
 
     local config = config
-    local blacklist = {}
+    local blacklisted = {}
 
     -- Copy out the resources requested for this class
     local resources = {}
@@ -20,7 +20,7 @@ function Z:RegisterPlayerClass(config)
     local profile = {
         name = config.name,
         config = config,
-        blacklist = blacklist,
+        blacklisted = blacklisted,
     }
 
     -- Add it to the list of profiles so we can get access to it when swapping specs
@@ -51,14 +51,14 @@ function Z:RegisterPlayerClass(config)
             end
         end
 
-        -- Construct the blacklist
-        wipe(blacklist)
+        -- Construct the blacklisted
+        wipe(blacklisted)
         for k,v in pairs(internal.global_blacklisted_abilities) do
-            blacklist[1+#blacklist] = k
+            blacklisted[1+#blacklisted] = v
         end
-        if config.blacklist then
-            for k,v in pairs(config.blacklist) do
-                blacklist[1+#blacklist] = k
+        if config.blacklisted then
+            for k,v in pairs(config.blacklisted) do
+                blacklisted[1+#blacklisted] = v
             end
         end
 

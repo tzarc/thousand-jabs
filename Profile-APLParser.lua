@@ -37,8 +37,6 @@ local conditionalSubstitutions = {
 
     { "([%a%._]+)%.react([<>=]+)", "%1.stack%2" }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
 
-    { "_pct", "_percent" },
-
     { "!", " not " },
     { "<", " < " },
     { ">", " > " },
@@ -63,6 +61,7 @@ local conditionalSubstitutions = {
 
     { " energy ", " energy.curr " },
     { " chi ", " chi.curr " },
+    { " rage ", " rage.curr " },
     { " pain ", " pain.curr " },
     { " rune ", " rune.curr " },
     { " runic_power ", " runic_power.curr " },
@@ -118,6 +117,8 @@ local conditionalSubstitutions = {
             return format(" %s.%s_%s ", b, a, c:gsub("%.","_"))
         end
     },
+
+    { "_pct", "_percent" },
 }
 
 ------------------------------------------------------------------------------------------------------------------------

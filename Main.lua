@@ -9,11 +9,10 @@ local LUC = LibStub('LibUnitCache-1.0')
 ------------------------------------------------------------------------------------------------------------------------
 
 -- Flags to check if we need to force an update of player/target cache
-local playerGUID, targetGUID = nil, nil
 local forceUpdatePlayer, forceUpdateTarget = nil, nil
 
 -- Timer update
-local queuedScreenUpdateTime = 0.05   -- seconds
+local queuedScreenUpdateTime = 0.1   -- seconds
 local watchdogScreenUpdateTime = 0.5 -- seconds
 local queuedUpdateTimer = nil
 local watchdogUpdateTimer = nil
@@ -34,6 +33,7 @@ Z.watchdogUpdateTimer = nil
 
 -- Cast tracking
 Z.lastCastTime = {}
+Z.lastAutoAttack = 0
 
 -- Incoming damage tracking
 Z.lastIncomingDamage = 0
