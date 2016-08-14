@@ -1,8 +1,5 @@
-local _, internal = ...;
+local addonName, internal = ...;
 local Z = internal.Z
-local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
-local LUC = LibStub('LibUnitCache-1.0')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Brewmaster profile definition
@@ -52,11 +49,18 @@ local brewmaster_talent_overrides = {
     },
 }
 
-Z:RegisterProfile('Brewmaster', 10, 1, brewmaster_base_overrides, brewmaster_talent_overrides, {
-    gcdAbility = 100780, -- Tiger Palm
-    blacklistedActions = {},
-    actionProfile = 'dummy::PrePatch::Monk_Brewmaster',
-    energy = internal.resources.energy,
+Z:RegisterPlayerClass({
+    name = 'Brewmaster',
+    class_id = 10,
+    spec_id = 1,
+    action_profile = 'dummy::PrePatch::Monk_Brewmaster',
+    gcd_ability = 'tiger_palm',
+    resources = { 'energy' },
+    actions = {
+        brewmaster_base_overrides,
+        brewmaster_talent_overrides,
+    },
+    blacklisted = {},
 })
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -103,11 +107,6 @@ local windwalker_base_overrides = {
         AuraMine = true,
         AuraUnit = 'player',
     },
-    power_strikes = {
-        AuraID = 129914,
-        AuraMine = true,
-        AuraUnit = 'player',
-    },
 }
 
 local windwalker_talent_overrides = {
@@ -123,6 +122,11 @@ local windwalker_talent_overrides = {
             return (env.fists_of_fury.cooldown_remains > 0) and (env.rising_sun_kick.cooldown_remains > 0)
         end,
     },
+    power_strikes = {
+        AuraID = 129914,
+        AuraMine = true,
+        AuraUnit = 'player',
+    },
 }
 
 local windwalker_artifact_overrides = {
@@ -136,14 +140,20 @@ local windwalker_artifact_overrides = {
     },
 }
 
-Z:RegisterProfile('Windwalker', 10, 3, windwalker_base_overrides, windwalker_talent_overrides, windwalker_artifact_overrides, {
-    gcdAbility = 100780, -- Tiger Palm
-    blacklistedActions = {
+Z:RegisterPlayerClass({
+    name = 'Windwalker',
+    class_id = 10,
+    spec_id = 3,
+    action_profile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
+    gcd_ability = 'tiger_palm',
+    resources = { 'energy', 'chi' },
+    actions = {
+        windwalker_base_overrides,
+        windwalker_talent_overrides,
+        windwalker_artifact_overrides,
     },
-    mappedActions = { -- ["simc_name"] = "ingame_slug"
-        ["invoke_xuen"] = "invoke_xuen_the_white_tiger",
+    blacklisted = {},
+    simc_mapping = { -- simc_name = "equivalent_parsed_ingame_table_name"
+        invoke_xuen = "invoke_xuen_the_white_tiger",
     },
-    actionProfile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
-    energy = internal.resources.energy,
-    chi = internal.resources.chi,
 })

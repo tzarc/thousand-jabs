@@ -1,4 +1,4 @@
-local _, internal = ...;
+local addonName, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
@@ -104,10 +104,13 @@ function Z:PerformUpdate()
     forceUpdatePlayer, forceUpdateTarget = nil, nil
 
     if self.currentProfile then
-        self:ExecuteActionProfile()
+        self:ExecuteAllActionProfiles()
 
         -- Attempt to work out the cooldown frame, based off Jab
-        local start, duration = GetSpellCooldown(self.currentProfile.gcdAbility)
+        local gcd_ability = type(self.currentProfile.config.gcd_ability) == 'string'
+                                    and self.currentProfile.actions[self.currentProfile.config.gcd_ability].AbilityID
+                                    or self.currentProfile.config.gcd_ability
+        local start, duration = GetSpellCooldown(gcd_ability)
 
         -- ....unless we're currently channeling something (i.e. fists of fury), in which case use the rest of its channel time
         local channelName, _, _, channelIcon, channelStart, channelEnd = UnitChannelInfo('player')
@@ -192,6 +195,8 @@ function Z:ActivateProfile()
     end
 end
 
+Z:ProfileFunction('ActivateProfile')
+
 function Z:DeactivateProfile()
     -- Clear the update timer
     if queuedUpdateTimer then self:CancelTimer(queuedUpdateTimer) end
@@ -229,31 +234,33 @@ function Z:DeactivateProfile()
     if self.currentProfile then self.currentProfile:Deactivate() end
 end
 
+Z:ProfileFunction('DeactivateProfile')
+
 ------------------------------------------------------------------------------------------------------------------------
 -- APL Execution
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:ExecuteActionProfile()
+function Z:ExecuteAllActionProfiles()
     DBG("")
     DBG("Single Target")
     -- Calculate the single-target profiles
     self.st_state:Reset()
     local st1action = self.st_state:PredictNextAction() or "wait"
     self.results.single_target[1].actionName = st1action
-    self.results.single_target[1].icon = self.st_state.env[st1action].icon
+    self.results.single_target[1].icon = self.st_state.env[st1action].Icon
     --DBG("Time since incoming damage: %.2f", st_state.env_proxy.time_since_incoming_damage)
 
     local st2action = self.st_state:PredictActionFollowing(st1action) or "wait"
     self.results.single_target[2].actionName = st2action
-    self.results.single_target[2].icon = self.st_state.env[st2action].icon
+    self.results.single_target[2].icon = self.st_state.env[st2action].Icon
 
     local st3action = self.st_state:PredictActionFollowing(st2action) or "wait"
     self.results.single_target[3].actionName = st3action
-    self.results.single_target[3].icon = self.st_state.env[st3action].icon
+    self.results.single_target[3].icon = self.st_state.env[st3action].Icon
 
     local st4action = self.st_state:PredictActionFollowing(st3action) or "wait"
     self.results.single_target[4].actionName = st4action
-    self.results.single_target[4].icon = self.st_state.env[st4action].icon
+    self.results.single_target[4].icon = self.st_state.env[st4action].Icon
 
     DBG("")
     DBG("Cleave")
@@ -261,11 +268,11 @@ function Z:ExecuteActionProfile()
     self.cleave_state:Reset()
     local cleave1action = self.cleave_state:PredictNextAction() or "wait"
     self.results.cleave[1].actionName = cleave1action
-    self.results.cleave[1].icon = self.cleave_state.env[cleave1action].icon
+    self.results.cleave[1].icon = self.cleave_state.env[cleave1action].Icon
 
     local cleave2action = self.cleave_state:PredictActionFollowing(cleave1action) or "wait"
     self.results.cleave[2].actionName = cleave2action
-    self.results.cleave[2].icon = self.cleave_state.env[cleave2action].icon
+    self.results.cleave[2].icon = self.cleave_state.env[cleave2action].Icon
 
     DBG("")
     DBG("AoE")
@@ -273,18 +280,21 @@ function Z:ExecuteActionProfile()
     self.aoe_state:Reset()
     local aoe1action = self.aoe_state:PredictNextAction() or "wait"
     self.results.aoe[1].actionName = aoe1action
-    self.results.aoe[1].icon = self.aoe_state.env[aoe1action].icon
+    self.results.aoe[1].icon = self.aoe_state.env[aoe1action].Icon
 
     local aoe2action = self.aoe_state:PredictActionFollowing(aoe1action) or "wait"
     self.results.aoe[2].actionName = aoe2action
-    self.results.aoe[2].icon = self.aoe_state.env[aoe2action].icon
+    self.results.aoe[2].icon = self.aoe_state.env[aoe2action].Icon
 end
+
+Z:ProfileFunction('ExecuteAllActionProfiles')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon enable/disable handlers
 ------------------------------------------------------------------------------------------------------------------------
 
 function Z:OnEnable()
+
     -- Add event listeners
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED')
     self:RegisterEvent('PLAYER_ENTERING_WORLD')

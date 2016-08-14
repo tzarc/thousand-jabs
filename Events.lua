@@ -1,4 +1,4 @@
-local _, internal = ...;
+local addonName, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')

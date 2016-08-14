@@ -15,14 +15,14 @@ local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 local LSM = LibStub('LibSharedMedia-3.0')
 
-_G['tj'] = Z
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon initialistion
 ------------------------------------------------------------------------------------------------------------------------
 
-Z:EnableProfiling(false)
-Z:ProfileFunction(LUC, 'UpdateUnitCache')
+local devMode = false
+Z:EnableProfiling(devMode)
+Z:ProfileFunction(LUC, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
+if devMode then _G['tj'] = Z end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Local definitions
@@ -35,9 +35,10 @@ local dbglist = {}
 -- Printing and debug functions
 ------------------------------------------------------------------------------------------------------------------------
 
-local function formatHelper(fmt, ...)
+function internal.formatHelper(fmt, ...)
     return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
 end
+local formatHelper = internal.formatHelper
 
 local oldprint = Z.Print
 function Z:Print(...)
@@ -112,11 +113,8 @@ function Z:ShowLoggingFrame()
         self.log_frame.text:SetJustifyV("TOP")
         self.log_frame.text:SetPoint("TOPLEFT", 8, -8)
         self.log_frame.text:SetPoint("BOTTOMRIGHT", -8, 8)
-
         local f = LSM:Fetch("font", "mplus-1m-bold")
-        if f then
-            self.log_frame.text:SetFont(f, 9, "OUTLINE")
-        end
+        if f then self.log_frame.text:SetFont(f, 9, "OUTLINE") end
     end
 
     self.log_frame:Show()
@@ -137,105 +135,6 @@ function Z:UpdateLog()
             self.log_frame.text:SetText(internal.DBGSTR())
         end
     end
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Spell info from tooltip
-------------------------------------------------------------------------------------------------------------------------
-
-local tts = CreateFrame('GameTooltip', formatHelper('%sTooltipScanner', addonName))
-local ttsl1 = tts:CreateFontString('$parentTextLeft1', nil, "GameTooltipText")
-local ttsr1 = tts:CreateFontString('$parentTextRight1', nil, "GameTooltipText")
-tts:AddFontStrings(ttsl1, ttsr1)
-tts:SetOwner(UIParent, "ANCHOR_NONE")
-
-function Z:GetSpellInfoFromTooltip(spellID)
-    tts:SetSpellByID(spellID)
-    local tooltipName = tts:GetName()
-    local lines = {}
-    for i = 1, tts:NumLines() do
-        l = _G[tooltipName..'TextLeft'..i]
-        r = _G[tooltipName..'TextRight'..i]
-        lines[i] = {
-            l = { t = l:GetText() or "", c = {l:GetTextColor()} },
-            r = { t = r:GetText() or "", c = {r:GetTextColor()} }
-        }
-    end
-    tts:ClearLines()
-    return lines
-end
-
-local PowerTypes = { 'energy', 'chi', 'pain', 'fury' }
-local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
-local PowerPatterns = {}
-for _,v in pairs(PowerTypes) do
-    for _,s in pairs(PowerSuffixes) do
-        local b = v:upper() .. s
-        if _G[b] then
-            PowerPatterns[1+#PowerPatterns] = { b:gsub('_COST',''):lower(), '^' .. gsub(_G[b], '%%s', '([.,%%d]+)') .. '$'}
-        end
-    end
-end
-
-function Z:GetSpellCost(spellID)
-    local lines = self:GetSpellInfoFromTooltip(spellID)
-    for k,v in pairs(PowerPatterns) do
-        local a, b, c = lines and lines[2] and lines[2].l and lines[2].l.t and strmatch(lines[2].l.t, v[2])
-        -- strip non-digit and convert to number
-        if a then a = gsub(a, '%D', '') + 0 end
-        if b then b = gsub(b, '%D', '') + 0 end
-        if c then c = gsub(c, '%D', '') + 0 end
-        if a then
-            return v[1], a, b, c
-        end
-    end
-end
-
-local function IsGreen(colour) -- work out if it's increased by haste
-    return math.floor(colour[1]*256) == 0 and math.floor(colour[2]*256) == 255 and math.floor(colour[3]*256) == 0 and true
-end
-
-local DurationChecks = { 'days', 'hours', 'min', 'sec' }
-local DurationMultiplier = { days = 86400, hours = 3600, min = 60, sec = 1 }
-local CooldownPatterns = {}
-local RechargePatterns = {}
-for _,v in pairs(DurationChecks) do
-    local b = 'SPELL_RECAST_TIME_' .. v:upper()
-    if _G[b] then
-        CooldownPatterns[1+#CooldownPatterns] = { v, '^' .. gsub(_G[b], '%%.3g', '([.,%%d]+)') .. '$' }
-    end
-    b = 'SPELL_RECAST_TIME_CHARGES_' .. v:upper()
-    if _G[b] then
-        RechargePatterns[1+#RechargePatterns] = { v, '^' .. gsub(_G[b], '%%.3g', '([.,%%d]+)') .. '$' }
-    end
-end
-
-function Z:GetSpellCooldown(spellID)
-    local lines = self:GetSpellInfoFromTooltip(spellID)
-    for k,v in pairs(CooldownPatterns) do
-        for l=2,3 do
-            local r = lines and lines[l] and lines[l].r and lines[l].r.t and strmatch(lines[l].r.t, v[2])
-            if r then
-                r = gsub(r, '[^.%d]', '') + 0
-                return tonumber(r) * DurationMultiplier[v[1]], IsGreen(lines[l].r.c)
-            end
-        end
-    end
-    return 0
-end
-
-function Z:GetSpellRechargeTime(spellID)
-    local lines = self:GetSpellInfoFromTooltip(spellID)
-    for k,v in pairs(RechargePatterns) do
-        for l=2,3 do
-            local r = lines and lines[l] and lines[l].r and lines[l].r.t and strmatch(lines[l].r.t, v[2])
-            if r then
-                r = gsub(r, '[^.%d]', '') + 0
-                return tonumber(r) * DurationMultiplier[v[1]], IsGreen(lines[l].r.c)
-            end
-        end
-    end
-    return 0
 end
 
 ------------------------------------------------------------------------------------------------------------------------

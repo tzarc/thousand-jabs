@@ -1,8 +1,5 @@
-local _, internal = ...;
+local addonName, internal = ...;
 local Z = internal.Z
-local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
-local LUC = LibStub('LibUnitCache-1.0')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Vengeance profile definition
@@ -64,14 +61,19 @@ local vengeance_talent_overrides = {
     }
 }
 
-Z:RegisterProfile('Vengeance', 12, 2, vengeance_base_overrides, vengeance_talent_overrides, {
-    gcdAbility = 203782, -- Shear
-    blacklistedActions = {},
-    actionProfile = 'legion-dev::Tier19P::Demon_Hunter_Vengeance_T19P',
-    pain = internal.resources.pain,
-    soul_fragments = internal.resources.soul_fragments,
+Z:RegisterPlayerClass({
+    name = 'Vengeance',
+    class_id = 12,
+    spec_id = 2,
+    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Vengeance_T19P',
+    gcd_ability = 'shear',
+    resources = { 'pain', 'soul_fragments' },
+    actions = {
+        vengeance_base_overrides,
+        vengeance_talent_overrides,
+    },
+    blacklisted = {},
 })
-
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Havoc profile definition
@@ -84,13 +86,19 @@ local havoc_base_overrides = {
 local havoc_talent_overrides = {
 }
 
-Z:RegisterProfile('Vengeance', 12, 1, havoc_base_overrides, havoc_talent_overrides, {
-    gcdAbility = 203782, -- Shear
-    blacklistedActions = {
+Z:RegisterPlayerClass({
+    name = 'Havoc',
+    class_id = 12,
+    spec_id = 1,
+    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Havoc_T19P',
+    gcd_ability = 'shear',
+    resources = { 'fury', 'soul_fragments' },
+    actions = {
+        havoc_base_overrides,
+        havoc_talent_overrides,
+    },
+    blacklisted = {
         pick_up_fragment = true,
     },
-    actionProfile = 'legion-dev::Tier19P::Demon_Hunter_Havoc_T19P',
-    fury = internal.resources.fury,
-    soul_fragments = internal.resources.soul_fragments,
 })
 ]]

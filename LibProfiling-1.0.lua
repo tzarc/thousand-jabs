@@ -89,16 +89,17 @@ function LibProfiling:GetProfilingString()
     return s
 end
 
-function LibProfiling:ProfileFunction(a, b)
+function LibProfiling:ProfileFunction(a, b, c)
     local this = self
     self:EnableProfiling(self.profiling and self.profiling.enabled or false)
     local unembeds = self.profiling.unembeds
 
-    if type(a) == 'string' and b == nil then -- MyAddon:ProfileFunction('MyFunction')
+    if type(a) == 'string' and (b == nil or type(b) == 'string') then
+        -- MyAddon:ProfileFunction('MyFunction') / MyAddon:ProfileFunction('MyFunction', 'MyFunctionLoggedName')
         if not self.profiling.enabled then return end
         local oldfunc = self[a]
         local newfunc = function(...)
-            this:ProfilingProlog(a)
+            this:ProfilingProlog(b or a)
             local ret = {oldfunc(...)}
             this:ProfilingEpilog()
             return unpack(ret)
@@ -107,11 +108,13 @@ function LibProfiling:ProfileFunction(a, b)
             self[a] = oldfunc
         end
         self[a] = newfunc
-    elseif type(a) == 'table' and type(b) == 'string' then -- MyAddon:ProfileFunction(AnotherTable, 'AnotherTableFunction')
+    elseif type(a) == 'table' and type(b) == 'string' then
+        -- MyAddon:ProfileFunction(AnotherTable, 'AnotherTableFunction') / MyAddon:ProfileFunction(AnotherTable, 'AnotherTableFunction', 'MyFunctionLoggedName')
+        c = type(c) == 'string' and c or b
         if not self.profiling.enabled then return end
         local oldfunc = a[b]
         local newfunc = function(...)
-            this:ProfilingProlog(b)
+            this:ProfilingProlog(c)
             local ret = {oldfunc(...)}
             this:ProfilingEpilog()
             return unpack(ret)
@@ -120,11 +123,13 @@ function LibProfiling:ProfileFunction(a, b)
             a[b] = oldfunc
         end
         a[b] = newfunc
-    elseif type(a) == 'string' and type(b) == 'function' then -- myNewFunc = MyAddon:ProfileFunction('myFunc', myOriginalFunc)
+    elseif type(a) == 'string' and type(b) == 'function' then
+        -- myNewFunc = MyAddon:ProfileFunction('myFunc', myOriginalFunc) / MyAddon:ProfileFunction('myFunc', myOriginalFunc, 'MyFunctionLoggedName')
+        c = type(c) == 'string' and c or a
         if not self.profiling.enabled then return b end
         local oldfunc = b
         local newfunc = function(...)
-            this:ProfilingProlog(a)
+            this:ProfilingProlog(c)
             local ret = {oldfunc(...)}
             this:ProfilingEpilog()
             return unpack(ret)

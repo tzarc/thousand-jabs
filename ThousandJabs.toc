@@ -23,10 +23,13 @@ LibUnitCache-1.0.lua
 
 Base.lua
 Main.lua
+SpellData.lua
 Events.lua
 UI.lua
 ActionProfileLists.xml
 Profile-APLParser.lua
-Profile-Generic.lua
-Profile-Monk.lua
-Profile-DemonHunter.lua
+Profile-Base.lua
+Profile-Common.lua
+State.lua
+Class-Monk.lua
+Class-DemonHunter.lua

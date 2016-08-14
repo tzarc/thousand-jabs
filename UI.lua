@@ -1,8 +1,5 @@
-local _, X = ...;
-local Z = X.Z
-local DBG = X.DBG
-local tcache = X.tcache
-local DB = X.DB
+local addonName, internal = ...;
+local Z = internal.Z
 
 -- Frames
 local actionsFrame = nil
