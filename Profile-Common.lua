@@ -31,7 +31,7 @@ internal.baseEnvironment = {
 internal.commonData = {
     -- Waiting for abilities...
     wait = {
-        icon = "Interface\\Icons\\spell_holy_borrowedtime",
+        Icon = "Interface\\Icons\\spell_holy_borrowedtime",
         spell_cast_time = 1,
         perform_cast = function(spell,env) end,
     },
