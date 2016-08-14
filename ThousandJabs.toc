@@ -1,7 +1,6 @@
 ## Interface: 70000
 ## Title: ThousandJabs
 ## Notes: Simulationcraft -> In-game rotation
-
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat

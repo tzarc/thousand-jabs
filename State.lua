@@ -11,7 +11,9 @@ function Z:CreateNewState(numTargets)
     if not profile then return end
 
     -- Set up the state and associate a profile with it
-    local state = Z:MissingFieldTable("state{"..profile.name.."}", {})
+    local state = Z:MissingFieldTable("state{"..profile.name.."}", {
+        last_cast_times = {}
+    })
 
     -- Set up an environment table for calling the condition functions
     state.env_base = Z:MissingFieldTable("state{"..profile.name.."}.env", {})
@@ -63,12 +65,43 @@ function Z:CreateNewState(numTargets)
         end
     end
 
-    prev_gcd = setmetatable({}, { __index = function(tbl,idx) return false end })
+    prev_gcd = setmetatable({}, {
+        __index = function(tbl,idx)
+            local k,v
+            -- find the last cast ability
+            local lastTime, lastAbility = 0, nil
+            for k,v in pairs(state.last_cast_times) do
+                if v > lastTime then
+                    lastAbility = k
+                    lastTime = v
+                end
+            end
+
+            -- find the matching ability
+            local matchingAbility = nil
+            for k,v in pairs(profile.actions) do
+                local abilityID = rawget(v, 'AbilityID')
+                if abilityID and abilityID == lastAbility then
+                    matchingAbility = k
+                    break
+                end
+            end
+
+            -- Signal if it was the last cast ability
+            return idx == matchingAbility and true or false
+        end
+    })
 
     -- Helper for cleaning a state
     function state:Reset()
 
         state.env.prev_gcd = nil
+
+        -- Copy over the last cast times for the state so that we're not writing to the global state instead
+        wipe(state.last_cast_times)
+        for k,v in pairs(Z.lastCastTime) do
+            state.last_cast_times[k] = v
+        end
 
         -- Clear out the environment and reset to initial values
         for k,v in pairs(state.env) do
@@ -104,8 +137,6 @@ function Z:CreateNewState(numTargets)
                     v.rechargeSpent = 0
                 end
 
-                --if rawget(entry, 'AuraID') and entry.AuraID == 137639 then DevTools_Dump{[entry.Name]=v, entry=entry, aura=LUC:GetAura(entry.AuraUnit, entry.AuraID, entry.AuraMine)} end
-
             else
                 state.env[k] = nil
             end
@@ -130,11 +161,8 @@ function Z:CreateNewState(numTargets)
     -- Base action prediction for the current time, or just after the current cast finishes
     function state:PredictNextAction()
 
-        -- Attempt to work out the cooldown frame
-        local gcd_ability = type(profile.config.gcd_ability) == 'string'
-                                        and profile.actions[profile.config.gcd_ability].AbilityID
-                                        or profile.config.gcd_ability
-        local start, duration = GetSpellCooldown(gcd_ability)
+        -- Attempt to work out when we can next cast something, based off the gcd
+        local start, duration = GetSpellCooldown(61304)
 
         -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
         local cname, _, _, cicon, cstart, cend = UnitCastingInfo('player')
@@ -163,14 +191,12 @@ function Z:CreateNewState(numTargets)
 
         local act = state.env[action]
         if act then
-            -- Pretend we just casted the supplied action
+            -- Pretend we just casted the supplied action, update the last cast time for this ability
             if rawget(act, 'AbilityID') then
-                Z.lastCastTime[act.AbilityID] = state.env.predictionOffset
+                state.last_cast_times[act.AbilityID] = state.env.predictionOffset
             end
-
             -- Perform the cast of the supplied action
             profile.actions[action].perform_cast(act, state.env)
-
             -- Work out the new prediction offset given its cast time
             local newOffset = state.env.predictionOffset + act.spell_cast_time
             -- Predict the next action

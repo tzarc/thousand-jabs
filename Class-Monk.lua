@@ -54,7 +54,6 @@ Z:RegisterPlayerClass({
     class_id = 10,
     spec_id = 1,
     action_profile = 'dummy::PrePatch::Monk_Brewmaster',
-    gcd_ability = 'tiger_palm',
     resources = { 'energy' },
     actions = {
         brewmaster_base_overrides,
@@ -83,6 +82,9 @@ local windwalker_base_overrides = {
                 env.bok_proc.expirationTime = 0                  -- remove the buff
             end
         end,
+    },
+    fists_of_fury = {
+        spell_cast_time = function(spell,env) return env.playerHasteMultiplier * 4 end, -- seems like we can't detect this...
     },
     energizing_elixir = {
         PerformCast = function(spell, env)
@@ -145,7 +147,6 @@ Z:RegisterPlayerClass({
     class_id = 10,
     spec_id = 3,
     action_profile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
-    gcd_ability = 'tiger_palm',
     resources = { 'energy', 'chi' },
     actions = {
         windwalker_base_overrides,

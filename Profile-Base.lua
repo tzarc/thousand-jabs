@@ -85,9 +85,19 @@ function Z:RegisterPlayerClass(config)
                 local spell_can_cast_funcsrc = '(env.player_level >= '..GetSpellLevelLearned(v.AbilityID)..')'
                 local perform_cast_funcsrc = ''
 
-                -- TODO: If the supplied action doesn't have a cast time, then we should default to using the GCD. Set to 1 at this point.
+                -- Work out the cast time based off the spell info, or the GCD
                 if not rawget(v, 'spell_cast_time') then
-                    v.spell_cast_time = 1 -- select(4, GetSpellInfo(v.AbilityID)) / 1000.0
+                    local castTime = select(4, GetSpellInfo(v.AbilityID))
+                    if castTime and castTime > 0 then
+                        v.spell_cast_time = function(spell, env)
+                            return select(4, GetSpellInfo(v.AbilityID)) / 1000.0
+                        end
+                    else
+                        v.spell_cast_time = function(spell, env)
+                            local gcd = Z.currentGCD * env.playerHasteMultiplier
+                            return (gcd > 1) and gcd or 1
+                        end
+                    end
                 end
 
                 -- Get the resource cost

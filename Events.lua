@@ -96,6 +96,8 @@ function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spel
     if unitID == 'player' then
         -- Keep track of the last cast made
         Z.lastCastTime[spellID] = GetTime()
+        -- Update the GCD amount if possible
+        Z:TryDetectUpdateGlobalCooldown(spellID)
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
     end
@@ -145,11 +147,7 @@ function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCa
             self:QueueUpdate()
         elseif combatEvent == 'SPELL_CAST_SUCCESS' then
             if sourceGUID == playerGUID then
-                --[[
-                -- Save the last cast
-                lastCastTime = GetTime()
-                lastCastSpellID = arg12
-                ]]
+                -- Queue a screen update
                 self:QueueUpdate()
             end
         end

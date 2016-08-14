@@ -13,7 +13,7 @@ local playerGUID, targetGUID = nil, nil
 local forceUpdatePlayer, forceUpdateTarget = nil, nil
 
 -- Timer update
-local queuedScreenUpdateTime = 0.1   -- seconds
+local queuedScreenUpdateTime = 0.05   -- seconds
 local watchdogScreenUpdateTime = 0.5 -- seconds
 local queuedUpdateTimer = nil
 local watchdogUpdateTimer = nil
@@ -109,11 +109,8 @@ function Z:PerformUpdate()
     if self.currentProfile then
         self:ExecuteAllActionProfiles()
 
-        -- Attempt to work out the cooldown frame, based off Jab
-        local gcd_ability = type(self.currentProfile.config.gcd_ability) == 'string'
-                                    and self.currentProfile.actions[self.currentProfile.config.gcd_ability].AbilityID
-                                    or self.currentProfile.config.gcd_ability
-        local start, duration = GetSpellCooldown(gcd_ability)
+        -- Attempt to work out the cooldown frame, based off the GCD
+        local start, duration = GetSpellCooldown(61304)
 
         -- ....unless we're currently channeling something (i.e. fists of fury), in which case use the rest of its channel time
         local channelName, _, _, channelIcon, channelStart, channelEnd = UnitChannelInfo('player')
@@ -160,6 +157,9 @@ function Z:GetActiveProfile()
 end
 
 function Z:ActivateProfile()
+    -- Set up a base GCD, this will change during combat
+    self.currentGCD = 1
+
     -- Find a profile based on current class/spec
     self.currentProfile = self:GetActiveProfile()
 
@@ -342,8 +342,21 @@ function Z:OnDisable()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
--- Incoming damage tracking
+-- GCD detection, incoming damage tracking
 ------------------------------------------------------------------------------------------------------------------------
+
+function Z:TryDetectUpdateGlobalCooldown(lastCastSpellID)
+    -- Work out the current GCD
+    local spellCD = GetSpellBaseCooldown(lastCastSpellID or 0)
+    if spellCD and spellCD == 0 then
+        local start, duration = GetSpellCooldown(61304)
+        if duration and duration > 0 then
+            local playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
+            local gcd = duration / playerHasteMultiplier
+            self.currentGCD = (gcd > 1) and gcd or 1
+        end
+    end
+end
 
 function Z:GetIncomingDamage(timestamp, secs)
     local toDelete = LTC:Acquire()
