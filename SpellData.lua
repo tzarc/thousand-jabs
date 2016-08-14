@@ -1,6 +1,28 @@
 local addonName, internal = ...;
 local Z = internal.Z
 local formatHelper = internal.formatHelper
+local GUI = LibStub("AceGUI-3.0")
+
+------------------------------------------------------------------------------------------------------------------------
+-- Miscellaneous functions
+------------------------------------------------------------------------------------------------------------------------
+
+local function orderedpairs(t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0
+    local iter = function ()
+        i = i + 1
+        local k = a[i]
+        if k == nil then
+            return nil
+        else
+            return k, t[k]
+        end
+    end
+    return iter
+end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Spellbook iteration
@@ -84,6 +106,7 @@ end
 -- Retrieve all abilities from the spellbook
 ------------------------------------------------------------------------------------------------------------------------
 
+local definedAbilities = {}
 function Z:DetectAbilitiesFromSpellBook()
     local abilities = {}
 
@@ -113,8 +136,55 @@ function Z:DetectAbilitiesFromSpellBook()
         end
     end
 
+    -- Merge the abilities with the full list, so that we can export later on
+    for k,v in pairs(abilities) do
+        for k2,v2 in pairs(v) do
+            definedAbilities[k] = definedAbilities[k] or {}
+            definedAbilities[k][k2] = v2
+        end
+    end
+
     return abilities
 end
+
+function Z:ExportAbilitiesFromSpellBook()
+    -- Build the string
+    local export = ''
+    local addline = function(...)
+        export = formatHelper("%s\n%s", export, formatHelper(...))
+    end
+
+    -- Ability IDs
+    addline("-- exported with /tj _esd")
+    addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
+    for k,v in orderedpairs(definedAbilities) do
+        local line = formatHelper('    %s = { ', k)
+        if v.AbilityID then line = line .. formatHelper('AbilityID = %d, ', v.AbilityID) end
+        if v.TalentIDs then line = line .. formatHelper('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
+        line = line .. '},'
+        addline(line)
+    end
+    addline("}")
+    addline("")
+
+    DevTools_Dump{abilities=definedAbilities}
+
+    -- Show the export window
+    local f = GUI:Create("Frame")
+    f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
+    f:SetTitle(addonName .. ' Actions Data Export')
+    f:SetLayout("Fill")
+
+    local edit = GUI:Create("MultiLineEditBox")
+    edit:SetLabel("")
+    edit:SetText(export)
+    edit:DisableButton(true)
+    f:AddChild(edit)
+
+    -- Reset the table, so we can change spec
+    definedAbilities = {}
+end
+
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Spell info from tooltip

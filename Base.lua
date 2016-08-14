@@ -188,7 +188,11 @@ function Z:MergeTables(...)
         local idx = #t-i+1
         if t[idx] then
             for k,v in pairs(t[idx]) do
-                if not target[k] then target[k] = v end
+                if type(target[k]) == 'table' and type(v) == 'table' then
+                    target[k] = self:MergeTables(target[k], v)
+                elseif not target[k] then
+                    target[k] = v
+                end
             end
         end
     end
@@ -241,6 +245,8 @@ function Z:ConsoleCommand(args)
     elseif args == '_mem' then
         UpdateAddOnMemoryUsage()
         self:Print('Memory usage: %d kB', GetAddOnMemoryUsage(addonName))
+    elseif args == '_esd' then
+        Z:ExportAbilitiesFromSpellBook()
     else
       self:Print('%s chat commands:', addonName)
       self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")

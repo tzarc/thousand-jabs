@@ -43,6 +43,54 @@ actions.aoe+=/death_and_decay
 actions.aoe+=/heart_strike
 ]]
 
+-- exported with /tj _esd
+local blood_abilities_exported = {
+    antimagic_barrier = { TalentIDs = { 3, 3 }, },
+    antimagic_shell = { AbilityID = 48707, },
+    asphyxiate = { AbilityID = 221562, },
+    auto_attack = { AbilityID = 6603, },
+    blood_boil = { AbilityID = 50842, },
+    blood_mirror = { AbilityID = 206977, TalentIDs = { 7, 2 }, },
+    blood_tap = { AbilityID = 221699, TalentIDs = { 3, 2 }, },
+    blooddrinker = { AbilityID = 206931, TalentIDs = { 1, 3 }, },
+    bloodworms = { TalentIDs = { 1, 1 }, },
+    bonestorm = { AbilityID = 194844, TalentIDs = { 7, 1 }, },
+    consumption = { AbilityID = 205223, },
+    control_undead = { AbilityID = 111673, },
+    dancing_rune_weapon = { AbilityID = 49028, },
+    dark_command = { AbilityID = 56222, },
+    death_and_decay = { AbilityID = 43265, },
+    death_gate = { AbilityID = 50977, },
+    death_grip = { AbilityID = 49576, },
+    death_strike = { AbilityID = 49998, },
+    deaths_caress = { AbilityID = 195292, },
+    foul_bulwark = { TalentIDs = { 6, 3 }, },
+    gift_of_the_naaru = { AbilityID = 59545, },
+    gorefiends_grasp = { AbilityID = 108199, },
+    heart_strike = { AbilityID = 206930, },
+    heartbreaker = { TalentIDs = { 1, 2 }, },
+    march_of_the_damned = { TalentIDs = { 5, 3 }, },
+    mark_of_blood = { AbilityID = 206940, TalentIDs = { 4, 1 }, },
+    marrowrend = { AbilityID = 195182, },
+    mind_freeze = { AbilityID = 47528, },
+    ossuary = { TalentIDs = { 3, 1 }, },
+    path_of_frost = { AbilityID = 3714, },
+    purgatory = { TalentIDs = { 7, 3 }, },
+    raise_ally = { AbilityID = 61999, },
+    rapid_decomposition = { TalentIDs = { 2, 1 }, },
+    red_thirst = { TalentIDs = { 4, 2 }, },
+    rune_tap = { AbilityID = 194679, TalentIDs = { 6, 2 }, },
+    runeforging = { AbilityID = 53428, },
+    soulgorge = { AbilityID = 212744, TalentIDs = { 2, 2 }, },
+    spectral_deflection = { TalentIDs = { 2, 3 }, },
+    tightening_grasp = { TalentIDs = { 5, 1 }, },
+    tombstone = { AbilityID = 219809, TalentIDs = { 4, 3 }, },
+    tremble_before_me = { TalentIDs = { 5, 2 }, },
+    vampiric_blood = { AbilityID = 55233, },
+    will_of_the_necropolis = { TalentIDs = { 6, 1 }, },
+    wraith_walk = { AbilityID = 212552, },
+}
+
 local blood_base_abilities = {
     blood_boil = {
         AuraApplied = 'blood_plague',
@@ -83,6 +131,7 @@ Z:RegisterPlayerClass({
     gcd_ability = 'death_strike',
     resources = { 'rune', 'runic_power' },
     actions = {
+        blood_abilities_exported,
         blood_base_abilities,
     },
     blacklisted = {},

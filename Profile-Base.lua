@@ -7,7 +7,7 @@ local tcontains = tContains
 
 function Z:RegisterPlayerClass(config)
 
-    local k,v,k2,v2
+    local k,v,k1,v1,k2,v2
 
     local config = config
     local blacklisted = {}
@@ -31,25 +31,39 @@ function Z:RegisterPlayerClass(config)
     function profile:Activate()
 
         -- Construct the total actions table, including resources and base actions
-        profile.actions = Z:MissingFieldTable(config.name, Z:MergeTables(internal.commonData, resources, unpack(config.actions)))
+        profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
+        local actions = profile.actions
 
         -- Parse the APL for this class
         profile.parsedActions = profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
 
         -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
-        local actions = profile.actions
-        local guessedAbilities = Z:DetectAbilitiesFromSpellBook()
-        for k,v in pairs(guessedAbilities) do
-            if rawget(actions, k) then
-                for k2,v2 in pairs(v) do
-                    if not rawget(actions[k], k2) then
-                        actions[k][k2] = v2
-                    end
+        profile.guessed = Z:DetectAbilitiesFromSpellBook()
+        local guessed = profile.guessed
+
+        -- Loop through each of the guessed abilities, and attempt to match up the AbilityID or the TalentIDs
+        for k1,v1 in pairs(guessed) do
+            for k2,v2 in pairs(actions) do
+                local match = false
+                -- Match against ability
+                local a1, a2 = rawget(v1, 'AbilityID'), rawget(v2, 'AbilityID')
+                if a1 and a2 and a1 == a2 then
+                    match = true
                 end
-            else
-                actions[k] = v
+                -- Match against talents
+                a1, a2 = rawget(v1, 'TalentIDs'), rawget(v2, 'TalentIDs')
+                if a1 and a2 and a1[1] == a2[1] and a1[2] == a2[2] then
+                    match = true
+                end
+                -- We got a match, merge the tables
+                if match then
+                    actions[k2] = Z:MergeTables(v2, v1)
+                end
             end
         end
+
+        -- Show errors if we're missing anything...
+        actions = Z:MissingFieldTable(profile.name, actions)
 
         -- Construct the blacklisted
         wipe(blacklisted)
