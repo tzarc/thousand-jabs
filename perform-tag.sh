@@ -12,7 +12,7 @@ bump_lib() {
 if [[ -z $1 ]] ; then
     LATEST_TAG=$(git tag | grep -v '^v' | sort | tail -n1)
     TAG_HI=$(echo $LATEST_TAG | cut -d'.' -f1)
-    TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2)
+    TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g')
     TAG_LO=$(($TAG_LO + 1))
     NEW_TAG="$(printf "%d.%02d" ${TAG_HI} ${TAG_LO})"
 else
