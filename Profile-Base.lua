@@ -46,18 +46,19 @@ function Z:RegisterPlayerClass(config)
             for k2,v2 in pairs(actions) do
                 local match = false
                 -- Match against ability
-                local a1, a2 = rawget(v1, 'AbilityID'), rawget(v2, 'AbilityID')
+                local a1, a2 = v1.AbilityID, rawget(v2, 'AbilityID')
                 if a1 and a2 and a1 == a2 then
                     match = true
                 end
                 -- Match against talents
-                a1, a2 = rawget(v1, 'TalentIDs'), rawget(v2, 'TalentIDs')
+                a1, a2 = v1.TalentIDs, rawget(v2, 'TalentIDs')
                 if a1 and a2 and a1[1] == a2[1] and a1[2] == a2[2] then
                     match = true
                 end
                 -- We got a match, merge the tables
                 if match then
                     actions[k2] = Z:MergeTables(v2, v1)
+                    actions[k2].in_spellbook = v1.AbilityID and true or false
                 end
             end
         end
@@ -95,8 +96,13 @@ function Z:RegisterPlayerClass(config)
             -- Determine the ability-specific information, if we can cast the current action
             if type(v) == 'table' and rawget(v, 'AbilityID') then
 
+                -- If we have an AbilityID specified, but in_spellbook isn't set, then make sure it's set to false (i.e. it's defined in the profile, but it's not in the current spellbook)
+                if not rawget(v, 'in_spellbook') then
+                    v.in_spellbook = false
+                end
+
                 -- Start constructing the spell_can_cast() and perform_cast() functions
-                local spell_can_cast_funcsrc = '(env.player_level >= '..GetSpellLevelLearned(v.AbilityID)..')'
+                local spell_can_cast_funcsrc = '(env.player_level >= '..GetSpellLevelLearned(v.AbilityID)..') and (spell.in_spellbook == true)'
                 local perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD
