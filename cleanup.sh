@@ -1,7 +1,7 @@
 #!/bin/bash
 find . -type f -exec chmod -x "{}" \;
 chmod +x *.sh
-for file in *.toc *.lua *.xml *.sh ; do
+for file in *.toc *.lua *.sh ActionProfileLists/*.xml ActionProfileLists/*.lua Classes/*.xml Classes/*.lua ; do
     dos2unix $file
     chmod -x $file
     sed -i 's/[ \t]*$//' $file

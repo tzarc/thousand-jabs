@@ -20,7 +20,7 @@ append_action_profiles_from_dir() {
     BRANCH=$1
     TIER_DIR="$(readlink -f "$2")"
     CLASS=$3
-    OUTFILE="ActionProfileLists-${CLASS}.lua"
+    OUTFILE="ActionProfileLists/ActionProfileLists-${CLASS}.lua"
     [[ ! -f ${OUTFILE} ]] && create_apl_file ${OUTFILE}
     OIFS=$IFS
     IFS=$'\r\n'
@@ -63,7 +63,7 @@ append_action_profiles_from_branch() {
     IFS=$OIFS
 }
 
-gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) -delete
+gfind ./ActionProfileLists/ -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) -delete
 
 for tier in Tier19P Tier19H legion ; do
     for class in Death_Knight Demon_Hunter Druid Hunter Mage Monk Paladin Priest Rogue Shaman Warlock Warrior ; do
@@ -71,12 +71,19 @@ for tier in Tier19P Tier19H legion ; do
     done
 done
 
-echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > ActionProfileLists.xml
-echo '..\FrameXML\UI.xsd">' >> ActionProfileLists.xml
-for file in $(gfind . -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' -or -iname 'Class-*.lua' \) | sort) ; do
-    echo "    <Script file=\"$(basename "${file}")\"/>" >> ActionProfileLists.xml
+echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > ActionProfileLists/all.xml
+echo '..\FrameXML\UI.xsd">' >> ActionProfileLists/all.xml
+for file in $(gfind ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname 'ActionProfileLists-*.lua' \) | sort) ; do
+    echo "    <Script file=\"$(basename "${file}")\"/>" >> ActionProfileLists/all.xml
 done
-echo '</Ui>' >> ActionProfileLists.xml
+echo '</Ui>' >> ActionProfileLists/all.xml
+
+echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > Classes/all.xml
+echo '..\FrameXML\UI.xsd">' >> Classes/all.xml
+for file in $(gfind Classes -mindepth 1 -maxdepth 1 \( -iname 'Class-*.lua' \) | sort) ; do
+    echo "    <Script file=\"$(basename "${file}")\"/>" >> Classes/all.xml
+done
+echo '</Ui>' >> Classes/all.xml
 
 
 ./cleanup.sh

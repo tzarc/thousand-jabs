@@ -4,6 +4,7 @@ local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
+local fmt = internal.fmt
 
 function Z:RegisterPlayerClass(config)
 
@@ -63,6 +64,9 @@ function Z:RegisterPlayerClass(config)
             end
         end
 
+        -- Set up the hooks table so that we don't log errors if they're not present in the profile
+        if not actions.hooks then actions.hooks = {} end
+
         -- Show errors if we're missing anything...
         actions = Z:MissingFieldTable(profile.name, actions)
 
@@ -102,7 +106,7 @@ function Z:RegisterPlayerClass(config)
                 end
 
                 -- Start constructing the spell_can_cast() and perform_cast() functions
-                local spell_can_cast_funcsrc = '(env.player_level >= '..GetSpellLevelLearned(v.AbilityID)..') and (spell.in_spellbook == true)'
+                local spell_can_cast_funcsrc = fmt('(env.player_level >= %d) and (spell.in_spellbook == true)', GetSpellLevelLearned(v.AbilityID))
                 local perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD
@@ -129,8 +133,8 @@ function Z:RegisterPlayerClass(config)
                     if not rawget(v, costType..'_cost') then
                         v[costType..'_cost'] = costBase
                     end
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (env.'..costType..'.curr >= spell.'..costType..'_cost)'
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; env.'..costType..'.spent = env.'..costType..'.spent + spell.'..costType..'_cost'
+                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. fmt(' and (env.%s.can_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost))', costType, costType, k, costType, costType)
+                    perform_cast_funcsrc = perform_cast_funcsrc .. fmt('; env.%s.perform_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost)', costType, costType, k, costType, costType)
                 end
 
                 -- Get the cooldown
@@ -187,7 +191,7 @@ function Z:RegisterPlayerClass(config)
 
                 -- Update the perform_cast function if an aura is supposed to be applied
                 if rawget(v, 'AuraApplied') then
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; env.'..v.AuraApplied..'.expirationTime = env.currentTime + '..v.AuraApplyLength
+                    perform_cast_funcsrc = perform_cast_funcsrc .. fmt('; env.%s.expirationTime = env.currentTime + %d', v.AuraApplied, v.AuraApplyLength)
                 end
 
                 -- Update the perform_cast function if there's a spell-specific function in the supplied table
@@ -196,14 +200,14 @@ function Z:RegisterPlayerClass(config)
                 end
 
                 -- Load the spell_can_cast function
-                spell_can_cast_funcsrc = 'return function(spell, env) return ((' .. spell_can_cast_funcsrc:gsub('^ and ', '') .. ') and true or false) end'
+                spell_can_cast_funcsrc = fmt('return function(spell, env) return ((%s) and true or false) end', spell_can_cast_funcsrc:gsub('^ and ', ''))
                 v.spell_can_cast = Z:LoadFunctionString(spell_can_cast_funcsrc, k..':spell_can_cast')
-                -- v.spell_can_cast_funcsrc = spell_can_cast_funcsrc
+                if internal.devMode then v.spell_can_cast_funcsrc = spell_can_cast_funcsrc end
 
                 -- Load the perform_cast function
-                perform_cast_funcsrc = 'return function(spell, env) ' .. perform_cast_funcsrc:gsub('^; ', '') .. ' end'
+                perform_cast_funcsrc = fmt('return function(spell, env) %s end', perform_cast_funcsrc:gsub('^; ', ''))
                 v.perform_cast = Z:LoadFunctionString(perform_cast_funcsrc, k..':perform_cast')
-                -- v.perform_cast_funcsrc = perform_cast_funcsrc
+                if internal.devMode then v.perform_cast_funcsrc = perform_cast_funcsrc end
 
             end
 
@@ -227,11 +231,8 @@ function Z:RegisterPlayerClass(config)
                 actions[k] = actions[v]
             end
         end
-
     end
 
     function profile:Deactivate()
     end
-
-    self:Print("Activated profile %s", profile.name)
 end

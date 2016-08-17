@@ -11,15 +11,18 @@ function Z:CreateNewState(numTargets)
     if not profile then return end
 
     -- Set up the state and associate a profile with it
-    local state = Z:MissingFieldTable("state{"..profile.name.."}", {
-        last_cast_times = {}
-    })
+    local state = Z:MissingFieldTable("state{"..profile.name.."}", {})
+
+    -- Keep track of the last cast times
+    local last_cast_times = {}
+    state.last_cast_times = last_cast_times
 
     -- Set up an environment table for calling the condition functions
-    state.env_base = Z:MissingFieldTable("state{"..profile.name.."}.env", {})
+    local env_base = {}
     for k,v in pairs(internal.baseEnvironment) do
-        state.env_base[k] = v
+        env_base[k] = v
     end
+    state.env_base = Z:MissingFieldTable("state{"..profile.name.."}.env", env_base)
 
     -- Set up a proxy table which correctly calls functions to retrieve data instead
     state.env = setmetatable({}, {
@@ -51,6 +54,11 @@ function Z:CreateNewState(numTargets)
         if type(v) == 'table' then
             state.env[k] = setmetatable({}, {
                 __index = function(entry, idx)
+
+                    if idx == 'hooks' or idx == 'can_spend' or idx == 'perform_spend' then
+                        return rawget(v, idx) -- allow function calls to the base table ONLY for these keys
+                    end
+
                     -- Forward to the profile table
                     local e = v[idx]
                     if type(e) == 'function' then
@@ -65,17 +73,19 @@ function Z:CreateNewState(numTargets)
         end
     end
 
-    prev_gcd = setmetatable({}, {
+    local prev_gcd = setmetatable({}, {
         __index = function(tbl,idx)
             local k,v
             -- find the last cast ability
             local lastTime, lastAbility = 0, nil
-            for k,v in pairs(state.last_cast_times) do
+            for k,v in pairs(last_cast_times) do
                 if v > lastTime then
                     lastAbility = k
                     lastTime = v
                 end
             end
+
+            if lastTime + ((self.currentGCD or 1)*1.5) < state.env.currentTime then return false end -- if we've gone through at least 1.5 gcd's with no ability spent, reset everything
 
             -- find the matching ability
             local matchingAbility = nil
@@ -98,9 +108,9 @@ function Z:CreateNewState(numTargets)
         state.env.prev_gcd = nil
 
         -- Copy over the last cast times for the state so that we're not writing to the global state instead
-        wipe(state.last_cast_times)
+        wipe(last_cast_times)
         for k,v in pairs(Z.lastCastTime) do
-            state.last_cast_times[k] = v
+            last_cast_times[k] = v
         end
 
         -- Clear out the environment and reset to initial values
@@ -192,9 +202,7 @@ function Z:CreateNewState(numTargets)
         local act = state.env[action]
         if act then
             -- Pretend we just casted the supplied action, update the last cast time for this ability
-            if rawget(act, 'AbilityID') then
-                state.last_cast_times[act.AbilityID] = state.env.predictionOffset
-            end
+            last_cast_times[act.AbilityID] = state.env.currentTime
             -- Perform the cast of the supplied action
             profile.actions[action].perform_cast(act, state.env)
             -- Work out the new prediction offset given its cast time
@@ -236,7 +244,7 @@ function Z:CreateNewState(numTargets)
             -- Validate that it isn't blacklisted, and there's a valid check function
             if tcontains(profile.blacklisted, action.name) then
 
-                DBG("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
+                -- DBG("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
 
             elseif action.check then -- We have a valid check function
 

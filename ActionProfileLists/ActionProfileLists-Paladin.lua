@@ -10,6 +10,12 @@ actions+=/spell_nuke,damage=3000000,cooldown=30
 actions+=/spell_dot,damage=50000,cooldown=20
 ]]
 
+internal.apls["legion-dev::Tier19P::Paladin_Protection_T19P"] = [[
+actions=auto_attack,damage=3300000,range=1000000,attack_speed=1.5
+actions+=/spell_nuke,damage=3000000,cooldown=30
+actions+=/spell_dot,damage=50000,cooldown=20
+]]
+
 internal.apls["legion-dev::Tier19P::Paladin_Retribution_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_countless_armies
 actions.precombat+=/food,type=azshari_salad

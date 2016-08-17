@@ -171,7 +171,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 -- Work out the base condition string in the APL, as well as a cast validation check
                 local condition = paramIf
                 if actionName ~= "call_action_list" and actionName ~= "run_action_list" then
-                    condition = format("(spell.%s.can_cast=true)&(%s)", actionName, condition)
+                    condition = format("(spell.%s.can_cast)&(%s)", actionName, condition)
                 else
                     entry.list = paramName
                 end
@@ -214,7 +214,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                     end
 
                     -- Save the actual condition string
-                    entry.condition = condition
+                    entry.condition = condition:gsub('%( ','('):gsub(' %)',')')
 
                     -- Return the result of the conditional and compile
                     local conditionFunctionSource = "return function() return (" .. condition .. ") end"

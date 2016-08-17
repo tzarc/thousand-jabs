@@ -21,7 +21,7 @@ local LSM = LibStub('LibSharedMedia-3.0')
 
 local devMode = false
 internal.devMode = devMode
-Z:EnableProfiling(devMode)
+Z:EnableProfiling(false and devMode)
 Z:ProfileFunction(LUC, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 if devMode then _G['tj'] = Z end
 
@@ -36,18 +36,18 @@ local dbglist = {}
 -- Printing and debug functions
 ------------------------------------------------------------------------------------------------------------------------
 
-function internal.formatHelper(fmt, ...)
+function internal.fmt(fmt, ...)
     return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
 end
-local formatHelper = internal.formatHelper
+local fmt = internal.fmt
 
 local oldprint = Z.Print
 function Z:Print(...)
-    oldprint(self, formatHelper(...))
+    oldprint(self, fmt(...))
 end
 
 function Z:PrintOnce(...)
-    local text = formatHelper(...)
+    local text = fmt(...)
     if not printedOnce[text] then
         printedOnce[text] = true
         self:Print(text)
@@ -55,7 +55,7 @@ function Z:PrintOnce(...)
 end
 
 function Z:Debug(...)
-    if self.DB.do_debug then self:Print(formatHelper(...)) end
+    if self.DB.do_debug then self:Print(fmt(...)) end
 end
 
 function Z:SetDebug(s)
@@ -87,7 +87,7 @@ end
 function internal.DBG(...)
     if Z.DB.do_debug then
         if #dbglist == 0 then dbglist[1] = addonName .. ' Debug log (|cFF00FFFFhide with /'..consoleCommand..' _dbg|r):' end
-        dbglist[1+#dbglist] = formatHelper(...)
+        dbglist[1+#dbglist] = fmt(...)
     end
 end
 

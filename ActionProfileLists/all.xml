@@ -12,8 +12,4 @@
     <Script file="ActionProfileLists-Shaman.lua"/>
     <Script file="ActionProfileLists-Warlock.lua"/>
     <Script file="ActionProfileLists-Warrior.lua"/>
-    <Script file="Class-Death_Knight.lua"/>
-    <Script file="Class-Demon_Hunter.lua"/>
-    <Script file="Class-Monk.lua"/>
-    <Script file="Class-Warrior.lua"/>
 </Ui>

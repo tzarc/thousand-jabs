@@ -13,6 +13,7 @@ internal.global_blacklisted_abilities = {
     'berserking',
     'bloodlust',
     'arcane_torrent',
+    'use_item',
 }
 
 internal.baseEnvironment = {
@@ -32,6 +33,7 @@ internal.baseEnvironment = {
 internal.commonData = {
     -- Waiting for abilities...
     wait = {
+        AbilityID = 61304, -- GCD
         Icon = "Interface\\Icons\\spell_holy_borrowedtime",
         spell_cast_time = 1,
         perform_cast = function(spell,env) end,
@@ -57,6 +59,43 @@ internal.commonData = {
     },
 }
 
+local function generic_can_spend(power, env, action, costType, costAmount)
+    -- If the profile has a hook present for the action cost, execute that first
+    local h = env.hooks
+    if h then
+        local cb = h.can_spend
+        if cb then
+            local newCostType, newCostAmount = cb(power, env, action, costType, costAmount)
+            if newCostType then
+                if newCostType == 'none' then return true end
+                return (env[newCostType].curr >= newCostAmount) and true or false
+            end
+        end
+    end
+
+    -- No hook, or hook returned nil - act as per normal
+    return (power.curr >= costAmount) and true or false
+end
+
+local function generic_perform_spend(power, env, action, costType, costAmount)
+    -- If the profile has a hook present for the action cost, execute that first
+    local h = env.hooks
+    if h then
+        local cb = h.perform_spend
+        if cb then
+            local newCostType, newCostAmount = cb(power, env, action, costType, costAmount)
+            if newCostType then
+                if newCostType == 'none' then return end
+                env[newCostType].spent = env[newCostType].spent + newCostAmount
+                return
+            end
+        end
+    end
+
+    -- No hook, or hook returned nil - act as per normal
+    power.spent = power.spent + costAmount
+end
+
 internal.resources = {
     energy = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_ENERGY) or 0) end,
@@ -65,8 +104,20 @@ internal.resources = {
         gained = 0,
         curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_ENERGY) or 0) end,
-        time_to_max = function(power, env) return (power.max - power.curr) /power.regen end,
+        time_to_max = function(power, env) return (power.max - power.curr) / power.regen end,
         deficit = function(power,env) return power.max - power.sampled end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
+    },
+    chi = {
+        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_CHI) or 0) end,
+        spent = 0,
+        gained = 0,
+        curr = function(power, env) return power.sampled - power.spent + power.gained end,
+        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_CHI) or 0) end,
+        deficit = function(power,env) return power.max - power.sampled end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     rage = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_RAGE) or 0) end,
@@ -83,14 +134,8 @@ internal.resources = {
         curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent + power.gained end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_RAGE) or 0) end,
         deficit = function(power,env) return power.max - power.sampled end,
-    },
-    chi = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_CHI) or 0) end,
-        spent = 0,
-        gained = 0,
-        curr = function(power, env) return power.sampled - power.spent + power.gained end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_CHI) or 0) end,
-        deficit = function(power,env) return power.max - power.sampled end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     pain = {
         sampled = function(power,env) return (UnitPower('player', SPELL_POWER_PAIN) or 0) end,
@@ -99,6 +144,8 @@ internal.resources = {
         curr = function(power,env) return power.sampled - power.spent + power.gained end,
         max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_PAIN) or 0) end,
         deficit = function(power,env) return power.max - power.sampled end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     fury = {
         sampled = function(power,env) return (UnitPower('player', SPELL_POWER_FURY) or 0) end,
@@ -107,6 +154,8 @@ internal.resources = {
         curr = function(power,env) return power.sampled - power.spent + power.gained end,
         max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_FURY) or 0) end,
         deficit = function(power,env) return power.max - power.sampled end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     soul_fragments = {
         AuraID = 203981,
@@ -114,6 +163,8 @@ internal.resources = {
         AuraMine = true,
         spent = 0,
         curr = function(power, env) return power.aura_stack - power.spent end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     rune = {
         gained = 0,
@@ -142,6 +193,8 @@ internal.resources = {
             end
             return count
         end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
     runic_power = {
         sampled = function(power,env) return (UnitPower('player', SPELL_POWER_RUNIC_POWER) or 0) end,
@@ -149,5 +202,7 @@ internal.resources = {
         spent = 0,
         curr = function(power,env) return power.sampled - power.spent + power.gained + ((env.rune.spent-env.rune.skipped) * 10) end,
         max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_RUNIC_POWER) or 0) end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
     },
 }

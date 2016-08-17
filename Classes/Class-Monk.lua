@@ -176,8 +176,7 @@ local windwalker_base_overrides = {
     blackout_kick = {
         PerformCast = function(spell, env)
             if env.bok_proc.aura_react then
-                env.chi.gained = env.chi.gained + spell.chi_cost -- refund the chi
-                env.bok_proc.expirationTime = 0                  -- remove the buff
+                env.bok_proc.expirationTime = 0 -- remove the buff
             end
         end,
     },
@@ -240,6 +239,21 @@ local windwalker_artifact_overrides = {
     },
 }
 
+local windwalker_hooks = {
+    hooks = {
+        perform_spend = function(spell, env, action, origCostType, origCostAmount)
+            if costType == 'chi' then
+                if env.serenity.aura_remains > 0 then -- if serenity is active, then no chi costs (still need appropriate amount of chi!)
+                    return 'none'
+                elseif action == 'blackout_kick' and env.bok_proc.aura_remains > 0 then -- no spend for BoK when there's a proc
+                    return 'none'
+                end
+            end
+            return origCostType, origCostAmount
+        end,
+    },
+}
+
 Z:RegisterPlayerClass({
     name = 'Windwalker',
     class_id = 10,
@@ -251,6 +265,7 @@ Z:RegisterPlayerClass({
         windwalker_base_overrides,
         windwalker_talent_overrides,
         windwalker_artifact_overrides,
+        windwalker_hooks,
     },
     blacklisted = {},
     simc_mapping = { -- simc_name = "equivalent_parsed_ingame_table_name"

@@ -1,6 +1,6 @@
 local addonName, internal = ...;
 local Z = internal.Z
-local formatHelper = internal.formatHelper
+local fmt = internal.fmt
 local GUI = LibStub("AceGUI-3.0")
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -151,16 +151,16 @@ function Z:ExportAbilitiesFromSpellBook()
     -- Build the string
     local export = ''
     local addline = function(...)
-        export = formatHelper("%s\n%s", export, formatHelper(...))
+        export = fmt("%s\n%s", export, fmt(...))
     end
 
     -- Ability IDs
     addline("-- exported with /tj _esd")
     addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
     for k,v in orderedpairs(definedAbilities) do
-        local line = formatHelper('    %s = { ', k)
-        if v.AbilityID then line = line .. formatHelper('AbilityID = %d, ', v.AbilityID) end
-        if v.TalentIDs then line = line .. formatHelper('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
+        local line = fmt('    %s = { ', k)
+        if v.AbilityID then line = line .. fmt('AbilityID = %d, ', v.AbilityID) end
+        if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
         line = line .. '},'
         addline(line)
     end
@@ -190,7 +190,7 @@ end
 -- Spell info from tooltip
 ------------------------------------------------------------------------------------------------------------------------
 
-local tts = CreateFrame('GameTooltip', formatHelper('%sTooltipScanner', addonName))
+local tts = CreateFrame('GameTooltip', fmt('%sTooltipScanner', addonName))
 local ttsl1 = tts:CreateFontString('$parentTextLeft1', nil, "GameTooltipText")
 local ttsr1 = tts:CreateFontString('$parentTextRight1', nil, "GameTooltipText")
 tts:AddFontStrings(ttsl1, ttsr1)

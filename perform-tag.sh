@@ -19,9 +19,9 @@ else
     NEW_TAG=$1
 fi
 
-bump_lib LibProfiling-1.0.lua
-bump_lib LibTableCache-1.0.lua
-bump_lib LibUnitCache-1.0.lua
+bump_lib Libs/LibProfiling-1.0.lua
+bump_lib Libs/LibTableCache-1.0.lua
+bump_lib Libs/LibUnitCache-1.0.lua
 
 # Update the Version: tag in the toc
 sed -i "s#Version: \([v0-9\.]\+\)#Version: ${NEW_TAG}#" ThousandJabs.toc
