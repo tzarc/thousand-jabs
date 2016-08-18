@@ -128,7 +128,6 @@ Z:RegisterPlayerClass({
     class_id = 6,
     spec_id = 1,
     action_profile = 'dummy::PrePatch::Death_Knight_Blood_PrePatch',
-    gcd_ability = 'death_strike',
     resources = { 'rune', 'runic_power' },
     actions = {
         blood_abilities_exported,

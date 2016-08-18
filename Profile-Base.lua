@@ -29,14 +29,19 @@ function Z:RegisterPlayerClass(config)
     self.profiles[config.class_id] = self.profiles[config.class_id] or {}
     self.profiles[config.class_id][config.spec_id] = profile
 
+    function profile:ParseAPL()
+        -- Parse the APL for this class
+        profile.parsedActions = not internal.devMode and profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
+    end
+
     function profile:Activate()
 
         -- Construct the total actions table, including resources and base actions
         profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
         local actions = profile.actions
 
-        -- Parse the APL for this class
-        profile.parsedActions = profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
+        -- Parse the APL
+        self:ParseAPL()
 
         -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
         profile.guessed = Z:DetectAbilitiesFromSpellBook()
@@ -106,7 +111,7 @@ function Z:RegisterPlayerClass(config)
                 end
 
                 -- Start constructing the spell_can_cast() and perform_cast() functions
-                local spell_can_cast_funcsrc = fmt('(env.player_level >= %d) and (spell.in_spellbook == true)', GetSpellLevelLearned(v.AbilityID))
+                local spell_can_cast_funcsrc = fmt('(env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
                 local perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD
@@ -181,12 +186,12 @@ function Z:RegisterPlayerClass(config)
 
                 -- Update the spell_can_cast function if talents are specified
                 if rawget(v, 'TalentIDs') then
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.talent_selected and true or false)'
+                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.talent_selected)'
                 end
 
                 -- Update the spell_can_cast function if there's a spell-specific function in the supplied table
                 if rawget(v, 'CanCast') then
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.CanCast and true or false)'
+                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.CanCast)'
                 end
 
                 -- Update the perform_cast function if an aura is supposed to be applied
@@ -220,6 +225,14 @@ function Z:RegisterPlayerClass(config)
                 v.aura_remains = function(spell, env)
                     local remains = spell.expirationTime - env.currentTime
                     return (remains > 0) and remains or 0
+                end
+                v.aura_up = function(spell, env)
+                    local remains = spell.expirationTime - env.currentTime
+                    return (remains > 0) and true or false -- hmmmmmmm, APLs like to do arithmetic here
+                end
+                v.aura_down = function(spell, env)
+                    local remains = spell.expirationTime - env.currentTime
+                    return (remains <= 0) and true or false -- hmmmmmmm, APLs like to do arithmetic here
                 end
             end
 

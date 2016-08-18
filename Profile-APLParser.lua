@@ -64,6 +64,7 @@ local conditionalSubstitutions = {
     { " rage ", " rage.curr " },
     { " pain ", " pain.curr " },
     { " rune ", " rune.curr " },
+    { " fury ", " fury.curr " },
     { " runic_power ", " runic_power.curr " },
     { " burning_ember ", " burning_ember.curr " },
     { " soul_fragments ", " soul_fragments.curr " },
@@ -105,8 +106,6 @@ local conditionalSubstitutions = {
     { " cooldown%.([%a%._]+)%.up ", " cooldown.%1.remains == 0 " },
     { " cooldown%.([%a%._]+)%.down ", " cooldown.%1.remains > 0 " },
 
-    { " aura%.([%a%._]+)%.up ", " aura.%1.remains > 0 " },
-    { " aura%.([%a%._]+)%.down ", " aura.%1.remains == 0 " },
     { " aura%.([%a%._]+)%.react ", " aura.%1.react " },
 
     { " spell_targets%.([%a%._]+) ", " spell_targets " },
@@ -115,6 +114,17 @@ local conditionalSubstitutions = {
     { " ([%a_]+)%.([%a_]+)%.([%a_%.]+) ",
         function(a,b,c)
             return format(" %s.%s_%s ", b, a, c:gsub("%.","_"))
+        end
+    },
+
+    { " ([%a_]+)%.([%a_]+) %* ", -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        function(a,b)
+            return format(" (%s.%s and 1 or 0) * ", a, b)
+        end
+    },
+    { " %* ([%a_]+)%.([%a_]+) ", -- handle things like "(9 * mybuff.aura_up)" -> "(9 * (mybuff.aura_up and 1 or 0))"
+        function(a,b)
+            return format(" * (%s.%s and 1 or 0) ", a, b)
         end
     },
 

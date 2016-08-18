@@ -1,18 +1,9 @@
 local _, internal = ...
 internal.apls = internal.apls or {}
 
-internal.apls["legion-dev::Tier19P::Paladin_Prot_T19P"] = [[
-actions.precombat=flask,type=flask_of_ten_thousand_scars
-actions.precombat+=/food,type=seed_battered_fish_plate
-actions.precombat+=/snapshot_stats
-actions=auto_attack,damage=3300000,range=1000000,attack_speed=1.5
-actions+=/spell_nuke,damage=3000000,cooldown=30
-actions+=/spell_dot,damage=50000,cooldown=20
-]]
-
 internal.apls["legion-dev::Tier19P::Paladin_Protection_T19P"] = [[
-actions=auto_attack,damage=3300000,range=1000000,attack_speed=1.5
-actions+=/spell_nuke,damage=3000000,cooldown=30
+actions=auto_attack,damage=1600000,range=1000000,attack_speed=1.5
+actions+=/spell_nuke,damage=1500000,cooldown=30
 actions+=/spell_dot,damage=50000,cooldown=20
 ]]
 

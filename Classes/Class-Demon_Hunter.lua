@@ -157,7 +157,6 @@ Z:RegisterPlayerClass({
     class_id = 12,
     spec_id = 2,
     action_profile = 'legion-dev::Tier19P::Demon_Hunter_Vengeance_T19P',
-    gcd_ability = 'shear',
     resources = { 'pain', 'soul_fragments' },
     actions = {
         vengeance_abilities_exported,
@@ -170,5 +169,146 @@ Z:RegisterPlayerClass({
         { " in_flight ", " infernal_strike.in_flight " },
         { " travel_time ", " 1 " }, -- infernal_strike.travel_time
         { " sigil_placed ", " any_sigil.placed " },
+    },
+})
+
+------------------------------------------------------------------------------------------------------------------------
+-- Havoc profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+local havoc_abilities_exported = {
+    annihilation = { AbilityID = 201427, },
+    arcane_torrent = { AbilityID = 202719, },
+    auto_attack = { AbilityID = 6603, },
+    blade_dance = { AbilityID = 188499, },
+    blind_fury = { TalentIDs = { 1, 3 }, },
+    bloodlet = { TalentIDs = { 3, 3 }, },
+    blur = { AbilityID = 198589, },
+    chaos_blades = { AbilityID = 211048, TalentIDs = { 7, 1 }, },
+    chaos_cleave = { TalentIDs = { 1, 2 }, },
+    chaos_nova = { AbilityID = 179057, },
+    chaos_strike = { AbilityID = 162794, },
+    consume_magic = { AbilityID = 183752, },
+    darkness = { AbilityID = 196718, },
+    demon_blades = { TalentIDs = { 2, 2 }, },
+    demon_reborn = { TalentIDs = { 6, 3 }, },
+    demonic = { TalentIDs = { 7, 3 }, },
+    demonic_appetite = { TalentIDs = { 2, 3 }, },
+    demons_bite = { AbilityID = 162243, },
+    desperate_instincts = { TalentIDs = { 4, 2 }, },
+    eye_beam = { AbilityID = 198013, },
+    fel_barrage = { AbilityID = 211053, TalentIDs = { 7, 2 }, },
+    fel_eruption = { AbilityID = 211881, TalentIDs = { 5, 2 }, },
+    fel_mastery = { TalentIDs = { 1, 1 }, },
+    fel_rush = { AbilityID = 195072, },
+    felblade = { AbilityID = 213241, TalentIDs = { 3, 1 }, },
+    first_blood = { TalentIDs = { 3, 2 }, },
+    fury_of_the_illidari = { AbilityID = 201467, },
+    glide = { AbilityID = 131347, },
+    imprison = { AbilityID = 217832, },
+    master_of_the_glaive = { TalentIDs = { 6, 1 }, },
+    metamorphosis = { AbilityID = 191427, },
+    momentum = { TalentIDs = { 5, 1 }, },
+    nemesis = { AbilityID = 206491, TalentIDs = { 5, 3 }, },
+    netherwalk = { AbilityID = 196555, TalentIDs = { 4, 1 }, },
+    prepared = { TalentIDs = { 2, 1 }, },
+    soul_rending = { TalentIDs = { 4, 3 }, },
+    spectral_sight = { AbilityID = 188501, },
+    throw_glaive = { AbilityID = 185123, },
+    unleashed_power = { TalentIDs = { 6, 2 }, },
+    vengeful_retreat = { AbilityID = 198793, },
+}
+
+local function get_this_spell_damage(spell, env)
+    local str
+    Z:ScanTooltip(internal.fmt('spell:%d', spell.AbilityID), function(t) str = t end, nil, { 255, 210, 0 })
+    if str then
+        local v = strmatch(str, ' (%d+[%.,]%d%d%d) ')
+        v = v:gsub('[^%d]', '') + 0
+        return v
+    end
+    return 0
+end
+
+local havoc_base_overrides = {
+    demons_bite = {
+        fury_gain = 23, -- 20-30, err on the side of caution
+        PerformCast = function(spell, env)
+            env.fury.gained = env.fury.gained + spell.fury_gain
+        end,
+        dmg = get_this_spell_damage, -- /dump tj.st_state.env.demons_bite.dmg
+
+        --[[
+            https://github.com/simulationcraft/simc/wiki/Demon-Hunters
+                demons_bite_per_dance = blade_dance_cost / demons_bite_fury
+                demons_bite_per_chaos_strike = ( chaos_strike_cost - 20 * crit_chance ) / demons_bite_fury
+
+                ( blade_dance_damage + demons_bite_per_dance * demons_bite_damage ) / ( 1 + demons_bite_per_dance )
+                      vs.
+                ( chaos_strike_damage + demons_bite_per_chaos_strike * demons_bite_damage ) / ( 1 + demons_bite_per_chaos_strike )
+
+            /dump tj.st_state.env.demons_bite.count_per_blade_dance
+            /dump tj.st_state.env.demons_bite.count_per_chaos_strike
+        ]]
+        count_per_blade_dance = function(spell,env) -- or death sweep
+            return env.blade_dance.fury_cost / env.demons_bite.fury_gain
+        end,
+        count_per_chaos_strike = function(spell,env) -- or annihilation
+            return (env.chaos_strike.fury_cost - 20.0*(GetCritChance()/100.0)) / env.demons_bite.fury_gain
+        end,
+        blade_dance_vs_chaos_strike = function(spell, env)
+            local lhs = ( env.blade_dance.dmg + spell.count_per_blade_dance * spell.dmg ) / ( 1 + spell.count_per_blade_dance )
+            local rhs = ( env.chaos_strike.dmg + spell.count_per_chaos_strike * spell.dmg ) / ( 1 + spell.count_per_chaos_strike )
+            local blade_dance_better = (lhs >= rhs) and true or false
+            return blade_dance_better
+        end,
+    },
+    metamorphosis = {
+        AuraID = 162264,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    momentum = {
+        AuraID = 208628,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    prepared = {
+        AuraID = 203650,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    blade_dance = {
+        worth_using = function(spell,env) return env.demons_bite.blade_dance_vs_chaos_strike end,
+        dmg = get_this_spell_damage, -- /dump tj.st_state.env.blade_dance.dmg
+    },
+    death_sweep = {
+        worth_using = function(spell,env) return not env.demons_bite.blade_dance_vs_chaos_strike end,
+    },
+    chaos_strike = {
+        dmg = get_this_spell_damage, -- /dump tj.st_state.env.chaos_strike.dmg
+    },
+}
+
+Z:RegisterPlayerClass({
+    name = 'Havoc',
+    class_id = 12,
+    spec_id = 1,
+    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Havoc_T19P',
+    resources = { 'fury', 'soul_fragments' },
+    actions = {
+        havoc_abilities_exported,
+        havoc_base_overrides,
+    },
+    blacklisted = {
+        'consume_magic',
+        'pick_up_fragment',
+        --'vengeful_retreat',
+        --'fel_rush',
+    },
+    conditional_substitutions = {
+        { " death_sweep_worth_using ", " death_sweep.worth_using " },
+        { " blade_dance_worth_using ", " blade_dance.worth_using " },
     },
 })
