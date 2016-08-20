@@ -279,6 +279,12 @@ local havoc_base_overrides = {
         AuraApplied = 'momentum',
         AuraApplyLength = 10,
     },
+    vengeful_retreat = {
+        PerformCast = function(spell,env)
+            env.momentum.expirationTime = env.currentTime + 3
+            env.prepared.expirationTime = env.currentTime + 5
+        end,
+    },
     metamorphosis = {
         AuraID = 162264,
         AuraUnit = 'player',
