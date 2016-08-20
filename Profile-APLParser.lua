@@ -1,6 +1,7 @@
 local addonName, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
+local fmt = internal.fmt
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -19,23 +20,22 @@ end
 
 local conditionalSubstitutions = {
     { "debuff.casting.up", "target.is_casting" },
-    { "debuff.casting.down", "not target.is_casting" },
+    { "debuff.casting.down", " ( not target.is_casting ) " },
     { "target.debuff.casting.up", "target.is_casting" },
-    { "target.debuff.casting.down", "not target.is_casting" },
+    { "target.debuff.casting.down", " ( not target.is_casting ) " },
     { "buff.casting.up", "player.is_casting" },
-    { "buff.casting.down", "not player.is_casting" },
+    { "buff.casting.down", " ( not player.is_casting ) " },
 
-    { "!([%a%._]+)%.remains([^%a%._])", "%1.remains=0%2" }, -- Handle "!buff.blah.remains" -> "buff.blah.remains==0"
-    --{ "([%a%._]+)%.remains([^%a%._<>=])", "%1.remains>0%2" }, -- Handle "buff.blah.remains" -> "buff.blah.remains>0"
-    { "!([%a%._]+)%.enabled([^%a%._])", "%1.selected=false%2" }, -- Handle "!talent.blah.enabled" -> "talent.blah.selected==false"
-    { "([%a%._]+)%.enabled([^%a%._])", "%1.selected=true%2" }, -- Handle "talent.blah.enabled" -> "talent.blah.selected==true"
-    { "!([%a%._]+)%.ticking([^%a%._])", "%1.remains=0%2" }, -- Handle "!dot.blah.ticking" -> "dot.blah.remains==0"
-    { "([%a%._]+)%.ticking([^%a%._<>=])", "%1.remains>0%2" }, -- Handle "dot.blah.ticking" -> "dot.blah.remains>0"
+    { "!([%a%._]+)%.remains", " ( %1.remains=0 ) " }, -- Handle "!buff.blah.remains" -> "buff.blah.remains==0"
+    { "!([%a%._]+)%.enabled", " ( not %1.selected ) " }, -- Handle "!talent.blah.enabled" -> "talent.blah.selected==false"
+    { "([%a%._]+)%.enabled", " ( %1.selected ) " }, -- Handle "talent.blah.enabled" -> "talent.blah.selected==true"
+    { "!([%a%._]+)%.ticking", " ( %1.remains=0 ) " }, -- Handle "!dot.blah.ticking" -> "dot.blah.remains==0"
+    { "([%a%._]+)%.ticking", " ( %1.remains>0 ) " }, -- Handle "dot.blah.ticking" -> "dot.blah.remains>0"
 
-    { "!([%a%._]+)%.up([^%a%._])", "%1.remains=0%2" }, -- Handle "!buff.blah.up" -> "buff.blah.remains==0"
-    { "!([%a%._]+)%.down([^%a%._])", "%1.remains>0%2" }, -- Handle "!buff.blah.down" -> "buff.blah.remains>0"
+    { "!([%a%._]+)%.up", " ( %1.remains=0 ) " }, -- Handle "!buff.blah.up" -> "buff.blah.remains==0"
+    { "!([%a%._]+)%.down", " ( %1.remains>0 ) " }, -- Handle "!buff.blah.down" -> "buff.blah.remains>0"
 
-    { "([%a%._]+)%.react([<>=]+)", "%1.stack%2" }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
+    { "([%a%._]+)%.react", " ( %1.stack>0 ) " }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
 
     { "!", " not " },
     { "<", " < " },
@@ -78,17 +78,17 @@ local conditionalSubstitutions = {
     { " charges ", " spell.THIS_SPELL.charges " },
     { " max_charges ", " spell.THIS_SPELL.max_charges " },
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
-    { " stagger%.(%a+) ", " stagger.%1 == true " },
+    { " stagger%.(%a+) ", " ( stagger.%1 == true ) " },
 
     -- Static incoming damage checks
     { "%( incoming_damage_([%d]+)s %)",
       function(a)
-        return format("( incoming_damage_over_%d > 0 )", tonumber(a)*1000)
+        return format(" ( incoming_damage_over_%d > 0 ) ", tonumber(a)*1000)
       end
     },
     { "%( incoming_damage_([%d]+)ms %)",
       function(a)
-        return format("( incoming_damage_over_%d > 0 )", tonumber(a))
+        return format(" ( incoming_damage_over_%d > 0 ) ", tonumber(a))
       end
     },
     -- Comparison incoming damage checks
@@ -103,8 +103,9 @@ local conditionalSubstitutions = {
       end
     },
 
-    { " cooldown%.([%a%._]+)%.up ", " cooldown.%1.remains == 0 " },
-    { " cooldown%.([%a%._]+)%.down ", " cooldown.%1.remains > 0 " },
+    { " cooldown%.([%a%._]+)%.ready ", " ( cooldown.%1.remains == 0 ) " },
+    { " cooldown%.([%a%._]+)%.up ", " ( cooldown.%1.remains == 0 ) " },
+    { " cooldown%.([%a%._]+)%.down ", " ( cooldown.%1.remains > 0 ) " },
 
     { " aura%.([%a%._]+)%.react ", " aura.%1.react " },
 
@@ -119,12 +120,12 @@ local conditionalSubstitutions = {
 
     { " ([%a_]+)%.([%a_]+) %* ", -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
         function(a,b)
-            return format(" (%s.%s and 1 or 0) * ", a, b)
+            return format(" ( %s.%s and 1 or 0 ) * ", a, b)
         end
     },
     { " %* ([%a_]+)%.([%a_]+) ", -- handle things like "(9 * mybuff.aura_up)" -> "(9 * (mybuff.aura_up and 1 or 0))"
         function(a,b)
-            return format(" * (%s.%s and 1 or 0) ", a, b)
+            return format(" * ( %s.%s and 1 or 0 ) ", a, b)
         end
     },
 
@@ -160,6 +161,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 local paramName = line:match('name=([^,]*),?') or ""
                 local paramType = line:match('type=([^,]*),?') or ""
                 local paramChoose = line:match('choose=([^,]*),?') or ""
+                local paramSync = line:match('sync=([^,]*),?') or ""
                 local paramIf = line:match('if=([^,]*),?') or "true"
                 local paramDbg = line:match('dbg=([^,]*),?') or nil
                 local P = function(...) if paramDbg then DBG(...) end end
@@ -176,6 +178,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 P("     name: %s", paramName)
                 P("     type: %s", paramType)
                 P("   choose: %s", paramChoose)
+                P("     sync: %s", paramSync)
                 P("       if: %s", paramIf)
 
                 -- Work out the base condition string in the APL, as well as a cast validation check
@@ -188,6 +191,10 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 condition = format("(%s)", condition)
                 P("")
                 P(" initcond: %s", condition)
+
+                if paramSync ~= "" then
+                    condition = fmt("(cooldown.%s.up|buff.%s.up)&%s", paramSync, paramSync, condition)
+                end
 
                 if condition ~= "(true)" then
                     local function applySubstitutions(substitutionsTable)
@@ -222,30 +229,35 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                         P("    apply: '%s' => '%s'", 'THIS_SPELL', actionName)
                         P("     cond: %s", condition)
                     end
+                end
 
-                    -- Save the actual condition string
-                    entry.condition = condition:gsub('%( ','('):gsub(' %)',')')
+                -- Collapse parentheses now
+                condition = condition:gsub('%( ','('):gsub(' %)',')')
+                P("")
+                P("finalcond: %s", condition)
 
-                    -- Return the result of the conditional and compile
-                    local conditionFunctionSource = "return function() return (" .. condition .. ") end"
-                    local conditionFunctionLoader, errStr = loadstring(conditionFunctionSource, entry.key..':condition')
-                    if errStr then
-                        profileErrors[#profileErrors+1] = format("Could not load condition: %s='%s'", entry.key, errStr)
+                -- Save the actual condition string
+                entry.condition = condition
+
+                -- Return the result of the conditional and compile
+                local conditionFunctionSource = "return function() return (" .. condition .. ") end"
+                local conditionFunctionLoader, errStr = loadstring(conditionFunctionSource, entry.key..':condition')
+                if errStr then
+                    profileErrors[#profileErrors+1] = format("Could not load condition: %s='%s'", entry.key, errStr)
+                else
+                    setfenv(conditionFunctionLoader, emptyEnvironment)
+                    local success, conditionFunction = pcall(assert(conditionFunctionLoader))
+                    -- Log an error during compilation if any
+                    if not success or not conditionFunction then
+                        profileErrors[#profileErrors+1] = format("Could not compile condition: %s='%s'", entry.key, condition)
                     else
-                        setfenv(conditionFunctionLoader, emptyEnvironment)
-                        local success, conditionFunction = pcall(assert(conditionFunctionLoader))
-                        -- Log an error during compilation if any
-                        if not success or not conditionFunction then
-                            profileErrors[#profileErrors+1] = format("Could not compile condition: %s='%s'", entry.key, condition)
-                        else
-                            -- Save the function/condition string
-                            entry.check = conditionFunction
+                        -- Save the function/condition string
+                        entry.check = conditionFunction
 
-                            -- Save the parsed entry
-                            parsedActions[actionList] = parsedActions[actionList] or {}
-                            local t = parsedActions[actionList]
-                            t[1+#t] = entry
-                        end
+                        -- Save the parsed entry
+                        parsedActions[actionList] = parsedActions[actionList] or {}
+                        local t = parsedActions[actionList]
+                        t[1+#t] = entry
                     end
                 end
             end

@@ -3,14 +3,14 @@ internal.apls = internal.apls or {}
 
 internal.apls["legion-dev::Tier19P::Shaman_Elemental_T19P"] = [[
 actions.precombat=flask,type=whispered_pact
-actions.precombat+=/food,type=salty_squid_roll
+actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=draenic_intellect
+actions.precombat+=/potion,name=deadly_grace
 actions.precombat+=/stormkeeper
 actions.precombat+=/totem_mastery
-actions=wind_shear
-actions+=/bloodlust,if=target.health.pct<25|time>0.500
-actions+=/potion,name=draenic_intellect,if=buff.ascendance.up|target.time_to_die<=30
+actions=bloodlust,if=target.health.pct<25|time>0.500
+actions+=/potion,name=deadly_grace,if=buff.ascendance.up|target.time_to_die<=30
 actions+=/totem_mastery,if=buff.resonance_totem.remains<2
 actions+=/fire_elemental
 actions+=/storm_elemental
@@ -61,14 +61,14 @@ actions.precombat=flask,type=seventh_demon
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=draenic_agility
+actions.precombat+=/potion,name=deadly_grace
 actions.precombat+=/lightning_shield
 actions=wind_shear
 actions+=/bloodlust,if=target.health.pct<25|time>0.500
 actions+=/auto_attack
 actions+=/feral_spirit
 actions+=/use_item,slot=trinket2
-actions+=/potion,name=draenic_agility,if=pet.feral_spirit.remains>10|pet.frost_wolf.remains>5|pet.fiery_wolf.remains>5|pet.lightning_wolf.remains>5|target.time_to_die<=30
+actions+=/potion,name=deadly_grace,if=pet.feral_spirit.remains>10|pet.frost_wolf.remains>5|pet.fiery_wolf.remains>5|pet.lightning_wolf.remains>5|target.time_to_die<=30
 actions+=/berserking,if=buff.ascendance.up|!talent.ascendance.enabled|level<100
 actions+=/blood_fury
 actions+=/boulderfist,if=buff.boulderfist.remains<gcd|charges_fractional>1.75

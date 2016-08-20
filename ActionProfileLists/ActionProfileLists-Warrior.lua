@@ -6,10 +6,10 @@ actions.precombat=flask,type=countless_armies
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=potion_of_the_old_war
+actions.precombat+=/potion,name=deadly_grace
 actions=charge
 actions+=/auto_attack
-actions+=/potion,name=potion_of_the_old_war,if=(target.health.pct<20&buff.battle_cry.up)|target.time_to_die<25
+actions+=/potion,name=deadly_grace,if=(target.health.pct<20&buff.battle_cry.up)|target.time_to_die<25
 actions+=/battle_cry,sync=colossus_smash
 actions+=/battle_cry,if=debuff.colossus_smash.remains>=5|(debuff.colossus_smash.up&cooldown.colossus_smash.remains=0)
 actions+=/avatar,sync=colossus_smash
@@ -55,16 +55,16 @@ actions.execute+=/storm_bolt
 
 internal.apls["legion-dev::Tier19P::Warrior_Fury_T19P"] = [[
 actions.precombat=flask,type=countless_armies
-actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=potion_of_the_old_war
+actions.precombat+=/potion,name=deadly_grace
 actions=auto_attack
 actions+=/charge
 actions+=/run_action_list,name=movement,if=movement.distance>5
 actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
 actions+=/use_item,name=faulty_countermeasure,if=(spell_targets.whirlwind>1|!raid_event.adds.exists)&((talent.bladestorm.enabled&cooldown.bladestorm.remains=0)|buff.battle_cry.up|target.time_to_die<25)
-actions+=/potion,name=potion_of_the_old_war,if=(target.health.pct<20&buff.battle_cry.up)|target.time_to_die<=30
+actions+=/potion,name=deadly_grace,if=(target.health.pct<20&buff.battle_cry.up)|target.time_to_die<30
 actions+=/battle_cry,if=(artifact.odyns_fury.enabled&cooldown.odyns_fury.remains=0&(cooldown.bloodthirst.remains=0|(buff.enrage.remains>cooldown.bloodthirst.remains)))|!artifact.odyns_fury.enabled
 actions+=/avatar,if=buff.battle_cry.up|(target.time_to_die<(cooldown.battle_cry.remains+10))
 actions+=/bloodbath,if=buff.dragon_roar.up|(!talent.dragon_roar.enabled&(buff.battle_cry.up|cooldown.battle_cry.remains>10))
@@ -110,7 +110,7 @@ actions.bladestorm=bladestorm,if=buff.enrage.remains>2&(raid_event.adds.in>90|!r
 
 internal.apls["legion-dev::Tier19P::Warrior_Protection_T19P"] = [[
 actions.precombat=flask,type=countless_armies
-actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=unbending_potion
@@ -128,7 +128,6 @@ actions.prot+=/demoralizing_shout,if=incoming_damage_2500ms>health.max*0.20
 actions.prot+=/shield_wall,if=incoming_damage_2500ms>health.max*0.50
 actions.prot+=/last_stand,if=incoming_damage_2500ms>health.max*0.50&!cooldown.shield_wall.remains=0
 actions.prot+=/potion,name=unbending_potion,if=(incoming_damage_2500ms>health.max*0.15&!buff.unbending_potion.up)|target.time_to_die<=25
-actions.prot+=/potion,name=draenic_strength,if=(incoming_damage_2500ms>health.max*0.15&!buff.potion.up)|target.time_to_die<=25
 actions.prot+=/call_action_list,name=prot_aoe,if=spell_targets.thunder_clap>=3
 actions.prot+=/battle_cry
 actions.prot+=/demoralizing_shout,if=talent.booming_voice.enabled&rage<=50

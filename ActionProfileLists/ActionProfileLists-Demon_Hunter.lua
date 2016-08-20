@@ -4,8 +4,9 @@ internal.apls = internal.apls or {}
 internal.apls["legion-dev::Tier19P::Demon_Hunter_Havoc_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=the_hungry_magister
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=draenic_agility_potion
+actions.precombat+=/potion,name=deadly_grace
 actions=auto_attack
 actions+=/pick_up_fragment,if=talent.demonic_appetite.enabled&fury.deficit>=30
 actions+=/consume_magic
@@ -42,14 +43,15 @@ actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(cooldown.metamorphosis.re
 actions.cooldown+=/nemesis,sync=metamorphosis,if=!raid_event.adds.exists
 actions.cooldown+=/chaos_blades,if=buff.metamorphosis.up|cooldown.metamorphosis.remains>100|target.time_to_die<20
 actions.cooldown+=/metamorphosis,if=buff.metamorphosis.down&(!talent.demonic.enabled|!cooldown.eye_beam.ready)&(!talent.chaos_blades.enabled|cooldown.chaos_blades.ready)&(!talent.nemesis.enabled|debuff.nemesis.up|cooldown.nemesis.ready)
-actions.cooldown+=/potion,name=draenic_agility_potion,if=buff.metamorphosis.remains>25
+actions.cooldown+=/potion,name=deadly_grace,if=buff.metamorphosis.remains>25
 ]]
 
 internal.apls["legion-dev::Tier19P::Demon_Hunter_Vengeance_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=the_hungry_magister
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=draenic_agility_potion
+actions.precombat+=/potion,name=unbending_potion
 actions=auto_attack
 actions+=/fiery_brand,if=buff.demon_spikes.down&buff.metamorphosis.down
 actions+=/demon_spikes,if=charges=2|buff.demon_spikes.down&!dot.fiery_brand.ticking&buff.metamorphosis.down

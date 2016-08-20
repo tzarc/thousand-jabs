@@ -220,13 +220,24 @@ local havoc_abilities_exported = {
     vengeful_retreat = { AbilityID = 198793, },
 }
 
+local cacheTime = 0.1
+local damageCacheValues = {}
+local damageCacheTimes = {}
 local function get_this_spell_damage(spell, env)
-    local str
-    Z:ScanTooltip(internal.fmt('spell:%d', spell.AbilityID), function(t) str = t end, nil, { 255, 210, 0 })
-    if str then
-        local v = strmatch(str, ' (%d+[%.,]%d%d%d) ')
-        v = v:gsub('[^%d]', '') + 0
-        return v
+    local abilityID = spell.AbilityID
+    local now = GetTime()
+    if damageCacheValues[abilityID] and (damageCacheTimes[abilityID] + cacheTime >= now) then
+        return damageCacheValues[abilityID]
+    else
+        local str
+        Z:ScanTooltip(internal.fmt('spell:%d', spell.AbilityID), function(t) str = t end, nil, { 255, 210, 0 })
+        if str then
+            local v = strmatch(str, ' (%d+[%.,]%d%d%d) ')
+            v = v:gsub('[^%d]', '') + 0
+            damageCacheTimes[abilityID] = now
+            damageCacheValues[abilityID] = v
+            return v
+        end
     end
     return 0
 end
@@ -263,6 +274,10 @@ local havoc_base_overrides = {
             local blade_dance_better = (lhs >= rhs) and true or false
             return blade_dance_better
         end,
+    },
+    fel_rush = {
+        AuraApplied = 'momentum',
+        AuraApplyLength = 10,
     },
     metamorphosis = {
         AuraID = 162264,

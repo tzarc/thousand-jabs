@@ -54,6 +54,7 @@ internal.commonData = {
     target = {
         exists = function(self,state) return UnitExists('target'), true end,
         is_casting = function(self,state) return false end,
+        time_to_die = function(self,state) return LUC:UnitTimeToDie('target') or 99999 end
     },
     player = {
         is_casting = function(self,state) return false end,

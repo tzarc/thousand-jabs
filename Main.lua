@@ -107,6 +107,10 @@ function Z:PerformUpdate()
     forceUpdatePlayer, forceUpdateTarget = nil, nil
 
     if self.currentProfile then
+        if internal.devMode then
+            self.currentProfile:ParseAPL()
+        end
+
         self:ExecuteAllActionProfiles()
 
         -- Attempt to work out the cooldown frame, based off the GCD

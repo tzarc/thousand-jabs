@@ -4,20 +4,20 @@ internal.apls = internal.apls or {}
 internal.apls["legion-dev::Tier19P::Monk_Windwalker_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
 actions=auto_attack
 actions+=/invoke_xuen
 actions+=/potion,name=deadly_grace,if=buff.serenity.up|buff.storm_earth_and_fire.up|(!talent.serenity.enabled&trinket.proc.agility.react)|buff.bloodlust.react|target.time_to_die<=60
 actions+=/touch_of_death,if=!artifact.gale_burst.enabled
-actions+=/touch_of_death,if=artifact.gale_burst.enabled&cooldown.strike_of_the_windlord.up&cooldown.fists_of_fury.remains<=3&cooldown.rising_sun_kick.remains<8
-actions+=/use_item,name=tiny_oozeling_in_a_jar,if=buff.congealing_goo.stack>=6
+actions+=/touch_of_death,if=artifact.gale_burst.enabled&cooldown.strike_of_the_windlord.remains<8&cooldown.fists_of_fury.remains<=3&cooldown.rising_sun_kick.remains<8
 actions+=/blood_fury
 actions+=/berserking
 actions+=/arcane_torrent,if=chi.max-chi>=1
-actions+=/storm_earth_and_fire,if=artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.up&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5
+actions+=/storm_earth_and_fire,if=artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.remains<14&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5
 actions+=/storm_earth_and_fire,if=!artifact.strike_of_the_windlord.enabled&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5
-actions+=/serenity,if=artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.up&cooldown.fists_of_fury.remains<=3&cooldown.rising_sun_kick.remains<8
+actions+=/serenity,if=artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.remains<7&cooldown.fists_of_fury.remains<=3&cooldown.rising_sun_kick.remains<8
 actions+=/serenity,if=!artifact.strike_of_the_windlord.enabled&cooldown.fists_of_fury.remains<=3&cooldown.rising_sun_kick.remains<8
 actions+=/energizing_elixir,if=energy<energy.max&chi<=1&buff.serenity.down
 actions+=/rushing_jade_wind,if=buff.serenity.up&!prev_gcd.rushing_jade_wind
@@ -30,7 +30,6 @@ actions.opener=blood_fury
 actions.opener+=/berserking
 actions.opener+=/arcane_torrent,if=chi.max-chi>=1
 actions.opener+=/fists_of_fury,if=buff.serenity.up&buff.serenity.remains<1.5
-actions.opener+=/use_item,name=tiny_oozeling_in_a_jar
 actions.opener+=/rising_sun_kick
 actions.opener+=/blackout_kick,if=chi.max-chi<=1&cooldown.chi_brew.up|buff.serenity.up
 actions.opener+=/serenity,if=chi.max-chi<=2
