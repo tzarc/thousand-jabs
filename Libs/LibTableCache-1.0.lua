@@ -1,8 +1,6 @@
 local MAJOR, MINOR = "LibTableCache-1.0", 12
 local LibTableCache, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
-local tconcat = table.concat
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Table cache
 ------------------------------------------------------------------------------------------------------------------------
@@ -17,7 +15,6 @@ LibTableCache.TableCache = LibTableCache.TableCache or {
 }
 
 function LibTableCache:Acquire()
-    local k,v
     for k,v in pairs(self.TableCache.FreeTables) do
         self.TableCache.FreeTables[k] = nil
         self.TableCache.InUseTables[k] = true
@@ -33,12 +30,10 @@ function LibTableCache:Acquire()
 end
 
 function LibTableCache:Release(tbl)
-    local k,v
     if type(tbl) ~= 'table' then return end
     if self.TableCache.FreeTables[tbl] then return end
 
     local function recursiveFindChildTables(t)
-        local k2,v2
         for k2,v2 in pairs(t) do
             if not self.TableCache.TablesToRelease[k2] and type(k2) == 'table' then
                 self.TableCache.TablesToRelease[k2] = true

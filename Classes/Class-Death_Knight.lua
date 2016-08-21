@@ -1,4 +1,4 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -132,6 +132,143 @@ Z:RegisterPlayerClass({
     actions = {
         blood_abilities_exported,
         blood_base_abilities,
+    },
+    blacklisted = {},
+})
+
+------------------------------------------------------------------------------------------------------------------------
+-- Unholy profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+local unholy_abilities_exported = {
+    all_will_serve = { TalentIDs = { 1, 1 }, },
+    antimagic_shell = { AbilityID = 48707, },
+    apocalypse = { AbilityID = 220143, },
+    army_of_the_dead = { AbilityID = 42650, },
+    asphyxiate = { AbilityID = 108194, TalentIDs = { 4, 2 }, },
+    auto_attack = { AbilityID = 6603, },
+    blighted_rune_weapon = { AbilityID = 194918, TalentIDs = { 2, 3 }, },
+    bursting_sores = { TalentIDs = { 1, 2 }, },
+    castigator = { TalentIDs = { 3, 2 }, },
+    chains_of_ice = { AbilityID = 45524, },
+    clawing_shadows = { AbilityID = 207311, TalentIDs = { 3, 3 }, },
+    control_undead = { AbilityID = 111673, },
+    corpse_shield = { AbilityID = 207319, TalentIDs = { 5, 2 }, },
+    dark_arbiter = { AbilityID = 207349, TalentIDs = { 7, 1 }, },
+    dark_command = { AbilityID = 56222, },
+    dark_transformation = { AbilityID = 63560, },
+    death_and_decay = { AbilityID = 43265, },
+    death_coil = { AbilityID = 47541, },
+    death_gate = { AbilityID = 50977, },
+    death_grip = { AbilityID = 49576, },
+    death_strike = { AbilityID = 49998, },
+    debilitating_infestation = { TalentIDs = { 4, 3 }, },
+    defile = { AbilityID = 152280, TalentIDs = { 7, 2 }, },
+    ebon_fever = { TalentIDs = { 1, 3 }, },
+    epidemic = { AbilityID = 207317, TalentIDs = { 2, 1 }, },
+    festering_strike = { AbilityID = 85948, },
+    gift_of_the_naaru = { AbilityID = 59545, },
+    icebound_fortitude = { AbilityID = 48792, },
+    infected_claws = { TalentIDs = { 6, 3 }, },
+    lingering_apparition = { TalentIDs = { 5, 3 }, },
+    mind_freeze = { AbilityID = 47528, },
+    necrosis = { TalentIDs = { 6, 2 }, },
+    outbreak = { AbilityID = 77575, },
+    path_of_frost = { AbilityID = 3714, },
+    pestilent_pustules = { TalentIDs = { 2, 2 }, },
+    raise_ally = { AbilityID = 61999, },
+    raise_dead = { AbilityID = 46584, },
+    runeforging = { AbilityID = 53428, },
+    scourge_strike = { AbilityID = 55090, },
+    shadow_infusion = { TalentIDs = { 6, 1 }, },
+    sludge_belcher = { TalentIDs = { 4, 1 }, },
+    soul_reaper = { AbilityID = 130736, TalentIDs = { 7, 3 }, },
+    spell_eater = { TalentIDs = { 5, 1 }, },
+    summon_gargoyle = { AbilityID = 49206, },
+    unholy_frenzy = { TalentIDs = { 3, 1 }, },
+    wraith_walk = { AbilityID = 212552, },
+}
+
+local unholy_base_abilities = {
+    outbreak = {
+        AuraApplied = 'virulent_plague',
+        AuraApplyLength = 20,
+    },
+    death_and_decay = {
+        AuraID = 188290,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    defile = {
+        AuraID = 218100,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    soul_reaper = {
+        AuraID = 130736,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    sudden_doom = {
+        AuraID = 81340,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    festering_strike = {
+        AuraApplied = 'festering_wound',
+        AuraApplyLength = 24,
+        PerformCast = function(spell,env)
+            env.runic_power.gained = env.runic_power.gained + 6
+            env.festering_wound.aura_stack = env.festering_wound.aura_stack + 2
+        end,
+    },
+    scourge_strike = {
+        PerformCast = function(spell,env)
+            if env.festering_wound.aura_stack > 0 then
+                env.festering_wound.aura_stack = env.festering_wound.aura_stack - 1
+            end
+            if env.festering_wound.aura_stack == 0 then
+                env.festering_wound.expirationTime = 0
+            end
+        end,
+    },
+    festering_wound = {
+        AuraID = 194310,
+        AuraMine = true,
+        AuraUnit = "target",
+    },
+    virulent_plague = {
+        AuraID = 191587,
+        AuraMine = true,
+        AuraUnit = "target",
+    },
+    dark_transformation = {
+        AuraID = 63560,
+        AuraMine = true,
+        AuraUnit = "pet",
+    },
+    necrosis = {
+        AuraID = 207346,
+        AuraMine = true,
+        AuraUnit = "player",
+    },
+    unholy_strength = {
+        AuraID = 53368,
+        AuraMine = true,
+        AuraUnit = "player",
+    },
+}
+
+Z:RegisterPlayerClass({
+    name = 'Unholy',
+    class_id = 6,
+    spec_id = 3,
+    action_profile = 'legion-dev::Tier19P::Death_Knight_Unholy_T19P',
+    resources = { 'rune', 'runic_power' },
+    actions = {
+        unholy_abilities_exported,
+        unholy_base_abilities,
     },
     blacklisted = {},
 })

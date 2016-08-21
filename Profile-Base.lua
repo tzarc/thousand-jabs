@@ -1,14 +1,9 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
-local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
-local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
 local fmt = internal.fmt
 
 function Z:RegisterPlayerClass(config)
-
-    local k,v,k1,v1,k2,v2
 
     local config = config
     local blacklisted = {}

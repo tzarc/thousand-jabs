@@ -49,13 +49,13 @@ do
     iterateSlots = function (state)
         while state.slotIdx <= state.numSlots do
             local spellBookItem = state.slotOffset + state.slotIdx
-            local spellName, _, icon, castTime, minRange, maxRange, spellId = GetSpellInfo(spellBookItem, BOOKTYPE_SPELL)
+            local spellName, _, icon, castTime, _, _, spellId = GetSpellInfo(spellBookItem, BOOKTYPE_SPELL)
             local _, spellSubtext = GetSpellBookItemName(spellBookItem, BOOKTYPE_SPELL)
             local spellType, spellBookSpellId = GetSpellBookItemInfo(spellBookItem, BOOKTYPE_SPELL)
             local isTalent = IsTalentSpell(spellBookItem, BOOKTYPE_SPELL)
             if spellType == "SPELL" and not IsPassiveSpell(spellId) then
                 state.slotIdx = state.slotIdx + 1
-                return spellId, spellName, spellSubtext, spellBookItem, isTalent, icon
+                return spellId, spellName, spellSubtext, spellBookItem, isTalent, icon, castTime
             elseif spellType == "FLYOUT" then
                 local _, _, numFlyoutSlots, flyoutKnown = GetFlyoutInfo(spellBookSpellId)
                 if flyoutKnown then
@@ -129,7 +129,7 @@ function Z:DetectAbilitiesFromSpellBook()
     -- Detect talents, update values accordingly
     for tier=1,7 do
         for column=1,3 do
-            local talentID, name, texture, selected, available, spellID = GetTalentInfo(tier, column, GetActiveSpecGroup())
+            local talentID, name = GetTalentInfo(tier, column, GetActiveSpecGroup())
             abilities[slug(name)] = abilities[slug(name)] or {}
             abilities[slug(name)].TalentIDs = { tier, column }
             abilities[slug(name)].IsTalent = true
@@ -204,7 +204,7 @@ function Z:GetTooltipEntries(link)
 
     local function checkadd(x)
         if x then
-            xt = x:GetText()
+            local xt = x:GetText()
             if xt ~= "" then
                 local e = { t = xt or "", c = {x:GetTextColor()} }
                 e.cb = { math.floor(e.c[1]*256), math.floor(e.c[2]*256), math.floor(e.c[3]*256) }
@@ -267,7 +267,6 @@ for _,v in pairs(DurationChecks) do
 end
 
 function Z:GetSpellCost(spellID)
-    local _,e,k,v
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(PowerPatterns) do
@@ -284,7 +283,6 @@ function Z:GetSpellCost(spellID)
 end
 
 function Z:GetSpellCooldown(spellID)
-    local _,e,k,v
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(CooldownPatterns) do
@@ -299,7 +297,6 @@ function Z:GetSpellCooldown(spellID)
 end
 
 function Z:GetSpellRechargeTime(spellID)
-    local _,e,k,v
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(RechargePatterns) do
@@ -315,7 +312,6 @@ end
 
 -- /dump tj:ScanTooltip('spell:188501', function(t) print(t) end, nil, { 255, 210, 0 })
 function Z:ScanTooltip(link, callback, pattern, colour)
-    local _,e
     local entries = self:GetTooltipEntries(link)
     local function patternmatch(str, pattern)
         return pattern and type(pattern) == 'string' and strmatch(str, pattern) and true or false

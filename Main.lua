@@ -1,4 +1,4 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
@@ -7,9 +7,6 @@ local LUC = LibStub('LibUnitCache-1.0')
 ------------------------------------------------------------------------------------------------------------------------
 -- Locals
 ------------------------------------------------------------------------------------------------------------------------
-
--- Flags to check if we need to force an update of player/target cache
-local forceUpdatePlayer, forceUpdateTarget = nil, nil
 
 -- Timer update
 local queuedScreenUpdateTime = 0.1   -- seconds
@@ -102,9 +99,8 @@ function Z:PerformUpdate()
     internal.DBGR()
 
     -- Cache current player/target information if requested
-    playerGUID = LUC:UpdateUnitCache('player', forceUpdatePlayer)
-    targetGUID = LUC:UpdateUnitCache('target', forceUpdateTarget)
-    forceUpdatePlayer, forceUpdateTarget = nil, nil
+    LUC:UpdateUnitCache('player')
+    LUC:UpdateUnitCache('target')
 
     if self.currentProfile then
         if internal.devMode then
@@ -117,7 +113,7 @@ function Z:PerformUpdate()
         local start, duration = GetSpellCooldown(61304)
 
         -- ....unless we're currently channeling something (i.e. fists of fury), in which case use the rest of its channel time
-        local channelName, _, _, channelIcon, channelStart, channelEnd = UnitChannelInfo('player')
+        local channelName, _, _, _, channelStart, channelEnd = UnitChannelInfo('player')
         if channelName then
             start = (channelStart * 0.001)
             duration = (channelEnd - channelStart) * 0.001
@@ -353,7 +349,7 @@ function Z:TryDetectUpdateGlobalCooldown(lastCastSpellID)
     -- Work out the current GCD
     local spellCD = GetSpellBaseCooldown(lastCastSpellID or 0)
     if spellCD and spellCD == 0 then
-        local start, duration = GetSpellCooldown(61304)
+        local _, duration = GetSpellCooldown(61304)
         if duration and duration > 0 then
             local playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
             local gcd = duration / playerHasteMultiplier

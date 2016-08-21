@@ -1,8 +1,5 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
-
--- Frames
-local actionsFrame = nil
 
 -- Geometry
 local stFrameSizes = { 80, 60, 40, 30 }

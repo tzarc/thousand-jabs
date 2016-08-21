@@ -1,4 +1,4 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
 local fmt = internal.fmt
@@ -7,7 +7,7 @@ local fmt = internal.fmt
 -- Helpers
 ------------------------------------------------------------------------------------------------------------------------
 
-function splitnewlines(str)
+local function splitnewlines(str)
     local t = {}
     local function helper(line) table.insert(t, line) return "" end
     helper(str:gsub("(.-)\r?\n", helper))
@@ -137,7 +137,7 @@ local conditionalSubstitutions = {
 ------------------------------------------------------------------------------------------------------------------------
 
 function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
-    local emptyEnvironment = setmetatable({}, { __index = function(tbl,key) return nil end })
+    local emptyEnvironment = setmetatable({}, { __index = function() return nil end })
     local profileLines = splitnewlines(aplString or "")
     local profileErrors = {}
     local actionCounts = {}

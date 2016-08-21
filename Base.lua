@@ -8,7 +8,6 @@ local type = type
 local pairs = pairs
 local setmetatable = setmetatable
 local format = string.format
-local strmatch = strmatch
 local tconcat = table.concat
 
 local LTC = LibStub('LibTableCache-1.0')
@@ -166,7 +165,6 @@ local missingFieldMetatable = {
 }
 
 function Z:MissingFieldTable(tableName, tbl)
-    local k,v
     tableNames[tbl] = tableName
     setmetatable(tbl, missingFieldMetatable)
     for k,v in pairs(tbl) do

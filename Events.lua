@@ -1,8 +1,5 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
-local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
-local LUC = LibStub('LibUnitCache-1.0')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -90,14 +87,12 @@ function Z:PLAYER_SPECIALIZATION_CHANGED(eventName, unitID)
 end
 
 function Z:PLAYER_TALENT_UPDATE(eventName)
-    if unitID == 'player' then
-        -- Deactivate the current profile
-        self:DeactivateProfile()
-        -- Activate the new profile if present
-        self:ActivateProfile()
-        -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
-    end
+    -- Deactivate the current profile
+    self:DeactivateProfile()
+    -- Activate the new profile if present
+    self:ActivateProfile()
+    -- Notify the profile
+    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
 function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
@@ -132,8 +127,6 @@ end
 function Z:PLAYER_TARGET_CHANGED(eventName)
     -- Save the target GUID
     targetGUID = UnitExists('target') and UnitGUID('target') or nil
-    -- Force a target cache update
-    forceUpdateTarget = true
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
@@ -150,16 +143,8 @@ function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCa
 
     -- We only want to know if it's a spell, and it concerns either the player or the current target
     if (destGUID == playerGUID or destGUID == targetGUID) and combatEvent:find('SPELL_') == 1 then
-        -- Check if we've had an aura applied or removed
-        if combatEvent == 'SPELL_AURA_APPLIED' or combatEvent == 'SPELL_AURA_REFRESH' or combatEvent == 'SPELL_AURA_REMOVED' then
-            -- Update the cache for the relevant unit
-            if destGUID == playerGUID then
-                forceUpdatePlayer = true
-            elseif destGUID == targetGUID then
-                forceUpdateTarget = true
-            end
-            self:QueueUpdate()
-        elseif combatEvent == 'SPELL_CAST_SUCCESS' then
+        -- Check if we've had a successful spellcast
+        if combatEvent == 'SPELL_CAST_SUCCESS' then
             if sourceGUID == playerGUID then
                 -- Queue a screen update
                 self:QueueUpdate()

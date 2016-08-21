@@ -1,4 +1,4 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ local windwalker_artifact_overrides = {
 local windwalker_hooks = {
     hooks = {
         perform_spend = function(spell, env, action, origCostType, origCostAmount)
-            if costType == 'chi' then
+            if origCostType == 'chi' then
                 if env.serenity.aura_remains > 0 then -- if serenity is active, then no chi costs (still need appropriate amount of chi!)
                     return 'none'
                 elseif action == 'blackout_kick' and env.bok_proc.aura_remains > 0 then -- no spend for BoK when there's a proc

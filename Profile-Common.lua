@@ -1,9 +1,7 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
-local tcontains = tContains
 local floor = math.floor
 
 internal.global_blacklisted_abilities = {

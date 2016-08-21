@@ -76,7 +76,6 @@ end
 
 function LibProfiling:GetProfilingString()
     if not self.profiling.enabled then return 'Profiling disabled.' end
-    local k,v
     local l = LTC:Acquire()
     l[1+#l] = 'Profiling data:'
     for k,v in orderedpairs(self.profiling.data) do

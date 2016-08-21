@@ -1,7 +1,6 @@
-local addonName, internal = ...;
+local _, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
 
@@ -75,7 +74,6 @@ function Z:CreateNewState(numTargets)
 
     local prev_gcd = setmetatable({}, {
         __index = function(tbl,idx)
-            local k,v
             -- find the last cast ability
             local lastTime, lastAbility = 0, nil
             for k,v in pairs(last_cast_times) do
@@ -175,9 +173,9 @@ function Z:CreateNewState(numTargets)
         local start, duration = GetSpellCooldown(61304)
 
         -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
-        local cname, _, _, cicon, cstart, cend = UnitCastingInfo('player')
+        local cname, _, _, _, cstart, cend = UnitCastingInfo('player')
         if not cname then
-            cname, _, _, cicon, cstart, cend = UnitChannelInfo('player')
+            cname, _, _, _, cstart, cend = UnitChannelInfo('player')
         end
         if cname then
             start = cstart * 0.001

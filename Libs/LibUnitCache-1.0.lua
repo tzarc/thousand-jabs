@@ -91,7 +91,6 @@ function lib:UpdateUnitCache(unitID, forceUpdate)
 end
 
 function lib:PurgeExpiredUnitCaches()
-    local k, v
     for k, v in pairs(self.unitCache) do
         if v.lastSeen and (v.lastSeen + purgeTime) <= GetTime() then
             LTC:Release(self.unitCache[k])
@@ -141,11 +140,11 @@ lib.frame:RegisterEvent('PLAYER_ENTERING_WORLD')
 lib.frame:RegisterEvent('PLAYER_TARGET_CHANGED')
 lib.frame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 
-function lib:PLAYER_ENTERING_WORLD(eventName, ...)
+function lib:PLAYER_ENTERING_WORLD(eventName)
     lib:UpdateUnitCache('player', true)
 end
 
-function lib:PLAYER_TARGET_CHANGED(eventName, ...)
+function lib:PLAYER_TARGET_CHANGED(eventName)
     lib:UpdateUnitCache('target', true)
 end
 
@@ -158,7 +157,7 @@ function lib:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hide
     end
 end
 
-lib.frame:SetScript("OnUpdate", function(self, ...)
+lib.frame:SetScript("OnUpdate", function(self)
     if forceUpdate or GetTime() > (lastUpdateTime + updateThrottle) then
         forceUpdate = false
         lastUpdateTime = GetTime()
