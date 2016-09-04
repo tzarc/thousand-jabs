@@ -338,7 +338,7 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                     DBG('condition string: %s', paramIf)
                     tprint(s2)
                 end
-                local condition = fmt("(%s) and (%s)", formatsections(s1), formatsections(s2))
+                local condition = fmt("(%s) and (%s)", (#s1 > 0 and formatsections(s1) or "true"), formatsections(s2))
                 P("")
                 P(" initcond: %s", condition)
 
