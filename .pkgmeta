@@ -16,4 +16,5 @@ ignore:
     - cleanup.sh
     - perform-tag.sh
     - update-apls.sh
+    - test-parser.sh
     - .gitignore

@@ -4,6 +4,8 @@ local DBG = internal.DBG
 local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
 
+local safe_table_entries = { 'hooks', 'can_spend', 'perform_spend', 'OnStateInit', 'OnPredictActionAtOffset' }
+
 function Z:CreateNewState(numTargets)
 
     local profile = Z:GetActiveProfile()
@@ -54,7 +56,7 @@ function Z:CreateNewState(numTargets)
             state.env[k] = setmetatable({}, {
                 __index = function(entry, idx)
 
-                    if idx == 'hooks' or idx == 'can_spend' or idx == 'perform_spend' then
+                    if tcontains(safe_table_entries, idx) then
                         return rawget(v, idx) -- allow function calls to the base table ONLY for these keys
                     end
 
@@ -148,7 +150,6 @@ function Z:CreateNewState(numTargets)
             else
                 state.env[k] = nil
             end
-
         end
 
         -- Set the initial parameters
@@ -158,10 +159,14 @@ function Z:CreateNewState(numTargets)
         state.env.desired_targets = numTargets - 1
         state.env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
         state.env.player_level = UnitLevel('player')
+        state.env.override_out_of_melee_range = false
 
         -- Reset the prev_gcd table
         state.env.prev_gcd = prev_gcd
 
+        -- Call the current profile's state initialisation function
+        local initFunc = state.env.hooks.OnStateInit
+        if initFunc then initFunc(state.env) end
     end
 
     Z:ProfileFunction(state, 'Reset', 'state:Reset')
@@ -221,6 +226,11 @@ function Z:CreateNewState(numTargets)
         state.env.predictionOffset = predictionOffset
         DBG("")
         DBG("Offset: %.3f", predictionOffset)
+
+        -- Call the current profile's state initialisation function
+        local func = state.env.hooks.OnPredictActionAtOffset
+        if func then func(state.env) end
+
         return state:ExecuteActionProfileList("default")
 
     end

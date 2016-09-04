@@ -1,7 +1,74 @@
-local _, internal = ...;
-local Z = internal.Z
-local DBG = internal.DBG
-local fmt = internal.fmt
+local _, internal, Z, DBG, fmt
+local IsLoadedByWoW = GetSpellInfo and true or false
+if IsLoadedByWoW then
+    _, internal = ...;
+    Z = internal.Z
+    DBG = internal.DBG
+    fmt = internal.fmt
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Stuff only applicable if not running under WoW
+------------------------------------------------------------------------------------------------------------------------
+
+if not IsLoadedByWoW then
+    function fmt(f, ...)
+        return ((select('#', ...) > 0) and string.format(f, ...) or f or '')
+    end
+
+    function DBG(...) print(fmt(...)) end
+
+    setfenv = setfenv or function(fn, env)
+        local i = 1
+        while true do
+            local name = debug.getupvalue(fn, i)
+            if name == "_ENV" then
+                debug.upvaluejoin(fn, i, (function()
+                    return env
+                end), 1)
+                break
+            elseif not name then
+                break
+            end
+
+            i = i + 1
+        end
+
+        return fn
+    end
+
+    local function orderedpairs(t, f)
+        local a = {}
+        for n in pairs(t) do table.insert(a, n) end
+        table.sort(a, f)
+        local i = 0
+        local iter = function ()
+            i = i + 1
+            local k = a[i]
+            if k == nil then
+                return nil
+            else
+                return k, t[k]
+            end
+        end
+        return iter
+    end
+
+    function tprint(tbl, indent)
+        if not indent then indent = 0 end
+        for k,v in orderedpairs(tbl) do
+            formatting = string.rep(" ", indent) .. k .. ": "
+            if type(v) == "table" then
+                print(formatting)
+                tprint(v, indent+4)
+            elseif type(v) == 'string' then
+                print(formatting .. v)
+            else
+                print(formatting .. tostring(v))
+            end
+        end
+    end
+end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -12,6 +79,64 @@ local function splitnewlines(str)
     local function helper(line) table.insert(t, line) return "" end
     helper(str:gsub("(.-)\r?\n", helper))
     return t
+end
+
+local function tokenise_apl_line(str, indent)
+    local indent = indent or 0
+    local sections = {}
+    local idx = 1
+    local arg = ""
+    local appendtoken = function(tok) sections[1+#sections] = tok end
+    local appendarg = function() if string.len(arg) > 0 then appendtoken('('..arg..')'); arg = "" end end
+    while idx <= string.len(str) do
+        local c = str:sub(idx,idx)
+        if c == "(" then
+            appendarg()
+            local bracketcount = 1
+            local origidx = idx
+            idx = idx + 1
+            while idx <= string.len(str) and bracketcount > 0 do
+                c = str:sub(idx,idx)
+                if c == "(" then bracketcount = bracketcount + 1 end
+                if c == ")" then bracketcount = bracketcount - 1 end
+                idx = idx + 1
+            end
+            sections[1+#sections] = tokenise_apl_line(str:sub(origidx+1, idx-1), indent + 8)
+        elseif c == ")" then
+            appendarg()
+            idx = idx + 1
+        elseif c == "&" then
+            appendarg()
+            appendtoken(" and ")
+            idx = idx + 1
+        elseif c == "|" then
+            appendarg()
+            appendtoken(" or ")
+            idx = idx + 1
+        else
+            arg = arg..c
+            idx = idx + 1
+        end
+    end
+    appendarg()
+    if not IsLoadedByWoW then
+        DBG('----')
+        DBG('input: %s', str)
+        tprint(sections, indent)
+    end
+    return sections
+end
+
+local function formatsections(sections)
+    if #sections == 1 and type(sections[1]) == 'string' then return sections[1] end
+    local str = '( '
+    for _,v in pairs(sections) do
+        if type(v) == "string" then str = str .. v end
+        if type(v) == "table" then
+            str = str .. formatsections(v)
+        end
+    end
+    return str .. ' )'
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -47,8 +172,6 @@ local conditionalSubstitutions = {
     { "+", " + " },
     { "-", " - " },
     { "*", " * " },
-    { "&", " ) and ( " },
-    { "|", " ) or ( " },
     { "%(", " ( " },
     { "%)", " ) " },
     { " target%.dot%.", " aura." },
@@ -114,14 +237,14 @@ local conditionalSubstitutions = {
     -- Convert the XXXXX.spell.YYYYY -> spell.XXXXX_YYYYY
     { " ([%a_]+)%.([%a_]+)%.([%a_%.]+) ",
         function(a,b,c)
-            return format(" %s.%s_%s ", b, a, c:gsub("%.","_"))
+            return fmt(" %s.%s_%s ", b, a, c:gsub("%.","_"))
         end
     },
 
     { "_pct", "_percent" },
 }
 
-local arithmetic_operators = { ["+"] = "%+", ["-"] = "%-", ["*"] = "%*", ["/"] = "/" }
+local arithmetic_operators = { ["+"] = "%+", ["-"] = "%-", ["*"] = "%*", ["/"] = "%%" }
 
 for o,p in pairs(arithmetic_operators) do
     conditionalSubstitutions[1+#conditionalSubstitutions] = {
@@ -150,11 +273,7 @@ for o,p in pairs(arithmetic_operators) do
     }
 end
 
-------------------------------------------------------------------------------------------------------------------------
--- APL parsing
-------------------------------------------------------------------------------------------------------------------------
-
-function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
+local function ParseActionProfileList(aplString, extraParserSubstitutions)
     local emptyEnvironment = setmetatable({}, { __index = function() return nil end })
     local profileLines = splitnewlines(aplString or "")
     local profileErrors = {}
@@ -165,7 +284,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
         -- Only continue if the line contains "action" at the start
         if line:find("action") == 1 then
             if line:find("%a%s*%(") then -- ensure we don't have any attempted function calls
-                profileErrors[#profileErrors+1] = format("Malformed line: '%s'", line)
+                profileErrors[#profileErrors+1] = fmt("Malformed line: '%s'", line)
             else
                 local entry = {}
 
@@ -174,7 +293,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 if not actionList or actionList == "" then actionList = "default" end
                 entry.name = actionName
 
-                local key = format("%s:%s", actionList, actionName)
+                local key = fmt("%s:%s", actionList, actionName)
                 -- Determine parameters
                 local paramName = line:match('name=([^,]*),?') or ""
                 local paramType = line:match('type=([^,]*),?') or ""
@@ -188,7 +307,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 actionCounts[key] = (actionCounts[key] or 0) + 1
 
                 -- Set the key of this action
-                entry.key = format("%s[%d]", key, actionCounts[key])
+                entry.key = fmt("%s[%d]", key, actionCounts[key])
 
                 P("     line: %s", line)
                 P("      key: %s", entry.key)
@@ -200,19 +319,28 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 P("       if: %s", paramIf)
 
                 -- Work out the base condition string in the APL, as well as a cast validation check
-                local condition = paramIf
+                local precondition = ""
                 if actionName ~= "call_action_list" and actionName ~= "run_action_list" then
-                    condition = format("(spell.%s.can_cast)&(%s)", actionName, condition)
+                    precondition = fmt("spell.%s.can_cast", actionName)
                 else
                     entry.list = paramName
                 end
-                condition = format("(%s)", condition)
+                if paramSync ~= "" then
+                    precondition = fmt("(%s.spell_can_cast|cooldown.%s.up|buff.%s.up)&(%s)", paramSync, paramSync, paramSync, precondition)
+                end
+
+                local s1, s2 = tokenise_apl_line(precondition), tokenise_apl_line(paramIf)
+                if not IsLoadedByWoW then
+                    DBG('------------------------------------------')
+                    DBG('preconditions: %s', precondition)
+                    tprint(s1)
+                    DBG('------------------------------------------')
+                    DBG('condition string: %s', paramIf)
+                    tprint(s2)
+                end
+                local condition = fmt("(%s) and (%s)", formatsections(s1), formatsections(s2))
                 P("")
                 P(" initcond: %s", condition)
-
-                if paramSync ~= "" then
-                    condition = fmt("(%s.spell_can_cast|cooldown.%s.up|buff.%s.up)&%s", paramSync, paramSync, paramSync, condition)
-                end
 
                 if condition ~= "(true)" then
                     local function applySubstitutions(substitutionsTable)
@@ -256,18 +384,20 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
 
                 -- Save the actual condition string
                 entry.condition = condition
+                entry.param_if = paramIf
+                entry.param_sync = paramSync
 
                 -- Return the result of the conditional and compile
                 local conditionFunctionSource = "return function() return (" .. condition .. ") end"
                 local conditionFunctionLoader, errStr = loadstring(conditionFunctionSource, entry.key..':condition')
                 if errStr then
-                    profileErrors[#profileErrors+1] = format("Could not load condition: %s='%s'", entry.key, errStr)
+                    profileErrors[#profileErrors+1] = fmt("Could not load condition: %s='%s'", entry.key, errStr)
                 else
                     setfenv(conditionFunctionLoader, emptyEnvironment)
                     local success, conditionFunction = pcall(assert(conditionFunctionLoader))
                     -- Log an error during compilation if any
                     if not success or not conditionFunction then
-                        profileErrors[#profileErrors+1] = format("Could not compile condition: %s='%s'", entry.key, condition)
+                        profileErrors[#profileErrors+1] = fmt("Could not compile condition: %s='%s'", entry.key, condition)
                     else
                         -- Save the function/condition string
                         entry.check = conditionFunction
@@ -282,4 +412,18 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
         end
     end
     return parsedActions
+end
+
+if IsLoadedByWoW then
+    -- Export the APL parser function to the rest of ThousandJabs
+    function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
+        return ParseActionProfileList(aplString, extraParserSubstitutions)
+    end
+else
+    -- Run the parser without being loaded by WoW
+    local internal = {}
+    loadfile([[ActionProfileLists//ActionProfileLists-Demon_Hunter.lua]])("x", internal)
+
+    local parsed = ParseActionProfileList(internal.apls["legion-dev::Tier19P::Demon_Hunter_Havoc_T19P"])
+    tprint(parsed)
 end

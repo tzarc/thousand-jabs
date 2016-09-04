@@ -100,6 +100,13 @@ function Z:RegisterPlayerClass(config)
             -- Determine the ability-specific information, if we can cast the current action
             if type(v) == 'table' and rawget(v, 'AbilityID') then
 
+                -- Set up a function to check if the ability is in range
+                v.in_range = function(spell,env)
+                    local r = IsSpellInRange(spell.SpellBookItem, BOOKTYPE_SPELL, 'target')
+                    r = (not r or r ~= 1) and true or false
+                    return not r and not env.override_out_of_melee_range
+                end
+
                 -- If we have an AbilityID specified, but in_spellbook isn't set, then make sure it's set to false (i.e. it's defined in the profile, but it's not in the current spellbook)
                 if not rawget(v, 'in_spellbook') then
                     v.in_spellbook = false
