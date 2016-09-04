@@ -118,19 +118,37 @@ local conditionalSubstitutions = {
         end
     },
 
-    { " ([%a_]+)%.([%a_]+) %* ", -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
-        function(a,b)
-            return format(" ( %s.%s and 1 or 0 ) * ", a, b)
-        end
-    },
-    { " %* ([%a_]+)%.([%a_]+) ", -- handle things like "(9 * mybuff.aura_up)" -> "(9 * (mybuff.aura_up and 1 or 0))"
-        function(a,b)
-            return format(" * ( %s.%s and 1 or 0 ) ", a, b)
-        end
-    },
-
     { "_pct", "_percent" },
 }
+
+local arithmetic_operators = { ["+"] = "%+", ["-"] = "%-", ["*"] = "%*", ["/"] = "/" }
+
+for o,p in pairs(arithmetic_operators) do
+    conditionalSubstitutions[1+#conditionalSubstitutions] = {
+        fmt(" ([%%a_]+)%%.([%%a_]+) %s ", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        function(a,b)
+            return fmt(" ( %s.%s and 1 or 0 ) %s ", a, b, o)
+        end
+    }
+    conditionalSubstitutions[1+#conditionalSubstitutions] = {
+        fmt(" %s ([%%a_]+)%%.([%%a_]+) ", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        function(a,b)
+            return fmt(" %s ( %s.%s and 1 or 0 ) ", o, a, b)
+        end
+    }
+    conditionalSubstitutions[1+#conditionalSubstitutions] = {
+        fmt(" %%( ([%%a_]+)%%.([%%a_]+) %%) %s ", p), -- handle things like "((mybuff.aura_up) * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        function(a,b)
+            return fmt(" ( %s.%s and 1 or 0 ) %s ", a, b, o)
+        end
+    }
+    conditionalSubstitutions[1+#conditionalSubstitutions] = {
+        fmt(" %s %%( ([%%a_]+)%%.([%%a_]+) %%) ", p), -- handle things like "(9 * (mybuff.aura_up))" -> "(9 * (mybuff.aura_up and 1 or 0))"
+        function(a,b)
+            return fmt(" %s ( %s.%s and 1 or 0 ) ", o, a, b)
+        end
+    }
+end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- APL parsing
@@ -193,7 +211,7 @@ function Z:ParseActionProfileList(aplString, extraParserSubstitutions)
                 P(" initcond: %s", condition)
 
                 if paramSync ~= "" then
-                    condition = fmt("(cooldown.%s.up|buff.%s.up)&%s", paramSync, paramSync, condition)
+                    condition = fmt("(%s.spell_can_cast|cooldown.%s.up|buff.%s.up)&%s", paramSync, paramSync, paramSync, condition)
                 end
 
                 if condition ~= "(true)" then

@@ -279,6 +279,10 @@ local havoc_base_overrides = {
         AuraApplied = 'momentum',
         AuraApplyLength = 10,
     },
+    throw_glaive = {
+        AuraApplied = 'bloodlet',
+        AuraApplyLength = 10,
+    },
     vengeful_retreat = {
         PerformCast = function(spell,env)
             env.momentum.expirationTime = env.currentTime + 3
@@ -288,6 +292,11 @@ local havoc_base_overrides = {
     metamorphosis = {
         AuraID = 162264,
         AuraUnit = 'player',
+        AuraMine = true,
+    },
+    bloodlet = {
+        AuraID = 207690,
+        AuraUnit = 'target',
         AuraMine = true,
     },
     momentum = {
