@@ -62,8 +62,7 @@ local arms_base_overrides = {
     },
     charge = {
         CanCast = function(spell,env)
-            local r = IsSpellInRange(spell.SpellBookItem, BOOKTYPE_SPELL, "target")
-            return r and r == 1 and true or false
+            return spell.in_range
         end,
         PerformCast = function(spell,env)
             env.rage.gained = env.rage.gained + 20
@@ -71,8 +70,7 @@ local arms_base_overrides = {
     },
     heroic_leap = {
         CanCast = function(spell,env)
-            local r = IsSpellInRange(spell.SpellBookItem, BOOKTYPE_SPELL, "target")
-            return r and r == 1 and true or false
+            return spell.in_range
         end
     },
     execute = {

@@ -87,3 +87,4 @@ echo '</Ui>' >> Classes/all.xml
 
 
 ./cleanup.sh
+./test-parser.sh

@@ -79,14 +79,39 @@ function Z:LoadFunctionString(funcStr, name)
     end
 end
 
+function internal.orderedpairs(t, f)
+    local a = {}
+    for n in pairs(t) do table.insert(a, n) end
+    table.sort(a, f)
+    local i = 0
+    local iter = function ()
+        i = i + 1
+        local k = a[i]
+        if k == nil then
+            return nil
+        else
+            return k, t[k]
+        end
+    end
+    return iter
+end
+local orderedpairs = internal.orderedpairs
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Debug log
 ------------------------------------------------------------------------------------------------------------------------
 
 function internal.DBG(...)
     if Z.DB.do_debug then
-        if #dbglist == 0 then dbglist[1] = addonName .. ' Debug log (|cFF00FFFFhide with /'..consoleCommand..' _dbg|r):' end
-        dbglist[1+#dbglist] = fmt(...)
+        local x = {...}
+        if #x == 1 and type(x[1]) == 'table' then
+            for k,v in orderedpairs(x[1]) do
+                dbglist[1+#dbglist] = fmt(" - %s = %s", tostring(k), tostring(v))
+            end
+        else
+            if #dbglist == 0 then dbglist[1] = addonName .. ' Debug log (|cFF00FFFFhide with /'..consoleCommand..' _dbg|r):' end
+            dbglist[1+#dbglist] = fmt(...)
+        end
     end
 end
 
@@ -114,7 +139,7 @@ function Z:ShowLoggingFrame()
         self.log_frame.text:SetPoint("TOPLEFT", 8, -8)
         self.log_frame.text:SetPoint("BOTTOMRIGHT", -8, 8)
         local f = LSM:Fetch("font", "mplus-1m-bold")
-        if f then self.log_frame.text:SetFont(f, 9, "OUTLINE") end
+        if f then self.log_frame.text:SetFont(f, 10, "OUTLINE") end
     end
 
     self.log_frame:Show()

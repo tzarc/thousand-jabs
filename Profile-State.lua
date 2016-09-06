@@ -4,7 +4,7 @@ local DBG = internal.DBG
 local LUC = LibStub('LibUnitCache-1.0')
 local tcontains = tContains
 
-local safe_table_entries = { 'hooks', 'can_spend', 'perform_spend', 'OnStateInit', 'OnPredictActionAtOffset' }
+local safe_table_entries = { 'type', 'hooks', 'can_spend', 'perform_spend', 'OnStateInit', 'OnPredictActionAtOffset' }
 
 function Z:CreateNewState(numTargets)
 
@@ -58,6 +58,14 @@ function Z:CreateNewState(numTargets)
 
                     if tcontains(safe_table_entries, idx) then
                         return rawget(v, idx) -- allow function calls to the base table ONLY for these keys
+                    end
+
+                    -- Handle conversions from bool to number
+                    local asnumbersuffix = "_as_number"
+                    if idx:match(asnumbersuffix) then
+                        idx = idx:gsub(asnumbersuffix,"")
+                        local v = entry[idx]
+                        return type(v) == 'number' and v or (v and 1 or 0)
                     end
 
                     -- Forward to the profile table

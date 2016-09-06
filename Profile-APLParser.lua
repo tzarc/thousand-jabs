@@ -12,6 +12,9 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 if not IsLoadedByWoW then
+    dump_table = loadfile([[Libs//LibPrtrDump-1.0.lua]])()
+    print_table = function(tbl) print(dump_table(tbl)) end
+
     function fmt(f, ...)
         return ((select('#', ...) > 0) and string.format(f, ...) or f or '')
     end
@@ -37,7 +40,7 @@ if not IsLoadedByWoW then
         return fn
     end
 
-    local function orderedpairs(t, f)
+    function orderedpairs(t, f)
         local a = {}
         for n in pairs(t) do table.insert(a, n) end
         table.sort(a, f)
@@ -53,21 +56,6 @@ if not IsLoadedByWoW then
         end
         return iter
     end
-
-    function tprint(tbl, indent)
-        if not indent then indent = 0 end
-        for k,v in orderedpairs(tbl) do
-            formatting = string.rep(" ", indent) .. k .. ": "
-            if type(v) == "table" then
-                print(formatting)
-                tprint(v, indent+4)
-            elseif type(v) == 'string' then
-                print(formatting .. v)
-            else
-                print(formatting .. tostring(v))
-            end
-        end
-    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -81,14 +69,38 @@ local function splitnewlines(str)
     return t
 end
 
-local function tokenise_apl_line(str, indent)
+local operators = {
+    { '&&', ' and ' },
+    { '&', ' and ' },
+    { '||', ' or ' },
+    { '|', ' or ' },
+    { '+', ' + ' },
+    { '-', ' - ' },
+    { '*', ' * ' },
+    { '%', ' / ' },
+    { '<=', ' <= ' },
+    { '<', ' < ' },
+    { '>=', ' >= ' },
+    { '>', ' > ' },
+    { '=', ' == ' },
+}
+local function is_parsed_operator(str)
+    for _,v in pairs(operators) do
+        if str == v[2] then
+            return true
+        end
+    end
+end
+
+local function tokenise_apl_line(str)
     local indent = indent or 0
     local sections = {}
     local idx = 1
     local arg = ""
     local appendtoken = function(tok) sections[1+#sections] = tok end
-    local appendarg = function() if string.len(arg) > 0 then appendtoken('('..arg..')'); arg = "" end end
+    local appendarg = function() if string.len(arg) > 0 then appendtoken(arg); arg = "" end end
     while idx <= string.len(str) do
+        --DBG('O: ' .. str:sub(idx))
         local c = str:sub(idx,idx)
         if c == "(" then
             appendarg()
@@ -96,42 +108,48 @@ local function tokenise_apl_line(str, indent)
             local origidx = idx
             idx = idx + 1
             while idx <= string.len(str) and bracketcount > 0 do
+                --DBG('I: ' .. str:sub(idx))
                 c = str:sub(idx,idx)
                 if c == "(" then bracketcount = bracketcount + 1 end
                 if c == ")" then bracketcount = bracketcount - 1 end
                 idx = idx + 1
             end
-            sections[1+#sections] = tokenise_apl_line(str:sub(origidx+1, idx-1), indent + 8)
+            sections[1+#sections] = tokenise_apl_line(str:sub(origidx+1, idx-2))
         elseif c == ")" then
-            appendarg()
-            idx = idx + 1
-        elseif c == "&" then
-            appendarg()
-            appendtoken(" and ")
-            idx = idx + 1
-        elseif c == "|" then
-            appendarg()
-            appendtoken(" or ")
-            idx = idx + 1
+            error('should not get here')
         else
-            arg = arg..c
-            idx = idx + 1
+            local found = false
+            for _,v in pairs(operators) do
+                local e = str:sub(idx,idx+string.len(v[1])-1)
+                if e == v[1] then
+                    appendarg()
+                    appendtoken(v[2])
+                    found = true
+                    idx = idx + string.len(v[1])
+                    break
+                end
+            end
+            if not found then
+                arg = arg..c
+                idx = idx + 1
+            end
         end
     end
     appendarg()
-    if not IsLoadedByWoW then
-        DBG('----')
-        DBG('input: %s', str)
-        tprint(sections, indent)
-    end
+    if not IsLoadedByWoW then print_table(sections) end
     return sections
 end
 
 local function formatsections(sections)
-    if #sections == 1 and type(sections[1]) == 'string' then return sections[1] end
+    --[[if #sections == 1 and type(sections[1]) == 'string' then
+        if sections[1]:find("^[+-]?[%d.]+$") then return sections[1] end
+        return '( ' .. sections[1] .. ' )'
+    end]]
     local str = '( '
     for _,v in pairs(sections) do
-        if type(v) == "string" then str = str .. v end
+        if type(v) == "string" then
+            str = str .. ' ' .. v .. ' '
+        end
         if type(v) == "table" then
             str = str .. formatsections(v)
         end
@@ -144,36 +162,26 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local conditionalSubstitutions = {
-    { "debuff.casting.up", "target.is_casting" },
-    { "debuff.casting.down", " ( not target.is_casting ) " },
-    { "target.debuff.casting.up", "target.is_casting" },
-    { "target.debuff.casting.down", " ( not target.is_casting ) " },
-    { "buff.casting.up", "player.is_casting" },
-    { "buff.casting.down", " ( not player.is_casting ) " },
+    { "  ", " " },
+    { "debuff.casting.up", " target.is_casting " },
+    { "debuff.casting.down", " (not target.is_casting) " },
+    { "target.debuff.casting.up", " target.is_casting " },
+    { "target.debuff.casting.down", " (not target.is_casting) " },
+    { "buff.casting.up", " player.is_casting " },
+    { "buff.casting.down", " (not player.is_casting) " },
 
-    { "!([%a%._]+)%.remains", " ( %1.remains=0 ) " }, -- Handle "!buff.blah.remains" -> "buff.blah.remains==0"
+    { "!([%a%._]+)%.remains", " ( %1.remains == 0 ) " }, -- Handle "!buff.blah.remains" -> "buff.blah.remains==0"
     { "!([%a%._]+)%.enabled", " ( not %1.selected ) " }, -- Handle "!talent.blah.enabled" -> "talent.blah.selected==false"
-    { "([%a%._]+)%.enabled", " ( %1.selected ) " }, -- Handle "talent.blah.enabled" -> "talent.blah.selected==true"
-    { "!([%a%._]+)%.ticking", " ( %1.remains=0 ) " }, -- Handle "!dot.blah.ticking" -> "dot.blah.remains==0"
-    { "([%a%._]+)%.ticking", " ( %1.remains>0 ) " }, -- Handle "dot.blah.ticking" -> "dot.blah.remains>0"
+    { "([%a%._]+)%.enabled", " %1.selected " }, -- Handle "talent.blah.enabled" -> "talent.blah.selected==true"
+    { "!([%a%._]+)%.ticking", " ( %1.remains == 0 ) " }, -- Handle "!dot.blah.ticking" -> "dot.blah.remains==0"
+    { "([%a%._]+)%.ticking", " ( %1.remains > 0 ) " }, -- Handle "dot.blah.ticking" -> "dot.blah.remains>0"
 
-    { "!([%a%._]+)%.up", " ( %1.remains=0 ) " }, -- Handle "!buff.blah.up" -> "buff.blah.remains==0"
-    { "!([%a%._]+)%.down", " ( %1.remains>0 ) " }, -- Handle "!buff.blah.down" -> "buff.blah.remains>0"
+    { "!([%a%._]+)%.up", " ( %1.remains == 0 ) " }, -- Handle "!buff.blah.up" -> "buff.blah.remains==0"
+    { "!([%a%._]+)%.down", " ( %1.remains > 0 ) " }, -- Handle "!buff.blah.down" -> "buff.blah.remains>0"
 
-    { "([%a%._]+)%.react", " ( %1.stack>0 ) " }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
+    { "([%a%._]+)%.react", " ( %1.stack > 0 ) " }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
 
     { "!", " not " },
-    { "<", " < " },
-    { ">", " > " },
-    { "=", " = " },
-    { "<%s+=", " <= " },
-    { ">%s+=", " >= " },
-    { " = ", " == " },
-    { "+", " + " },
-    { "-", " - " },
-    { "*", " * " },
-    { "%(", " ( " },
-    { "%)", " ) " },
     { " target%.dot%.", " aura." },
     { " target%.buff%.", " aura." },
     { " target%.debuff%.", " aura." },
@@ -202,27 +210,28 @@ local conditionalSubstitutions = {
     { " max_charges ", " spell.THIS_SPELL.max_charges " },
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
     { " stagger%.(%a+) ", " ( stagger.%1 == true ) " },
+    { " equipped%.(%d+) ", " ( equipped[%1] == true ) " },
 
     -- Static incoming damage checks
-    { "%( incoming_damage_([%d]+)s %)",
+    { " incoming_damage_([%d]+)s ",
       function(a)
-        return format(" ( incoming_damage_over_%d > 0 ) ", tonumber(a)*1000)
+        return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
       end
     },
-    { "%( incoming_damage_([%d]+)ms %)",
+    { " incoming_damage_([%d]+)ms ",
       function(a)
-        return format(" ( incoming_damage_over_%d > 0 ) ", tonumber(a))
+        return fmt(" incoming_damage_over_%d ", tonumber(a))
       end
     },
     -- Comparison incoming damage checks
     { " incoming_damage_([%d]+)s ",
       function(a)
-        return format(" incoming_damage_over_%d ", tonumber(a)*1000)
+        return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
       end
     },
     { " incoming_damage_([%d]+)ms ",
       function(a)
-        return format(" incoming_damage_over_%d ", tonumber(a))
+        return fmt(" incoming_damage_over_%d ", tonumber(a))
       end
     },
 
@@ -234,7 +243,7 @@ local conditionalSubstitutions = {
 
     { " spell_targets%.([%a%._]+) ", " spell_targets " },
 
-    -- Convert the XXXXX.spell.YYYYY -> spell.XXXXX_YYYYY
+    -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
     { " ([%a_]+)%.([%a_]+)%.([%a_%.]+) ",
         function(a,b,c)
             return fmt(" %s.%s_%s ", b, a, c:gsub("%.","_"))
@@ -245,36 +254,99 @@ local conditionalSubstitutions = {
 }
 
 local arithmetic_operators = { ["+"] = "%+", ["-"] = "%-", ["*"] = "%*", ["/"] = "%%" }
-
 for o,p in pairs(arithmetic_operators) do
     conditionalSubstitutions[1+#conditionalSubstitutions] = {
-        fmt(" ([%%a_]+)%%.([%%a_]+) %s ", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        fmt("%%( ([%%a_]+)%%.([%%a_]+) %%) %s", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
         function(a,b)
-            return fmt(" ( %s.%s and 1 or 0 ) %s ", a, b, o)
+            return fmt(" ( %s.%s_as_number ) %s ", a, b, o)
         end
     }
     conditionalSubstitutions[1+#conditionalSubstitutions] = {
-        fmt(" %s ([%%a_]+)%%.([%%a_]+) ", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        fmt("%s %%( ([%%a_]+)%%.([%%a_]+) %%)", p), -- handle things like "(9 * mybuff.aura_up)" -> "(9 * (mybuff.aura_up and 1 or 0))"
         function(a,b)
-            return fmt(" %s ( %s.%s and 1 or 0 ) ", o, a, b)
+            return fmt(" %s ( %s.%s_as_number ) ", o, a, b)
         end
     }
     conditionalSubstitutions[1+#conditionalSubstitutions] = {
-        fmt(" %%( ([%%a_]+)%%.([%%a_]+) %%) %s ", p), -- handle things like "((mybuff.aura_up) * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
+        fmt(" ([%%a_]+)%%.([%%a_]+) %s", p), -- handle things like "(mybuff.aura_up * 9)" -> "((mybuff.aura_up and 1 or 0) * 9)"
         function(a,b)
-            return fmt(" ( %s.%s and 1 or 0 ) %s ", a, b, o)
+            return fmt(" %s.%s_as_number %s ", a, b, o)
         end
     }
     conditionalSubstitutions[1+#conditionalSubstitutions] = {
-        fmt(" %s %%( ([%%a_]+)%%.([%%a_]+) %%) ", p), -- handle things like "(9 * (mybuff.aura_up))" -> "(9 * (mybuff.aura_up and 1 or 0))"
+        fmt("%s ([%%a_]+)%%.([%%a_]+) ", p), -- handle things like "(9 * mybuff.aura_up)" -> "(9 * (mybuff.aura_up and 1 or 0))"
         function(a,b)
-            return fmt(" %s ( %s.%s and 1 or 0 ) ", o, a, b)
+            return fmt(" %s %s.%s_as_number ", o, a, b)
         end
     }
 end
 
+local function parse_condition_string(condition, thisSpellName, extraParserSubstitutions, paramDbg)
+    if condition == 'true' then return condition end
+
+    local P = function(...) if paramDbg then DBG(...) end end
+    P("")
+    P("    input: %s", condition)
+
+    local parsedCondition = tokenise_apl_line(condition)
+    local condition = (#parsedCondition > 0 and formatsections(parsedCondition) or "true")
+    P("   parsed: %s", condition)
+
+    local function applySubstitutions(substitutionsTable)
+        -- Remove any double-spaces
+        while condition:find("  ") do
+            condition = condition:gsub("  "," ")
+        end
+
+        for k,s in pairs(substitutionsTable) do
+            -- Run the substitution
+            local prev = condition
+            condition = condition:gsub(s[1], s[2])
+
+            -- Remove any double-spaces
+            while condition:find("  ") do
+                condition = condition:gsub("  "," ")
+            end
+
+            if condition ~= prev then
+                P("    apply: '%s' => '%s'", tostring(s[1]), tostring(s[2]))
+                P("      res: %s", condition)
+            end
+        end
+    end
+
+    -- Apply global substitutions
+    applySubstitutions(conditionalSubstitutions)
+    -- Apply profile-specific substitutions
+    if extraParserSubstitutions then
+        applySubstitutions(extraParserSubstitutions)
+    end
+
+    -- Replace 'THIS_SPELL' with the actual action name
+    local prev = condition
+    condition = condition:gsub("THIS_SPELL", thisSpellName)
+    if condition ~= prev then
+        P("")
+        P("    apply: '%s' => '%s'", 'THIS_SPELL', thisSpellName)
+        P("     cond: %s", condition)
+    end
+
+    -- Collapse parentheses
+    condition = condition:gsub('%( ','('):gsub(' %)',')')
+    P("    final: %s", condition)
+
+    -- Throw up an error if we had a parsing error - two back-to-back parentheses shouldn't happen!
+    if condition:find("%)%s*%(") then error(fmt("Invalid parentheses syntax: %s", condition)) end
+
+    return condition
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Profile setup
+------------------------------------------------------------------------------------------------------------------------
+
 local function ParseActionProfileList(aplString, extraParserSubstitutions)
-    local emptyEnvironment = setmetatable({}, { __index = function() return nil end })
+    local emptyEnvironment = setmetatable({ type = _G.type }, { __index = function() return nil end })
     local profileLines = splitnewlines(aplString or "")
     local profileErrors = {}
     local actionCounts = {}
@@ -289,18 +361,18 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 local entry = {}
 
                 -- Determine action, and if it's for a specific action list, use "default" list if not specified
-                local actionList, actionName = line:match('^actions%.?([%a_]*)[^%a]+([^,]+)')
+                local actionList, actionName = line:match('^actions%.?([%a%d_]*)[^%a%d]+([^,]+)')
                 if not actionList or actionList == "" then actionList = "default" end
                 entry.name = actionName
 
                 local key = fmt("%s:%s", actionList, actionName)
                 -- Determine parameters
-                local paramName = line:match('name=([^,]*),?') or ""
-                local paramType = line:match('type=([^,]*),?') or ""
-                local paramChoose = line:match('choose=([^,]*),?') or ""
-                local paramSync = line:match('sync=([^,]*),?') or ""
-                local paramIf = line:match('if=([^,]*),?') or "true"
-                local paramDbg = line:match('dbg=([^,]*),?') or nil
+                local paramName = line:match(',name=([^,]*),?') or ""
+                local paramType = line:match(',type=([^,]*),?') or ""
+                local paramChoose = line:match(',choose=([^,]*),?') or ""
+                local paramSync = line:match(',sync=([^,]*),?') or ""
+                local paramIf = line:match(',if=([^,]*),?') or "true"
+                local paramDbg = line:match(',dbg=([^,]*),?') or nil
                 local P = function(...) if paramDbg then DBG(...) end end
 
                 -- Count how many times we've seen this ability during this action list, for logging purposes
@@ -329,61 +401,15 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                     precondition = fmt("(%s.spell_can_cast|cooldown.%s.up|buff.%s.up)&(%s)", paramSync, paramSync, paramSync, precondition)
                 end
 
-                local s1, s2 = tokenise_apl_line(precondition), tokenise_apl_line(paramIf)
-                if not IsLoadedByWoW then
-                    DBG('------------------------------------------')
-                    DBG('preconditions: %s', precondition)
-                    tprint(s1)
-                    DBG('------------------------------------------')
-                    DBG('condition string: %s', paramIf)
-                    tprint(s2)
-                end
-                local condition = fmt("(%s) and (%s)", (#s1 > 0 and formatsections(s1) or "true"), formatsections(s2))
-                P("")
-                P(" initcond: %s", condition)
-
-                if condition ~= "(true)" then
-                    local function applySubstitutions(substitutionsTable)
-                        for k,s in pairs(substitutionsTable) do
-                            -- Run the substitution
-                            local prev = condition
-                            condition = condition:gsub(s[1], s[2])
-
-                            -- Remove any double-spaces
-                            while condition:find("  ") do
-                                condition = condition:gsub("  "," ")
-                            end
-
-                            if condition ~= prev then
-                                P("")
-                                P("    apply: '%s' => '%s'", tostring(s[1]), tostring(s[2]))
-                                P("     cond: %s", condition)
-                            end
-                        end
-                    end
-
-                    applySubstitutions(conditionalSubstitutions)
-                    if extraParserSubstitutions then
-                        applySubstitutions(extraParserSubstitutions)
-                    end
-
-                    -- Replace 'THIS_SPELL' with the actual action name
-                    local prev = condition
-                    condition = condition:gsub("THIS_SPELL", actionName)
-                    if condition ~= prev then
-                        P("")
-                        P("    apply: '%s' => '%s'", 'THIS_SPELL', actionName)
-                        P("     cond: %s", condition)
-                    end
-                end
-
-                -- Collapse parentheses now
-                condition = condition:gsub('%( ','('):gsub(' %)',')')
-                P("")
-                P("finalcond: %s", condition)
+                local x1 = parse_condition_string(precondition, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
+                local x2 = parse_condition_string(paramIf, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
+                local condition = fmt("(%s) and (%s)", x1, x2)
 
                 -- Save the actual condition string
+                entry.precondition = precondition
+                entry.precondition_parsed = s1
                 entry.condition = condition
+                entry.condition_parsed = s2
                 entry.param_if = paramIf
                 entry.param_sync = paramSync
 
@@ -391,7 +417,10 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 local conditionFunctionSource = "return function() return (" .. condition .. ") end"
                 local conditionFunctionLoader, errStr = loadstring(conditionFunctionSource, entry.key..':condition')
                 if errStr then
-                    profileErrors[#profileErrors+1] = fmt("Could not load condition: %s='%s'", entry.key, errStr)
+                    profileErrors[#profileErrors+1] = {
+                        ['error'] = fmt("Could not load condition: %s='%s'", entry.key, errStr),
+                        ['entry'] = entry
+                    }
                 else
                     setfenv(conditionFunctionLoader, emptyEnvironment)
                     local success, conditionFunction = pcall(assert(conditionFunctionLoader))
@@ -411,6 +440,11 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
             end
         end
     end
+    if #profileErrors > 0 and not IsLoadedByWoW then
+        DBG('------------------------------------------------------------------------------------------------------------------------------')
+        DBG('Parsing errors:')
+        error(dump_table(profileErrors))
+    end
     return parsedActions
 end
 
@@ -422,8 +456,30 @@ if IsLoadedByWoW then
 else
     -- Run the parser without being loaded by WoW
     local internal = {}
-    loadfile([[ActionProfileLists//ActionProfileLists-Demon_Hunter.lua]])("x", internal)
 
-    local parsed = ParseActionProfileList(internal.apls["legion-dev::Tier19P::Demon_Hunter_Havoc_T19P"])
-    tprint(parsed)
+    local files = {
+        [[ActionProfileLists/ActionProfileLists-Death_Knight.lua]],
+        [[ActionProfileLists/ActionProfileLists-Demon_Hunter.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Druid.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Hunter.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Mage.lua]],
+        [[ActionProfileLists/ActionProfileLists-Monk.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Paladin.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Priest.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Rogue.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Shaman.lua]],
+        -- [[ActionProfileLists/ActionProfileLists-Warlock.lua]],
+        [[ActionProfileLists/ActionProfileLists-Warrior.lua]]
+    }
+
+    for _,v in ipairs(files) do
+        loadfile(v)("x", internal)
+    end
+
+    for k,v in orderedpairs(internal.apls) do
+        DBG('------------------------------------------------------------------------------------------------------------------------------')
+        DBG(k)
+        local parsed = ParseActionProfileList(v)
+        print_table(parsed)
+    end
 end

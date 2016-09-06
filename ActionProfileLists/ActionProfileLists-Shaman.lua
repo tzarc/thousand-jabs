@@ -3,7 +3,7 @@ internal.apls = internal.apls or {}
 
 internal.apls["legion-dev::Tier19P::Shaman_Elemental_T19P"] = [[
 actions.precombat=flask,type=whispered_pact
-actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/food,type=pickled_eel
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace

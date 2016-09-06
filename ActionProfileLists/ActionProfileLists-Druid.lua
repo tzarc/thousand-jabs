@@ -4,9 +4,9 @@ internal.apls = internal.apls or {}
 internal.apls["legion-dev::Tier19P::Druid_Balance_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/moonkin_form
 actions.precombat+=/blessing_of_elune
-actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
 actions.precombat+=/new_moon
@@ -14,7 +14,7 @@ actions=potion,name=deadly_grace,if=buff.celestial_alignment.up|buff.incarnation
 actions+=/blood_fury,if=buff.celestial_alignment.up|buff.incarnation.up
 actions+=/berserking,if=buff.celestial_alignment.up|buff.incarnation.up
 actions+=/arcane_torrent,if=buff.celestial_alignment.up|buff.incarnation.up
-actions+=/call_action_list,name=fury_of_elune,if=talent.fury_of_elune.enabled&cooldown.fury_of_elue.remains<target.time_to_die
+actions+=/call_action_list,name=fury_of_elune,if=talent.fury_of_elune.enabled&cooldown.fury_of_elune.remains<target.time_to_die
 actions+=/new_moon,if=(charges=2&recharge_time<5)|charges=3
 actions+=/half_moon,if=(charges=2&recharge_time<5)|charges=3|(target.time_to_die<15&charges=2)
 actions+=/full_moon,if=(charges=2&recharge_time<5)|charges=3|target.time_to_die<15
@@ -69,11 +69,11 @@ actions.single_target+=/solar_wrath
 
 internal.apls["legion-dev::Tier19P::Druid_Feral_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=the_hungry_magister
+actions.precombat+=/food,type=nightborne_delicacy_platter
+actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/healing_touch,if=talent.bloodtalons.enabled
 actions.precombat+=/cat_form
 actions.precombat+=/prowl
-actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
 actions=dash,if=!buff.cat_form.up
@@ -81,7 +81,7 @@ actions+=/cat_form
 actions+=/wild_charge
 actions+=/displacer_beast,if=movement.distance>10
 actions+=/dash,if=movement.distance&buff.displacer_beast.down&buff.wild_charge_movement.down
-actions+=/rake,if=buff.prowl.up
+actions+=/rake,if=buff.prowl.up|buff.shadowmeld.up
 actions+=/auto_attack
 actions+=/skull_bash
 actions+=/berserk,if=buff.tigers_fury.up
@@ -114,6 +114,7 @@ actions.generator+=/pool_resource,for_next=1
 actions.generator+=/thrash_cat,if=talent.brutal_slash.enabled&spell_targets.thrash_cat>=9
 actions.generator+=/pool_resource,for_next=1
 actions.generator+=/swipe_cat,if=spell_targets.swipe_cat>=6
+actions.generator+=/shadowmeld,if=combo_points<5&energy>=action.rake.cost&dot.rake.pmultiplier<2.1&buff.tigers_fury.up&(buff.bloodtalons.up|!talent.bloodtalons.enabled)&(!talent.incarnation.enabled|cooldown.incarnation.remains>18)&!buff.incarnation.up
 actions.generator+=/pool_resource,for_next=1
 actions.generator+=/rake,cycle_targets=1,if=combo_points<5&(!ticking|(!talent.bloodtalons.enabled&remains<duration*0.3)|(talent.bloodtalons.enabled&buff.bloodtalons.up&(!talent.soul_of_the_forest.enabled&remains<=7|remains<=5)&persistent_multiplier>dot.rake.pmultiplier*0.80))&target.time_to_die-remains>tick_time
 actions.generator+=/moonfire_cat,cycle_targets=1,if=combo_points<5&remains<=4.2&target.time_to_die-remains>tick_time*2

@@ -4,27 +4,6 @@ local fmt = internal.fmt
 local GUI = LibStub("AceGUI-3.0")
 
 ------------------------------------------------------------------------------------------------------------------------
--- Miscellaneous functions
-------------------------------------------------------------------------------------------------------------------------
-
-local function orderedpairs(t, f)
-    local a = {}
-    for n in pairs(t) do table.insert(a, n) end
-    table.sort(a, f)
-    local i = 0
-    local iter = function ()
-        i = i + 1
-        local k = a[i]
-        if k == nil then
-            return nil
-        else
-            return k, t[k]
-        end
-    end
-    return iter
-end
-
-------------------------------------------------------------------------------------------------------------------------
 -- Spellbook iteration
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -111,13 +90,14 @@ function Z:DetectAbilitiesFromSpellBook()
     local abilities = {}
 
     -- Helper to work out the 'simulationcraft-ified' name for the spell
-    local function slug(name) return name:lower():gsub(' ','_'):gsub('[^a-z_]','') end
+    local function slug(name) return name:lower():gsub(' ','_'):gsub('[^%a%d_]','') end
 
     -- Iterate over the spellbook, collecting all the abilities
     for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePlayerSpells() do
         abilities[slug(spellName)] = {
             Name = spellName,
             AbilityID = spellID,
+            AbilityIDs = { [spellID] = true },
             SpellBookSubtext = spellSubText,
             SpellBookItem = spellBookItem,
             IsTalent = spellIsTalent,
@@ -137,12 +117,7 @@ function Z:DetectAbilitiesFromSpellBook()
     end
 
     -- Merge the abilities with the full list, so that we can export later on
-    for k,v in pairs(abilities) do
-        for k2,v2 in pairs(v) do
-            definedAbilities[k] = definedAbilities[k] or {}
-            definedAbilities[k][k2] = v2
-        end
-    end
+    definedAbilities = self:MergeTables(abilities, definedAbilities)
 
     return abilities
 end
@@ -157,17 +132,22 @@ function Z:ExportAbilitiesFromSpellBook()
     -- Ability IDs
     addline("-- exported with /tj _esd")
     addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
-    for k,v in orderedpairs(definedAbilities) do
+    for k,v in internal.orderedpairs(definedAbilities) do
         local line = fmt('    %s = { ', k)
         if v.AbilityID then line = line .. fmt('AbilityID = %d, ', v.AbilityID) end
+        if v.AbilityIDs then
+            local ids = {}
+            for id,_ in internal.orderedpairs(v.AbilityIDs) do
+                ids[1+#ids] = id
+            end
+            line = line .. fmt('AbilityIDs = { %s }, ', table.concat(ids, ", "))
+        end
         if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
         line = line .. '},'
         addline(line)
     end
     addline("}")
     addline("")
-
-    DevTools_Dump{abilities=definedAbilities}
 
     -- Show the export window
     local f = GUI:Create("Frame")
@@ -180,6 +160,8 @@ function Z:ExportAbilitiesFromSpellBook()
     edit:SetText(export)
     edit:DisableButton(true)
     f:AddChild(edit)
+
+    --DevTools_Dump({definedAbilities=definedAbilities})
 
     -- Reset the table, so we can change spec
     definedAbilities = {}

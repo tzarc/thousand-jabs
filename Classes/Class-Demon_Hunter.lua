@@ -1,5 +1,6 @@
 local _, internal = ...;
 local Z = internal.Z
+local LUC = LibStub('LibUnitCache-1.0')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Vengeance profile definition
@@ -152,6 +153,24 @@ local vengeance_sigil_overrides = {
     sigil_of_chains = sigilInitialiser(8),
 }
 
+local vengeance_hooks = {
+    hooks = {
+        OnPredictActionAtOffset = function(env)
+            --[[
+            internal.DBG({
+                sigil_of_flame_spell_can_cast = env.sigil_of_flame.spell_can_cast,
+                sigil_of_flame_spell_remains_as_number = env.sigil_of_flame.spell_remains_as_number,
+                sigil_of_flame_spell_delay_as_number = env.sigil_of_flame.spell_delay_as_number,
+                sigil_of_flame_spell_duration_as_number = env.sigil_of_flame.spell_duration_as_number,
+                sigil_of_flame_in_spellbook = env.sigil_of_flame.in_spellbook,
+                sigil_of_flame_cooldown_remains = env.sigil_of_flame.cooldown_remains,
+                player_level = env.player_level,
+            })
+            -- ]]
+        end
+    }
+}
+
 Z:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
@@ -163,6 +182,7 @@ Z:RegisterPlayerClass({
         vengeance_base_overrides,
         vengeance_talent_overrides,
         vengeance_sigil_overrides,
+        vengeance_hooks,
     },
     blacklisted = {},
     conditional_substitutions = {
@@ -246,7 +266,7 @@ local havoc_base_overrides = {
     demons_bite = {
         fury_gain = 23, -- 20-30, err on the side of caution
         CanCast = function(spell,env)
-            return spell.in_range
+            return env.melee.in_range
         end,
         PerformCast = function(spell, env)
             env.fury.gained = env.fury.gained + spell.fury_gain
@@ -282,7 +302,7 @@ local havoc_base_overrides = {
         AuraApplied = 'momentum',
         AuraApplyLength = 10,
         PerformCast = function(spell,env)
-            env.override_out_of_melee_range = false
+            env.melee.in_range = true
         end,
     },
     throw_glaive = {
@@ -291,19 +311,19 @@ local havoc_base_overrides = {
     },
     vengeful_retreat = {
         CanCast = function(spell,env)
-            return env.demons_bite.in_range
+            return env.melee.in_range
         end,
         PerformCast = function(spell,env)
             env.fury.gained = env.fury.gained + 8 -- 40fury/5sec
             env.momentum.expirationTime = env.currentTime + 3
             env.prepared.expirationTime = env.currentTime + 5
-            env.override_out_of_melee_range = true
+            env.melee.in_range = false
         end,
     },
     movement = {
         distance = function(spell,env)
             -- this is for fel rush - there's no way to check against the actual distance to the target, so assume that if demon's bite is out of range, then we're needing to fel rush
-            return env.demons_bite.in_range == true and 0 or 100
+            return env.melee.in_range and 0 or 100
         end,
     },
     metamorphosis = {
@@ -311,7 +331,7 @@ local havoc_base_overrides = {
         AuraUnit = 'player',
         AuraMine = true,
         PerformCast = function(spell,env)
-            env.override_out_of_melee_range = false
+            env.melee.in_range = true
         end,
     },
     bloodlet = {
@@ -339,12 +359,12 @@ local havoc_base_overrides = {
     chaos_strike = {
         dmg = get_this_spell_damage, -- /dump tj.st_state.env.chaos_strike.dmg
         CanCast = function(spell,env)
-            return spell.in_range
+            return env.melee.in_range
         end,
     },
     fury_of_the_illidari = {
         CanCast = function(spell,env)
-            return spell.in_range
+            return env.melee.in_range
         end,
     },
 }
@@ -352,30 +372,42 @@ local havoc_base_overrides = {
 local havoc_hooks = {
     hooks = {
         OnStateInit = function(env)
-            -- Fix up melee range on creation of each state object
-            local in_range = (env.demons_bite.in_range or env.prev_gcd.fel_rush)
-            env.override_out_of_melee_range = (not in_range) or (env.prev_gcd.vengeful_retreat)
+            env.melee.in_range = env.melee.in_range_unlatched
         end,
         OnPredictActionAtOffset = function(env)
             --[[
-            internal.DBG("demons_bite.in_range = %s", tostring(env.demons_bite.in_range))
-            internal.DBG("prev_gcd.fel_rush = %s", tostring(env.prev_gcd.fel_rush))
-            internal.DBG("prev_gcd.vengeful_retreat = %s", tostring(env.prev_gcd.vengeful_retreat))
-            internal.DBG("override_out_of_melee_range = %s", tostring(env.override_out_of_melee_range))
-            internal.DBG("fel_rush.spell_can_cast = %s", tostring(env.fel_rush.spell_can_cast))
-            internal.DBG("momentum.talent_selected = %s", tostring(env.momentum.talent_selected))
-            internal.DBG("fel_mastery.talent_selected = %s", tostring(env.fel_mastery.talent_selected))
-            internal.DBG("fel_rush.spell_charges = %s", tostring(env.fel_rush.spell_charges))
-            internal.DBG("vengeful_retreat.cooldown_remains = %s", tostring(env.vengeful_retreat.cooldown_remains))
-            internal.DBG("momentum.aura_down = %s", tostring(env.momentum.aura_down))
-            internal.DBG("fury.deficit = %s", tostring(env.fury.deficit))
-            internal.DBG("movement.raid_event_in = %s", tostring(env.movement.raid_event_in))
-            ]]
+            internal.DBG({
+                melee_in_range = env.melee.in_range,
+                demons_bite_in_range = env.demons_bite.in_range,
+                chaos_strike_in_range = env.chaos_strike.in_range,
+                annihilation_in_range = env.annihilation.in_range,
+                prev_gcd_fel_rush = env.prev_gcd.fel_rush,
+                prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
+                demon_blades_talent_selected = env.demon_blades.talent_selected,
+                vengeful_retreat_spell_can_cast = env.vengeful_retreat.spell_can_cast,
+            })
+            -- ]]
+        end,
+    },
+    melee = {
+        in_range_unlatched = function(spell,env)
+            if env.demon_blades.talent_selected then
+                -- Meta screws things up here. Need to check against either chaos strike or annihilation, but they won't both be available so the addon will
+                -- error out. Need to refer to the applicable ability for whether meta is active on the player in-game, rather than in-sim.
+                local meta = LUC:GetAura('player', env.metamorphosis.AuraID, true)
+                if meta then
+                    return env.annihilation.in_range
+                else
+                    return env.chaos_strike.in_range
+                end
+            else
+                return env.demons_bite.in_range
+            end
         end,
     },
     out_of_range = {
         aura_up = function(spell,env)
-            return not env.demons_bite.in_range
+            return not env.melee.in_range
         end,
     },
 }
@@ -394,8 +426,6 @@ Z:RegisterPlayerClass({
     blacklisted = {
         'consume_magic',
         'pick_up_fragment',
-        --'vengeful_retreat',
-        --'fel_rush',
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },
