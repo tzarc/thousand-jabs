@@ -40,21 +40,6 @@ Z.damageTable = {}
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
 function Z:OnInitialize()
-    -- Sort out the SavedVariables
-    ThousandJabsDB = ThousandJabsDB or {
-        do_debug = false,
-        aoe = {
-            enabled = true,
-        },
-        cleave = {
-            enabled = true,
-        },
-        single_target = {
-            enabled = true,
-        },
-    }
-    Z.DB = ThousandJabsDB
-
     -- Pre-create the results table
     Z.results = {
         single_target = {
@@ -74,7 +59,7 @@ function Z:OnInitialize()
     }
 
     -- Show the debug log if we've enabled debugging
-    if Z.DB.do_debug then
+    if internal.GetConf("do_debug") then
         self:ShowLoggingFrame()
     end
 end
@@ -82,6 +67,11 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
+
+function Z:UpdateAlpha()
+    local inCombat = InCombatLockdown()
+    self.actionsFrame:SetAlpha(inCombat and internal.GetConf("inCombatAlpha") or internal.GetConf("outOfCombatAlpha"))
+end
 
 function Z:QueueUpdate()
     queuedUpdateTimer = queuedUpdateTimer or self:ScheduleTimer('PerformUpdate', queuedScreenUpdateTime)
@@ -94,6 +84,9 @@ function Z:PerformUpdate()
     -- Clear and restart the watchdog timer
     if watchdogUpdateTimer then self:CancelTimer(watchdogUpdateTimer) end
     watchdogUpdateTimer = self:ScheduleTimer('PerformUpdate', watchdogScreenUpdateTime)
+
+    -- Set up frame fading
+    self:UpdateAlpha()
 
     -- Clear out any errors for the last screen update
     internal.DBGR()
@@ -153,7 +146,8 @@ Z:ProfileFunction('PerformUpdate')
 
 function Z:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    return self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
+    local isDisabled = internal.GetConf("class", classID, "spec", specID, "disabled") and true or false
+    return (not isDisabled) and self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
 end
 
 function Z:ActivateProfile()
@@ -318,14 +312,20 @@ function Z:OnEnable()
             if button == "LeftButton" and self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                Z.DB.x, Z.DB.y = self:GetLeft(), self:GetBottom()
+                local x, y = self:GetCenter()
+                internal.SetConf(x, "x")
+                internal.SetConf(y, "y")
+                internal.SetConf("BOTTOMLEFT", "anchor")
             end
         end)
         self.actionsFrame:SetScript("OnHide", function(self)
             if self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                Z.DB.x, Z.DB.y = self:GetLeft(), self:GetBottom()
+                local x, y = self:GetCenter()
+                internal.SetConf(x, "x")
+                internal.SetConf(y, "y")
+                internal.SetConf("BOTTOMLEFT", "anchor")
             end
         end)
     end

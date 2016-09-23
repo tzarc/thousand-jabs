@@ -114,8 +114,13 @@ function Z:RegisterPlayerClass(config)
                     return (not r)
                 end
 
+                -- Set up a function to check to see if an ability is blacklisted
+                v.blacklisted = function(spell, env)
+                    return internal.GetConf("class", config.class_id, "spec", config.spec_id, "blacklist", k) and true or false
+                end
+
                 -- Start constructing the spell_can_cast() and perform_cast() functions
-                local spell_can_cast_funcsrc = fmt('(env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
+                local spell_can_cast_funcsrc = fmt('(not spell.blacklisted) and (env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
                 local perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD

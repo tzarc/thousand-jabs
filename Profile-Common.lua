@@ -175,9 +175,9 @@ internal.resources = {
             --[[
             local tx = { string.format("actual = %.2f, calculated = %.2f", GetTime(), env.currentTime) }
             for i=1,6 do
-                local s,d,r = GetRuneCooldown(i)
-                local remaining = math.max(0, s + d - env.currentTime)
-                table.insert(tx, remaining > 0 and remaining or true)
+            local s,d,r = GetRuneCooldown(i)
+            local remaining = math.max(0, s + d - env.currentTime)
+            table.insert(tx, remaining > 0 and remaining or true)
             end
             table.insert(tx, r)
             DevTools_Dump{tx=tx}

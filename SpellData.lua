@@ -54,7 +54,7 @@ do
 
     iterateTabs = function (state)
         while state.tabIdx <= state.numOfTabs do
-        local _, _, slotOffset, numSlots, _, offSpecID = GetSpellTabInfo(state.tabIdx)
+            local _, _, slotOffset, numSlots, _, offSpecID = GetSpellTabInfo(state.tabIdx)
             if offSpecID ~= 0 then
                 state.tabIdx = state.tabIdx + 1
             else

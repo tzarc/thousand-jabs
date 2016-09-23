@@ -8,6 +8,10 @@ for file in *.toc *.lua *.sh ActionProfileLists/*.xml ActionProfileLists/*.lua C
     sed -i 's/^local devMode = true/local devMode = false/' $file
 done
 
+for file in *.lua ActionProfileLists/*.lua Classes/*.lua ; do
+    luaformatter -a -s4 "${file}"
+done
+
 for file in *.sh ; do
     chmod +x $file
 done

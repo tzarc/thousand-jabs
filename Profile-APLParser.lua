@@ -142,8 +142,8 @@ end
 
 local function formatsections(sections)
     --[[if #sections == 1 and type(sections[1]) == 'string' then
-        if sections[1]:find("^[+-]?[%d.]+$") then return sections[1] end
-        return '( ' .. sections[1] .. ' )'
+    if sections[1]:find("^[+-]?[%d.]+$") then return sections[1] end
+    return '( ' .. sections[1] .. ' )'
     end]]
     local str = '( '
     for _,v in pairs(sections) do
@@ -214,25 +214,25 @@ local conditionalSubstitutions = {
 
     -- Static incoming damage checks
     { " incoming_damage_([%d]+)s ",
-      function(a)
-        return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
-      end
+        function(a)
+            return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
+        end
     },
     { " incoming_damage_([%d]+)ms ",
-      function(a)
-        return fmt(" incoming_damage_over_%d ", tonumber(a))
-      end
+        function(a)
+            return fmt(" incoming_damage_over_%d ", tonumber(a))
+        end
     },
     -- Comparison incoming damage checks
     { " incoming_damage_([%d]+)s ",
-      function(a)
-        return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
-      end
+        function(a)
+            return fmt(" incoming_damage_over_%d ", tonumber(a)*1000)
+        end
     },
     { " incoming_damage_([%d]+)ms ",
-      function(a)
-        return fmt(" incoming_damage_over_%d ", tonumber(a))
-      end
+        function(a)
+            return fmt(" incoming_damage_over_%d ", tonumber(a))
+        end
     },
 
     { " cooldown%.([%a%._]+)%.ready ", " ( cooldown.%1.remains == 0 ) " },

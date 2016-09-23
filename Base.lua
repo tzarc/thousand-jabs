@@ -54,11 +54,7 @@ function Z:PrintOnce(...)
 end
 
 function Z:Debug(...)
-    if self.DB.do_debug then self:Print(fmt(...)) end
-end
-
-function Z:SetDebug(s)
-    self.DB.do_debug = (s and true or false)
+    if internal.GetConf("do_debug") then self:Print(fmt(...)) end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -102,7 +98,7 @@ local orderedpairs = internal.orderedpairs
 ------------------------------------------------------------------------------------------------------------------------
 
 function internal.DBG(...)
-    if Z.DB.do_debug then
+    if internal.GetConf("do_debug") then
         local x = {...}
         if #x == 1 and type(x[1]) == 'table' then
             for k,v in orderedpairs(x[1]) do
@@ -153,7 +149,7 @@ function Z:HideLoggingFrame()
 end
 
 function Z:UpdateLog()
-    if self.DB.do_debug and self.log_frame then
+    if internal.GetConf("do_debug") and self.log_frame then
         if self:ProfilingEnabled() then
             self.log_frame.text:SetText(self:GetProfilingString() .. '\n\n' .. internal.DBGSTR())
         else
@@ -177,7 +173,7 @@ local missingFieldMetatable = {
         local tableName = (type(tableNames[tbl]) == 'string' and tableNames[tbl] or "UNKNOWN_TABLE")
         if not key then error(format('Attempted to index table "%s" with nil key.', tableName)) end
         if type(key) == 'table' then error(format('Attempted to index table "%s" with key of type table.\n%s', tableName, debugstack(1))) end
-        if Z.DB and Z.DB.do_debug then
+        if internal.GetConf("do_debug") then
             local errTxt = format('Missing field: "%s":\n%s', targetFieldName(tableName, key), debugstack(2))
             if not missing[errTxt] then
                 missing[errTxt] = true
@@ -223,33 +219,56 @@ function Z:MergeTables(...)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Console command handlers
+------------------------------------------------------------------------------------------------------------------------
+
+function Z:OpenConfigDialog()
+    local ACD = LibStub("AceConfigDialog-3.0")
+    ACD:Open("ThousandJabs")
+    ACD:SelectGroup("ThousandJabs", "general")
+end
+
+function Z:ToggleMovement()
+    if self.movable then
+        self.movable = false
+        self:Print('Frame movement disabled.')
+    else
+        self.movable = true
+        self:Print('Frame movement enabled.')
+    end
+    self.actionsFrame:SetMovable(self.movable)
+    self.actionsFrame:EnableMouse(self.movable)
+end
+
+function Z:ResetPosition()
+    self:Print('Resetting position.')
+    internal.SetConf(nil, "x")
+    internal.SetConf(nil, "y")
+    internal.SetConf(nil, "anchor")
+    self.actionsFrame:ClearAllPoints()
+    self.actionsFrame:SetPoint('CENTER', UIParent, internal.GetConf("anchor"), internal.GetConf("x"), internal.GetConf("y"))
+    self.actionsFrame:SetMovable(self.movable)
+    self.actionsFrame:EnableMouse(self.movable)
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- Console command
 ------------------------------------------------------------------------------------------------------------------------
+
 function Z:ConsoleCommand(args)
-    if args == "move" then
-        if self.movable then
-            self.movable = false
-            self:Print('Frame movement disabled.')
-        else
-            self.movable = true
-            self:Print('Frame movement enabled.')
-        end
-        self.actionsFrame:SetMovable(self.movable)
-        self.actionsFrame:EnableMouse(self.movable)
+    if args == "cfg" then
+        self:OpenConfigDialog()
+    elseif args == "move" then
+        self:ToggleMovement()
     elseif args == "resetpos" then
-        self:Print('Resetting position.')
-        self.actionsFrame:ClearAllPoints()
-        self.actionsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -180)
-        self.actionsFrame:SetMovable(self.movable)
-        self.actionsFrame:EnableMouse(self.movable)
-        self.DB.x, self.DB.y = self.actionsFrame:GetLeft(), self.actionsFrame:GetBottom()
+        self:ResetPosition()
     elseif args == "_dbg" then
-        if self.DB.do_debug then
-            self.DB.do_debug = false
+        if internal.GetConf("do_debug") then
+            internal.SetConf(false, "do_debug")
             self:HideLoggingFrame()
             self:Print('Debugging info disabled. Enable with "|cFFFF6600/%s _dbg|r".', consoleCommand)
         else
-            self.DB.do_debug = true
+            internal.SetConf(true, "do_debug")
             self:ShowLoggingFrame()
             self:Print('Debugging info enabled. Disable with "|cFFFF6600/%s _dbg|r".', consoleCommand)
         end
@@ -260,7 +279,7 @@ function Z:ConsoleCommand(args)
     elseif args == '_db' then
         self:Print('Dumping SavedVariables table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
-        DevTools_Dump{db=self.DB}
+        DevTools_Dump{db=ThousandJabsDB}
     elseif args == '_duc' then
         self:Print('Dumping unit cache table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
@@ -271,15 +290,16 @@ function Z:ConsoleCommand(args)
     elseif args == '_esd' then
         Z:ExportAbilitiesFromSpellBook()
     else
-      self:Print('%s chat commands:', addonName)
-      self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
-      self:Print("     |cFFFF6600/tj resetpos|r - Resets frame positioning to default.")
-      self:Print('%s debugging:', addonName)
-      self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', consoleCommand)
-      self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', consoleCommand)
-      self:Print('     |cFFFF6600/%s _db|r - Dumps SavedVariables table.', consoleCommand)
-      self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', consoleCommand)
-      self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', consoleCommand)
+        self:Print('%s chat commands:', addonName)
+        self:Print("     |cFFFF6600/tj cfg|r - Opens the configuration dialog.")
+        self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
+        self:Print("     |cFFFF6600/tj resetpos|r - Resets frame positioning to default.")
+        self:Print('%s debugging:', addonName)
+        self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', consoleCommand)
+        self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', consoleCommand)
+        self:Print('     |cFFFF6600/%s _db|r - Dumps SavedVariables table.', consoleCommand)
+        self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', consoleCommand)
+        self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', consoleCommand)
     end
 end
 Z:RegisterChatCommand(consoleCommand, 'ConsoleCommand')

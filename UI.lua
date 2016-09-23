@@ -29,11 +29,7 @@ function Z:CreateFrames()
     -- Set the geometry of the base frame
     baseFrame:SetWidth(totalWidth)
     baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
-    if Z.DB.x then
-        baseFrame:SetPoint("BOTTOMLEFT", UIParent, Z.DB.x, Z.DB.y)
-    else
-        baseFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, -80)
-    end
+    baseFrame:SetPoint("CENTER", UIParent, internal.GetConf("anchor"), internal.GetConf("x"), internal.GetConf("y"))
     baseFrame:Hide()
 
     return baseFrame

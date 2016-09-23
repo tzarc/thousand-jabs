@@ -68,11 +68,15 @@ local vengeance_base_overrides = {
         AuraID = 203819,
         AuraMine = true,
         AuraUnit = 'player',
+        AuraApplied = 'demon_spikes',
+        AuraApplyLength = 6,
     },
     metamorphosis = {
         AuraID = 187827,
         AuraMine = true,
         AuraUnit = 'player',
+        AuraApplied = 'demon_spikes',
+        AuraApplyLength = 15,
     },
     soul_cleave = {
         cost_type = 'pain',
@@ -156,17 +160,17 @@ local vengeance_sigil_overrides = {
 local vengeance_hooks = {
     hooks = {
         OnPredictActionAtOffset = function(env)
-            --[[
-            internal.DBG({
-                sigil_of_flame_spell_can_cast = env.sigil_of_flame.spell_can_cast,
-                sigil_of_flame_spell_remains_as_number = env.sigil_of_flame.spell_remains_as_number,
-                sigil_of_flame_spell_delay_as_number = env.sigil_of_flame.spell_delay_as_number,
-                sigil_of_flame_spell_duration_as_number = env.sigil_of_flame.spell_duration_as_number,
-                sigil_of_flame_in_spellbook = env.sigil_of_flame.in_spellbook,
-                sigil_of_flame_cooldown_remains = env.sigil_of_flame.cooldown_remains,
-                player_level = env.player_level,
-            })
-            -- ]]
+        --[[
+        internal.DBG({
+        sigil_of_flame_spell_can_cast = env.sigil_of_flame.spell_can_cast,
+        sigil_of_flame_spell_remains_as_number = env.sigil_of_flame.spell_remains_as_number,
+        sigil_of_flame_spell_delay_as_number = env.sigil_of_flame.spell_delay_as_number,
+        sigil_of_flame_spell_duration_as_number = env.sigil_of_flame.spell_duration_as_number,
+        sigil_of_flame_in_spellbook = env.sigil_of_flame.in_spellbook,
+        sigil_of_flame_cooldown_remains = env.sigil_of_flame.cooldown_remains,
+        player_level = env.player_level,
+        })
+        -- ]]
         end
     }
 }
@@ -274,16 +278,16 @@ local havoc_base_overrides = {
         dmg = get_this_spell_damage, -- /dump tj.st_state.env.demons_bite.dmg
 
         --[[
-            https://github.com/simulationcraft/simc/wiki/Demon-Hunters
-                demons_bite_per_dance = blade_dance_cost / demons_bite_fury
-                demons_bite_per_chaos_strike = ( chaos_strike_cost - 20 * crit_chance ) / demons_bite_fury
+        https://github.com/simulationcraft/simc/wiki/Demon-Hunters
+        demons_bite_per_dance = blade_dance_cost / demons_bite_fury
+        demons_bite_per_chaos_strike = ( chaos_strike_cost - 20 * crit_chance ) / demons_bite_fury
 
-                ( blade_dance_damage + demons_bite_per_dance * demons_bite_damage ) / ( 1 + demons_bite_per_dance )
-                      vs.
-                ( chaos_strike_damage + demons_bite_per_chaos_strike * demons_bite_damage ) / ( 1 + demons_bite_per_chaos_strike )
+        ( blade_dance_damage + demons_bite_per_dance * demons_bite_damage ) / ( 1 + demons_bite_per_dance )
+        vs.
+        ( chaos_strike_damage + demons_bite_per_chaos_strike * demons_bite_damage ) / ( 1 + demons_bite_per_chaos_strike )
 
-            /dump tj.st_state.env.demons_bite.count_per_blade_dance
-            /dump tj.st_state.env.demons_bite.count_per_chaos_strike
+        /dump tj.st_state.env.demons_bite.count_per_blade_dance
+        /dump tj.st_state.env.demons_bite.count_per_chaos_strike
         ]]
         count_per_blade_dance = function(spell,env) -- or death sweep
             return env.blade_dance.fury_cost / env.demons_bite.fury_gain
@@ -375,18 +379,18 @@ local havoc_hooks = {
             env.melee.in_range = env.melee.in_range_unlatched
         end,
         OnPredictActionAtOffset = function(env)
-            --[[
-            internal.DBG({
-                melee_in_range = env.melee.in_range,
-                demons_bite_in_range = env.demons_bite.in_range,
-                chaos_strike_in_range = env.chaos_strike.in_range,
-                annihilation_in_range = env.annihilation.in_range,
-                prev_gcd_fel_rush = env.prev_gcd.fel_rush,
-                prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
-                demon_blades_talent_selected = env.demon_blades.talent_selected,
-                vengeful_retreat_spell_can_cast = env.vengeful_retreat.spell_can_cast,
-            })
-            -- ]]
+        --[[
+        internal.DBG({
+        melee_in_range = env.melee.in_range,
+        demons_bite_in_range = env.demons_bite.in_range,
+        chaos_strike_in_range = env.chaos_strike.in_range,
+        annihilation_in_range = env.annihilation.in_range,
+        prev_gcd_fel_rush = env.prev_gcd.fel_rush,
+        prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
+        demon_blades_talent_selected = env.demon_blades.talent_selected,
+        vengeful_retreat_spell_can_cast = env.vengeful_retreat.spell_can_cast,
+        })
+        -- ]]
         end,
     },
     melee = {
