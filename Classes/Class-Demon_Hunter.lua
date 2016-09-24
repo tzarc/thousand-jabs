@@ -382,9 +382,6 @@ local havoc_base_overrides = {
     anguish_of_the_deceiver = {
         artifact_selected = function(spell,env) return internal.GetSpecConf("anguish_of_the_deceiver_selected") end,
     },
-    variable = {
-        pooling_for_meta = false, -- TODO
-    },
 }
 
 local havoc_hooks = {
