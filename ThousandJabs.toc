@@ -26,6 +26,7 @@ Libs\LibPrtrDump-1.0.lua
 Libs\LibUnitCache-1.0.lua
 
 Lang-enUS.lua
+Lang-deDE.lua
 
 Base.lua
 Main.lua

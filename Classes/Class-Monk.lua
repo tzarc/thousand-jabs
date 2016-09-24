@@ -230,12 +230,10 @@ local windwalker_talent_overrides = {
 
 local windwalker_artifact_overrides = {
     gale_burst = {
-        is_artifact = true,
-        artifact_selected = function(spell, env) return false end, -- TODO
+        artifact_selected = function(spell,env) return internal.GetSpecConf("gale_burst_selected") end,
     },
     strike_of_the_windlord = {
-        is_artifact = true,
-        artifact_selected = function(spell, env) return false end, -- TODO
+        artifact_selected = function(spell,env) return internal.GetSpecConf("strike_of_the_windlord_selected") end,
     },
 }
 
@@ -268,6 +266,10 @@ Z:RegisterPlayerClass({
         windwalker_hooks,
     },
     blacklisted = {},
+    config_checkboxes = {
+        'gale_burst_selected',
+        'strike_of_the_windlord_selected',
+    },
     simc_mapping = { -- simc_name = "equivalent_parsed_ingame_table_name"
         invoke_xuen = "invoke_xuen_the_white_tiger",
     },

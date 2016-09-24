@@ -57,6 +57,12 @@ internal.commonData = {
     player = {
         is_casting = function(self,state) return false end,
     },
+    variable = {
+    },
+    adds = {
+        raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
+        raid_event_in = 180,
+    },
 }
 
 local function generic_can_spend(power, env, action, costType, costAmount)

@@ -17,6 +17,7 @@ function Z:RegisterPlayerClass(config)
         name = config.name,
         config = config,
         blacklisted = blacklisted,
+        configCheckboxes = config.config_checkboxes or {}
     }
 
     -- Add it to the list of profiles so we can get access to it when swapping specs

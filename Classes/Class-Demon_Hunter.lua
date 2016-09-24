@@ -353,6 +353,11 @@ local havoc_base_overrides = {
         AuraUnit = 'player',
         AuraMine = true,
     },
+    nemesis = {
+        AuraID = 206491,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
     blade_dance = {
         worth_using = function(spell,env) return env.demons_bite.blade_dance_vs_chaos_strike end,
         dmg = get_this_spell_damage, -- /dump tj.st_state.env.blade_dance.dmg
@@ -370,6 +375,15 @@ local havoc_base_overrides = {
         CanCast = function(spell,env)
             return env.melee.in_range
         end,
+    },
+    demon_speed = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("demon_speed_selected") end,
+    },
+    anguish_of_the_deceiver = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("anguish_of_the_deceiver_selected") end,
+    },
+    variable = {
+        pooling_for_meta = false, -- TODO
     },
 }
 
@@ -430,6 +444,10 @@ Z:RegisterPlayerClass({
     blacklisted = {
         'consume_magic',
         'pick_up_fragment',
+    },
+    config_checkboxes = {
+        'demon_speed_selected',
+        'anguish_of_the_deceiver_selected',
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },
