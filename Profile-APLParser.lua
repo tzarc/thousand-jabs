@@ -136,7 +136,11 @@ local function tokenise_apl_line(str)
         end
     end
     appendarg()
-    if not IsLoadedByWoW then print_table(sections) end
+    if not IsLoadedByWoW then
+        print("-------------------------------------")
+        print_table(sections)
+        print("-------------------------------------")
+    end
     return sections
 end
 
@@ -211,6 +215,7 @@ local conditionalSubstitutions = {
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
     { " stagger%.(%a+) ", " ( stagger.%1 == true ) " },
     { " equipped%.(%d+) ", " ( equipped[%1] == true ) " },
+    { " equipped%.([%a_]+) ", " ( equipped[\"%1\"] == true ) " },
 
     -- Static incoming damage checks
     { " incoming_damage_([%d]+)s ",
@@ -281,36 +286,37 @@ for o,p in pairs(arithmetic_operators) do
     }
 end
 
-local function parse_condition_string(condition, thisSpellName, extraParserSubstitutions, paramDbg)
-    if condition == 'true' then return condition end
+local function manipulate_apl_string(aplstr, thisSpellName, extraParserSubstitutions, paramDbg)
+    if aplstr == 'true' then return aplstr end
 
     local P = function(...) if paramDbg then DBG(...) end end
     P("")
-    P("    input: %s", condition)
+    P("--------------------------------------------------------------------------")
+    P("    input: %s", aplstr)
 
-    local parsedCondition = tokenise_apl_line(condition)
-    local condition = (#parsedCondition > 0 and formatsections(parsedCondition) or "true")
-    P("   parsed: %s", condition)
+    local parsedCondition = tokenise_apl_line(aplstr)
+    local aplstr = (#parsedCondition > 0 and formatsections(parsedCondition) or "true")
+    P("   parsed: %s", aplstr)
 
     local function applySubstitutions(substitutionsTable)
         -- Remove any double-spaces
-        while condition:find("  ") do
-            condition = condition:gsub("  "," ")
+        while aplstr:find("  ") do
+            aplstr = aplstr:gsub("  "," ")
         end
 
         for k,s in pairs(substitutionsTable) do
             -- Run the substitution
-            local prev = condition
-            condition = condition:gsub(s[1], s[2])
+            local prev = aplstr
+            aplstr = aplstr:gsub(s[1], s[2])
 
             -- Remove any double-spaces
-            while condition:find("  ") do
-                condition = condition:gsub("  "," ")
+            while aplstr:find("  ") do
+                aplstr = aplstr:gsub("  "," ")
             end
 
-            if condition ~= prev then
+            if aplstr ~= prev then
                 P("    apply: '%s' => '%s'", tostring(s[1]), tostring(s[2]))
-                P("      res: %s", condition)
+                P("      res: %s", aplstr)
             end
         end
     end
@@ -323,22 +329,24 @@ local function parse_condition_string(condition, thisSpellName, extraParserSubst
     end
 
     -- Replace 'THIS_SPELL' with the actual action name
-    local prev = condition
-    condition = condition:gsub("THIS_SPELL", thisSpellName)
-    if condition ~= prev then
-        P("")
-        P("    apply: '%s' => '%s'", 'THIS_SPELL', thisSpellName)
-        P("     cond: %s", condition)
+    if thisSpellName then
+        local prev = aplstr
+        aplstr = aplstr:gsub("THIS_SPELL", thisSpellName)
+        if aplstr ~= prev then
+            P("")
+            P("    apply: '%s' => '%s'", 'THIS_SPELL', thisSpellName)
+            P("     cond: %s", aplstr)
+        end
     end
 
     -- Collapse parentheses
-    condition = condition:gsub('%( ','('):gsub(' %)',')')
-    P("    final: %s", condition)
+    aplstr = aplstr:gsub('%( ','('):gsub(' %)',')')
+    P("    final: %s", aplstr)
 
     -- Throw up an error if we had a parsing error - two back-to-back parentheses shouldn't happen!
-    if condition:find("%)%s*%(") then error(fmt("Invalid parentheses syntax: %s", condition)) end
+    if aplstr:find("%)%s*%(") then error(fmt("Invalid parentheses syntax: %s", aplstr)) end
 
-    return condition
+    return aplstr
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -372,6 +380,7 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 local paramChoose = line:match(',choose=([^,]*),?') or ""
                 local paramSync = line:match(',sync=([^,]*),?') or ""
                 local paramIf = line:match(',if=([^,]*),?') or "true"
+                local paramValue = line:match(',value=([^,]*),?') or "true"
                 local paramDbg = line:match(',dbg=([^,]*),?') or nil
                 local P = function(...) if paramDbg then DBG(...) end end
 
@@ -389,6 +398,7 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 P("   choose: %s", paramChoose)
                 P("     sync: %s", paramSync)
                 P("       if: %s", paramIf)
+                P("    value: %s", paramValue)
 
                 -- Work out the base condition string in the APL, as well as a cast validation check
                 local precondition = ""
@@ -401,8 +411,9 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                     precondition = fmt("(%s.spell_can_cast|cooldown.%s.up|buff.%s.up)&(%s)", paramSync, paramSync, paramSync, precondition)
                 end
 
-                local x1 = parse_condition_string(precondition, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
-                local x2 = parse_condition_string(paramIf, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
+                local x1 = manipulate_apl_string(precondition, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
+                local x2 = manipulate_apl_string(paramIf, actionName, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
+                local x3 = manipulate_apl_string(paramValue, nil, extraParserSubstitutions, paramDbg or not IsLoadedByWoW)
                 local condition = fmt("(%s) and (%s)", x1, x2)
 
                 -- Save the actual condition string
@@ -412,6 +423,9 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 entry.condition_parsed = s2
                 entry.param_if = paramIf
                 entry.param_sync = paramSync
+                entry.param_name = paramName
+                entry.param_value = paramValue
+                entry.param_value_parsed = x3 -- /dump tj.currentProfile.parsedActions.default[2]
 
                 -- Return the result of the conditional and compile
                 local conditionFunctionSource = "return function() return (" .. condition .. ") end"
@@ -428,13 +442,34 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                     if not success or not conditionFunction then
                         profileErrors[#profileErrors+1] = fmt("Could not compile condition: %s='%s'", entry.key, condition)
                     else
-                        -- Save the function/condition string
+                        -- Save the function
                         entry.check = conditionFunction
 
                         -- Save the parsed entry
                         parsedActions[actionList] = parsedActions[actionList] or {}
                         local t = parsedActions[actionList]
                         t[1+#t] = entry
+                    end
+                end
+
+                if entry.name == "variable" then
+                    local valueFunctionSource = "return function() return (" .. x3 .. ") end"
+                    local valueFunctionLoader, errStr = loadstring(valueFunctionSource, entry.key..':variable')
+                    if errStr then
+                        profileErrors[#profileErrors+1] = {
+                            ['error'] = fmt("Could not load variable function: %s='%s'", entry.key, errStr),
+                            ['entry'] = entry
+                        }
+                    else
+                        setfenv(valueFunctionLoader, emptyEnvironment)
+                        local success, valueFunction = pcall(assert(valueFunctionLoader))
+                        -- Log an error during compilation if any
+                        if not success or not valueFunction then
+                            profileErrors[#profileErrors+1] = fmt("Could not compile variable function: %s='%s'", entry.key, x3)
+                        else
+                            -- Save the function
+                            entry.value = valueFunction
+                        end
                     end
                 end
             end

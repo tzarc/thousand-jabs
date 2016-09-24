@@ -257,8 +257,29 @@ function Z:CreateNewState(numTargets)
             -- Get the action under consideration
             local action = actionList[i]
 
-            -- Validate that it isn't blacklisted, and there's a valid check function
-            if tcontains(profile.blacklisted, action.name) then
+            if action.name == "variable" then
+
+                -- Execute the variable value function with the current state
+                setfenv(action.value, state.env)
+                local status, ret = pcall(action.value)
+
+                -- If we got a failure, then print out in the debugging and console
+                if not status then
+
+                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
+                    Z:PrintOnce("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.condition)
+
+                else
+
+                    -- Update the value
+                    state.env.variable[action.param_name] = ret
+
+                    DBG("|cFFFF99FF%s ==> '|cFFDD00FF%s|cFFFF99FF': %s|r", action.key, action.param_name, tostring(ret))
+
+                end
+
+                -- Validate that it isn't blacklisted, and there's a valid check function
+            elseif tcontains(profile.blacklisted, action.name) then
 
             -- DBG("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
 
