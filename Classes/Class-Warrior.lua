@@ -122,6 +122,16 @@ local arms_base_overrides = {
         AuraApplied = 'colossus_smash',
         AuraApplyLength = 15,
     },
+    stone_heart = {
+        AuraID = 225947,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    battle_cry_deadly_calm = {
+        AuraID = 227266,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 
 Z:RegisterPlayerClass({
