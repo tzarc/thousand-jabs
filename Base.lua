@@ -280,6 +280,8 @@ function Z:ConsoleCommand(args)
         self:Print('Dumping SavedVariables table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
         DevTools_Dump{db=ThousandJabsDB}
+    elseif args == '_dbe' then
+        self:ExportSavedVariables()
     elseif args == '_duc' then
         self:Print('Dumping unit cache table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
@@ -298,6 +300,7 @@ function Z:ConsoleCommand(args)
         self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', consoleCommand)
         self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', consoleCommand)
         self:Print('     |cFFFF6600/%s _db|r - Dumps SavedVariables table.', consoleCommand)
+        self:Print('     |cFFFF6600/%s _dbe|r - Export SavedVariables table.', consoleCommand)
         self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', consoleCommand)
         self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', consoleCommand)
     end
