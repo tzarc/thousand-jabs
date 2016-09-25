@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibTableCache-1.0", 19
+local MAJOR, MINOR = "LibTableCache-1.0", 20
 local LibTableCache, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 ------------------------------------------------------------------------------------------------------------------------
