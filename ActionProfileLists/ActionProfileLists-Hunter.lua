@@ -79,7 +79,7 @@ actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=seedbattered_fish_plate
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion,name=potion_of_the_old_war
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/harpoon
 actions=auto_attack
@@ -87,7 +87,7 @@ actions+=/arcane_torrent,if=focus.deficit>=30
 actions+=/blood_fury
 actions+=/berserking
 actions+=/use_item,name=tirathons_betrayal
-actions+=/potion,name=deadly_grace
+actions+=/potion,name=old_war
 actions+=/steel_trap
 actions+=/explosive_trap
 actions+=/dragonsfire_grenade
@@ -186,14 +186,14 @@ actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=seedbattered_fish_plate
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion,name=potion_of_the_old_war
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/harpoon
 actions=auto_attack
 actions+=/arcane_torrent,if=focus.deficit>=30
 actions+=/blood_fury
 actions+=/berserking
-actions+=/potion,name=deadly_grace
+actions+=/potion,name=old_war
 actions+=/steel_trap
 actions+=/explosive_trap
 actions+=/dragonsfire_grenade

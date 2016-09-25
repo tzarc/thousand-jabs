@@ -258,6 +258,13 @@ local unholy_base_abilities = {
         AuraMine = true,
         AuraUnit = "player",
     },
+    valkyr_battlemaiden = {
+        pet_active = function(spell,env)
+            -- active for 15secs after last cast
+            local lastCast = env.last_cast_times[207349]
+            return lastCast and (env.currentTime < (lastCast + 15)) and true or false
+        end,
+    },
 }
 
 Z:RegisterPlayerClass({

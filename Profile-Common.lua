@@ -17,6 +17,7 @@ internal.global_blacklisted_abilities = {
 internal.baseEnvironment = {
     predictionOffset = 0,
     gcd = 0,
+    gcd_remains = 0,
     currentTime = function(env, _)
         return env.sampleTime + env.predictionOffset
     end,
@@ -62,6 +63,12 @@ internal.commonData = {
     adds = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
         raid_event_in = 180,
+    },
+
+    bloodlust = {
+        AuraID = 1, -- TODO
+        AuraUnit = 'player',
+        AuraMine = false,
     },
 }
 

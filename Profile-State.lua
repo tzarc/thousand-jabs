@@ -110,10 +110,18 @@ function Z:CreateNewState(numTargets)
         end
     })
 
+    local equipped = setmetatable({}, {
+        __index = function(tbl,idx)
+            return false -- TODO
+        end,
+    })
+
     -- Helper for cleaning a state
     function state:Reset()
 
         state.env.prev_gcd = nil
+        state.env.equipped = nil
+        state.env.last_cast_times = nil
 
         -- Copy over the last cast times for the state so that we're not writing to the global state instead
         wipe(last_cast_times)
@@ -169,8 +177,10 @@ function Z:CreateNewState(numTargets)
         state.env.player_level = UnitLevel('player')
         state.env.override_out_of_melee_range = false
 
-        -- Reset the prev_gcd table
+        -- Reset the prev_gcd/equipped tables
         state.env.prev_gcd = prev_gcd
+        state.env.equipped = equipped
+        state.env.last_cast_times = last_cast_times
 
         -- Call the current profile's state initialisation function
         local initFunc = state.env.hooks.OnStateInit

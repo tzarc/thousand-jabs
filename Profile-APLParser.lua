@@ -210,6 +210,7 @@ local conditionalSubstitutions = {
     { " cast_time ", " spell.THIS_SPELL.cast_time " },
     { " time ", " time_since_combat_start " },
     { " gcd ", " gcd " },
+    { " gcd%.remains ", " gcd_remains " },
     { " charges ", " spell.THIS_SPELL.charges " },
     { " max_charges ", " spell.THIS_SPELL.max_charges " },
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
@@ -380,9 +381,15 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
                 local paramChoose = line:match(',choose=([^,]*),?') or ""
                 local paramSync = line:match(',sync=([^,]*),?') or ""
                 local paramIf = line:match(',if=([^,]*),?') or "true"
+                local paramTargetIf = line:match(',target_if=([^,]*),?') or "true"
                 local paramValue = line:match(',value=([^,]*),?') or "true"
                 local paramDbg = line:match(',dbg=([^,]*),?') or nil
                 local P = function(...) if paramDbg then DBG(...) end end
+
+                -- Just override the if=... with target_if=...
+                if paramIf == "true" and paramTargetIf ~= "true" then
+                    paramIf = paramTargetIf
+                end
 
                 -- Count how many times we've seen this ability during this action list, for logging purposes
                 actionCounts[key] = (actionCounts[key] or 0) + 1
