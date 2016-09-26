@@ -48,9 +48,15 @@ function Z:RegisterPlayerClass(config)
             for k2,v2 in pairs(actions) do
                 local match = false
                 -- Match against ability
-                local a1, a2 = v1.AbilityID, rawget(v2, 'AbilityID')
-                if a1 and a2 and a1 == a2 then
-                    match = true
+                local a1, a2 = v1.SpellIDs, rawget(v2, 'SpellIDs')
+                if a1 and a2 then
+                    for k3,v3 in pairs(a1) do
+                        for k4,v4 in pairs(a2) do
+                            if v3 == v4 then
+                                match = true
+                            end
+                        end
+                    end
                 end
                 -- Match against talents
                 a1, a2 = v1.TalentIDs, rawget(v2, 'TalentIDs')
@@ -60,7 +66,8 @@ function Z:RegisterPlayerClass(config)
                 -- We got a match, merge the tables
                 if match then
                     actions[k2] = Z:MergeTables(v2, v1)
-                    actions[k2].in_spellbook = v1.AbilityID and true or false
+                    actions[k2].in_spellbook = v1.SpellBookSpellID and true or false
+                    actions[k2].AbilityID = v1.SpellBookSpellID or nil
                 end
             end
         end
@@ -97,6 +104,7 @@ function Z:RegisterPlayerClass(config)
             if type(v) == 'table' and not rawget(v, 'AbilityID') then
                 v.spell_can_cast = function(spell, env) return false end
                 v.in_range = function(spell, env) return false end
+                v.cooldown_remains = 99999
             end
 
             -- Determine the ability-specific information, if we can cast the current action
@@ -113,6 +121,14 @@ function Z:RegisterPlayerClass(config)
                     local r = IsSpellInRange(spell.SpellBookItem, BOOKTYPE_SPELL, 'target')
                     r = (not r or r ~= 1) and true or false
                     return (not r)
+                end
+
+                -- Set up function for last cast time
+                v.last_cast = function(spell, env)
+                    return env.last_cast_times[v.AbilityID] or 0
+                end
+                v.time_since_last_cast = function(spell, env)
+                    return env.currentTime - spell.last_cast
                 end
 
                 -- Set up a function to check to see if an ability is blacklisted
@@ -186,6 +202,9 @@ function Z:RegisterPlayerClass(config)
                     -- Add recharge-specific functions
                     v.spell_charges = function(spell, env)
                         return spell.rechargeSampled - spell.rechargeSpent
+                    end
+                    v.spell_charges_fractional = function(spell, env)
+                        return spell.rechargeSampledFractional - spell.rechargeSpent
                     end
                     v.spell_recharge_time = function(spell, env)
                         local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime

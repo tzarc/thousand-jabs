@@ -10,45 +10,43 @@ local LUC = LibStub('LibUnitCache-1.0')
 local vengeance_abilities_exported = {
     abyssal_strike = { TalentIDs = { 1, 1 }, },
     agonizing_flames = { TalentIDs = { 1, 2 }, },
-    arcane_torrent = { AbilityID = 202719, },
-    auto_attack = { AbilityID = 6603, },
     blade_turning = { TalentIDs = { 6, 2 }, },
     burning_alive = { TalentIDs = { 2, 3 }, },
     concentrated_sigils = { TalentIDs = { 5, 1 }, },
-    consume_magic = { AbilityID = 183752, },
-    demon_spikes = { AbilityID = 203720, },
-    empower_wards = { AbilityID = 218256, },
+    consume_magic = { SpellIDs = { 183752 }, },
+    demon_spikes = { SpellIDs = { 203720 }, },
+    empower_wards = { SpellIDs = { 218256 }, },
     fallout = { TalentIDs = { 2, 2 }, },
     feast_of_souls = { TalentIDs = { 2, 1 }, },
     feed_the_demon = { TalentIDs = { 4, 1 }, },
-    fel_devastation = { AbilityID = 212084, TalentIDs = { 6, 1 }, },
-    fel_eruption = { AbilityID = 211881, TalentIDs = { 3, 3 }, },
-    felblade = { AbilityID = 213241, TalentIDs = { 3, 1 }, },
-    fiery_brand = { AbilityID = 204021, },
+    fel_devastation = { SpellIDs = { 212084 }, TalentIDs = { 6, 1 }, },
+    fel_eruption = { SpellIDs = { 211881 }, TalentIDs = { 3, 3 }, },
+    felblade = { SpellIDs = { 213241 }, TalentIDs = { 3, 1 }, },
+    fiery_brand = { SpellIDs = { 204021 }, },
     flame_crash = { TalentIDs = { 3, 2 }, },
-    fracture = { AbilityID = 209795, TalentIDs = { 4, 2 }, },
-    glide = { AbilityID = 131347, },
-    immolation_aura = { AbilityID = 178740, },
-    imprison = { AbilityID = 217832, },
-    infernal_strike = { AbilityID = 189110, },
+    fracture = { SpellIDs = { 209795 }, TalentIDs = { 4, 2 }, },
+    glide = { SpellIDs = { 131347 }, },
+    immolation_aura = { SpellIDs = { 178740 }, },
+    imprison = { SpellIDs = { 217832 }, },
+    infernal_strike = { SpellIDs = { 189110 }, },
     last_resort = { TalentIDs = { 7, 1 }, },
-    metamorphosis = { AbilityID = 187827, },
-    nether_bond = { AbilityID = 207810, TalentIDs = { 7, 2 }, },
+    metamorphosis = { SpellIDs = { 187827 }, },
+    nether_bond = { SpellIDs = { 207810 }, TalentIDs = { 7, 2 }, },
     quickened_sigils = { TalentIDs = { 5, 3 }, },
     razor_spikes = { TalentIDs = { 1, 3 }, },
-    shear = { AbilityID = 203782, },
-    sigil_of_chains = { AbilityID = 202138, TalentIDs = { 5, 2 }, },
-    sigil_of_flame = { AbilityID = 204596, },
-    sigil_of_misery = { AbilityID = 207684, },
-    sigil_of_silence = { AbilityID = 202137, },
-    soul_barrier = { AbilityID = 227225, TalentIDs = { 7, 3 }, },
-    soul_carver = { AbilityID = 207407, },
-    soul_cleave = { AbilityID = 228477, },
+    shear = { SpellIDs = { 203782 }, },
+    sigil_of_chains = { SpellIDs = { 202138, 207665 }, TalentIDs = { 5, 2 }, },
+    sigil_of_flame = { SpellIDs = { 204513, 204596 }, },
+    sigil_of_misery = { SpellIDs = { 202140, 207684 }, },
+    sigil_of_silence = { SpellIDs = { 202137, 207682 }, },
+    soul_barrier = { SpellIDs = { 227225 }, TalentIDs = { 7, 3 }, },
+    soul_carver = { SpellIDs = { 207407 }, },
+    soul_cleave = { SpellIDs = { 228477 }, },
     soul_rending = { TalentIDs = { 4, 3 }, },
-    spectral_sight = { AbilityID = 188501, },
-    spirit_bomb = { AbilityID = 218679, TalentIDs = { 6, 3 }, },
-    throw_glaive = { AbilityID = 204157, },
-    torment = { AbilityID = 185245, },
+    spectral_sight = { SpellIDs = { 188501 }, },
+    spirit_bomb = { SpellIDs = { 218679 }, TalentIDs = { 6, 3 }, },
+    throw_glaive = { SpellIDs = { 204157 }, },
+    torment = { SpellIDs = { 185245 }, },
 }
 
 local vengeance_base_overrides = {
@@ -58,6 +56,21 @@ local vengeance_base_overrides = {
         AuraUnit = 'player',
         AuraApplied = 'fiery_brand',
         AuraApplyLength = 10,
+    },
+    infernal_strike = {
+        in_flight = false,
+        spell_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_duration or 0 end,
+        spell_delay = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_delay or 0 end,
+        spell_remains = function(spell,env) return env.flame_crash.talent_selected and spell.spell_duration - spell.actual_time_since_last_cast or 0 end,
+
+        -- Why do these use a different spellID?!
+        actual_cast_spellid = 189111,
+        actual_last_cast = function(spell, env)
+            return env.last_cast_times[spell.actual_cast_spellid] or 0
+        end,
+        actual_time_since_last_cast = function(spell, env)
+            return env.currentTime - spell.actual_last_cast
+        end,
     },
     shear = {
         PerformCast = function(spell, env)
@@ -96,6 +109,9 @@ local vengeance_base_overrides = {
         AuraApplied = 'immolation_aura',
         AuraApplyLength = 6,
     },
+    fiery_demise = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("fiery_demise_selected") end,
+    },
 }
 
 local vengeance_talent_overrides = {
@@ -132,29 +148,27 @@ local vengeance_talent_overrides = {
 
 local function sigilInitialiser(duration)
     return {
-        last_cast = function(spell, env) return Z.lastCastTime[spell.AbilityID] end,
-        spell_duration = duration,
         spell_delay = function(spell, env) return env.quickened_sigils.talent_selected and 1 or 2 end,
-        spell_start = function(spell, env) return env.currentTime + spell.spell_delay end,
-        spell_finish = function(spell, env) return spell.spell_start + spell.spell_duration end,
-        placed = function(spell, env) return spell.spell_remains > 0 end,
-        spell_remains = function(spell, env)
-            local remains = spell.spell_finish - env.currentTime
-            return (remains > 0) and remains or 0
-        end,
+        spell_duration = function(spell, env) return 8 + spell.spell_delay end,
+        placed = function(spell, env) return spell.time_since_last_cast < spell.spell_duration end,
+        spell_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
     }
 end
 
 local vengeance_sigil_overrides = {
     any_sigil = {
         placed = function(spell, env)
-            return env.sigil_of_flame.placed or env.sigil_of_misery.placed or env.sigil_of_silence.placed or env.sigil_of_chains.placed
+            return env.sigil_of_flame.placed
+                or env.sigil_of_misery.placed
+                or env.sigil_of_silence.placed
+                or (env.sigil_of_chains.talent_selected and env.sigil_of_chains.placed)
+                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.spell_duration)
         end,
     },
-    sigil_of_flame = sigilInitialiser(8),
-    sigil_of_misery = sigilInitialiser(8),
-    sigil_of_silence = sigilInitialiser(8),
-    sigil_of_chains = sigilInitialiser(8),
+    sigil_of_flame = sigilInitialiser(),
+    sigil_of_misery = sigilInitialiser(),
+    sigil_of_silence = sigilInitialiser(),
+    sigil_of_chains = sigilInitialiser(),
 }
 
 local vengeance_hooks = {
@@ -162,13 +176,9 @@ local vengeance_hooks = {
         OnPredictActionAtOffset = function(env)
         --[[
         internal.DBG({
-        sigil_of_flame_spell_can_cast = env.sigil_of_flame.spell_can_cast,
-        sigil_of_flame_spell_remains_as_number = env.sigil_of_flame.spell_remains_as_number,
-        sigil_of_flame_spell_delay_as_number = env.sigil_of_flame.spell_delay_as_number,
-        sigil_of_flame_spell_duration_as_number = env.sigil_of_flame.spell_duration_as_number,
-        sigil_of_flame_in_spellbook = env.sigil_of_flame.in_spellbook,
-        sigil_of_flame_cooldown_remains = env.sigil_of_flame.cooldown_remains,
-        player_level = env.player_level,
+        any_sigil_placed = env.any_sigil.placed,
+        infernal_strike_last_cast = env.infernal_strike.actual_last_cast,
+        infernal_strike_time_since_last_cast = env.infernal_strike.actual_time_since_last_cast,
         })
         -- ]]
         end
@@ -189,6 +199,9 @@ Z:RegisterPlayerClass({
         vengeance_hooks,
     },
     blacklisted = {},
+    config_checkboxes = {
+        'fiery_demise_selected',
+    },
     conditional_substitutions = {
         { " in_flight ", " infernal_strike.in_flight " },
         { " travel_time ", " 1 " }, -- infernal_strike.travel_time
@@ -202,46 +215,44 @@ Z:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local havoc_abilities_exported = {
-    annihilation = { AbilityID = 201427, },
-    arcane_torrent = { AbilityID = 202719, },
-    auto_attack = { AbilityID = 6603, },
-    blade_dance = { AbilityID = 188499, },
+    annihilation = { SpellIDs = { 201427 }, },
+    blade_dance = { SpellIDs = { 188499 }, },
     blind_fury = { TalentIDs = { 1, 3 }, },
     bloodlet = { TalentIDs = { 3, 3 }, },
-    blur = { AbilityID = 198589, },
-    chaos_blades = { AbilityID = 211048, TalentIDs = { 7, 1 }, },
+    blur = { SpellIDs = { 198589 }, },
+    chaos_blades = { SpellIDs = { 211048 }, TalentIDs = { 7, 1 }, },
     chaos_cleave = { TalentIDs = { 1, 2 }, },
-    chaos_nova = { AbilityID = 179057, },
-    chaos_strike = { AbilityID = 162794, },
-    consume_magic = { AbilityID = 183752, },
-    darkness = { AbilityID = 196718, },
+    chaos_nova = { SpellIDs = { 179057 }, },
+    chaos_strike = { SpellIDs = { 162794 }, },
+    consume_magic = { SpellIDs = { 183752 }, },
+    darkness = { SpellIDs = { 196718 }, },
     demon_blades = { TalentIDs = { 2, 2 }, },
     demon_reborn = { TalentIDs = { 6, 3 }, },
     demonic = { TalentIDs = { 7, 3 }, },
     demonic_appetite = { TalentIDs = { 2, 3 }, },
-    demons_bite = { AbilityID = 162243, },
+    demons_bite = { SpellIDs = { 162243 }, },
     desperate_instincts = { TalentIDs = { 4, 2 }, },
-    eye_beam = { AbilityID = 198013, },
-    fel_barrage = { AbilityID = 211053, TalentIDs = { 7, 2 }, },
-    fel_eruption = { AbilityID = 211881, TalentIDs = { 5, 2 }, },
+    eye_beam = { SpellIDs = { 198013 }, },
+    fel_barrage = { SpellIDs = { 211053 }, TalentIDs = { 7, 2 }, },
+    fel_eruption = { SpellIDs = { 211881 }, TalentIDs = { 5, 2 }, },
     fel_mastery = { TalentIDs = { 1, 1 }, },
-    fel_rush = { AbilityID = 195072, },
-    felblade = { AbilityID = 213241, TalentIDs = { 3, 1 }, },
+    fel_rush = { SpellIDs = { 195072 }, },
+    felblade = { SpellIDs = { 213241 }, TalentIDs = { 3, 1 }, },
     first_blood = { TalentIDs = { 3, 2 }, },
-    fury_of_the_illidari = { AbilityID = 201467, },
-    glide = { AbilityID = 131347, },
-    imprison = { AbilityID = 217832, },
+    fury_of_the_illidari = { SpellIDs = { 201467 }, },
+    glide = { SpellIDs = { 131347 }, },
+    imprison = { SpellIDs = { 217832 }, },
     master_of_the_glaive = { TalentIDs = { 6, 1 }, },
-    metamorphosis = { AbilityID = 191427, },
+    metamorphosis = { SpellIDs = { 191427 }, },
     momentum = { TalentIDs = { 5, 1 }, },
-    nemesis = { AbilityID = 206491, TalentIDs = { 5, 3 }, },
-    netherwalk = { AbilityID = 196555, TalentIDs = { 4, 1 }, },
+    nemesis = { SpellIDs = { 206491 }, TalentIDs = { 5, 3 }, },
+    netherwalk = { SpellIDs = { 196555 }, TalentIDs = { 4, 1 }, },
     prepared = { TalentIDs = { 2, 1 }, },
     soul_rending = { TalentIDs = { 4, 3 }, },
-    spectral_sight = { AbilityID = 188501, },
-    throw_glaive = { AbilityID = 185123, },
+    spectral_sight = { SpellIDs = { 188501 }, },
+    throw_glaive = { SpellIDs = { 185123 }, },
     unleashed_power = { TalentIDs = { 6, 2 }, },
-    vengeful_retreat = { AbilityID = 198793, },
+    vengeful_retreat = { SpellIDs = { 198793 }, },
 }
 
 local cacheTime = 0.1

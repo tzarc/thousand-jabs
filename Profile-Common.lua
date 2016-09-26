@@ -10,7 +10,6 @@ internal.global_blacklisted_abilities = {
     'blood_fury',
     'berserking',
     'bloodlust',
-    'arcane_torrent',
     'use_item',
 }
 
@@ -37,6 +36,8 @@ internal.commonData = {
         spell_cast_time = 1,
         perform_cast = function(spell,env) end,
     },
+    auto_attack = { SpellIDs = { 6603 }, },
+    arcane_torrent = { SpellIDs = { 202719 }, },
     movement = {
         remains = 0,
         raid_event_in = 180,

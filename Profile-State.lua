@@ -161,6 +161,8 @@ function Z:CreateNewState(numTargets)
                     v.rechargeStartTime = start or 0
                     v.rechargeDuration = duration or 0
                     v.rechargeSpent = 0
+                    v.spell_max_charges = maxCharges or 0
+                    v.rechargeSampledFractional = charges + (GetTime()-start)/duration
                 end
 
             else

@@ -96,8 +96,7 @@ function Z:DetectAbilitiesFromSpellBook()
     for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePlayerSpells() do
         abilities[slug(spellName)] = {
             Name = spellName,
-            AbilityID = spellID,
-            AbilityIDs = { [spellID] = true },
+            SpellIDs = { spellID },
             SpellBookSubtext = spellSubText,
             SpellBookItem = spellBookItem,
             IsTalent = spellIsTalent,
@@ -134,13 +133,12 @@ function Z:ExportAbilitiesFromSpellBook()
     addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
     for k,v in internal.orderedpairs(definedAbilities) do
         local line = fmt('    %s = { ', k)
-        if v.AbilityID then line = line .. fmt('AbilityID = %d, ', v.AbilityID) end
-        if v.AbilityIDs then
+        if v.SpellIDs then
             local ids = {}
-            for id,_ in internal.orderedpairs(v.AbilityIDs) do
+            for _,id in internal.orderedpairs(v.SpellIDs) do
                 ids[1+#ids] = id
             end
-            line = line .. fmt('AbilityIDs = { %s }, ', table.concat(ids, ", "))
+            line = line .. fmt('SpellIDs = { %s }, ', table.concat(ids, ", "))
         end
         if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
         line = line .. '},'

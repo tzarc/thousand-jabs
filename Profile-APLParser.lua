@@ -212,6 +212,7 @@ local conditionalSubstitutions = {
     { " gcd ", " gcd " },
     { " gcd%.remains ", " gcd_remains " },
     { " charges ", " spell.THIS_SPELL.charges " },
+    { " charges_fractional ", " spell.THIS_SPELL.charges_fractional " },
     { " max_charges ", " spell.THIS_SPELL.max_charges " },
     { " recharge_time ", " spell.THIS_SPELL.recharge_time " },
     { " stagger%.(%a+) ", " ( stagger.%1 == true ) " },
