@@ -71,6 +71,9 @@ local vengeance_base_overrides = {
         actual_time_since_last_cast = function(spell, env)
             return env.currentTime - spell.actual_last_cast
         end,
+        PerformCast = function(spell, env)
+            env.last_cast_times[spell.actual_cast_spellid] = env.currentTime
+        end,
     },
     shear = {
         PerformCast = function(spell, env)
