@@ -312,20 +312,22 @@ function Z:OnEnable()
             if button == "LeftButton" and self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                local x, y = self:GetCenter()
-                internal.SetConf(x, "x")
-                internal.SetConf(y, "y")
-                internal.SetConf("BOTTOMLEFT", "anchor")
+                local srcPoint, _, tgtPoint, offsetX, offsetY = self:GetPoint()
+                internal.SetConf(srcPoint, "position", "srcPoint")
+                internal.SetConf(tgtPoint, "position", "tgtPoint")
+                internal.SetConf(offsetX, "position", "offsetX")
+                internal.SetConf(offsetY, "position", "offsetY")
             end
         end)
         self.actionsFrame:SetScript("OnHide", function(self)
             if self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                local x, y = self:GetCenter()
-                internal.SetConf(x, "x")
-                internal.SetConf(y, "y")
-                internal.SetConf("BOTTOMLEFT", "anchor")
+                local srcPoint, _, tgtPoint, offsetX, offsetY = self:GetPoint()
+                internal.SetConf(srcPoint, "position", "srcPoint")
+                internal.SetConf(tgtPoint, "position", "tgtPoint")
+                internal.SetConf(offsetX, "position", "offsetX")
+                internal.SetConf(offsetY, "position", "offsetY")
             end
         end)
     end

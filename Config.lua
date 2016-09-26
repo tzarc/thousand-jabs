@@ -8,9 +8,12 @@ local defaultConf = {
     scale = 1,
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
-    x = 0,
-    y = -80,
-    anchor = "CENTER",
+    position = {
+        offsetX = 0,
+        offsetY = -180,
+        srcPoint = "CENTER",
+        tgtPoint = "CENTER",
+    },
     do_debug = false,
 }
 

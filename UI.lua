@@ -29,7 +29,12 @@ function Z:CreateFrames()
     -- Set the geometry of the base frame
     baseFrame:SetWidth(totalWidth)
     baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
-    baseFrame:SetPoint("CENTER", UIParent, internal.GetConf("anchor"), internal.GetConf("x"), internal.GetConf("y"))
+    baseFrame:ClearAllPoints()
+    baseFrame:SetPoint(internal.GetConf("position", "srcPoint"),
+        UIParent,
+        internal.GetConf("position", "tgtPoint"),
+        internal.GetConf("position", "offsetX"),
+        internal.GetConf("position", "offsetY"))
     baseFrame:Hide()
 
     return baseFrame
