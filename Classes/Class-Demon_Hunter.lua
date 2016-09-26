@@ -86,6 +86,7 @@ local vengeance_base_overrides = {
         AuraUnit = 'player',
         AuraApplied = 'demon_spikes',
         AuraApplyLength = 6,
+        spell_cast_time = 0.01, -- off GCD!
     },
     metamorphosis = {
         AuraID = 187827,
