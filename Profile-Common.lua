@@ -67,7 +67,14 @@ internal.commonData = {
     },
 
     bloodlust = {
-        AuraID = 1, -- TODO
+        AuraID = {
+            2825, -- Bloodlust
+            32182, -- Heroism
+            80353, -- Time Warp
+            90355, -- Ancient Hysteria
+            160452, -- Netherwinds
+            178207, -- Drums of Fury
+        },
         AuraUnit = 'player',
         AuraMine = false,
     },

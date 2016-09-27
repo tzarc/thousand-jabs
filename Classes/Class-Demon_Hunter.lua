@@ -51,9 +51,9 @@ local vengeance_abilities_exported = {
 
 local vengeance_base_overrides = {
     fiery_brand = {
-        AuraID = 204021,
+        AuraID = { 204021, 204022, 207744, 207771 },
         AuraMine = true,
-        AuraUnit = 'player',
+        AuraUnit = 'target',
         AuraApplied = 'fiery_brand',
         AuraApplyLength = 10,
     },
@@ -99,9 +99,6 @@ local vengeance_base_overrides = {
         cost_type = 'pain',
         pain_cost = 50, -- cost is 30-60, err on the side of caution
 
-        CanCast = function(spell, env)
-            return env.soul_fragments.curr >= 1
-        end,
         PerformCast = function(spell, env)
             env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
         end,

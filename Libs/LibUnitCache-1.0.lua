@@ -62,14 +62,21 @@ local function RetrieveActiveAuras(unitID)
 end
 
 function lib:GetAura(unitID, spellID, mine)
-    mine = mine and true or false
-    local theGUID = UnitGUID(unitID)
-    if self.unitCache[theGUID] then
-        local auras = self.unitCache[theGUID].auras
-        for i=1,#auras do
-            local aura = auras[i]
-            if aura.spellID == spellID and (not mine or aura.mine) then
-                return aura
+    if type(spellID) == "table" then
+        for i=1,#spellID do
+            local aura = self:GetAura(unitID, spellID[i], mine)
+            if aura then return aura end
+        end
+    elseif type(spellID) == "number" then
+        mine = mine and true or false
+        local theGUID = UnitGUID(unitID)
+        if self.unitCache[theGUID] then
+            local auras = self.unitCache[theGUID].auras
+            for i=1,#auras do
+                local aura = auras[i]
+                if aura.spellID == spellID and (not mine or aura.mine) then
+                    return aura
+                end
             end
         end
     end
