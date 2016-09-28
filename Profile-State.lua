@@ -34,7 +34,7 @@ function Z:CreateNewState(numTargets)
                 local val = 0
                 local length = tonumber(strsub(idx,strlen(dmgprefix)+1))
                 if length >= state.env.time_since_incoming_damage then
-                    val = Z:GetIncomingDamage(state.env.currentTime, length/1000)
+                    val = Z:GetIncomingDamage(GetTime(), length/1000) -- use GetTime() here, as future prediction will change the accumulation window
                 end
                 return val
             end

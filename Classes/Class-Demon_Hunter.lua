@@ -177,9 +177,16 @@ local vengeance_hooks = {
         OnPredictActionAtOffset = function(env)
         --[[
         internal.DBG({
-        any_sigil_placed = env.any_sigil.placed,
-        infernal_strike_last_cast = env.infernal_strike.actual_last_cast,
-        infernal_strike_time_since_last_cast = env.infernal_strike.actual_time_since_last_cast,
+        fel_devastation_spell_can_cast = env.fel_devastation.spell_can_cast,
+        fel_devastation_blacklisted = env.fel_devastation.blacklisted,
+        fel_devastation_in_spellbook = env.fel_devastation.in_spellbook,
+        fel_devastation_pain_cost = env.fel_devastation.pain_cost,
+        fel_devastation_cooldown_remains = env.fel_devastation.cooldown_remains,
+        fel_devastation_can_spend = env.pain.can_spend(env.pain, env, 'fel_devastation', 'pain', env.fel_devastation.pain_cost),
+        incoming_damage_over_5000 = env.incoming_damage_over_5000,
+        health_max_as_number = env.health.max_as_number,
+        health_max_as_number_10perc = env.health.max_as_number * 0.10,
+        conditional = (env.incoming_damage_over_5000 > env.health.max_as_number * 0.10) and true or false
         })
         -- ]]
         end

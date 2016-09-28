@@ -133,7 +133,7 @@ function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCa
     if deltaHP < 0 then
         local timestamp = GetTime()
         self.lastIncomingDamage = timestamp
-        self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) + deltaHP
+        self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) - deltaHP
     end
     self.lastHP = currHP
 
