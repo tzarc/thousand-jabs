@@ -22,23 +22,6 @@ function Z:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
-function Z:UNIT_HEALTH(eventName, unitID)
-    -- Only check if it's our own health changing
-    if unitID == 'player' then
-        -- Only trigger incoming damage if in combat
-        local combatStart = self.combatStart
-        if combatStart > 0 then
-            local lastHP, currHP = (self.lastHP or UnitHealthMax('player')), (UnitHealth('player') or 0)
-            if currHP < lastHP then
-                self.lastIncomingDamage = GetTime()
-                self.lastHP = currHP
-            end
-        end
-        -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID)
-    end
-end
-
 function Z:PLAYER_ENTERING_WORLD(eventName)
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
@@ -132,14 +115,27 @@ function Z:PLAYER_TARGET_CHANGED(eventName)
 end
 
 function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+    --[[ Not working?
     -- Check if the player has received any damage, and update the last incoming damage time
     if destGUID == playerGUID then
-        if arg15 and type(arg15) == 'number' and arg15 > 0 and combatEvent:find("_DAMAGE") then
-            local timestamp = GetTime()
-            self.lastIncomingDamage = timestamp
-            self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) + arg15
-        end
+    if arg15 and type(arg15) == 'number' and arg15 > 0 and combatEvent:find("_DAMAGE") then
+    local timestamp = GetTime()
+    self.lastIncomingDamage = timestamp
+    self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) + arg15
     end
+    end
+    -- ]]
+
+    -- Any HP drops are treated as damage taken
+    local currHP = UnitHealth('player')
+    self.lastHP = self.lastHP or currHP
+    local deltaHP = currHP - self.lastHP
+    if deltaHP < 0 then
+        local timestamp = GetTime()
+        self.lastIncomingDamage = timestamp
+        self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) + deltaHP
+    end
+    self.lastHP = currHP
 
     -- We only want to know if it's a spell, and it concerns either the player or the current target
     if (destGUID == playerGUID or destGUID == targetGUID) and combatEvent:find('SPELL_') == 1 then

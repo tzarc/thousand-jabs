@@ -187,8 +187,6 @@ function Z:ActivateProfile()
         Z:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         Z:RegisterEvent('UNIT_POWER')
         Z:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
-        Z:RegisterEvent('UNIT_HEALTH')
-        Z:RegisterEvent('UNIT_HEALTH_FREQUENT', 'UNIT_HEALTH')
     end
 end
 
@@ -213,8 +211,6 @@ function Z:DeactivateProfile()
     if self.aoe_state then self.aoe_state = nil end
 
     -- Remove event listeners
-    Z:UnregisterEvent('UNIT_HEALTH_FREQUENT')
-    Z:UnregisterEvent('UNIT_HEALTH')
     Z:UnregisterEvent('UNIT_POWER_FREQUENT')
     Z:UnregisterEvent('UNIT_POWER')
     Z:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
