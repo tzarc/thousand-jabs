@@ -110,6 +110,9 @@ local vengeance_base_overrides = {
         AuraApplied = 'immolation_aura',
         AuraApplyLength = 6,
     },
+    fiery_demise = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("fiery_demise_selected") end,
+    },
 }
 
 local vengeance_talent_overrides = {
@@ -210,6 +213,9 @@ Z:RegisterPlayerClass({
         vengeance_hooks,
     },
     blacklisted = {},
+    config_checkboxes = {
+        'fiery_demise_selected',
+    },
     conditional_substitutions = {
         { " in_flight ", " infernal_strike.in_flight " },
         { " travel_time ", " 1 " }, -- infernal_strike.travel_time
@@ -340,6 +346,12 @@ local havoc_base_overrides = {
             return env.melee.in_range
         end,
     },
+    demon_speed = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("demon_speed_selected") end,
+    },
+    anguish_of_the_deceiver = {
+        artifact_selected = function(spell,env) return internal.GetSpecConf("anguish_of_the_deceiver_selected") end,
+    },
 }
 
 local havoc_hooks = {
@@ -399,6 +411,10 @@ Z:RegisterPlayerClass({
     blacklisted = {
         'consume_magic',
         'pick_up_fragment',
+    },
+    config_checkboxes = {
+        'demon_speed_selected',
+        'anguish_of_the_deceiver_selected',
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },
