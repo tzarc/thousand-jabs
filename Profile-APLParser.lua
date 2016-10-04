@@ -204,6 +204,7 @@ local conditionalSubstitutions = {
     { " burning_ember ", " burning_ember.curr " },
     { " soul_fragments ", " soul_fragments.curr " },
 
+    { " cooldown ", " cooldown.THIS_SPELL.remains " },
     { " duration ", " spell.THIS_SPELL.duration " },
     { " delay ", " spell.THIS_SPELL.delay " },
     { " remains ", " spell.THIS_SPELL.remains " },
@@ -248,7 +249,7 @@ local conditionalSubstitutions = {
 
     { " aura%.([%a%._]+)%.react ", " aura.%1.react " },
 
-    { " spell_targets%.([%a%._]+) ", " spell_targets " },
+    { " spell_targets%.([%a%d%._]+) ", " spell_targets " },
 
     -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
     { " ([%a_]+)%.([%a_]+)%.([%a_%.]+) ",

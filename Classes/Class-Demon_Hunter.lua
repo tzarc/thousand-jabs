@@ -234,6 +234,7 @@ local havoc_abilities_exported = {
     chaos_strike = { SpellIDs = { 162794 }, },
     consume_magic = { SpellIDs = { 183752 }, },
     darkness = { SpellIDs = { 196718 }, },
+    death_sweep = { SpellIDs = { 210152 }, },
     demon_blades = { TalentIDs = { 2, 2 }, },
     demon_reborn = { TalentIDs = { 6, 3 }, },
     demonic = { TalentIDs = { 7, 3 }, },
@@ -263,28 +264,6 @@ local havoc_abilities_exported = {
     vengeful_retreat = { SpellIDs = { 198793 }, },
 }
 
-local cacheTime = 0.1
-local damageCacheValues = {}
-local damageCacheTimes = {}
-local function get_this_spell_damage(spell, env)
-    local abilityID = spell.AbilityID
-    local now = GetTime()
-    if damageCacheValues[abilityID] and (damageCacheTimes[abilityID] + cacheTime >= now) then
-        return damageCacheValues[abilityID]
-    else
-        local str
-        Z:ScanTooltip(internal.fmt('spell:%d', spell.AbilityID), function(t) str = t end, nil, { 255, 210, 0 })
-        if str then
-            local v = strmatch(str, ' (%d+[%.,]%d%d%d) ')
-            v = v:gsub('[^%d]', '') + 0
-            damageCacheTimes[abilityID] = now
-            damageCacheValues[abilityID] = v
-            return v
-        end
-    end
-    return 0
-end
-
 local havoc_base_overrides = {
     demons_bite = {
         fury_gain = 23, -- 20-30, err on the side of caution
@@ -293,32 +272,6 @@ local havoc_base_overrides = {
         end,
         PerformCast = function(spell, env)
             env.fury.gained = env.fury.gained + spell.fury_gain
-        end,
-        dmg = get_this_spell_damage, -- /dump tj.st_state.env.demons_bite.dmg
-
-        --[[
-        https://github.com/simulationcraft/simc/wiki/Demon-Hunters
-        demons_bite_per_dance = blade_dance_cost / demons_bite_fury
-        demons_bite_per_chaos_strike = ( chaos_strike_cost - 20 * crit_chance ) / demons_bite_fury
-
-        ( blade_dance_damage + demons_bite_per_dance * demons_bite_damage ) / ( 1 + demons_bite_per_dance )
-        vs.
-        ( chaos_strike_damage + demons_bite_per_chaos_strike * demons_bite_damage ) / ( 1 + demons_bite_per_chaos_strike )
-
-        /dump tj.st_state.env.demons_bite.count_per_blade_dance
-        /dump tj.st_state.env.demons_bite.count_per_chaos_strike
-        ]]
-        count_per_blade_dance = function(spell,env) -- or death sweep
-            return env.blade_dance.fury_cost / env.demons_bite.fury_gain
-        end,
-        count_per_chaos_strike = function(spell,env) -- or annihilation
-            return (env.chaos_strike.fury_cost - 20.0*(GetCritChance()/100.0)) / env.demons_bite.fury_gain
-        end,
-        blade_dance_vs_chaos_strike = function(spell, env)
-            local lhs = ( env.blade_dance.dmg + spell.count_per_blade_dance * spell.dmg ) / ( 1 + spell.count_per_blade_dance )
-            local rhs = ( env.chaos_strike.dmg + spell.count_per_chaos_strike * spell.dmg ) / ( 1 + spell.count_per_chaos_strike )
-            local blade_dance_better = (lhs >= rhs) and true or false
-            return blade_dance_better
         end,
     },
     fel_rush = {
@@ -377,15 +330,7 @@ local havoc_base_overrides = {
         AuraUnit = 'target',
         AuraMine = true,
     },
-    blade_dance = {
-        worth_using = function(spell,env) return env.demons_bite.blade_dance_vs_chaos_strike end,
-        dmg = get_this_spell_damage, -- /dump tj.st_state.env.blade_dance.dmg
-    },
-    death_sweep = {
-        worth_using = function(spell,env) return not env.demons_bite.blade_dance_vs_chaos_strike end,
-    },
     chaos_strike = {
-        dmg = get_this_spell_damage, -- /dump tj.st_state.env.chaos_strike.dmg
         CanCast = function(spell,env)
             return env.melee.in_range
         end,
