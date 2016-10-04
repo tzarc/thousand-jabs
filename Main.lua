@@ -308,8 +308,7 @@ function Z:OnEnable()
             if button == "LeftButton" and self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                local srcPoint, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-                internal.SetConf(srcPoint, "position", "srcPoint")
+                local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
                 internal.SetConf(tgtPoint, "position", "tgtPoint")
                 internal.SetConf(offsetX, "position", "offsetX")
                 internal.SetConf(offsetY, "position", "offsetY")
@@ -319,8 +318,7 @@ function Z:OnEnable()
             if self.isMoving then
                 self:StopMovingOrSizing()
                 self.isMoving = false
-                local srcPoint, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-                internal.SetConf(srcPoint, "position", "srcPoint")
+                local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
                 internal.SetConf(tgtPoint, "position", "tgtPoint")
                 internal.SetConf(offsetX, "position", "offsetX")
                 internal.SetConf(offsetY, "position", "offsetY")

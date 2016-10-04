@@ -244,11 +244,7 @@ function Z:ResetPosition()
     self:Print('Resetting position.')
     internal.SetConf(nil, "position")
     self.actionsFrame:ClearAllPoints()
-    self.actionsFrame:SetPoint(internal.GetConf("position", "srcPoint"),
-        UIParent,
-        internal.GetConf("position", "tgtPoint"),
-        internal.GetConf("position", "offsetX"),
-        internal.GetConf("position", "offsetY"))
+    self.actionsFrame:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
     self.actionsFrame:SetMovable(self.movable)
     self.actionsFrame:EnableMouse(self.movable)
 end

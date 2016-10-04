@@ -11,7 +11,6 @@ local defaultConf = {
     position = {
         offsetX = 0,
         offsetY = -180,
-        srcPoint = "CENTER",
         tgtPoint = "CENTER",
     },
     do_debug = false,
