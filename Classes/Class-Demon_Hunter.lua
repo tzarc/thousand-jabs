@@ -110,9 +110,6 @@ local vengeance_base_overrides = {
         AuraApplied = 'immolation_aura',
         AuraApplyLength = 6,
     },
-    fiery_demise = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("fiery_demise_selected") end,
-    },
 }
 
 local vengeance_talent_overrides = {
@@ -166,6 +163,12 @@ local vengeance_sigil_overrides = {
                 or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.spell_duration)
         end,
     },
+    any_flame_sigil = {
+        placed = function(spell, env)
+            return env.sigil_of_flame.placed
+                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.spell_duration)
+        end,
+    },
     sigil_of_flame = sigilInitialiser(),
     sigil_of_misery = sigilInitialiser(),
     sigil_of_silence = sigilInitialiser(),
@@ -207,13 +210,10 @@ Z:RegisterPlayerClass({
         vengeance_hooks,
     },
     blacklisted = {},
-    config_checkboxes = {
-        'fiery_demise_selected',
-    },
     conditional_substitutions = {
         { " in_flight ", " infernal_strike.in_flight " },
         { " travel_time ", " 1 " }, -- infernal_strike.travel_time
-        { " sigil_placed ", " any_sigil.placed " },
+        { " sigil_placed ", " any_flame_sigil.placed " },
     },
 })
 
@@ -340,12 +340,6 @@ local havoc_base_overrides = {
             return env.melee.in_range
         end,
     },
-    demon_speed = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("demon_speed_selected") end,
-    },
-    anguish_of_the_deceiver = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("anguish_of_the_deceiver_selected") end,
-    },
 }
 
 local havoc_hooks = {
@@ -405,10 +399,6 @@ Z:RegisterPlayerClass({
     blacklisted = {
         'consume_magic',
         'pick_up_fragment',
-    },
-    config_checkboxes = {
-        'demon_speed_selected',
-        'anguish_of_the_deceiver_selected',
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },

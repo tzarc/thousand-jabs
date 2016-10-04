@@ -33,7 +33,7 @@ function Z:RegisterPlayerClass(config)
     function profile:Activate()
 
         -- Construct the total actions table, including resources and base actions
-        profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
+        profile.actions = Z:MergeTables(internal.commonData, internal.artifactTraitsExported, resources, unpack(config.actions))
         local actions = profile.actions
 
         -- Parse the APL
@@ -105,6 +105,10 @@ function Z:RegisterPlayerClass(config)
                 v.spell_can_cast = function(spell, env) return false end
                 v.in_range = function(spell, env) return false end
                 v.cooldown_remains = 99999
+            end
+
+            if type(v) == 'table' and rawget(v, 'ArtifactTraitID') then
+                v.artifact_selected = function(spell,env) return Z:HasArtifactTrait(spell.ArtifactTraitID) end
             end
 
             -- Determine the ability-specific information, if we can cast the current action
