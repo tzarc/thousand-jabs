@@ -20,6 +20,7 @@ local LSM = LibStub('LibSharedMedia-3.0')
 
 local devMode = false
 internal.devMode = devMode
+internal.allowMemoryDisplay = false
 Z:EnableProfiling(devMode)
 Z:ProfileFunction(LUC, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 if devMode then _G['tj'] = Z end

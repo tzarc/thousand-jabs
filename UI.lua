@@ -1,6 +1,31 @@
 local _, internal = ...;
 local Z = internal.Z
 
+local LDB = LibStub("LibDataBroker-1.1")
+if LDB then
+    internal.dataobj = LDB:NewDataObject("ThousandJabs", {
+        icon  = "Interface\\Icons\\ability_monk_jab",
+        label = "Thousand Jabs",
+        text  = "Thousand Jabs",
+        type  = "data source",
+        OnClick = function(_, button)
+            if button == "LeftButton" then
+                Z:OpenConfigDialog()
+            elseif button == "RightButton" then
+                if internal.allowMemoryDisplay then
+                    if internal.updateMemBroker then
+                        internal.updateMemBroker = false
+                        internal.dataobj.text = "Thousand Jabs"
+                    else
+                        internal.updateMemBroker = true
+                        internal.dataobj.text = "Thousand Jabs: Collecting memory usage..."
+                    end
+                end
+            end
+        end,
+    })
+end
+
 -- Geometry
 local stFrameSizes = { 80, 60, 40, 30 }
 local cleaveFrameSizes = { 40, 25 }

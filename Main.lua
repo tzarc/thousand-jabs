@@ -1,4 +1,4 @@
-local _, internal = ...;
+local addonName, internal = ...;
 local Z = internal.Z
 local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
@@ -94,6 +94,27 @@ function Z:PerformUpdate()
 
     -- Clear out any errors for the last screen update
     internal.DBGR()
+
+    -- Show memory usage if requested (right-click the LDB item)
+    if internal.allowMemoryDisplay and internal.updateMemBroker then
+        local now = GetTime()
+        local dt = 3
+        self.lastMemCheck = self.lastMemCheck or 0
+        if self.lastMemCheck + dt < now then
+            self.lastMemCheckDelta = now - self.lastMemCheck
+            self.lastMemAmount = self.currMemAmount
+            UpdateAddOnMemoryUsage()
+            self.currMemAmount = GetAddOnMemoryUsage(addonName)
+            self.lastMemCheck = now
+        end
+
+        DBG("Memory usage: %d kB", self.currMemAmount)
+        if self.lastMemAmount and self.lastMemCheck then
+            DBG("Memory delta: %d kB", self.currMemAmount - self.lastMemAmount)
+            DBG("Memory delta: %d kB/sec (over last %d secs)", (self.currMemAmount - self.lastMemAmount)/self.lastMemCheckDelta, dt)
+            internal.dataobj.text = internal.fmt("Memory delta: %d kB/sec (over last %d secs)", (self.currMemAmount - self.lastMemAmount)/self.lastMemCheckDelta, dt)
+        end
+    end
 
     -- Cache current player/target information if requested
     LUC:UpdateUnitCache('player')

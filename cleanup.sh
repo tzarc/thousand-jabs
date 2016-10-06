@@ -6,6 +6,7 @@ for file in *.toc *.lua *.sh ActionProfileLists/*.xml ActionProfileLists/*.lua C
     chmod -x $file
     sed -i 's/[ \t]*$//' $file
     sed -i 's/^local devMode = true/local devMode = false/' $file
+    sed -i 's/^internal.allowMemoryDisplay = true/internal.allowMemoryDisplay = false/' $file
 done
 
 for file in *.lua ActionProfileLists/*.lua Classes/*.lua ; do
