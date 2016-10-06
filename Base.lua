@@ -1,5 +1,5 @@
 local addonName, internal = ...;
-local Z = LibStub('AceAddon-3.0'):NewAddon(addonName, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0', 'LibProfiling-1.0')
+local Z = LibStub('AceAddon-3.0'):NewAddon(addonName, 'AceConsole-3.0', 'AceEvent-3.0', 'LibProfiling-1.0')
 internal.Z = Z
 local consoleCommand = 'tj'
 
@@ -99,13 +99,13 @@ local orderedpairs = internal.orderedpairs
 
 function internal.DBG(...)
     if internal.GetConf("do_debug") then
-        local x = {...}
-        if #x == 1 and type(x[1]) == 'table' then
-            for k,v in orderedpairs(x[1]) do
+        if #dbglist == 0 then dbglist[1] = fmt("%s Debug log (|cFF00FFFFhide with /%s _dbg|r):", addonName, consoleCommand) end
+        local a = ...
+        if type(a) == 'table' and select('#', ...) == 1 then
+            for k,v in orderedpairs(a) do
                 dbglist[1+#dbglist] = fmt(" - %s = %s", tostring(k), tostring(v))
             end
         else
-            if #dbglist == 0 then dbglist[1] = addonName .. ' Debug log (|cFF00FFFFhide with /'..consoleCommand..' _dbg|r):' end
             dbglist[1+#dbglist] = fmt(...)
         end
     end
@@ -134,12 +134,12 @@ function Z:ShowLoggingFrame()
         self.log_frame.text:SetJustifyV("TOP")
         self.log_frame.text:SetPoint("TOPLEFT", 8, -8)
         self.log_frame.text:SetPoint("BOTTOMRIGHT", -8, 8)
-        local f = LSM:Fetch("font", "mplus-1m-bold")
-        if f then self.log_frame.text:SetFont(f, 10, "OUTLINE") end
     end
 
     self.log_frame:Show()
     self.log_frame.text:Show()
+    local f = LSM:Fetch("font", "mplus-1m-bold") or LSM:Fetch("font", "Anonymous Pro Bold (U)")
+    if f then self.log_frame.text:SetFont(f, 9, "OUTLINE") end
 end
 
 function Z:HideLoggingFrame()
@@ -274,6 +274,9 @@ function Z:ConsoleCommand(args)
         self:Print('Dumping table cache metrics:')
         self:Print(' - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d',
             LTC.TableCache.TotalAllocated, LTC.TableCache.TotalAcquired, LTC.TableCache.TotalReleased, LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased)
+    elseif args == '_dtct' then
+        self:Print('Dumping table cache table:')
+        DevTools_Dump({LTC_TableCache = LTC.TableCache})
     elseif args == '_db' then
         self:Print('Dumping SavedVariables table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end

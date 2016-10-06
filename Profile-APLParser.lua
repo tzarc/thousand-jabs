@@ -427,14 +427,14 @@ local function ParseActionProfileList(aplString, extraParserSubstitutions)
 
                 -- Save the actual condition string
                 entry.precondition = precondition
-                entry.precondition_parsed = s1
+                entry.precondition_parsed = x1
                 entry.condition = condition
-                entry.condition_parsed = s2
+                entry.condition_parsed = x2
                 entry.param_if = paramIf
                 entry.param_sync = paramSync
                 entry.param_name = paramName
                 entry.param_value = paramValue
-                entry.param_value_parsed = x3 -- /dump tj.currentProfile.parsedActions.default[2]
+                entry.param_value_parsed = x3
 
                 -- Return the result of the conditional and compile
                 local conditionFunctionSource = "return function() return (" .. condition .. ") end"

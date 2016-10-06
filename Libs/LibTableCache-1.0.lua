@@ -5,57 +5,62 @@ local LibTableCache, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 -- Table cache
 ------------------------------------------------------------------------------------------------------------------------
 
-LibTableCache.TableCache = LibTableCache.TableCache or {
-    TotalAllocated = 0,
-    TotalAcquired = 0,
-    TotalReleased = 0,
-    FreeTables = {},
-    InUseTables = {},
-    TablesToRelease = {}
-}
+local function ensureTableCacheExists(lib)
+    lib.TableCache = lib.TableCache or {
+        TotalAllocated = 0,
+        TotalAcquired = 0,
+        TotalReleased = 0,
+        FreeTables = {},
+        InUseTables = {},
+        TablesToRelease = {}
+    }
+    return lib.TableCache
+end
 
 function LibTableCache:Acquire()
-    for k,v in pairs(self.TableCache.FreeTables) do
-        self.TableCache.FreeTables[k] = nil
-        self.TableCache.InUseTables[k] = true
-        self.TableCache.TotalAcquired = self.TableCache.TotalAcquired + 1
+    local tc = ensureTableCacheExists(self)
+    for k,v in pairs(tc.FreeTables) do
+        tc.FreeTables[k] = nil
+        tc.InUseTables[k] = k
+        tc.TotalAcquired = tc.TotalAcquired + 1
         return k
     end
 
     local t = {}
-    self.TableCache.InUseTables[t] = true
-    self.TableCache.TotalAcquired = self.TableCache.TotalAcquired + 1
-    self.TableCache.TotalAllocated = self.TableCache.TotalAllocated + 1
+    tc.InUseTables[t] = t
+    tc.TotalAcquired = tc.TotalAcquired + 1
+    tc.TotalAllocated = tc.TotalAllocated + 1
     return t
 end
 
-function LibTableCache:Release(tbl)
-    if type(tbl) ~= 'table' then return end
-    if self.TableCache.FreeTables[tbl] then return end
-
-    local function recursiveFindChildTables(t)
-        for k2,v2 in pairs(t) do
-            if not self.TableCache.TablesToRelease[k2] and type(k2) == 'table' then
-                self.TableCache.TablesToRelease[k2] = true
-                recursiveFindChildTables(k2)
-            end
-            if not self.TableCache.TablesToRelease[v2] and type(v2) == 'table' then
-                self.TableCache.TablesToRelease[v2] = true
-                recursiveFindChildTables(v2)
-            end
+local function recursiveFindChildTables(tc, t)
+    for k,v in pairs(t) do
+        if not tc.TablesToRelease[k] and type(k) == 'table' then
+            tc.TablesToRelease[k] = k
+            recursiveFindChildTables(tc, k)
+        end
+        if not tc.TablesToRelease[v] and type(v) == 'table' then
+            tc.TablesToRelease[v] = v
+            recursiveFindChildTables(tc, v)
         end
     end
+end
 
-    self.TableCache.TablesToRelease[tbl] = true
-    recursiveFindChildTables(tbl)
+function LibTableCache:Release(tbl)
+    local tc = ensureTableCacheExists(self)
+    if type(tbl) ~= 'table' then return end
+    if tc.FreeTables[tbl] then return end
 
-    for k,v in pairs(self.TableCache.TablesToRelease) do
-        if self.TableCache.InUseTables[k] then self.TableCache.InUseTables[k] = nil end
+    tc.TablesToRelease[tbl] = true
+    recursiveFindChildTables(tc, tbl)
+
+    for k,v in pairs(tc.TablesToRelease) do
+        if tc.InUseTables[k] then tc.InUseTables[k] = nil end
         wipe(k)
         setmetatable(k, nil)
-        self.TableCache.FreeTables[k] = true
-        self.TableCache.TotalReleased = self.TableCache.TotalReleased + 1
+        tc.FreeTables[k] = k
+        tc.TotalReleased = tc.TotalReleased + 1
     end
 
-    wipe(self.TableCache.TablesToRelease)
+    wipe(tc.TablesToRelease)
 end

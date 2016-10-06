@@ -9,10 +9,11 @@ local LUC = LibStub('LibUnitCache-1.0')
 ------------------------------------------------------------------------------------------------------------------------
 
 -- Timer update
+local screenUpdateTimer = nil
 local queuedScreenUpdateTime = 0.1   -- seconds
 local watchdogScreenUpdateTime = 0.5 -- seconds
-local queuedUpdateTimer = nil
-local watchdogUpdateTimer = nil
+local nextScreenUpdateExpiry = GetTime()
+local watchdogScreenUpdateExpiry = GetTime()
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Shared private variables
@@ -23,10 +24,6 @@ Z.currentProfile = nil
 
 -- Time combat was last entered
 Z.combatStart = 0
-
--- Screen update timers
-Z.queuedUpdateTimer = nil
-Z.watchdogUpdateTimer = nil
 
 -- Cast tracking
 Z.lastCastTime = {}
@@ -57,11 +54,6 @@ function Z:OnInitialize()
             { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
         }
     }
-
-    -- Show the debug log if we've enabled debugging
-    if internal.GetConf("do_debug") then
-        self:ShowLoggingFrame()
-    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -74,16 +66,28 @@ function Z:UpdateAlpha()
 end
 
 function Z:QueueUpdate()
-    queuedUpdateTimer = queuedUpdateTimer or self:ScheduleTimer('PerformUpdate', queuedScreenUpdateTime)
+    local now = GetTime()
+
+    if not screenUpdateTimer then
+        watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
+        screenUpdateTimer = C_Timer.NewTicker(0.01, function() Z:PerformUpdate() end)
+    end
+
+    nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
 end
 
 function Z:PerformUpdate()
-    -- Clear the update timer
-    if queuedUpdateTimer then self:CancelTimer(queuedUpdateTimer) end
-    queuedUpdateTimer = nil
-    -- Clear and restart the watchdog timer
-    if watchdogUpdateTimer then self:CancelTimer(watchdogUpdateTimer) end
-    watchdogUpdateTimer = self:ScheduleTimer('PerformUpdate', watchdogScreenUpdateTime)
+    -- Drop out early if we're not needed yet
+    local now = GetTime()
+    if watchdogScreenUpdateExpiry > now then
+        if not nextScreenUpdateExpiry or nextScreenUpdateExpiry > now then
+            return
+        end
+    end
+
+    -- Reset the expiry times
+    nextScreenUpdateExpiry = nil
+    watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
     -- Set up frame fading
     self:UpdateAlpha()
@@ -96,7 +100,7 @@ function Z:PerformUpdate()
     LUC:UpdateUnitCache('target')
 
     if self.currentProfile then
-        if internal.devMode then
+        if internal.devMode and internal.devMode == true then
             self.currentProfile:ParseAPL()
         end
 
@@ -194,11 +198,8 @@ Z:ProfileFunction('ActivateProfile')
 
 function Z:DeactivateProfile()
     -- Clear the update timer
-    if queuedUpdateTimer then self:CancelTimer(queuedUpdateTimer) end
-    queuedUpdateTimer = nil
-    -- Clear and restart the watchdog timer
-    if watchdogUpdateTimer then self:CancelTimer(watchdogUpdateTimer) end
-    watchdogUpdateTimer = nil
+    if screenUpdateTimer then screenUpdateTimer:Cancel() end
+    screenUpdateTimer = nil
 
     -- Hide the frame
     if self.actionsFrame then
@@ -325,9 +326,17 @@ function Z:OnEnable()
             end
         end)
     end
+
+    -- Show the debug log if we've enabled debugging
+    if internal.GetConf("do_debug") then
+        self:ShowLoggingFrame()
+    end
 end
 
 function Z:OnDisable()
+    -- Disable the debug log
+    self:HideLoggingFrame()
+
     -- Deactivate the profile
     self:DeactivateProfile()
 

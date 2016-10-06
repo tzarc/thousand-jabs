@@ -16,32 +16,31 @@ local defaultConf = {
     do_debug = false,
 }
 
+local function getconf(tbl, key, ...)
+    if select('#', ...) == 0 then return tbl[key] end
+    local e = tbl[key]
+    if not e then return nil end
+    return getconf(e, ...)
+end
+
 function internal.GetConf(...)
-    local function getconf(tbl, ...)
-        local keys = {...}
-        local p = tbl
-        for i=1,#keys do
-            if not p[keys[i]] then return nil end
-            p = p[keys[i]]
-        end
-        return p
-    end
     ThousandJabsDB = ThousandJabsDB or {}
     local res = getconf(ThousandJabsDB, ...)
     if not res then res = getconf(defaultConf, ...) end
     return res
 end
 
-function internal.SetConf(value, ...)
-    local function setconf(value, tbl, ...)
-        local keys = {...}
-        local p = tbl
-        for i=1,#keys-1 do
-            if not p[keys[i]] then p[keys[i]] = {} end
-            p = p[keys[i]]
-        end
-        p[keys[#keys]] = value
+local function setconf(value, tbl, ...)
+    local keys = {...}
+    local p = tbl
+    for i=1,#keys-1 do
+        if not p[keys[i]] then p[keys[i]] = {} end
+        p = p[keys[i]]
     end
+    p[keys[#keys]] = value
+end
+
+function internal.SetConf(value, ...)
     ThousandJabsDB = ThousandJabsDB or {}
     setconf(value, ThousandJabsDB, ...)
 end
@@ -155,13 +154,13 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
         }
     }
 
-    for i=1,GetNumSpecializations() do
-        local _, _, classId = UnitClass("player")
-        local specId, specName, _, specIcon = GetSpecializationInfo(i)
+    for specID=1,GetNumSpecializations() do
+        local _, _, classID = UnitClass("player")
+        local _, specName, _, specIcon = GetSpecializationInfo(specID)
         local thisSpecOptions = {
             name = internal.fmt("\124T%s:0|t %s", specIcon, specName),
             type = "group",
-            order = 1000+i,
+            order = 1000+specID,
             args = {
                 specHeader = {
                     type = "header",
@@ -173,10 +172,10 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     order = 1001,
                     name = L["Disable Specialisation"],
                     get = function(info)
-                        return internal.GetConf("class", classId, "spec", i, "disabled") and true or false
+                        return internal.GetConf("class", classID, "spec", specID, "disabled") and true or false
                     end,
                     set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classId, "spec", i, "disabled")
+                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "disabled")
                         Z:DeactivateProfile()
                         Z:ActivateProfile()
                     end
@@ -184,7 +183,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
             },
         }
 
-        local profile = Z.profiles and Z.profiles[classId] and Z.profiles[classId][i] or nil
+        local profile = Z.profiles and Z.profiles[classID] and Z.profiles[classID][specID] or nil
 
         if profile and profile.configCheckboxes then
             local order = 2000
@@ -201,10 +200,10 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     order = order,
                     name = e,
                     get = function(info)
-                        return internal.GetConf("class", classId, "spec", i, "config", e) and true or false
+                        return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
                     end,
                     set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classId, "spec", i, "config", e)
+                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "config", e)
                         Z:DeactivateProfile()
                         Z:ActivateProfile()
                         Z:QueueUpdate()
@@ -238,10 +237,10 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     order = order,
                     name = k,
                     get = function(info)
-                        return internal.GetConf("class", classId, "spec", i, "blacklist", k) and true or false
+                        return internal.GetConf("class", classID, "spec", specID, "blacklist", k) and true or false
                     end,
                     set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classId, "spec", i, "blacklist", k)
+                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "blacklist", k)
                         Z:DeactivateProfile()
                         Z:ActivateProfile()
                         Z:QueueUpdate()

@@ -14,10 +14,10 @@ do
 
     iterateFlyout = function(state)
         while state.flyoutSlotIdx <= state.numFlyoutSlots do
-            local spellId, _, spellKnown, spellName = GetFlyoutSlotInfo(state.flyoutId, state.flyoutSlotIdx)
+            local spellID, _, spellKnown, spellName = GetFlyoutSlotInfo(state.flyoutID, state.flyoutSlotIdx)
             state.flyoutSlotIdx = state.flyoutSlotIdx + 1
             if spellKnown then
-                return spellId, spellName
+                return spellID, spellName
             end
         end
         state.slotIdx = state.slotIdx + 1
@@ -28,17 +28,17 @@ do
     iterateSlots = function (state)
         while state.slotIdx <= state.numSlots do
             local spellBookItem = state.slotOffset + state.slotIdx
-            local spellName, _, icon, castTime, _, _, spellId = GetSpellInfo(spellBookItem, BOOKTYPE_SPELL)
+            local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellBookItem, BOOKTYPE_SPELL)
             local _, spellSubtext = GetSpellBookItemName(spellBookItem, BOOKTYPE_SPELL)
             local spellType, spellBookSpellId = GetSpellBookItemInfo(spellBookItem, BOOKTYPE_SPELL)
             local isTalent = IsTalentSpell(spellBookItem, BOOKTYPE_SPELL)
-            if spellType == "SPELL" and not IsPassiveSpell(spellId) then
+            if spellType == "SPELL" and not IsPassiveSpell(spellID) then
                 state.slotIdx = state.slotIdx + 1
-                return spellId, spellName, spellSubtext, spellBookItem, isTalent, icon, castTime
+                return spellID, spellName, spellSubtext, spellBookItem, isTalent, icon, castTime
             elseif spellType == "FLYOUT" then
                 local _, _, numFlyoutSlots, flyoutKnown = GetFlyoutInfo(spellBookSpellId)
                 if flyoutKnown then
-                    state.flyoutId = spellBookSpellId
+                    state.flyoutID = spellBookSpellId
                     state.flyoutSlotIdx = 1
                     state.numFlyoutSlots = numFlyoutSlots
                     state.currentIterator = iterateFlyout
@@ -108,7 +108,7 @@ function Z:DetectAbilitiesFromSpellBook()
     -- Detect talents, update values accordingly
     for tier=1,7 do
         for column=1,3 do
-            local talentID, name = GetTalentInfo(tier, column, GetActiveSpecGroup())
+            local talentID, name = GetTalentInfo(tier, column, GetSpecialization())
             abilities[slug(name)] = abilities[slug(name)] or {}
             abilities[slug(name)].TalentIDs = { tier, column }
             abilities[slug(name)].IsTalent = true

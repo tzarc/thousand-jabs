@@ -1,3 +1,4 @@
+local addonName = ...
 local MAJOR, MINOR = "LibProfiling-1.0", 26
 local LibProfiling, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
@@ -11,6 +12,13 @@ local format = string.format
 local debugprofilestop = debugprofilestop
 
 local LTC = LibStub('LibTableCache-1.0')
+
+local addon_count = 0
+for i=1,GetNumAddOns() do
+    addon_count = addon_count + (IsAddOnLoaded(i) and 1 or 0)
+end
+local do_mem = (addon_count < 5) and true or false
+do_mem = false
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Miscellaneous functions
@@ -47,18 +55,23 @@ function LibProfiling:ProfilingProlog(...)
     local e = LTC:Acquire()
     e.func = formatHelper(...)
     e.start = debugprofilestop()
+    if do_mem then UpdateAddOnMemoryUsage() end
+    e.mem = do_mem and GetAddOnMemoryUsage(addonName) or 0
     self.profiling.stack[1+#self.profiling.stack] = e
 end
 
 function LibProfiling:ProfilingEpilog()
     if not self.profiling.enabled or #self.profiling.stack == 0 then return end
     local now = debugprofilestop()
+    if do_mem then UpdateAddOnMemoryUsage() end
+    local mem = do_mem and GetAddOnMemoryUsage(addonName) or 0
     local e = self.profiling.stack[#self.profiling.stack]
     self.profiling.stack[#self.profiling.stack] = nil
-    self.profiling.data[e.func] = self.profiling.data[e.func] or { count = 0, timeSpent = 0 }
+    self.profiling.data[e.func] = self.profiling.data[e.func] or { count = 0, timeSpent = 0, memGain = 0 }
     local d = self.profiling.data[e.func]
     d.count = d.count + 1
     d.timeSpent = d.timeSpent + (now - e.start)
+    d.memGain = d.memGain + (mem - e.mem)
     LTC:Release(e)
 end
 
@@ -80,7 +93,9 @@ function LibProfiling:GetProfilingString()
     l[1+#l] = 'Profiling data:'
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
-            l[1+#l] = formatHelper('%5dx %6.3fms/ea, %7.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
+            l[1+#l] = do_mem
+                        and formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
+                        or  formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
         end
     end
     local s = tconcat(l, '\n  ')

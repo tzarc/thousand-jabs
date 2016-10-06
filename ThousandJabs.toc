@@ -4,6 +4,7 @@
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat
+## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
 ## Version: 70000.26
 
 ## SavedVariables: ThousandJabsDB
@@ -16,7 +17,6 @@ Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
-Libs\AceTimer-3.0\AceTimer-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
 
 Libs\LibTableCache-1.0.lua
