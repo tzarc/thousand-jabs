@@ -108,7 +108,7 @@ function Z:DetectAbilitiesFromSpellBook()
     -- Detect talents, update values accordingly
     for tier=1,7 do
         for column=1,3 do
-            local talentID, name = GetTalentInfo(tier, column, GetSpecialization())
+            local talentID, name = GetTalentInfo(tier, column, GetActiveSpecGroup())
             abilities[slug(name)] = abilities[slug(name)] or {}
             abilities[slug(name)].TalentIDs = { tier, column }
             abilities[slug(name)].IsTalent = true

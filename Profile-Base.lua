@@ -97,7 +97,7 @@ function Z:RegisterPlayerClass(config)
 
             -- Add the 'talent_selected' entry if there are talent IDs present
             if type(v) == 'table' and rawget(v, 'TalentIDs') then
-                v.talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetSpecialization())) and true or false end
+                v.talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetActiveSpecGroup())) and true or false end
             end
 
             -- If there's no ability ID, then we can't cast it.
