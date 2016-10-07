@@ -12,14 +12,18 @@ if LDB then
             if button == "LeftButton" then
                 Z:OpenConfigDialog()
             elseif button == "RightButton" then
-                if internal.allowMemoryDisplay then
-                    if internal.updateMemBroker then
-                        internal.updateMemBroker = false
+                if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
+                    if internal.updateBrokerText then
+                        internal.updateBrokerText = false
                         internal.dataobj.text = "Thousand Jabs"
+                        internal.statUpdateTime = nil
                     else
-                        internal.updateMemBroker = true
-                        internal.dataobj.text = "Thousand Jabs: Collecting memory usage..."
+                        internal.updateBrokerText = true
+                        internal.dataobj.text = "Thousand Jabs: Collecting usage statistics..."
+                        internal.statUpdateTime = nil
                     end
+                else
+                    Z:OpenConfigDialog()
                 end
             end
         end,

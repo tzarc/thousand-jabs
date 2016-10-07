@@ -57,6 +57,67 @@ function Z:OnInitialize()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Statistics
+------------------------------------------------------------------------------------------------------------------------
+
+local function TimedUpdateUsageStats()
+    local start = debugprofilestop()
+    UpdateAddOnMemoryUsage()
+    UpdateAddOnCPUUsage()
+    local finish = debugprofilestop()
+    return finish - start
+end
+
+local function UpdateUsageStatistics()
+    if not internal.updateBrokerText then return end
+    if not internal.statUpdateTime then
+        if not InCombatLockdown() then
+            internal.statUpdateTime = TimedUpdateUsageStats()
+        end
+    else
+        internal.lastStatCheck = internal.lastStatCheck or 0
+        local statUpdateSpeed = 5 -- in seconds
+        if (InCombatLockdown() and internal.statUpdateTime < 30) or (internal.statUpdateTime < 100) then -- calc in-combat if <30ms, or out-of-combat if <100ms
+            local now = GetTime()
+            if internal.lastStatCheck + statUpdateSpeed < now then
+                internal.statUpdateTime = TimedUpdateUsageStats()
+                internal.lastStatCheckDelta = now - internal.lastStatCheck
+                internal.lastMemAmount = internal.currMemAmount
+                internal.currMemAmount = GetAddOnMemoryUsage(addonName)
+                internal.lastCpuAmount = internal.currCpuAmount
+                internal.currCpuAmount = GetAddOnCPUUsage(addonName)
+                internal.lastStatCheck = now
+            end
+            DBG("Usage stats update time: %12.3f ms", internal.statUpdateTime)
+            if internal.lastStatCheckDelta then
+                local dt = internal.lastStatCheckDelta
+                if internal.lastMemAmount and internal.lastMemAmount > 0 then
+                    local curr = internal.currMemAmount
+                    local prev = internal.lastMemAmount
+                    local delta = curr - prev
+                    DBG("           Memory usage: %12.3f kB", curr)
+                    DBG("           Memory delta: %12.3f kB", delta)
+                    DBG("           Memory delta: %12.3f kB/sec (over last %d secs)", delta/dt, statUpdateSpeed)
+                    internal.dataobj.text = internal.fmt("Thousand Jabs: Memory: %dkB/sec", delta/dt)
+                end
+                if internal.lastCpuAmount and internal.lastCpuAmount > 0 then
+                    local curr = internal.currCpuAmount
+                    local prev = internal.lastCpuAmount
+                    local delta = curr - prev
+                    DBG("              CPU usage: %12.3f ms", curr)
+                    DBG("              CPU delta: %12.3f ms", delta)
+                    DBG("              CPU delta: %12.3f ms/sec (over last %d secs)", delta/dt, statUpdateSpeed)
+                    DBG("              CPU usage: %10.1f%%", 100*(delta/dt)/1000.0)
+                    internal.dataobj.text = internal.dataobj.text .. internal.fmt(", CPU: %.1f%% (%.3fms)", 100*(delta/dt)/1000.0, delta/dt)
+                end
+            end
+        else
+            internal.dataobj.text = internal.fmt("Thousand Jabs: Statistics disabled, too much time used (%d ms)", internal.statUpdateTime)
+        end
+    end
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -95,26 +156,8 @@ function Z:PerformUpdate()
     -- Clear out any errors for the last screen update
     internal.DBGR()
 
-    -- Show memory usage if requested (right-click the LDB item)
-    if internal.allowMemoryDisplay and internal.updateMemBroker then
-        local now = GetTime()
-        local dt = 3
-        self.lastMemCheck = self.lastMemCheck or 0
-        if self.lastMemCheck + dt < now then
-            self.lastMemCheckDelta = now - self.lastMemCheck
-            self.lastMemAmount = self.currMemAmount
-            UpdateAddOnMemoryUsage()
-            self.currMemAmount = GetAddOnMemoryUsage(addonName)
-            self.lastMemCheck = now
-        end
-
-        DBG("Memory usage: %d kB", self.currMemAmount)
-        if self.lastMemAmount and self.lastMemCheck then
-            DBG("Memory delta: %d kB", self.currMemAmount - self.lastMemAmount)
-            DBG("Memory delta: %d kB/sec (over last %d secs)", (self.currMemAmount - self.lastMemAmount)/self.lastMemCheckDelta, dt)
-            internal.dataobj.text = internal.fmt("Memory delta: %d kB/sec (over last %d secs)", (self.currMemAmount - self.lastMemAmount)/self.lastMemCheckDelta, dt)
-        end
-    end
+    -- Update stats
+    UpdateUsageStatistics()
 
     -- Cache current player/target information if requested
     LUC:UpdateUnitCache('player')
