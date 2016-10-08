@@ -1,4 +1,5 @@
 local _, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local DBG = internal.DBG
 local LUC = LibStub('LibUnitCache-1.0')

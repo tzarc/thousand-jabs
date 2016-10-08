@@ -9,10 +9,83 @@ local pairs = pairs
 local setmetatable = setmetatable
 local format = string.format
 local tconcat = table.concat
+local tcontains = tContains
+
+------------------------------------------------------------------------------------------------------------------------
+-- Formatting
+------------------------------------------------------------------------------------------------------------------------
+
+function internal.fmt(fmt, ...)
+    return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
+end
+local fmt = internal.fmt
+
+------------------------------------------------------------------------------------------------------------------------
+-- Variable safety checks
+------------------------------------------------------------------------------------------------------------------------
+
+local global_reads = {}
+local global_writes = {}
+local global_excludes = { 'ThousandJabsDB' }
+local real_G = _G
+local fake_G = setmetatable({}, {
+    __index = function(tbl,key)
+        local val = real_G[key]
+        if val ~= nil then return val end
+        if tcontains(global_excludes, key) then return nil end
+        global_reads[key] = global_reads[key] or {}
+        local entry = global_reads[key]
+        entry.stacks = entry.stacks or {}
+        local thisstack = '\n'..debugstack()
+        local found = false
+        for k,v in pairs(entry.stacks) do
+            if v == thisstack then
+                found = true
+                break
+            end
+        end
+        if not found then
+            entry.stacks[1+#entry.stacks] = thisstack
+        end
+        return nil
+    end,
+    __newindex = function(tbl,key,val)
+        real_G[key] = val
+        if tcontains(global_excludes, key) then return val end
+        global_writes[key] = global_writes[key] or {}
+        local entry = global_writes[key]
+        entry.stacks = entry.stacks or {}
+        local thisstack = '\n'..debugstack()
+        local found = false
+        for k,v in pairs(entry.stacks) do
+            if v == thisstack then
+                found = true
+                break
+            end
+        end
+        if not found then
+            entry.stacks[1+#entry.stacks] = thisstack
+        end
+    end,
+})
+
+internal.WrapGlobalAccess = function()
+    local prev_G = getfenv(2)
+    if prev_G == real_G then
+        setfenv(2, fake_G)
+    end
+end
+internal.WrapGlobalAccess()
+
+------------------------------------------------------------------------------------------------------------------------
+-- Libraries
+------------------------------------------------------------------------------------------------------------------------
 
 local LTC = LibStub('LibTableCache-1.0')
 local LUC = LibStub('LibUnitCache-1.0')
 local LSM = LibStub('LibSharedMedia-3.0')
+local GUI = LibStub("AceGUI-3.0")
+local LSD = LibStub("LibSerpentDump")
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon initialistion
@@ -31,15 +104,12 @@ if devMode then _G['tj'] = Z end
 
 local printedOnce = {}
 local dbglist = {}
+local tableNames = {}
+local other_errors = {}
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Printing and debug functions
 ------------------------------------------------------------------------------------------------------------------------
-
-function internal.fmt(fmt, ...)
-    return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
-end
-local fmt = internal.fmt
 
 local oldprint = Z.Print
 function Z:Print(...)
@@ -56,6 +126,28 @@ end
 
 function Z:Debug(...)
     if internal.GetConf("do_debug") then self:Print(fmt(...)) end
+end
+
+function Z:OpenDebugWindow(title, data)
+    local f = GUI:Create("Frame")
+    f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
+    f:SetTitle(title)
+    f:SetLayout("Fill")
+
+    local edit = GUI:Create("MultiLineEditBox")
+    edit:SetLabel("")
+    edit:SetText(data)
+    edit:DisableButton(true)
+    f:AddChild(edit)
+end
+
+function internal.error(header, fulltxt)
+    if not tcontains(other_errors, fulltxt) then
+        other_errors[1+#other_errors] = fulltxt
+        Z:Print('|cFFFF0000Well, this is problematic. It seems Thousand Jabs has encountered an error:|r')
+        Z:Print('|cFFFF9900%s|r', header)
+        Z:Print('|cFFFF9900Please raise a ticket on the project page on curseforge, and paste the output from the command: |cFFFFFF00/tj ticket|r')
+    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -95,7 +187,7 @@ end
 local orderedpairs = internal.orderedpairs
 
 ------------------------------------------------------------------------------------------------------------------------
--- Debug log
+-- Debugging
 ------------------------------------------------------------------------------------------------------------------------
 
 function internal.DBG(...)
@@ -118,6 +210,71 @@ end
 
 function internal.DBGSTR()
     return tconcat(dbglist, '\n  ')
+end
+
+local function tierSelections()
+    local specID = GetSpecialization()
+    local talents = {}
+    for k=1,7 do
+        talents[k] = select(10, GetTalentInfoBySpecialization(specID, k, 1)) and 1
+            or select(10, GetTalentInfoBySpecialization(specID, k, 2)) and 2
+            or select(10, GetTalentInfoBySpecialization(specID, k, 3)) and 3
+            or 999
+    end
+    return tconcat(talents, ', ')
+end
+
+local inventorySlots = { "AmmoSlot", "BackSlot", "ChestSlot", "FeetSlot", "Finger0Slot", "Finger1Slot", "HandsSlot", "HeadSlot", "LegsSlot", "MainHandSlot", "NeckSlot", "RangedSlot", "SecondaryHandSlot", "ShirtSlot", "ShoulderSlot", "TabardSlot", "Trinket0Slot", "Trinket1Slot", "WaistSlot", "WristSlot" }
+local function equippedItems()
+    local slotlinks = {}
+    for _,slot in pairs(inventorySlots) do
+        local _,inventoryID = pcall(GetInventorySlotInfo, slot)
+        if inventoryID then slotlinks[slot] = (GetInventoryItemLink("player", inventoryID) or ''):gsub('|','||') end
+    end
+    return slotlinks
+end
+
+function Z:ExportDebuggingInformation()
+    if InCombatLockdown() then
+        self:Print("In combat, cannot open debug information window.")
+    else
+        local export = {
+            ['!tj_version'] = GetAddOnMetadata(addonName, "X-Curse-Packaged-Version"),
+            ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
+            base = {
+                player_level = UnitLevel('player'),
+                class_info = tconcat({ UnitClass('player') }, ' | '),
+                spec_info = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
+                talent_info = tierSelections(),
+            },
+            frame = {
+                position = { self.actionsFrame:GetPoint() },
+                scale = self.actionsFrame:GetScale(),
+            },
+            errors = {
+                global = {
+                    reads = global_reads,
+                    writes = global_writes,
+                },
+                other = other_errors,
+            },
+            equipped_items = equippedItems(),
+            internals = {
+                saved_variables = ThousandJabsDB,
+                table_cache = {
+                    allocated = LTC.TableCache.TotalAllocated,
+                    acquired = LTC.TableCache.TotalAcquired,
+                    released = LTC.TableCache.TotalReleased,
+                    used = LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased
+                },
+            },
+        }
+        if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
+            export.frame.position[2] = export.frame.position[2]:GetName()
+        end
+        local export_text = fmt("%s", LSD(export))
+        self:OpenDebugWindow(addonName .. ' SavedVariables Export', export_text)
+    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -167,22 +324,18 @@ local function targetFieldName(tableName, key)
     return type(key) == 'number' and format('%s[%d]', tableName, tostring(key)) or format('%s.%s', tableName, tostring(key))
 end
 
-local tableNames = {}
-local missing = {}
 local missingFieldMetatable = {
     __index = function(tbl, key)
         local tableName = (type(tableNames[tbl]) == 'string' and tableNames[tbl] or "UNKNOWN_TABLE")
-        if not key then error(format('Attempted to index table "%s" with nil key.', tableName)) end
-        if type(key) == 'table' then error(format('Attempted to index table "%s" with key of type table.\n%s', tableName, debugstack(1))) end
+        local errtxt
+        local stack = debugstack()
+        if not key then errtxt = fmt('Attempted to index table "%s" with nil key.\n%s', tableName, stack) end
+        if type(key) == 'table' then errtxt = fmt('Attempted to index table "%s" with key of type table.\n%s', tableName, stack) end
         if internal.GetConf("do_debug") then
-            local errTxt = format('Missing field: "%s":\n%s', targetFieldName(tableName, key), debugstack(2))
-            if not missing[errTxt] then
-                missing[errTxt] = true
-                Z:Print(errTxt)
-                if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
-                DevTools_Dump{[tableName]=tbl}
-            end
+            errtxt = fmt('Missing field: "%s":\n%s', targetFieldName(tableName, key), stack)
+            internal.error(internal.fmt('Missing field: |cFFFFFF00%s', targetFieldName(tableName, key)), errtxt)
         end
+        if errtxt then error(errtxt) end
     end
 }
 
@@ -261,6 +414,8 @@ function Z:ConsoleCommand(args)
         self:ToggleMovement()
     elseif args == "resetpos" then
         self:ResetPosition()
+    elseif args == 'ticket' then
+        self:ExportDebuggingInformation()
     elseif args == "_dbg" then
         if internal.GetConf("do_debug") then
             internal.SetConf(false, "do_debug")
@@ -275,15 +430,8 @@ function Z:ConsoleCommand(args)
         self:Print('Dumping table cache metrics:')
         self:Print(' - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d',
             LTC.TableCache.TotalAllocated, LTC.TableCache.TotalAcquired, LTC.TableCache.TotalReleased, LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased)
-    elseif args == '_dtct' then
-        self:Print('Dumping table cache table:')
-        DevTools_Dump({LTC_TableCache = LTC.TableCache})
-    elseif args == '_db' then
-        self:Print('Dumping SavedVariables table:')
-        if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
-        DevTools_Dump{db=ThousandJabsDB}
     elseif args == '_dbe' then
-        self:ExportSavedVariables()
+        self:OpenDebugWindow(addonName .. ' SavedVariables Export', LSD(ThousandJabsDB))
     elseif args == '_duc' then
         self:Print('Dumping unit cache table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
@@ -292,16 +440,16 @@ function Z:ConsoleCommand(args)
         UpdateAddOnMemoryUsage()
         self:Print('Memory usage: %d kB', GetAddOnMemoryUsage(addonName))
     elseif args == '_esd' then
-        Z:ExportAbilitiesFromSpellBook()
+        self:ExportAbilitiesFromSpellBook()
     else
         self:Print('%s chat commands:', addonName)
         self:Print("     |cFFFF6600/tj cfg|r - Opens the configuration dialog.")
         self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
         self:Print("     |cFFFF6600/tj resetpos|r - Resets frame positioning to default.")
+        self:Print("     |cFFFF6600/tj ticket|r - Shows a window that can be used to copy/paste debugging information for raising tickets.")
         self:Print('%s debugging:', addonName)
         self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', consoleCommand)
         self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', consoleCommand)
-        self:Print('     |cFFFF6600/%s _db|r - Dumps SavedVariables table.', consoleCommand)
         self:Print('     |cFFFF6600/%s _dbe|r - Export SavedVariables table.', consoleCommand)
         self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', consoleCommand)
         self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', consoleCommand)

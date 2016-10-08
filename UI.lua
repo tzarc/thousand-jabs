@@ -1,4 +1,5 @@
 local _, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 
 local LDB = LibStub("LibDataBroker-1.1")

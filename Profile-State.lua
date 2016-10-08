@@ -1,4 +1,5 @@
 local _, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local DBG = internal.DBG
 local LUC = LibStub('LibUnitCache-1.0')
@@ -279,7 +280,8 @@ function Z:CreateNewState(numTargets)
                 if not status then
 
                     DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
-                    Z:PrintOnce("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.condition)
+                    internal.error(internal.fmt("Error executing variable function: |cFFFFFF00%s", action.key),
+                        internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.condition))
 
                 else
 
@@ -305,7 +307,8 @@ function Z:CreateNewState(numTargets)
                 if not status then
 
                     DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
-                    Z:PrintOnce("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.condition)
+                    internal.error(internal.fmt("Error executing condition function: |cFFFFFF00%s", action.key),
+                        internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.condition))
 
                 elseif ret == false then
 

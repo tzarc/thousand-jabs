@@ -1,7 +1,7 @@
 local addonName, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local fmt = internal.fmt
-local GUI = LibStub("AceGUI-3.0")
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Spellbook iteration
@@ -147,24 +147,12 @@ function Z:ExportAbilitiesFromSpellBook()
     addline("}")
     addline("")
 
-    -- Show the export window
-    local f = GUI:Create("Frame")
-    f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
-    f:SetTitle(addonName .. ' Actions Data Export')
-    f:SetLayout("Fill")
-
-    local edit = GUI:Create("MultiLineEditBox")
-    edit:SetLabel("")
-    edit:SetText(export)
-    edit:DisableButton(true)
-    f:AddChild(edit)
-
-    --DevTools_Dump({definedAbilities=definedAbilities})
+    -- Display the exported data
+    self:OpenDebugWindow(addonName .. ' Actions Data Export', export)
 
     -- Reset the table, so we can change spec
     definedAbilities = {}
 end
-
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Spell info from tooltip

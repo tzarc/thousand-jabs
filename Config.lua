@@ -1,8 +1,7 @@
 local addonName, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs")
-local GUI = LibStub("AceGUI-3.0")
-local LPD = LibStub("LibPrtrDump-1.0")
 
 local defaultConf = {
     scale = 1,
@@ -255,20 +254,3 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
     return options
 end)
 LibStub("AceConfigDialog-3.0"):AddToBlizOptions("ThousandJabs", "Thousand Jabs")
-
-function Z:ExportSavedVariables()
-    -- Build the string
-    local export = LPD:Dump(ThousandJabsDB)
-
-    -- Show the export window
-    local f = GUI:Create("Frame")
-    f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
-    f:SetTitle(addonName .. ' SavedVariables Export')
-    f:SetLayout("Fill")
-
-    local edit = GUI:Create("MultiLineEditBox")
-    edit:SetLabel("")
-    edit:SetText(export)
-    edit:DisableButton(true)
-    f:AddChild(edit)
-end

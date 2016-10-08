@@ -94,8 +94,8 @@ function LibProfiling:GetProfilingString()
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
             l[1+#l] = do_mem
-                        and formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
-                        or  formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
+                and formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
+                or  formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
         end
     end
     local s = tconcat(l, '\n  ')
@@ -149,7 +149,7 @@ function LibProfiling:ProfileFunction(a, b, c)
             return unpack(ret)
         end
         unembeds[1+#unembeds] = function()
-            -- can't do anything here.
+        -- can't do anything here.
         end
         return newfunc
     end

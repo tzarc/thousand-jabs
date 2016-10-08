@@ -20,9 +20,9 @@ Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
+Libs\LibSerpentDump.lua
 Libs\LibTableCache-1.0.lua
 Libs\LibProfiling-1.0.lua
-Libs\LibPrtrDump-1.0.lua
 Libs\LibUnitCache-1.0.lua
 
 Lang-enUS.lua

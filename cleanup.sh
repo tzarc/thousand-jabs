@@ -9,7 +9,7 @@ for file in *.toc *.lua *.sh ActionProfileLists/*.xml ActionProfileLists/*.lua C
     sed -i 's/^internal.allowMemoryDisplay = true/internal.allowMemoryDisplay = false/' $file
 done
 
-for file in *.lua ActionProfileLists/*.lua Classes/*.lua ; do
+for file in *.lua Libs/*.lua ActionProfileLists/*.lua Classes/*.lua ; do
     luaformatter -a -s4 "${file}"
 done
 

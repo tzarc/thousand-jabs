@@ -1,4 +1,6 @@
-local _, internal, Z, DBG, fmt
+local _, internal = ...
+local Z, DBG, fmt
+if type(internal) == 'table' and internal.WrapGlobalAccess then internal.WrapGlobalAccess() end
 local IsLoadedByWoW = GetSpellInfo and true or false
 if IsLoadedByWoW then
     _, internal = ...;
@@ -12,7 +14,9 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 if not IsLoadedByWoW then
-    dump_table = loadfile([[Libs//LibPrtrDump-1.0.lua]])()
+    lsd_chunk = loadfile([[Libs/LibSerpentDump.lua]])
+    print(tostring(lsd_chunk))
+    dump_table = lsd_chunk()
     print_table = function(tbl) print(dump_table(tbl)) end
 
     function fmt(f, ...)
@@ -93,7 +97,6 @@ local function is_parsed_operator(str)
 end
 
 local function tokenise_apl_line(str)
-    local indent = indent or 0
     local sections = {}
     local idx = 1
     local arg = ""

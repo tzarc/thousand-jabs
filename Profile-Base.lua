@@ -1,4 +1,5 @@
 local _, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local tcontains = tContains
 local fmt = internal.fmt

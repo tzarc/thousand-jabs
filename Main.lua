@@ -1,4 +1,5 @@
 local addonName, internal = ...;
+internal.WrapGlobalAccess()
 local Z = internal.Z
 local DBG = internal.DBG
 local LTC = LibStub('LibTableCache-1.0')
