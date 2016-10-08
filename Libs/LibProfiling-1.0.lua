@@ -1,5 +1,5 @@
 local addonName = ...
-local MAJOR, MINOR = "LibProfiling-1.0", 27
+local MAJOR, MINOR = "LibProfiling-1.0", 28
 local LibProfiling, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 local type = type
