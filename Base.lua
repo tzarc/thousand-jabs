@@ -272,8 +272,8 @@ function Z:ExportDebuggingInformation()
         if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
             export.frame.position[2] = export.frame.position[2]:GetName()
         end
-        local export_text = fmt("%s", LSD(export))
-        self:OpenDebugWindow(addonName .. ' SavedVariables Export', export_text)
+        local export_text = fmt(addonName .. " Diagnostic Information:\n<<code lua>>\n%s\n<</code>>", LSD(export))
+        self:OpenDebugWindow(addonName .. ' Diagnostic Information', export_text)
     end
 end
 
