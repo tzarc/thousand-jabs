@@ -43,6 +43,11 @@ internal.commonData = {
         remains = 0,
         raid_event_in = 180,
     },
+    raid_movement = {
+        remains = 0,
+        raid_event_in = 180,
+        aura_up = false,
+    },
     level = {
         curr = function(self,state) return UnitLevel('player') or 0 end,
     },
