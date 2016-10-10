@@ -25,8 +25,7 @@ Libs\LibTableCache-1.0.lua
 Libs\LibProfiling-1.0.lua
 Libs\LibUnitCache-1.0.lua
 
-Lang-enUS.lua
-Lang-deDE.lua
+Translations.lua
 
 Base.lua
 Main.lua
