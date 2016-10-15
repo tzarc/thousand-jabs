@@ -244,6 +244,8 @@ function Z:ActivateProfile()
 
         -- Show the frame
         self.actionsFrame:Show()
+        self.actionsFrame:EnableMouse(self.movable)
+        self:UpdateAlpha()
 
         -- Register event listeners
         Z:RegisterEvent('PLAYER_LEVEL_UP')
@@ -361,7 +363,9 @@ function Z:OnEnable()
 
     -- Create the UI
     if not self.actionsFrame then
-        self.actionsFrame = Z:CreateFrames()
+        self.actionsFrame = self:CreateFrames()
+        self.actionsFrame:EnableMouse(self.movable)
+        self:UpdateAlpha()
 
         -- Handle movement if enabled
         self.actionsFrame:SetScript("OnMouseDown", function(self, button)

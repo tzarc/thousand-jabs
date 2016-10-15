@@ -61,6 +61,7 @@ function Z:CreateFrames()
     baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
     baseFrame:ClearAllPoints()
     baseFrame:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
+    baseFrame:SetScale(internal.GetConf("scale"))
     baseFrame:Hide()
 
     return baseFrame
