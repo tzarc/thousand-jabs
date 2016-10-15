@@ -129,8 +129,22 @@ local arms_base_overrides = {
         AuraMine = true,
     },
     rend = {
+        AuraID = 772,
+        AuraUnit = 'target',
+        AuraMine = true,
         spell_duration = 15,
         spell_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
+    },
+    overpower = {
+        AuraID = 60503,
+        AuraUnit = 'player',
+        AuraMine = true,
+        CanCast = function(spell,env)
+            return spell.aura_remains > 0 and true or false
+        end,
+        PerformCast = function(spell,env)
+            spell.expirationTime = 0
+        end,
     },
 }
 
