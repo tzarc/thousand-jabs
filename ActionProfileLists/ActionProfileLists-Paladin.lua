@@ -177,6 +177,7 @@ actions.precombat+=/potion,name=old_war
 actions=auto_attack
 actions+=/rebuke
 actions+=/potion,name=old_war,if=(buff.bloodlust.react|buff.avenging_wrath.up|buff.crusade.up|target.time_to_die<=40)
+actions+=/use_item,name=faulty_countermeasure,if=(buff.avenging_wrath.up|buff.crusade.up)
 actions+=/holy_wrath
 actions+=/avenging_wrath
 actions+=/shield_of_vengeance

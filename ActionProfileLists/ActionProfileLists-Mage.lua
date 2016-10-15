@@ -166,48 +166,6 @@ actions.cooldowns+=/arcane_torrent
 actions.cooldowns+=/potion,name=deadly_grace
 ]]
 
-internal.apls["legion-dev::Tier19P::Mage_NTSpamArcane_T19P"] = [[
-actions.precombat=flask,type=flask_of_the_whispered_pact
-actions.precombat+=/food,type=the_hungry_magister
-actions.precombat+=/augmentation,type=defiled
-actions.precombat+=/summon_arcane_familiar
-actions.precombat+=/snapshot_stats
-actions.precombat+=/mirror_image
-actions.precombat+=/potion,name=deadly_grace
-actions.precombat+=/arcane_blast
-actions=nether_tempest,if=time<1
-actions+=/time_warp,if=target.health.pct<25|time=0
-actions+=/shard_of_the_exodar_warp,if=buff.bloodlust.down&burn_phase
-actions+=/stop_burn_phase,if=cooldown.arcane_power.remains>20&buff.arcane_power.down&cooldown.evocation.remains>20&burn_phase_duration>13+action.evocation.execute_time&(time>5|!equipped.132451&mana.pct<50|mana.pct<50&time<100|mana.pct<20)&!(mana%165000*action.arcane_blast.execute_time*2>target.time_to_die.remains-2)
-actions+=/call_action_list,name=burn,if=burn_phase
-actions+=/start_burn_phase,if=buff.arcane_charge.stack=4&time<10
-actions+=/start_burn_phase,if=buff.arcane_charge.stack=4&cooldown.evocation.remains<6
-actions+=/call_action_list,name=conserve
-actions.conserve=arcane_missiles,if=buff.arcane_missiles.react=3&!buff.rhonins_assaulting_armwraps.react
-actions.conserve+=/arcane_missiles,if=buff.quickening.up&buff.quickening.remains<action.arcane_blast.execute_time&buff.arcane_missiles.react
-actions.conserve+=/arcane_explosion,if=buff.quickening.up&buff.quickening.remains<action.arcane_blast.execute_time
-actions.conserve+=/arcane_blast,if=buff.rhonins_assaulting_armwraps.up&equipped.132413
-actions.conserve+=/mark_of_aluneth,if=cooldown.arcane_power.remains>20|cooldown.arcane_power.remains>target.time_to_die
-actions.conserve+=/rune_of_power,if=dot.mark_of_aluneth.remains&(recharge_time<cooldown.arcane_power.remains|charges=2)
-actions.conserve+=/supernova,if=mana.pct<99
-actions.conserve+=/arcane_missiles,if=buff.arcane_missiles.react&mana.pct<96&buff.arcane_charge.stack=4&((cooldown.arcane_power.remains>5|cooldown.evocation.remains-cooldown.arcane_power.remains>15)|buff.arcane_missiles.react>1)&(buff.quickening.remains<gcd*2|buff.arcane_missiles.react>1)
-actions.conserve+=/arcane_blast,if=buff.arcane_charge.stack<4|mana.pct>70|buff.rune_of_power.up&mana.pct>35
-actions.conserve+=/nether_tempest,if=buff.arcane_charge.stack=4
-actions.burn=arcane_explosion,if=mana<250000&!prev_gcd.arcane_explosion&cooldown.evocation.remains<gcd.max|prev_gcd.evocation|buff.quickening.up&buff.quickening.remains<action.arcane_blast.cast_time&time>20
-actions.burn+=/evocation,if=mana.pct<15&(prev_gcd.arcane_explosion|target.time_to_die.remains<30&cooldown.arcane_power.remains<10&mana.pct<30),interrupt_if=mana.pct>90
-actions.burn+=/arcane_blast,if=buff.rhonins_assaulting_armwraps.up&equipped.132413
-actions.burn+=/mark_of_aluneth,if=time<60|cooldown.evocation.remains
-actions.burn+=/call_action_list,name=cooldowns,if=cooldown.evocation.remains|time<50
-actions.burn+=/nether_tempest,if=mana<300000&cooldown.evocation.remains<10&cooldown.evocation.remains>gcd.max*2&!buff.arcane_missiles.up
-actions.burn+=/arcane_missiles
-actions.burn+=/arcane_blast
-actions.burn+=/evocation,interrupt_if=mana.pct>90
-actions.cooldowns=rune_of_power,if=buff.arcane_power.down&(cooldown.arcane_power.remains>5|cooldown.arcane_power.remains<=cast_time)
-actions.cooldowns+=/arcane_power
-actions.cooldowns+=/berserking
-actions.cooldowns+=/potion,name=deadly_grace,if=buff.berserking.up
-]]
-
 internal.apls["legion-dev::Tier19H::Mage_Arcane_T19H"] = [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=the_hungry_magister
@@ -265,6 +223,7 @@ actions.cooldowns+=/arcane_power
 actions.cooldowns+=/blood_fury
 actions.cooldowns+=/berserking
 actions.cooldowns+=/arcane_torrent
+actions.cooldowns+=/use_item,slot=finger2
 actions.cooldowns+=/potion,name=deadly_grace,if=buff.arcane_power.up&(buff.berserking.up|buff.blood_fury.up)
 actions.init_burn=mark_of_aluneth
 actions.init_burn+=/frost_nova,if=equipped.132452
@@ -308,7 +267,8 @@ actions.combustion_phase+=/potion,name=deadly_grace
 actions.combustion_phase+=/blood_fury
 actions.combustion_phase+=/berserking
 actions.combustion_phase+=/arcane_torrent
-actions.combustion_phase+=/use_item,slot=trinket1
+actions.combustion_phase+=/use_item,slot=finger1
+actions.combustion_phase+=/use_item,slot=trinket2
 actions.combustion_phase+=/pyroblast,if=buff.hot_streak.up
 actions.combustion_phase+=/fire_blast,if=buff.heating_up.up
 actions.combustion_phase+=/phoenixs_flames

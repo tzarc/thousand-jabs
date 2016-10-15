@@ -245,6 +245,7 @@ actions.precombat+=/stealth
 actions.precombat+=/potion,name=old_war
 actions.precombat+=/marked_for_death,if=raid_event.adds.in>40
 actions=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|debuff.vendetta.up
+actions+=/use_item,slot=trinket2,if=buff.bloodlust.react|target.time_to_die<=20|debuff.vendetta.up
 actions+=/blood_fury,if=debuff.vendetta.up
 actions+=/berserking,if=debuff.vendetta.up
 actions+=/arcane_torrent,if=debuff.vendetta.up&energy.deficit>50
@@ -316,6 +317,7 @@ actions.precombat+=/stealth
 actions.precombat+=/potion,name=old_war
 actions.precombat+=/marked_for_death,if=raid_event.adds.in>40
 actions=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|debuff.vendetta.up
+actions+=/use_item,slot=trinket2,if=buff.bloodlust.react|target.time_to_die<=20|debuff.vendetta.up
 actions+=/blood_fury,if=debuff.vendetta.up
 actions+=/berserking,if=debuff.vendetta.up
 actions+=/arcane_torrent,if=debuff.vendetta.up&energy.deficit>50
@@ -405,6 +407,7 @@ actions.build=ghostly_strike,if=combo_points.deficit>=1+buff.broadsides.up&!buff
 actions.build+=/pistol_shot,if=combo_points.deficit>=1+buff.broadsides.up&buff.opportunity.up&energy.time_to_max>2-talent.quick_draw.enabled
 actions.build+=/saber_slash,if=variable.ss_useable
 actions.cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|buff.adrenaline_rush.up
+actions.cds+=/use_item,slot=trinket2,if=buff.bloodlust.react|target.time_to_die<=20|combo_points.deficit<=2
 actions.cds+=/blood_fury
 actions.cds+=/berserking
 actions.cds+=/arcane_torrent,if=energy.deficit>40

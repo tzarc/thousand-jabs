@@ -120,7 +120,7 @@ actions+=/throw_glaive,if=buff.out_of_range.up|buff.raid_movement.up
 actions+=/felblade,if=movement.distance|buff.out_of_range.up
 actions+=/fel_rush,if=movement.distance>15|(buff.out_of_range.up&!talent.momentum.enabled)
 actions+=/vengeful_retreat,if=movement.distance>15
-actions.cooldown=use_item,slot=trinket1
+actions.cooldown=use_item,slot=trinket1,if=buff.chaos_blades.up|!talent.chaos_blades.enabled
 actions.cooldown+=/nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&(active_enemies>desired_targets|raid_event.adds.in>60)
 actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(cooldown.metamorphosis.remains>100|target.time_to_die<70)
 actions.cooldown+=/nemesis,sync=metamorphosis,if=!raid_event.adds.exists

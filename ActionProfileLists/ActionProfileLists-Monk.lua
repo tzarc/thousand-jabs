@@ -68,6 +68,7 @@ actions+=/call_action_list,name=serenity,if=(!artifact.strike_of_the_windlord.en
 actions+=/call_action_list,name=sef,if=!talent.serenity.enabled&((!artifact.strike_of_the_windlord.enabled&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5)|buff.storm_earth_and_fire.up)
 actions+=/call_action_list,name=st
 actions.cd=invoke_xuen
+actions.cd+=/use_item,name=tirathons_betrayal
 actions.cd+=/blood_fury
 actions.cd+=/berserking
 actions.cd+=/touch_of_death,cycle_targets=1,max_cycle_targets=2,if=!artifact.gale_burst.enabled&equipped.137057&!prev_gcd.touch_of_death

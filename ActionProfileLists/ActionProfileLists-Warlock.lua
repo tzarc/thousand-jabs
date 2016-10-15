@@ -178,7 +178,6 @@ actions+=/berserking
 actions+=/blood_fury
 actions+=/arcane_torrent
 actions+=/soul_harvest
-actions+=/use_item,name=obelisk_of_the_void
 actions+=/potion,name=deadly_grace,if=buff.soul_harvest.remains|trinket.proc.any.react|target.time_to_die<=45
 actions+=/corruption,if=remains<=tick_time+gcd
 actions+=/siphon_life,if=remains<=tick_time+gcd
