@@ -172,6 +172,7 @@ function Z:CreateNewState(numTargets)
         end
 
         -- Set the initial parameters
+        state.env.ptr = false
         state.env.sampleTime = GetTime()
         state.env.active_enemies = numTargets
         state.env.spell_targets = numTargets

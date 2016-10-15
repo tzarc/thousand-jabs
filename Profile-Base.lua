@@ -178,6 +178,9 @@ function Z:RegisterPlayerClass(config)
                     if not rawget(v, 'CooldownTime') then
                         v.CooldownTime = isCooldownAffectedByHaste and (function(spell,env) return env.playerHasteMultiplier * fullCooldownSecs end) or fullCooldownSecs
                     end
+                    v.spell_recharge_time = function(spell, env)
+                        return spell.CooldownTime
+                    end
                     spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
                     perform_cast_funcsrc = perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
 
@@ -185,6 +188,9 @@ function Z:RegisterPlayerClass(config)
                     v.cooldown_remains = function(spell, env)
                         local remains = spell.cooldownStart + spell.cooldownDuration - env.currentTime
                         return (remains > 0) and remains or 0
+                    end
+                    v.spell_charges = function(spell, env)
+                        return (spell.cooldown_remains > 0) and 0 or 1
                     end
                 end
 
@@ -201,11 +207,17 @@ function Z:RegisterPlayerClass(config)
                     perform_cast_funcsrc = perform_cast_funcsrc .. '; spell.rechargeSpent = spell.rechargeSpent + 1'
 
                     -- Add recharge-specific functions
+                    v.spell_recharge_time = function(spell, env)
+                        return spell.RechargeTime
+                    end
                     v.spell_charges = function(spell, env)
                         return spell.rechargeSampled - spell.rechargeSpent
                     end
                     v.spell_charges_fractional = function(spell, env)
                         return spell.rechargeSampledFractional - spell.rechargeSpent
+                    end
+                    v.cooldown_charges_fractional = function(spell, env)
+                        return spell.spell_charges_fractional
                     end
                     v.spell_recharge_time = function(spell, env)
                         local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
