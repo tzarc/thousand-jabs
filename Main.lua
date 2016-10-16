@@ -39,7 +39,7 @@ Z.damageTable = {}
 ------------------------------------------------------------------------------------------------------------------------
 function Z:OnInitialize()
     -- Pre-create the results table
-    Z.results = {
+    self.results = {
         single_target = {
             { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
             { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },

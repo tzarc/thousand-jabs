@@ -49,6 +49,11 @@ function internal.GetSpecConf(e)
     return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
 end
 
+function internal.SetSpecConf(value, e)
+    local classID, specID = select(3, UnitClass('player')), GetSpecialization()
+    internal.SetConf(value, "class", classID, "spec", specID, "config", e)
+end
+
 function internal.trim(s)
     return ((s or ""):gsub("^%s*(.-)%s*$", "%1"))
 end

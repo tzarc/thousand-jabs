@@ -285,7 +285,7 @@ function Z:CreateNewState(numTargets)
                 if not status then
 
                     DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
-                    internal.error(internal.fmt("Error executing variable function: |cFFFFFF00%s", action.key),
+                    internal.error(internal.fmt("Error executing variable function: %s", action.key),
                         internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.condition))
 
                 else
@@ -312,7 +312,7 @@ function Z:CreateNewState(numTargets)
                 if not status then
 
                     DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
-                    internal.error(internal.fmt("Error executing condition function: |cFFFFFF00%s", action.key),
+                    internal.error(internal.fmt("Error executing condition function: %s", action.key),
                         internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.condition))
 
                 elseif ret == false then

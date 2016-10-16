@@ -98,6 +98,9 @@ Z:EnableProfiling(devMode)
 Z:ProfileFunction(LUC, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 if devMode then _G['tj'] = Z end
 
+internal.TJ = {}
+_G['TJ'] = internal.TJ
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Local definitions
 ------------------------------------------------------------------------------------------------------------------------
@@ -142,6 +145,7 @@ function Z:OpenDebugWindow(title, data)
 end
 
 function internal.error(header, fulltxt)
+    internal.error_thrown = true
     if not tcontains(other_errors, fulltxt) then
         other_errors[1+#other_errors] = fulltxt
         Z:Print('|cFFFF0000Well, this is problematic. It seems Thousand Jabs has encountered an error:|r')
@@ -212,6 +216,10 @@ function internal.DBGSTR()
     return tconcat(dbglist, '\n  ')
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Ticket information
+------------------------------------------------------------------------------------------------------------------------
+
 local function tierSelections()
     local specID = GetSpecialization()
     local talents = {}
@@ -234,46 +242,49 @@ local function equippedItems()
     return slotlinks
 end
 
+function Z:GenerateDebuggingInformation()
+    local export = {
+        ['!tj_version'] = GetAddOnMetadata(addonName, "X-Curse-Packaged-Version"),
+        ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
+        base = {
+            player_level = UnitLevel('player'),
+            class_info = tconcat({ UnitClass('player') }, ' | '),
+            spec_info = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
+            talent_info = tierSelections(),
+        },
+        frame = {
+            position = { self.actionsFrame:GetPoint() },
+            scale = self.actionsFrame:GetScale(),
+        },
+        errors = {
+            global = {
+                reads = global_reads,
+                writes = global_writes,
+            },
+            other = other_errors,
+        },
+        equipped_items = equippedItems(),
+        internals = {
+            saved_variables = ThousandJabsDB,
+            table_cache = {
+                allocated = LTC.TableCache.TotalAllocated,
+                acquired = LTC.TableCache.TotalAcquired,
+                released = LTC.TableCache.TotalReleased,
+                used = LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased
+            },
+        },
+    }
+    if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
+        export.frame.position[2] = export.frame.position[2]:GetName()
+    end
+    return fmt(addonName .. " Diagnostic Information:\n<<code lua>>\n%s\n<</code>>", LSD(export))
+end
+
 function Z:ExportDebuggingInformation()
     if InCombatLockdown() then
         self:Print("In combat, cannot open debug information window.")
     else
-        local export = {
-            ['!tj_version'] = GetAddOnMetadata(addonName, "X-Curse-Packaged-Version"),
-            ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
-            base = {
-                player_level = UnitLevel('player'),
-                class_info = tconcat({ UnitClass('player') }, ' | '),
-                spec_info = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
-                talent_info = tierSelections(),
-            },
-            frame = {
-                position = { self.actionsFrame:GetPoint() },
-                scale = self.actionsFrame:GetScale(),
-            },
-            errors = {
-                global = {
-                    reads = global_reads,
-                    writes = global_writes,
-                },
-                other = other_errors,
-            },
-            equipped_items = equippedItems(),
-            internals = {
-                saved_variables = ThousandJabsDB,
-                table_cache = {
-                    allocated = LTC.TableCache.TotalAllocated,
-                    acquired = LTC.TableCache.TotalAcquired,
-                    released = LTC.TableCache.TotalReleased,
-                    used = LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased
-                },
-            },
-        }
-        if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
-            export.frame.position[2] = export.frame.position[2]:GetName()
-        end
-        local export_text = fmt(addonName .. " Diagnostic Information:\n<<code lua>>\n%s\n<</code>>", LSD(export))
-        self:OpenDebugWindow(addonName .. ' Diagnostic Information', export_text)
+        self:OpenDebugWindow(addonName .. ' Diagnostic Information', Z:GenerateDebuggingInformation())
     end
 end
 
@@ -327,15 +338,22 @@ end
 local missingFieldMetatable = {
     __index = function(tbl, key)
         local tableName = (type(tableNames[tbl]) == 'string' and tableNames[tbl] or "UNKNOWN_TABLE")
-        local errtxt
+        local header, errtxt
         local stack = debugstack()
-        if not key then errtxt = fmt('Attempted to index table "%s" with nil key.\n%s', tableName, stack) end
-        if type(key) == 'table' then errtxt = fmt('Attempted to index table "%s" with key of type table.\n%s', tableName, stack) end
-        if internal.GetConf("do_debug") then
-            errtxt = fmt('Missing field: "%s":\n%s', targetFieldName(tableName, key), stack)
-            internal.error(internal.fmt('Missing field: |cFFFFFF00%s', targetFieldName(tableName, key)), errtxt)
+        if type(key) == 'nil' then
+            header = fmt('Attempted to index table "%s" with nil key.', tableName)
+            errtxt = fmt('%s\n%s', header, stack)
+        elseif type(key) == 'table' then
+            header = fmt('Attempted to index table "%s" with key of type table.', tableName)
+            errtxt = fmt('%s\n%s', header, stack)
+        else
+            header = fmt('Missing field: "%s"', targetFieldName(tableName, key))
+            errtxt = fmt('%s\n%s', header, stack)
         end
-        if errtxt then error(errtxt) end
+        if errtxt and header then
+            internal.error(header, errtxt)
+            error(header)
+        end
     end
 }
 
@@ -407,16 +425,36 @@ end
 -- Console command
 ------------------------------------------------------------------------------------------------------------------------
 
+local function splitargv(str,sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    str:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
+end
+
 function Z:ConsoleCommand(args)
-    if args == "cfg" then
+    local argv = splitargv(args, '%s+')
+    if argv[1] == "cfg" then
         self:OpenConfigDialog()
-    elseif args == "move" then
+    elseif argv[1] == "move" then
         self:ToggleMovement()
-    elseif args == "resetpos" then
+    elseif argv[1] == "resetpos" then
         self:ResetPosition()
-    elseif args == 'ticket' then
+    elseif argv[1] == 'ticket' then
         self:ExportDebuggingInformation()
-    elseif args == "_dbg" then
+    elseif argv[1] == 'blacklist' then
+        local action = rawget(self.currentProfile.actions, argv[2])
+        if not action then
+            self:Print('Error, action "|cFFFF6600%s|r" not found.', argv[2])
+        else
+            local classID, specID = select(3, UnitClass('player')), GetSpecialization()
+            local current = internal.GetConf("class", classID, "spec", specID, "blacklist", argv[2]) and true or false
+            local newvalue = not current
+            internal.SetConf(newvalue and true or false, "class", classID, "spec", specID, "blacklist", argv[2])
+            self:Print('Blacklist |cFFFF6600%s|r=|cFFFFCC00%s|r', argv[2], tostring(newvalue))
+            self:QueueUpdate()
+        end
+    elseif argv[1] == "_dbg" then
         if internal.GetConf("do_debug") then
             internal.SetConf(false, "do_debug")
             self:HideLoggingFrame()
@@ -426,20 +464,20 @@ function Z:ConsoleCommand(args)
             self:ShowLoggingFrame()
             self:Print('Debugging info enabled. Disable with "|cFFFF6600/%s _dbg|r".', consoleCommand)
         end
-    elseif args == '_dtc' then
+    elseif argv[1] == '_dtc' then
         self:Print('Dumping table cache metrics:')
         self:Print(' - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d',
             LTC.TableCache.TotalAllocated, LTC.TableCache.TotalAcquired, LTC.TableCache.TotalReleased, LTC.TableCache.TotalAcquired - LTC.TableCache.TotalReleased)
-    elseif args == '_dbe' then
+    elseif argv[1] == '_dbe' then
         self:OpenDebugWindow(addonName .. ' SavedVariables Export', LSD(ThousandJabsDB))
-    elseif args == '_duc' then
+    elseif argv[1] == '_duc' then
         self:Print('Dumping unit cache table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end
         DevTools_Dump{unitCache=LUC.unitCache}
-    elseif args == '_mem' then
+    elseif argv[1] == '_mem' then
         UpdateAddOnMemoryUsage()
         self:Print('Memory usage: %d kB', GetAddOnMemoryUsage(addonName))
-    elseif args == '_esd' then
+    elseif argv[1] == '_esd' then
         self:ExportAbilitiesFromSpellBook()
     else
         self:Print('%s chat commands:', addonName)
@@ -447,6 +485,7 @@ function Z:ConsoleCommand(args)
         self:Print("     |cFFFF6600/tj move|r - Toggles frame moving.")
         self:Print("     |cFFFF6600/tj resetpos|r - Resets frame positioning to default.")
         self:Print("     |cFFFF6600/tj ticket|r - Shows a window that can be used to copy/paste debugging information for raising tickets.")
+        self:Print("     |cFFFF6600/tj blacklist <action>|r - Enables blacklisting of actions using slash commands / macros.")
         self:Print('%s debugging:', addonName)
         self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', consoleCommand)
         self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', consoleCommand)
