@@ -280,11 +280,21 @@ local havoc_base_overrides = {
             env.fury.gained = env.fury.gained + spell.fury_gain
         end,
     },
+    annihilation = {
+        CanCast = function(spell,env)
+            return env.melee.in_range
+        end,
+    },
+    eye_beam = {
+        CanCast = function(spell,env)
+            return env.movement.distance < 20
+        end,
+    },
     fel_rush = {
         AuraApplied = 'momentum',
         AuraApplyLength = 10,
         PerformCast = function(spell,env)
-            env.melee.in_range = true
+            env.movement.distance = 5 -- melee
         end,
     },
     throw_glaive = {
@@ -299,13 +309,7 @@ local havoc_base_overrides = {
             env.fury.gained = env.fury.gained + 8 -- 40fury/5sec
             env.momentum.expirationTime = env.currentTime + 3
             env.prepared.expirationTime = env.currentTime + 5
-            env.melee.in_range = false
-        end,
-    },
-    movement = {
-        distance = function(spell,env)
-            -- this is for fel rush - there's no way to check against the actual distance to the target, so assume that if demon's bite is out of range, then we're needing to fel rush
-            return env.melee.in_range and 0 or 100
+            env.movement.distance = 20 -- not melee
         end,
     },
     metamorphosis = {
@@ -313,7 +317,7 @@ local havoc_base_overrides = {
         AuraUnit = 'player',
         AuraMine = true,
         PerformCast = function(spell,env)
-            env.melee.in_range = true
+            env.movement.distance = 5 -- melee
         end,
     },
     bloodlet = {
@@ -357,44 +361,33 @@ local havoc_base_overrides = {
 local havoc_hooks = {
     hooks = {
         OnStateInit = function(env)
-            env.melee.in_range = env.melee.in_range_unlatched
+            -- we need to override the range after resetting the state, otherwise we get 'wait' and other inconsistencies
+            if env.prev_gcd.vengeful_retreat then
+                env.movement.distance = 20
+            end
+            if env.prev_gcd.fel_rush then
+                env.movement.distance = 5
+            end
         end,
         OnPredictActionAtOffset = function(env)
         --[[
         internal.DBG({
-        melee_in_range = env.melee.in_range,
-        demons_bite_in_range = env.demons_bite.in_range,
-        chaos_strike_in_range = env.chaos_strike.in_range,
-        annihilation_in_range = env.annihilation.in_range,
-        prev_gcd_fel_rush = env.prev_gcd.fel_rush,
         prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
-        demon_blades_talent_selected = env.demon_blades.talent_selected,
-        vengeful_retreat_spell_can_cast = env.vengeful_retreat.spell_can_cast,
+        range = env.movement.distance,
+        melee_in_range = env.melee.in_range,
+        out_of_range_aura_up = env.out_of_range.aura_up,
+        fel_rush_cooldown_remains = env.fel_rush.cooldown_remains,
+        fel_rush_spell_charges = env.fel_rush.spell_charges,
+        fel_rush_spell_charges_fractional = env.fel_rush.spell_charges_fractional,
+        })
+        internal.DBG({
+        throw_glaive_cooldown_remains = env.throw_glaive.cooldown_remains,
+        throw_glaive_spell_charges = env.throw_glaive.spell_charges,
+        throw_glaive_spell_charges_fractional = env.throw_glaive.spell_charges_fractional,
         })
         -- ]]
         end,
-    },
-    melee = {
-        in_range_unlatched = function(spell,env)
-            if env.demon_blades.talent_selected then
-                -- Meta screws things up here. Need to check against either chaos strike or annihilation, but they won't both be available so the addon will
-                -- error out. Need to refer to the applicable ability for whether meta is active on the player in-game, rather than in-sim.
-                local meta = LUC:GetAura('player', env.metamorphosis.AuraID, true)
-                if meta then
-                    return env.annihilation.in_range
-                else
-                    return env.chaos_strike.in_range
-                end
-            else
-                return env.demons_bite.in_range
-            end
-        end,
-    },
-    out_of_range = {
-        aura_up = function(spell,env)
-            return not env.melee.in_range
-        end,
-    },
+    }
 }
 
 Z:RegisterPlayerClass({

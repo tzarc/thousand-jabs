@@ -104,7 +104,7 @@ function Z:RegisterPlayerClass(config)
             -- If there's no ability ID, then we can't cast it.
             if type(v) == 'table' and not rawget(v, 'AbilityID') then
                 v.spell_can_cast = function(spell, env) return false end
-                v.in_range = function(spell, env) return false end
+                v.in_range = rawget(v, 'in_range') or function(spell, env) return false end
                 v.cooldown_remains = 99999
             end
 
@@ -211,10 +211,14 @@ function Z:RegisterPlayerClass(config)
                         return spell.RechargeTime
                     end
                     v.spell_charges = function(spell, env)
-                        return spell.rechargeSampled - spell.rechargeSpent
+                        return math.floor(spell.spell_charges_fractional+0.001)
                     end
                     v.spell_charges_fractional = function(spell, env)
-                        return spell.rechargeSampledFractional - spell.rechargeSpent
+                        local f = (spell.rechargeSampled == spell.rechargeMax)
+                            and spell.rechargeMax - spell.rechargeSpent
+                            or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
+                        if f >= spell.rechargeMax then f = spell.rechargeMax end
+                        return f
                     end
                     v.cooldown_charges_fractional = function(spell, env)
                         return spell.spell_charges_fractional
@@ -223,7 +227,9 @@ function Z:RegisterPlayerClass(config)
                         local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
                         return (spell.spell_charges == spell.rechargeMax) and 0 or remains
                     end
-                    v.cooldown_remains = v.spell_recharge_time
+                    v.cooldown_remains = function(spell,env)
+                        return (spell.spell_charges > 0) and 0 or spell.spell_recharge_time
+                    end
                 end
 
                 -- Update the spell_can_cast function if talents are specified

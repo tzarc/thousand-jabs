@@ -163,7 +163,7 @@ function Z:CreateNewState(numTargets)
                     v.rechargeDuration = duration or 0
                     v.rechargeSpent = 0
                     v.spell_max_charges = maxCharges or 0
-                    v.rechargeSampledFractional = charges + (GetTime()-start)/duration
+                    v.rechargeNext = (charges == maxCharges) and 99999999999999 or (start + duration)
                 end
 
             else
@@ -179,7 +179,7 @@ function Z:CreateNewState(numTargets)
         state.env.desired_targets = numTargets - 1
         state.env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
         state.env.player_level = UnitLevel('player')
-        state.env.override_out_of_melee_range = false
+        state.env.movement.distance = internal.range_to_unit('target')
 
         -- Reset the prev_gcd/equipped tables
         state.env.prev_gcd = prev_gcd
@@ -198,6 +198,9 @@ function Z:CreateNewState(numTargets)
 
         -- Attempt to work out when we can next cast something, based off the gcd
         local start, duration = GetSpellCooldown(61304)
+
+        -- Set the combat start time
+        state.env.combatStart = (Z.combatStart ~= 0) and Z.combatStart or GetTime()
 
         -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
         local cname, _, _, _, cstart, cend = UnitCastingInfo('player')
@@ -248,6 +251,7 @@ function Z:CreateNewState(numTargets)
         state.env.predictionOffset = predictionOffset
         DBG("")
         DBG("Offset: %.3f", predictionOffset)
+        DBG("Range: <= %d yd", state.env.movement.distance)
 
         -- Call the current profile's state initialisation function
         local func = state.env.hooks.OnPredictActionAtOffset
