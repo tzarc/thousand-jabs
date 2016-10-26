@@ -7,6 +7,7 @@ actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/shadowform,if=!buff.shadowform.up
 actions.precombat+=/mind_blast
 actions=potion,name=deadly_grace,if=buff.bloodlust.react|target.time_to_die<=40|buff.voidform.stack>80
 actions+=/variable,op=set,name=actors_fight_time_mod,value=0
@@ -108,6 +109,7 @@ actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/shadowform,if=!buff.shadowform.up
 actions.precombat+=/mind_blast
 actions=potion,name=deadly_grace,if=buff.bloodlust.react|target.time_to_die<=40|buff.voidform.stack>80
 actions+=/variable,op=set,name=actors_fight_time_mod,value=0
@@ -209,6 +211,7 @@ actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/shadowform,if=!buff.shadowform.up
 actions.precombat+=/mind_blast
 actions=potion,name=deadly_grace,if=buff.bloodlust.react|target.time_to_die<=40|buff.voidform.stack>80
 actions+=/variable,op=set,name=actors_fight_time_mod,value=0
@@ -310,6 +313,7 @@ actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/shadowform,if=!buff.shadowform.up
 actions.precombat+=/mind_blast
 actions=potion,name=deadly_grace,if=buff.bloodlust.react|target.time_to_die<=40|buff.voidform.stack>80
 actions+=/variable,op=set,name=actors_fight_time_mod,value=0

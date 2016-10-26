@@ -142,6 +142,7 @@ actions=counterspell,if=target.debuff.casting.react
 actions+=/ice_lance,if=buff.fingers_of_frost.react=0&prev_gcd.flurry
 actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410)
 actions+=/call_action_list,name=cooldowns
+actions+=/blizzard,if=buff.potion_of_deadly_grace.up&!prev_off_gcd.water_jet
 actions+=/ice_nova,if=debuff.winters_chill.up
 actions+=/frostbolt,if=prev_off_gcd.water_jet
 actions+=/water_jet,if=prev_gcd.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0
@@ -154,7 +155,7 @@ actions+=/ice_lance,if=buff.fingers_of_frost.react>0&cooldown.icy_veins.remains>
 actions+=/frozen_orb
 actions+=/ice_nova
 actions+=/comet_storm
-actions+=/blizzard
+actions+=/blizzard,if=talent.artic_gale.enabled
 actions+=/ebonbolt,if=buff.fingers_of_frost.stack<=(0+artifact.icy_hand.enabled)
 actions+=/frostbolt
 actions.cooldowns=rune_of_power,if=cooldown.icy_veins.remains<cast_time|charges_fractional>1.9&cooldown.icy_veins.remains>10|buff.icy_veins.up|target.time_to_die.remains+5<charges_fractional*10
@@ -310,6 +311,7 @@ actions=counterspell,if=target.debuff.casting.react
 actions+=/ice_lance,if=buff.fingers_of_frost.react=0&prev_gcd.flurry
 actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410)
 actions+=/call_action_list,name=cooldowns
+actions+=/blizzard,if=buff.potion_of_deadly_grace.up&!prev_off_gcd.water_jet
 actions+=/ice_nova,if=debuff.winters_chill.up
 actions+=/frostbolt,if=prev_off_gcd.water_jet
 actions+=/water_jet,if=prev_gcd.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0
@@ -322,7 +324,7 @@ actions+=/ice_lance,if=buff.fingers_of_frost.react>0&cooldown.icy_veins.remains>
 actions+=/frozen_orb
 actions+=/ice_nova
 actions+=/comet_storm
-actions+=/blizzard
+actions+=/blizzard,if=talent.artic_gale.enabled
 actions+=/ebonbolt,if=buff.fingers_of_frost.stack<=(0+artifact.icy_hand.enabled)
 actions+=/frostbolt
 actions.cooldowns=rune_of_power,if=cooldown.icy_veins.remains<cast_time|charges_fractional>1.9&cooldown.icy_veins.remains>10|buff.icy_veins.up|target.time_to_die.remains+5<charges_fractional*10
