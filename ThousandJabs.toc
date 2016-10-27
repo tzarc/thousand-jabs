@@ -1,11 +1,11 @@
-## Interface: 70000
+## Interface: 70100
 ## Title: ThousandJabs
 ## Notes: Simulationcraft -> In-game rotation
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
-## Version: 70000.32
+## Version: 70100.33
 
 ## SavedVariables: ThousandJabsDB
 
