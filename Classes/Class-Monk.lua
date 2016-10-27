@@ -101,7 +101,7 @@ Z:RegisterPlayerClass({
     class_id = 10,
     spec_id = 1,
     action_profile = 'dummy::PrePatch::Monk_Brewmaster',
-    resources = { 'energy' },
+    resources = { 'energy', 'energy_per_time' },
     actions = {
         brewmaster_abilities_exported,
         brewmaster_base_overrides,
@@ -256,7 +256,7 @@ Z:RegisterPlayerClass({
     class_id = 10,
     spec_id = 3,
     action_profile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
-    resources = { 'energy', 'chi' },
+    resources = { 'energy', 'energy_per_time', 'chi' },
     actions = {
         windwalker_abilities_exported,
         windwalker_base_overrides,
@@ -264,7 +264,9 @@ Z:RegisterPlayerClass({
         windwalker_artifact_overrides,
         windwalker_hooks,
     },
-    blacklisted = {},
+    blacklisted = {
+        'spear_hand_strike',
+    },
     config_checkboxes = {
         'gale_burst_selected',
         'strike_of_the_windlord_selected',

@@ -286,3 +286,6 @@ internal.resources = {
         perform_spend = generic_perform_spend,
     },
 }
+
+-- Set up the per-time resources to match the base resources
+internal.resources.energy_per_time = internal.resources.energy
