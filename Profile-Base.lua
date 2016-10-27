@@ -31,6 +31,19 @@ function Z:RegisterPlayerClass(config)
         profile.parsedActions = not internal.devMode and profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
     end
 
+    function profile:FindActionForSpellID(spellID)
+        for k,v in pairs(profile.actions) do
+            local spellIDs = rawget(v, 'SpellIDs')
+            if spellIDs then
+                for k2,v2 in pairs(spellIDs) do
+                    if v2 == spellID then
+                        return k
+                    end
+                end
+            end
+        end
+    end
+
     function profile:Activate()
 
         -- Construct the total actions table, including resources and base actions
@@ -296,4 +309,8 @@ function Z:RegisterPlayerClass(config)
 
     function profile:Deactivate()
     end
+end
+
+function internal.TJ:RegisterPlayerClass(classInfo)
+    Z:RegisterPlayerClass(classInfo)
 end

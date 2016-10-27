@@ -203,8 +203,12 @@ function Z:CreateNewState(numTargets)
         state.env.combatStart = (Z.combatStart ~= 0) and Z.combatStart or GetTime()
 
         -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
-        local cname, _, _, _, cstart, cend = UnitCastingInfo('player')
-        if not cname then
+        local cname, _, _, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
+        local performPostCastAction = false
+        if cname then
+            performPostCastAction = true
+            DBG("Currently casting: %s", tostring(spellCastID))
+        else
             cname, _, _, _, cstart, cend = UnitChannelInfo('player')
         end
         if cname then
@@ -218,7 +222,7 @@ function Z:CreateNewState(numTargets)
         end
 
         -- Predict at the specific offset
-        return state:PredictActionAtOffset(predictionOffset)
+        return state:PredictActionAtOffset(predictionOffset, performPostCastAction and spellCastID or nil)
 
     end
 
@@ -246,9 +250,23 @@ function Z:CreateNewState(numTargets)
     Z:ProfileFunction(state, 'PredictActionFollowing', 'state:PredictActionFollowing')
 
     -- Prediction at the supplied time offset
-    function state:PredictActionAtOffset(predictionOffset)
+    function state:PredictActionAtOffset(predictionOffset, performPostCastSpellID)
 
         state.env.predictionOffset = predictionOffset
+
+        if performPostCastSpellID ~= nil then
+            DBG("Handling cast of %s", tostring(performPostCastSpellID))
+            local action = profile:FindActionForSpellID(performPostCastSpellID)
+            if action then
+                DBG("Handling cast of %s", action)
+                local act = profile.actions[action]
+                -- Pretend we just casted the supplied action, update the last cast time for this ability
+                last_cast_times[act.AbilityID] = state.env.currentTime
+                -- Perform the cast of the supplied action
+                profile.actions[action].perform_cast(act, state.env)
+            end
+        end
+
         DBG("")
         DBG("Offset: %.3f", predictionOffset)
         DBG("Range: <= %d yd", state.env.movement.distance)

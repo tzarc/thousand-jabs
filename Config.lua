@@ -49,6 +49,10 @@ function internal.GetSpecConf(e)
     return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
 end
 
+function TJ:GetSpecConf(e)
+    return internal.GetSpecConf(e)
+end
+
 function internal.SetSpecConf(value, e)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
     internal.SetConf(value, "class", classID, "spec", specID, "config", e)
@@ -197,22 +201,41 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                 order = order,
             }
 
-            for _, e in pairs(profile.configCheckboxes) do
+            for e, v in pairs(profile.configCheckboxes) do
                 order = order + 1
-                thisSpecOptions.args[e] = {
-                    type = "toggle",
-                    order = order,
-                    name = e,
-                    get = function(info)
-                        return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
-                    end,
-                    set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "config", e)
-                        Z:DeactivateProfile()
-                        Z:ActivateProfile()
-                        Z:QueueUpdate()
-                    end
-                }
+                if type(v) == "boolean" then
+                    thisSpecOptions.args[e] = {
+                        type = "toggle",
+                        order = order,
+                        name = e,
+                        get = function(info)
+                            return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val and true or false, "class", classID, "spec", specID, "config", e)
+                            Z:DeactivateProfile()
+                            Z:ActivateProfile()
+                            Z:QueueUpdate()
+                        end
+                    }
+                elseif type(v) == "table" and #v == 2 and type(v[1]) == "number" and type(v[2]) == "number" then
+                    thisSpecOptions.args[e] = {
+                        type = "range",
+                        order = order,
+                        name = e,
+                        min = v[1],
+                        max = v[2],
+                        get = function(info)
+                            return internal.GetConf("class", classID, "spec", specID, "config", e)
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "class", classID, "spec", specID, "config", e)
+                            Z:DeactivateProfile()
+                            Z:ActivateProfile()
+                            Z:QueueUpdate()
+                        end
+                    }
+                end
             end
         end
 

@@ -94,6 +94,7 @@ internal.apls["legion-dev::Tier19P::Druid_Feral_T19P"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/regrowth,if=talent.bloodtalons.enabled
 actions.precombat+=/cat_form
 actions.precombat+=/prowl
 actions.precombat+=/snapshot_stats
@@ -113,7 +114,9 @@ actions+=/potion,name=old_war,if=((buff.berserk.remains>10|buff.incarnation.rema
 actions+=/tigers_fury,if=(!buff.clearcasting.react&energy.deficit>=60)|energy.deficit>=80|(t18_class_trinket&buff.berserk.up&buff.tigers_fury.down)
 actions+=/incarnation,if=energy.time_to_max>1&energy>=35
 actions+=/ferocious_bite,cycle_targets=1,if=dot.rip.ticking&dot.rip.remains<3&target.time_to_die>3&(target.health.pct<25|talent.sabertooth.enabled)
+actions+=/regrowth,if=talent.bloodtalons.enabled&buff.predatory_swiftness.up&(combo_points>=5|buff.predatory_swiftness.remains<1.5|(talent.bloodtalons.enabled&combo_points=2&buff.bloodtalons.down&cooldown.ashamanes_frenzy.remains<gcd)|(talent.elunes_guidance.enabled&((cooldown.elunes_guidance.remains<gcd&combo_points=0)|(buff.elunes_guidance.up&combo_points>=4))))
 actions+=/call_action_list,name=sbt_opener,if=talent.sabertooth.enabled&time<20
+actions+=/regrowth,if=equipped.ailuro_pouncers&talent.bloodtalons.enabled&buff.predatory_swiftness.stack>1&buff.bloodtalons.down
 actions+=/call_action_list,name=finisher
 actions+=/call_action_list,name=generator
 actions.finisher=pool_resource,for_next=1
@@ -143,7 +146,8 @@ actions.generator+=/thrash_cat,cycle_targets=1,if=remains<=duration*0.3&spell_ta
 actions.generator+=/brutal_slash,if=combo_points<5&((raid_event.adds.exists&raid_event.adds.in>(1+max_charges-charges_fractional)*15)|(!raid_event.adds.exists&(charges_fractional>2.66&time>10)))
 actions.generator+=/swipe_cat,if=combo_points<5&spell_targets.swipe_cat>=3
 actions.generator+=/shred,if=combo_points<5&(spell_targets.swipe_cat<3|talent.brutal_slash.enabled)
-actions.sbt_opener=tigers_fury,if=!dot.rip.ticking&combo_points=5
+actions.sbt_opener=regrowth,if=talent.bloodtalons.enabled&combo_points=5&!buff.bloodtalons.up&!dot.rip.ticking
+actions.sbt_opener+=/tigers_fury,if=!dot.rip.ticking&combo_points=5
 ]]
 
 internal.apls["legion-dev::Tier19P::Druid_Guardian_T19P"] = [[
@@ -268,6 +272,7 @@ internal.apls["legion-dev::Tier19H::Druid_Feral_T19H"] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/regrowth,if=talent.bloodtalons.enabled
 actions.precombat+=/cat_form
 actions.precombat+=/prowl
 actions.precombat+=/snapshot_stats
@@ -287,7 +292,9 @@ actions+=/potion,name=old_war,if=((buff.berserk.remains>10|buff.incarnation.rema
 actions+=/tigers_fury,if=(!buff.clearcasting.react&energy.deficit>=60)|energy.deficit>=80|(t18_class_trinket&buff.berserk.up&buff.tigers_fury.down)
 actions+=/incarnation,if=energy.time_to_max>1&energy>=35
 actions+=/ferocious_bite,cycle_targets=1,if=dot.rip.ticking&dot.rip.remains<3&target.time_to_die>3&(target.health.pct<25|talent.sabertooth.enabled)
+actions+=/regrowth,if=talent.bloodtalons.enabled&buff.predatory_swiftness.up&(combo_points>=5|buff.predatory_swiftness.remains<1.5|(talent.bloodtalons.enabled&combo_points=2&buff.bloodtalons.down&cooldown.ashamanes_frenzy.remains<gcd)|(talent.elunes_guidance.enabled&((cooldown.elunes_guidance.remains<gcd&combo_points=0)|(buff.elunes_guidance.up&combo_points>=4))))
 actions+=/call_action_list,name=sbt_opener,if=talent.sabertooth.enabled&time<20
+actions+=/regrowth,if=equipped.ailuro_pouncers&talent.bloodtalons.enabled&buff.predatory_swiftness.stack>1&buff.bloodtalons.down
 actions+=/call_action_list,name=finisher
 actions+=/call_action_list,name=generator
 actions.finisher=pool_resource,for_next=1
@@ -317,6 +324,7 @@ actions.generator+=/thrash_cat,cycle_targets=1,if=remains<=duration*0.3&spell_ta
 actions.generator+=/brutal_slash,if=combo_points<5&((raid_event.adds.exists&raid_event.adds.in>(1+max_charges-charges_fractional)*15)|(!raid_event.adds.exists&(charges_fractional>2.66&time>10)))
 actions.generator+=/swipe_cat,if=combo_points<5&spell_targets.swipe_cat>=3
 actions.generator+=/shred,if=combo_points<5&(spell_targets.swipe_cat<3|talent.brutal_slash.enabled)
-actions.sbt_opener=tigers_fury,if=!dot.rip.ticking&combo_points=5
+actions.sbt_opener=regrowth,if=talent.bloodtalons.enabled&combo_points=5&!buff.bloodtalons.up&!dot.rip.ticking
+actions.sbt_opener+=/tigers_fury,if=!dot.rip.ticking&combo_points=5
 ]]
 

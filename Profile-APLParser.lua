@@ -196,6 +196,7 @@ local conditionalSubstitutions = {
     { " dot%.", " aura." },
     { " buff%.", " aura." },
     { " debuff%.", " aura." },
+    { " action%.", " spell." },
 
     { " energy ", " energy.curr " },
     { " chi ", " chi.curr " },
@@ -205,13 +206,16 @@ local conditionalSubstitutions = {
     { " fury ", " fury.curr " },
     { " runic_power ", " runic_power.curr " },
     { " burning_ember ", " burning_ember.curr " },
+    { " soul_shard ", " soul_shards " },
+    { " soul_shards ", " soul_shards.curr " },
     { " soul_fragments ", " soul_fragments.curr " },
 
     { " cooldown ", " cooldown.THIS_SPELL.remains " },
     { " duration ", " spell.THIS_SPELL.duration " },
     { " delay ", " spell.THIS_SPELL.delay " },
-    { " remains ", " spell.THIS_SPELL.remains " },
+    { " remains ", " aura.THIS_SPELL.remains " },
     { " cast_time ", " spell.THIS_SPELL.cast_time " },
+    { " tick_time ", " spell.THIS_SPELL.tick_time " },
     { " time ", " time_since_combat_start " },
     { " gcd ", " gcd " },
     { " gcd%.remains ", " gcd_remains " },
@@ -515,7 +519,7 @@ else
         -- [[ActionProfileLists/ActionProfileLists-Priest.lua]],
         -- [[ActionProfileLists/ActionProfileLists-Rogue.lua]],
         -- [[ActionProfileLists/ActionProfileLists-Shaman.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Warlock.lua]],
+        [[ActionProfileLists/ActionProfileLists-Warlock.lua]],
         [[ActionProfileLists/ActionProfileLists-Warrior.lua]]
     }
 
