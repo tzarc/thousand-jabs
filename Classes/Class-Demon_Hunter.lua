@@ -214,7 +214,7 @@ Z:RegisterPlayerClass({
     },
     blacklisted = {},
     config_checkboxes = {
-        'fiery_demise_selected',
+        fiery_demise_selected = true,
     },
     conditional_substitutions = {
         { " in_flight ", " infernal_strike.in_flight " },
@@ -406,8 +406,8 @@ Z:RegisterPlayerClass({
         'pick_up_fragment',
     },
     config_checkboxes = {
-        'demon_speed_selected',
-        'anguish_of_the_deceiver_selected',
+        demon_speed_selected = true,
+        anguish_of_the_deceiver_selected = true,
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },

@@ -213,7 +213,7 @@ local conditionalSubstitutions = {
     { " cooldown ", " cooldown.THIS_SPELL.remains " },
     { " duration ", " spell.THIS_SPELL.duration " },
     { " delay ", " spell.THIS_SPELL.delay " },
-    { " remains ", " aura.THIS_SPELL.remains " },
+    { " remains ", " spell.THIS_SPELL.remains " },
     { " cast_time ", " spell.THIS_SPELL.cast_time " },
     { " tick_time ", " spell.THIS_SPELL.tick_time " },
     { " time ", " time_since_combat_start " },
