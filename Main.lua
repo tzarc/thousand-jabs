@@ -11,8 +11,8 @@ local LUC = LibStub('LibUnitCache-1.0')
 
 -- Timer update
 local screenUpdateTimer = nil
-local queuedScreenUpdateTime = 0.1   -- seconds
-local watchdogScreenUpdateTime = 0.5 -- seconds
+local queuedScreenUpdateTime = 0.2   -- seconds
+local watchdogScreenUpdateTime = 0.75 -- seconds
 local nextScreenUpdateExpiry = GetTime()
 local watchdogScreenUpdateExpiry = GetTime()
 
@@ -231,16 +231,10 @@ function Z:ActivateProfile()
         -- Activate the profile
         self.currentProfile:Activate()
 
-        -- Retrieve the current state
-        if not self.st_state then
-            self.st_state = self:CreateNewState(1)
-        end
-        if not self.cleave_state then
-            self.cleave_state = self:CreateNewState(2)
-        end
-        if not self.aoe_state then
-            self.aoe_state = self:CreateNewState(3)
-        end
+        -- Create new state objects
+        self.st_state = self:CreateNewState(1)
+        self.cleave_state = self:CreateNewState(2)
+        self.aoe_state = self:CreateNewState(3)
 
         -- Show the frame
         self.actionsFrame:Show()
@@ -292,7 +286,10 @@ function Z:DeactivateProfile()
     Z:UnregisterEvent('PLAYER_LEVEL_UP')
 
     -- Deactivate the current profile
-    if self.currentProfile then self.currentProfile:Deactivate() end
+    if self.currentProfile then
+        self.currentProfile:Deactivate()
+        self.currentProfile = nil
+    end
 end
 
 Z:ProfileFunction('DeactivateProfile')

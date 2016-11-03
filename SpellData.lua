@@ -226,11 +226,39 @@ local RechargePatterns = {}
 for _,v in pairs(DurationChecks) do
     local b = 'SPELL_RECAST_TIME_' .. v:upper()
     if _G[b] then
-        CooldownPatterns[1+#CooldownPatterns] = { v, '^' .. gsub(_G[b], '%%.3g', '([.,%%d]+)') .. '$' }
+        local t = _G[b]
+        t = t:gsub('%%.3g', '([.,%%d]+)')
+
+        local placeholder = '____PLACEHOLDER____'
+        local A, B
+        t = t:gsub('|4([^:]+):([^;]+);', function(a, b) -- (a or b - "|4aaa:bbb;")
+            A, B = a, b
+            return placeholder
+        end)
+        if A then
+            CooldownPatterns[1+#CooldownPatterns] = { v, '^' .. t:gsub(placeholder,A) .. '$'}
+            CooldownPatterns[1+#CooldownPatterns] = { v, '^' .. t:gsub(placeholder,B) .. '$'}
+        else
+            CooldownPatterns[1+#CooldownPatterns] = { v, '^' .. t .. '$'}
+        end
     end
     b = 'SPELL_RECAST_TIME_CHARGES_' .. v:upper()
     if _G[b] then
-        RechargePatterns[1+#RechargePatterns] = { v, '^' .. gsub(_G[b], '%%.3g', '([.,%%d]+)') .. '$' }
+        local t = _G[b]
+        t = t:gsub('%%.3g', '([.,%%d]+)')
+
+        local placeholder = '____PLACEHOLDER____'
+        local A, B
+        t = t:gsub('|4([^:]+):([^;]+);', function(a, b) -- (a or b - "|4aaa:bbb;")
+            A, B = a, b
+            return placeholder
+        end)
+        if A then
+            RechargePatterns[1+#RechargePatterns] = { v, '^' .. t:gsub(placeholder,A) .. '$'}
+            RechargePatterns[1+#RechargePatterns] = { v, '^' .. t:gsub(placeholder,B) .. '$'}
+        else
+            RechargePatterns[1+#RechargePatterns] = { v, '^' .. t .. '$'}
+        end
     end
 end
 

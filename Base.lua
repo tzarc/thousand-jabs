@@ -93,7 +93,6 @@ local LSD = LibStub("LibSerpentDump")
 
 local devMode = false
 internal.devMode = devMode
-internal.allowMemoryDisplay = false
 Z:EnableProfiling(devMode)
 Z:ProfileFunction(LUC, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 if devMode then _G['tj'] = Z end
@@ -127,8 +126,8 @@ function Z:PrintOnce(...)
     end
 end
 
-function Z:Debug(...)
-    if internal.GetConf("do_debug") then self:Print(fmt(...)) end
+function Z:DevPrint(...)
+    if devMode then self:Print("%.3f: %s", debugprofilestop(), fmt(...)) end
 end
 
 function Z:OpenDebugWindow(title, data)

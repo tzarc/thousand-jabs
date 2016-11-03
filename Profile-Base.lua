@@ -45,6 +45,7 @@ function Z:RegisterPlayerClass(config)
     end
 
     function profile:Activate()
+        Z:DevPrint("Activating profile: %s", profile.name)
 
         -- Construct the total actions table, including resources and base actions
         profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
