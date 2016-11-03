@@ -87,6 +87,7 @@ local operators = {
     { '>=', ' >= ' },
     { '>', ' > ' },
     { '=', ' == ' },
+    { ':', '.' },
 }
 local function is_parsed_operator(str)
     for _,v in pairs(operators) do
@@ -170,6 +171,7 @@ end
 
 local conditionalSubstitutions = {
     { "  ", " " },
+    { " %. ", "." },
     { "debuff.casting.up", " target.is_casting " },
     { "debuff.casting.down", " (not target.is_casting) " },
     { "target.debuff.casting.up", " target.is_casting " },
@@ -189,6 +191,7 @@ local conditionalSubstitutions = {
     { "([%a%._]+)%.react", " ( %1.stack > 0 ) " }, -- Handle "buff.blah.react>z" -> "buff.blah.stack>0"
 
     { "!", " not " },
+    { "([^%d]+)%.([%d]+) ", "%1[%2] " },
     { " target%.dot%.", " aura." },
     { " target%.buff%.", " aura." },
     { " target%.debuff%.", " aura." },
