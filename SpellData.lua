@@ -278,14 +278,29 @@ function Z:GetSpellCost(spellID)
     end
 end
 
+local function split(str, delim)
+    local t = {}
+    local function helper(s) table.insert(t, s) return "" end
+    helper((str:gsub("(.-)"..delim, helper)))
+    return t
+end
+
+local function extract_number(str)
+    local str = gsub(str, '[^,%.%d]', '')
+    local reconv = { ['.'] = '%.', [','] = ',', [' '] = '%s' }
+    local vals = split(str, '['..reconv[DECIMAL_SEPERATOR]..']')
+    vals[1] = vals[1]:gsub('['..reconv[LARGE_NUMBER_SEPERATOR]..']', '')
+    vals[2] = '0.' .. (vals[2] or '0')
+    return tonumber(vals[1]) + tonumber(vals[2])
+end
+
 function Z:GetSpellCooldown(spellID)
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(CooldownPatterns) do
             local r = strmatch(e.t, v[2])
             if r then
-                r = gsub(r, '[^.%d]', '') + 0
-                return tonumber(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
+                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
             end
         end
     end
@@ -298,8 +313,7 @@ function Z:GetSpellRechargeTime(spellID)
         for k,v in pairs(RechargePatterns) do
             local r = strmatch(e.t, v[2])
             if r then
-                r = gsub(r, '[^.%d]', '') + 0
-                return tonumber(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
+                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
             end
         end
     end
