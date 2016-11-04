@@ -1,5 +1,5 @@
 #!/bin/bash
-find . -type f -exec chmod -x "{}" \;
+find . ActionProfileLists Classes -mindepth 1 -maxdepth 1 -type f -exec chmod -x "{}" \; -print
 chmod +x *.sh
 for file in *.toc *.lua *.sh ActionProfileLists/*.xml ActionProfileLists/*.lua Classes/*.xml Classes/*.lua ; do
     dos2unix $file
@@ -12,6 +12,7 @@ for file in *.lua Libs/*.lua ActionProfileLists/*.lua Classes/*.lua ; do
     luaformatter -a -s4 "${file}"
 done
 
-for file in *.sh ; do
+for file in *.sh *.py ; do
+    dos2unix $file
     chmod +x $file
 done

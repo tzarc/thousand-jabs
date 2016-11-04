@@ -3,7 +3,7 @@ internal.apls = internal.apls or {}
 
 internal.apls["legion-dev::Tier19P::Warlock_Affliction_T19P"] = [[
 actions.precombat=flask,type=whispered_pact
-actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet,if=!talent.grimoire_of_supremacy.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.demonic_power.down)
 actions.precombat+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&artifact.lord_of_flames.rank>0
 actions.precombat+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&active_enemies>=3
@@ -152,7 +152,7 @@ actions+=/life_tap
 
 internal.apls["legion-dev::Tier19H::Warlock_Affliction_T19H"] = [[
 actions.precombat=flask,type=whispered_pact
-actions.precombat+=/food,type=azshari_salad
+actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet,if=!talent.grimoire_of_supremacy.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.demonic_power.down)
 actions.precombat+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&artifact.lord_of_flames.rank>0
 actions.precombat+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&active_enemies>=3

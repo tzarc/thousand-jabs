@@ -19,3 +19,5 @@ ignore:
     - update-apls.sh
     - test-parser.sh
     - .gitignore
+    - parse-apls.sh
+    - __parse-apls.py
