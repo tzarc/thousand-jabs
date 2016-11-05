@@ -13,10 +13,11 @@ externals:
     Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
 
 ignore:
-    - Screenshots
-    - Parser
-    - cleanup.sh
-    - perform-tag.sh
-    - update-apls.sh
-    - test-parser.sh
     - .gitignore
+    - Parser
+    - Screenshots
+    - cleanup.sh
+    - parse-apls.sh
+    - perform-tag.sh
+    - test-parser.sh
+    - update-apls.sh
