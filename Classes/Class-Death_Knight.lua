@@ -5,7 +5,7 @@ local Z = internal.Z
 -- Blood profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
-internal.apls["dummy::PrePatch::Death_Knight_Blood_PrePatch"] = [[
+internal.apls["dummy::deathknight::blood"] = [[
 actions=auto_attack
 
 actions+=/call_action_list,name=st,if=active_enemies=1
@@ -124,7 +124,7 @@ Z:RegisterPlayerClass({
     name = 'Blood',
     class_id = 6,
     spec_id = 1,
-    action_profile = 'dummy::PrePatch::Death_Knight_Blood_PrePatch',
+    action_profile = 'dummy::deathknight::blood',
     resources = { 'rune', 'runic_power' },
     actions = {
         blood_abilities_exported,
@@ -266,7 +266,7 @@ Z:RegisterPlayerClass({
     name = 'Unholy',
     class_id = 6,
     spec_id = 3,
-    action_profile = 'legion-dev::Tier19P::Death_Knight_Unholy_T19P',
+    action_profile = 'legion-dev::deathknight::unholy',
     resources = { 'rune', 'runic_power' },
     actions = {
         unholy_abilities_exported,

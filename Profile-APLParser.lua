@@ -512,18 +512,18 @@ else
     local internal = {}
 
     local files = {
-        [[ActionProfileLists/ActionProfileLists-Death_Knight.lua]],
-        [[ActionProfileLists/ActionProfileLists-Demon_Hunter.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Druid.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Hunter.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Mage.lua]],
-        [[ActionProfileLists/ActionProfileLists-Monk.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Paladin.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Priest.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Rogue.lua]],
-        -- [[ActionProfileLists/ActionProfileLists-Shaman.lua]],
-        [[ActionProfileLists/ActionProfileLists-Warlock.lua]],
-        [[ActionProfileLists/ActionProfileLists-Warrior.lua]]
+        [[ActionProfileLists/actions-deathknight.lua]],
+        [[ActionProfileLists/actions-demonhunter.lua]],
+        -- [[ActionProfileLists/actions-druid.lua]],
+        -- [[ActionProfileLists/actions-hunter.lua]],
+        -- [[ActionProfileLists/actions-mage.lua]],
+        [[ActionProfileLists/actions-monk.lua]],
+        -- [[ActionProfileLists/actions-paladin.lua]],
+        -- [[ActionProfileLists/actions-priest.lua]],
+        -- [[ActionProfileLists/actions-rogue.lua]],
+        -- [[ActionProfileLists/actions-shaman.lua]],
+        -- [[ActionProfileLists/actions-warlock.lua]],
+        [[ActionProfileLists/actions-warrior.lua]]
     }
 
     for _,v in ipairs(files) do

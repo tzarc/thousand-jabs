@@ -5,7 +5,7 @@ local Z = internal.Z
 -- Brewmaster profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
-internal.apls['dummy::PrePatch::Monk_Brewmaster'] = [[
+internal.apls['dummy::monk::brewmaster'] = [[
 actions=auto_attack
 
 actions+=/call_action_list,name=st,if=active_enemies<3
@@ -100,7 +100,7 @@ Z:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,
-    action_profile = 'dummy::PrePatch::Monk_Brewmaster',
+    action_profile = 'dummy::monk::brewmaster',
     resources = { 'energy', 'energy_per_time' },
     actions = {
         brewmaster_abilities_exported,
@@ -255,7 +255,7 @@ Z:RegisterPlayerClass({
     name = 'Windwalker',
     class_id = 10,
     spec_id = 3,
-    action_profile = 'legion-dev::Tier19P::Monk_Windwalker_T19P',
+    action_profile = 'legion-dev::monk::windwalker',
     resources = { 'energy', 'energy_per_time', 'chi' },
     actions = {
         windwalker_abilities_exported,

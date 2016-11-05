@@ -152,7 +152,7 @@ Z:RegisterPlayerClass({
     name = 'Arms',
     class_id = 1,
     spec_id = 1,
-    action_profile = 'legion-dev::Tier19P::Warrior_Arms_T19P',
+    action_profile = 'legion-dev::warrior::arms',
     resources = { 'rage' },
     actions = {
         arms_abilities_exported,

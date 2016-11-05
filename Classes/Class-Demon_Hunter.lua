@@ -203,7 +203,7 @@ Z:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
     spec_id = 2,
-    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Vengeance_T19P',
+    action_profile = 'legion-dev::demonhunter::vengeance',
     resources = { 'pain', 'soul_fragments' },
     actions = {
         vengeance_abilities_exported,
@@ -394,7 +394,7 @@ Z:RegisterPlayerClass({
     name = 'Havoc',
     class_id = 12,
     spec_id = 1,
-    action_profile = 'legion-dev::Tier19P::Demon_Hunter_Havoc_T19P',
+    action_profile = 'legion-dev::demonhunter::havoc',
     resources = { 'fury', 'soul_fragments' },
     actions = {
         havoc_abilities_exported,

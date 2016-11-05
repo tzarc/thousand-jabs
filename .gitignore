@@ -3,3 +3,4 @@
 /Parser/PythonEnvironment
 /Parser/__pycache__
 /ActionProfileLists/*.parsed.txt
+/Temp

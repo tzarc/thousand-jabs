@@ -1,15 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
 ..\FrameXML\UI.xsd">
-    <Script file="ActionProfileLists-Death_Knight.lua"/>
-    <Script file="ActionProfileLists-Demon_Hunter.lua"/>
-    <Script file="ActionProfileLists-Druid.lua"/>
-    <Script file="ActionProfileLists-Hunter.lua"/>
-    <Script file="ActionProfileLists-Mage.lua"/>
-    <Script file="ActionProfileLists-Monk.lua"/>
-    <Script file="ActionProfileLists-Paladin.lua"/>
-    <Script file="ActionProfileLists-Priest.lua"/>
-    <Script file="ActionProfileLists-Rogue.lua"/>
-    <Script file="ActionProfileLists-Shaman.lua"/>
-    <Script file="ActionProfileLists-Warlock.lua"/>
-    <Script file="ActionProfileLists-Warrior.lua"/>
+    <Script file="actions-deathknight.lua"/>
+    <Script file="actions-demonhunter.lua"/>
+    <Script file="actions-monk.lua"/>
+    <Script file="actions-warrior.lua"/>
 </Ui>
