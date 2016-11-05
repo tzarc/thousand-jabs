@@ -10,7 +10,7 @@ bump_lib() {
 }
 
 if [[ -z $1 ]] ; then
-    LATEST_TAG=$(git tag | grep -v '^v' | sort | tail -n1)
+    LATEST_TAG=$(git tag | grep -P '[0-9]{5}\.[0-9]{3}' | sort)
     TAG_HI=$(echo $LATEST_TAG | cut -d'.' -f1)
     TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g')
     TAG_LO=$(($TAG_LO + 1))
