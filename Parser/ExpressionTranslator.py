@@ -22,7 +22,7 @@ class ExpressionTranslator(NodeVisitor):
         Mul = "*" Primary
         Div = "%" Primary
         Primary = FloorOp / CeilOp / Parens / Not / Variable
-        Not = NotOp Variable
+        Not = NotOp Term
         NotOp = "!"
         Variable = ~"[a-zA-Z0-9\._]+"
 
@@ -39,8 +39,8 @@ class ExpressionTranslator(NodeVisitor):
         CeilOp = "ceil(" Expression ")"
 
         RelationalOp = "<=" / "<" / ">=" / ">" / "==" / "="
-        AndOp = "&" / "&&"
-        OrOp = "|" / "||"
+        AndOp = "&&" / "&"
+        OrOp = "||" / "|"
     """)
 
     def modify(self, str):

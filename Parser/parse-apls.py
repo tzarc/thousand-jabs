@@ -167,7 +167,7 @@ for arg in sys.argv:
                                 name = paramresult.group('name')
                                 value = paramresult.group('value')
                                 print("  %s: %s" % (name, value))
-                                if name[-2:] == "if":
+                                if name == "if":
                                     try:
                                         print("  %s: %s" % (name, ConvertExpression(value, action)))
                                     except Exception as e:
