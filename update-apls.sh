@@ -50,11 +50,11 @@ allspecs=(
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${BASE_DIR}"
 
-LAST_BRANCH=$(cd "${BASE_DIR}/simc" && git rev-parse --abbrev-ref HEAD)
-
 if [[ ! -d "simc/.git" ]] ; then
     git clone --depth=1 https://github.com/simulationcraft/simc
 fi
+
+LAST_BRANCH=$(cd "${BASE_DIR}/simc" && git rev-parse --abbrev-ref HEAD)
 
 create_apl_file() {
     local OUTFILE=$1
@@ -78,7 +78,6 @@ append_action_profiles_from_branch() {
     if [[ "${BRANCH}" != "${LAST_BRANCH}" ]] ; then
         (cd "${BASE_DIR}/simc" && git reset --hard HEAD && git clean -xfd && git checkout "${BRANCH}" && git pull)
         LAST_BRANCH="${BRANCH}"
-        (cd "${BASE_DIR}/simc" && git pull && git reset --hard HEAD^^)
     fi
     IFS=$OIFS
 
