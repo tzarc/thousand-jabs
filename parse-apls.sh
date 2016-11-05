@@ -32,7 +32,7 @@ activate_virtualenv() {
 }
 
 THIS_SCRIPT_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
-PARSER_VIRTUALENV_DIR="${THIS_SCRIPT_DIR}/python3-parser-env"
+PARSER_VIRTUALENV_DIR="${THIS_SCRIPT_DIR}/Parser/PythonEnvironment"
 activate_virtualenv "${PARSER_VIRTUALENV_DIR}" python3
 
 if [[ -z "$(find "${PARSER_VIRTUALENV_DIR}/lib/" -name "parsimonious")" ]] || [[ $1 == "--install" ]] || [[ $1 == "--update" ]] ; then
@@ -42,4 +42,4 @@ if [[ -z "$(find "${PARSER_VIRTUALENV_DIR}/lib/" -name "parsimonious")" ]] || [[
   ([[ $1 == "--install" ]] || [[ $1 == "--update" ]]) && exit $?
 fi
 
-"${PARSER_VIRTUALENV_DIR}/bin/python3" "${THIS_SCRIPT_DIR}/__parse-apls.py" "$@"
+"${PARSER_VIRTUALENV_DIR}/bin/python3" "${THIS_SCRIPT_DIR}/Parser/parse-apls.py" "$@"

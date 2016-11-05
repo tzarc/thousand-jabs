@@ -6,7 +6,7 @@ cd "${BASE_DIR}"
 LAST_BRANCH=zzzzzzzzzzzzzzzzzzzz
 
 if [[ ! -d "simc/.git" ]] ; then
-    git clone https://github.com/simulationcraft/simc
+    git clone --depth=1 https://github.com/simulationcraft/simc
 fi
 
 create_apl_file() {
