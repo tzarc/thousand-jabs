@@ -1,3 +1,4 @@
 /simc
 /test-parser-output.txt
 /Parser/PythonEnvironment
+/Parser/__pycache__

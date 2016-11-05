@@ -14,10 +14,9 @@ externals:
 
 ignore:
     - Screenshots
+    - Parser
     - cleanup.sh
     - perform-tag.sh
     - update-apls.sh
     - test-parser.sh
     - .gitignore
-    - parse-apls.sh
-    - __parse-apls.py
