@@ -35,6 +35,9 @@ append_action_profiles_from_dir() {
             echo "${DATA}" >> ${OUTFILE}
             echo "]]" >> ${OUTFILE}
             echo >> ${OUTFILE}
+
+            "${BASE_DIR}/parse-apls.sh" "${file}" > "ActionProfileLists/${BN}.parsed.txt" 2>"ActionProfileLists/error_${BN}.parsed.txt"
+            [[ ! -s "ActionProfileLists/error_${BN}.parsed.txt" ]] && rm "ActionProfileLists/error_${BN}.parsed.txt"
         fi
     done
     IFS=$OIFS

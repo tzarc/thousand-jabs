@@ -45,45 +45,50 @@ class ExpressionTranslator(NodeVisitor):
 
     def modify(self, str):
         str = self.modifier(str)
-        self.printer("===> '%s'" % str)
+        self.printer("===> '%s'\n" % str)
         return str
 
     def dump(self, node, children):
         self.printer(node)
         self.printer(children)
 
+    def header(self, node, children):
+        self.printer("Node '%s': (len=%d), children=%s, text='%s'." % (node.expr_name, len(children), children, node.text))
+
     def visit_fail(self, node, children):
         self.dump(node, children)
         raise NotImplementedError("Did not handle multiple arguments for %s (len=%d), children=%s." % (node.expr_name, len(children), children))
 
     def visit_(self, node, children):
+        self.header(node, children)
         if len(children) > 0:
-            return ''.join(children)
-        return node.text
+            return self.modify(''.join(children))
+        return self.modify(node.text)
 
     def visit_Variable(self, node, children):
-        return self.modifier(node.text)
+        self.header(node, children)
+        return self.modify(node.text)
 
     def visit_Primary(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         return self.modify("(%s)" % (''.join(children)))
 
     def visit_Factor(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         return self.modify("(%s)" % (''.join(children)))
 
     def visit_Term(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         return self.modify("(%s)" % (''.join(children)))
 
     def visit_RelationalExpression(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         elif len(children) == 2:
@@ -91,7 +96,7 @@ class ExpressionTranslator(NodeVisitor):
         self.visit_fail(node, children)
 
     def visit_RelationalTail(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2:
             if children[0] == '=':
                 children[0] = '=='
@@ -99,7 +104,7 @@ class ExpressionTranslator(NodeVisitor):
         self.visit_fail(node, children)
 
     def visit_LogicalAndExpression(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         elif len(children) == 2:
@@ -107,17 +112,17 @@ class ExpressionTranslator(NodeVisitor):
         self.visit_fail(node, children)
 
     def visit_LogicalAndTail(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == 'and':
             return self.modify(' and (%s)' % children[1])
         self.visit_fail(node, children)
 
     def visit_AndOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         return self.modify('and')
 
     def visit_LogicalOrExpression(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1 or (len(children) == 2 and children[1] == ''):
             return self.modify("%s" % children[0])
         elif len(children) == 2:
@@ -125,71 +130,71 @@ class ExpressionTranslator(NodeVisitor):
         self.visit_fail(node, children)
 
     def visit_LogicalOrTail(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == 'or':
             return self.modify(' or (%s)' % children[1])
         self.visit_fail(node, children)
 
     def visit_OrOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         return self.modify('or')
 
     def visit_Parens(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 3 and children[0] == '(' and children[2] == ')':
             return self.modify("(%s)" % children[1])
         self.visit_fail(node, children)
 
     def visit_RelationalOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 1:
             return self.modify(children[0])
         self.visit_fail(node, children)
 
     def visit_FloorOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 3 and children[0] == 'floor(' and children[2] == ')':
             return self.modify('(math.floor(%s))' % children[1])
         self.visit_fail(node, children)
 
     def visit_CeilOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 3 and children[0] == 'ceil(' and children[2] == ')':
             return self.modify('(math.ceil(%s))' % children[1])
         self.visit_fail(node, children)
 
     def visit_Add(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == '+':
             return self.modify(" + %s" % children[1])
         self.visit_fail(node, children)
 
     def visit_Sub(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == '-':
             return self.modify(" - %s" % children[1])
         self.visit_fail(node, children)
 
     def visit_Mul(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == '*':
             return self.modify(" * %s" % children[1])
         self.visit_fail(node, children)
 
     def visit_Div(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == '%':
             return self.modify(" / %s" % children[1])
         self.visit_fail(node, children)
 
     def visit_Not(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 2 and children[0] == 'not':
             return self.modify("(not (%s))" % children[1])
         self.visit_fail(node, children)
 
     def visit_NotOp(self, node, children):
-        self.printer("%s (len=%d), children=%s." % (node.expr_name, len(children), children))
+        self.header(node, children)
         if len(children) == 0:
             return self.modify('not')
         self.visit_fail(node, children)

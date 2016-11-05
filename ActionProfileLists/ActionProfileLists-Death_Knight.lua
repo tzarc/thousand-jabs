@@ -3,7 +3,7 @@ internal.apls = internal.apls or {}
 
 internal.apls["legion-dev::Tier19P::Death_Knight_Frost_T19P"] = [[
 actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=the_hungry_magister
+actions.precombat+=/food,name=fishbrul_special
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=old_war
@@ -29,11 +29,14 @@ actions.bos+=/empower_rune_weapon,if=runic_power<=70
 actions.bos+=/hungering_rune_weapon
 actions.bos+=/howling_blast,if=buff.rime.react
 actions.core=frost_strike,if=buff.obliteration.up&!buff.killing_machine.react
-actions.core+=/remorseless_winter,if=(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!talent.frozen_pulse.enabled
-actions.core+=/frostscythe,if=!talent.breath_of_sindragosa.enabled&(buff.killing_machine.react|spell_targets.frostscythe>=4)
-actions.core+=/glacial_advance
+actions.core+=/remorseless_winter,if=(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!(talent.frostscythe.enabled&buff.killing_machine.react&spell_targets.frostscythe>=2)
+actions.core+=/frostscythe,if=(buff.killing_machine.react&spell_targets.frostscythe>=2)
+actions.core+=/glacial_advance,if=spell_targets.glacial_advance>=2
+actions.core+=/frostscythe,if=spell_targets.frostscythe>=3
 actions.core+=/obliterate,if=buff.killing_machine.react
 actions.core+=/obliterate
+actions.core+=/glacial_advance
+actions.core+=/remorseless_winter,if=talent.frozen_pulse.enabled
 actions.generic=howling_blast,target_if=!dot.frost_fever.ticking
 actions.generic+=/howling_blast,if=buff.rime.react
 actions.generic+=/frost_strike,if=runic_power>=80
@@ -157,7 +160,7 @@ actions.valkyr+=/clawing_shadows,if=debuff.festering_wound.up
 
 internal.apls["legion-dev::Tier19H::Death_Knight_Frost_T19H"] = [[
 actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=the_hungry_magister
+actions.precombat+=/food,name=fishbrul_special
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=old_war
@@ -183,11 +186,14 @@ actions.bos+=/empower_rune_weapon,if=runic_power<=70
 actions.bos+=/hungering_rune_weapon
 actions.bos+=/howling_blast,if=buff.rime.react
 actions.core=frost_strike,if=buff.obliteration.up&!buff.killing_machine.react
-actions.core+=/remorseless_winter,if=(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!talent.frozen_pulse.enabled
-actions.core+=/frostscythe,if=!talent.breath_of_sindragosa.enabled&(buff.killing_machine.react|spell_targets.frostscythe>=4)
-actions.core+=/glacial_advance
+actions.core+=/remorseless_winter,if=(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!(talent.frostscythe.enabled&buff.killing_machine.react&spell_targets.frostscythe>=2)
+actions.core+=/frostscythe,if=(buff.killing_machine.react&spell_targets.frostscythe>=2)
+actions.core+=/glacial_advance,if=spell_targets.glacial_advance>=2
+actions.core+=/frostscythe,if=spell_targets.frostscythe>=3
 actions.core+=/obliterate,if=buff.killing_machine.react
 actions.core+=/obliterate
+actions.core+=/glacial_advance
+actions.core+=/remorseless_winter,if=talent.frozen_pulse.enabled
 actions.generic=howling_blast,target_if=!dot.frost_fever.ticking
 actions.generic+=/howling_blast,if=buff.rime.react
 actions.generic+=/frost_strike,if=runic_power>=80

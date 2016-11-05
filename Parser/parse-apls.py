@@ -17,6 +17,8 @@ def test(a, b, c, d, e, f, g):
 for args in product([True, False], repeat=7):
     test(*args)
 
+usedKeywords = []
+
 ###### Expression converter
 def KeywordModifier(keyword, thisSpell):
     # Casting checks
@@ -38,6 +40,8 @@ def KeywordModifier(keyword, thisSpell):
         keyword = "cooldown.THIS_SPELL.remains"
     if keyword == "duration":
         keyword = "spell.THIS_SPELL.duration"
+    if keyword == "ticking":
+        keyword = "spell.THIS_SPELL.ticking"
     if keyword == "delay":
         keyword = "spell.THIS_SPELL.delay"
     if keyword == "remains":
@@ -55,48 +59,85 @@ def KeywordModifier(keyword, thisSpell):
     if keyword == "recharge_time":
         keyword = "spell.THIS_SPELL.recharge_time"
 
+    # Convert spell_targets.????? to just spell_targets
+    if re.match("^spell_targets\.[a-zA-Z0-9_]+$", keyword):
+        keyword = "spell_targets"
+
+    # Convert (action.blah.zzz) => (spell.blah.zzz)
     keyword = re.sub("""^action\.""", "spell.", keyword)
 
-    # Convert boolean checks
-    keyword = re.sub("""^\(not \((?P<name>[a-zA-Z0-9_\.]+)(?P<tail>cooldown_remains|spell_remains)\)\)$""", "(\g<name>\g<tail> == 0)", keyword)
-
-    # Aura conversion
-    r = re.match("""^(((player|target|pet)\.)?aura|buff|debuff|dot)\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
+    # Aura conversion (buff.blah.up) => (spell.blah.up)
+    r = re.match("""^(((?P<unit>player|target|pet)\.)?(aura|buff|debuff|dot))\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
     if r != None:
         keyword = "spell.%s.%s" % (r.group('spell'), r.group('tail'))
 
-    # Triplet conversion
-    r = re.match("""^(?P<head>aura|artifact|talent|spell|cooldown)\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
+    # Aura conversion (buff.blah.up) => (spell.blah.up)
+    r = re.match("""^incoming_damage_(?P<secs>[0-9]+)s$""", keyword)
+    if r != None:
+        keyword = "incoming_damage_over_%d" % (int(r.group('secs')) * 1000)
+    r = re.match("""^incoming_damage_(?P<msecs>[0-9]+)ms$""", keyword)
+    if r != None:
+        keyword = "incoming_damage_over_%d" % (int(r.group('msecs')))
+
+    # Triplet conversion (spell.blah.up) => (blah.spell_up)
+    r = re.match("""^(?P<head>aura|artifact|talent|spell|cooldown|pet|player|target)\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
     if r != None:
         keyword = "%s.%s_%s" % (r.group('spell'), r.group('head'), r.group('tail'))
 
-    # Convert resources into resource.curr
-    r = re.match("^(?P<keyword>energy|chi|rage|pain|soul_fragments|fury|rune|runic_power|soul_shard|focus)$", keyword)
+    # Convert (_selected) => (_enabled)
+    keyword = re.sub("_selected$", "_enabled", keyword)
+
+    # Convert boolean checks:
+    # -- (blah.spell_up) => (blah.spell_remains > 0)
+    keyword = re.sub("""^(?P<name>[a-zA-Z0-9_\.]+)(?P<tail>_up|_react)$""", "(\g<name>_remains > 0)", keyword)
+    # -- (blah.spell_down) => (blah.spell_remains == 0)
+    keyword = re.sub("""^(?P<name>[a-zA-Z0-9_\.]+)(?P<tail>_down)$""", "(\g<name>_remains == 0)", keyword)
+    # -- (not (blah.spell_remains)) => (blah.spell_remains == 0)
+    keyword = re.sub("""^\(not \((?P<name>[a-zA-Z0-9_\.]+)(?P<tail>remains)\)\)$""", "(\g<name>\g<tail> == 0)", keyword)
+    # -- (not (blah.spell_enabled)) => (blah.spell_selected)
+    keyword = re.sub("""^\(not \((?P<name>[a-zA-Z0-9_\.]+)(?P<tail>enabled)\)\)$""", "(not \g<name>enabled)", keyword)
+    # -- (not (blah.spell_ticking)) => (blah.spell_remains == 0)
+    keyword = re.sub("""^\(not \((?P<name>[a-zA-Z0-9_\.]+)(?P<tail>ticking)\)\)$""", "(\g<name>remains == 0)", keyword)
+
+    # Resources conversion (power) => (power.curr)
+    r = re.match("^(?P<keyword>energy|chi|rage|pain|soul_fragments|fury|rune|runic_power|soul_shard|focus|insanity)$", keyword)
     if r != None:
         keyword = "%s.curr" % r.group('keyword')
 
-    # Normalise percent
+    # Normalise percent (???_pct) => (???_percent)
     if keyword[-4:] == "_pct":
         keyword = "%s_percent" % keyword[:-4]
     if keyword[-4:] == ".pct":
         keyword = "%s.percent" % keyword[:-4]
 
-    # Convert blah.00000 to blah[00000]
+    # Trailing number conversion (blah.00000) => (blah[00000])
     keyword = re.sub("""^(?P<head>[a-zA-Z].*)\.(?P<tail>[\d]+)$""", '\g<head>[\g<tail>]', keyword)
 
-    # Convert THIS_SPELL to the action we're converting for
+    # THIS_SPELL conversion to current action
     keyword = re.sub('THIS_SPELL', thisSpell, keyword)
 
-    # Collapse multiple brackets (if no inner brackets)
+    # Conditional/arithmetic expressions, where we're dealing with numbers
+    keyword = re.sub("""(?P<lhs>[a-z][^\)\s]+) (?P<op>\>=|\>|\<=|\<|\+|\-|\*|\/)""", "\g<lhs>_as_number \g<op>", keyword)
+    keyword = re.sub("""\((?P<lhs>[a-z][^\)\s]+)\) (?P<op>\>=|\>|\<=|\<|\+|\-|\*|\/)""", "(\g<lhs>_as_number) \g<op>", keyword)
+    keyword = re.sub("""(?P<op>\>=|\>|\<=|\<|\+|\-|\*|\/) (?P<rhs>[a-z][^\)\s]+)""", "\g<op> \g<rhs>_as_number", keyword)
+    keyword = re.sub("""(?P<op>\>=|\>|\<=|\<|\+|\-|\*|\/) \((?P<rhs>[a-z][^\)\s]+)\)""", "\g<op> (\g<rhs>_as_number)", keyword)
+    while re.search("_as_number_as_number", keyword):
+        keyword = re.sub("_as_number_as_number", "_as_number", keyword)
+
+    # Collapse multiple enclosing brackets (if no inner brackets)
     while re.search("""^\(\(([^\(\)]+)\)\)$""", keyword):
-        print("Old: '%s'" % keyword)
         keyword = re.sub("""^\(\((?P<inner>[^\(\)]+)\)\)$""", "(\g<inner>)", keyword)
-        print("New: '%s'" % keyword)
+
+    # Copy out all the keywords we found, so they can be referenced later
+    r = re.findall('([a-zA-Z][a-zA-Z0-9\._]*)', keyword)
+    for kw in r:
+        kw = re.sub('_as_number$', '', kw)
+        usedKeywords.append(kw)
 
     return keyword
 
 def ConvertExpression(expr, thisSpell):
-    return ExpressionTranslator(modifier = lambda x: KeywordModifier(x, thisSpell), printer = print).parse(expr)
+    return ExpressionTranslator(modifier = lambda x: KeywordModifier(x, thisSpell)).parse(expr)
 
 actionMatcher = re.compile("""actions((\.(?P<list>[a-zA-Z0-9]+))?)([\+]?=[\/]?)(?P<action>[^,]+),(?P<params>.*)""")
 paramMatcher = re.compile("""(?P<name>[^=]+)=(?P<value>.*)""")
@@ -109,7 +150,7 @@ for arg in sys.argv:
                 line = line.rstrip()
                 result = actionMatcher.match(line)
                 if result != None:
-                    print("----")
+                    print("\n\n\n------------------------------------------------------------------------------------------------------------------------")
                     print("Line: %s" % line)
                     action = result.group('action')
                     print("Action: %s" % action)
@@ -126,5 +167,14 @@ for arg in sys.argv:
                                 name = paramresult.group('name')
                                 value = paramresult.group('value')
                                 print("  %s: %s" % (name, value))
-                                if name == "if":
-                                    print("  %s: %s" % (name, ConvertExpression(value, action)))
+                                if name[-2:] == "if":
+                                    try:
+                                        print("  %s: %s" % (name, ConvertExpression(value, action)))
+                                    except Exception as e:
+                                        sys.stderr.write(str(e)+"\n\n")
+
+skippedKeywords = set(['&', '&&', 'and', '|', '||', 'or', 'not', '(', ')', '=', '==', '<', '<=', '>', '>=', '+', '-', '*', '/', '%'])
+print('\n\n\nUsed keywords:')
+for kw in sorted(set(usedKeywords)):
+    if not kw in skippedKeywords:
+        print("    %s" % kw)

@@ -2,3 +2,4 @@
 /test-parser-output.txt
 /Parser/PythonEnvironment
 /Parser/__pycache__
+/ActionProfileLists/*.parsed.txt
