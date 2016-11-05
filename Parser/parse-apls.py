@@ -137,7 +137,7 @@ def KeywordModifier(keyword, thisSpell):
     return keyword
 
 def ConvertExpression(expr, thisSpell):
-    return ExpressionTranslator(modifier = lambda x: KeywordModifier(x, thisSpell)).parse(expr)
+    return ExpressionTranslator(modifier = lambda x: KeywordModifier(x, thisSpell), printer = print).parse(expr)
 
 actionMatcher = re.compile("""actions((\.(?P<list>[a-zA-Z0-9]+))?)([\+]?=[\/]?)(?P<action>[^,]+),(?P<params>.*)""")
 paramMatcher = re.compile("""(?P<name>[^=]+)=(?P<value>.*)""")
@@ -171,7 +171,8 @@ for arg in sys.argv:
                                     try:
                                         print("  %s: %s" % (name, ConvertExpression(value, action)))
                                     except Exception as e:
-                                        sys.stderr.write(str(e)+"\n\n")
+                                        print("\n\nERROR!\n\n"+str(e)+"\n\n")
+                                        sys.stderr.write("\n\nERROR!\n\n"+str(e)+"\n\n")
 
 skippedKeywords = set(['&', '&&', 'and', '|', '||', 'or', 'not', '(', ')', '=', '==', '<', '<=', '>', '>=', '+', '-', '*', '/', '%'])
 print('\n\n\nUsed keywords:')
