@@ -514,15 +514,15 @@ else
     local files = {
         [[ActionProfileLists/actions-deathknight.lua]],
         [[ActionProfileLists/actions-demonhunter.lua]],
-        -- [[ActionProfileLists/actions-druid.lua]],
-        -- [[ActionProfileLists/actions-hunter.lua]],
-        -- [[ActionProfileLists/actions-mage.lua]],
+        [[ActionProfileLists/actions-druid.lua]],
+        [[ActionProfileLists/actions-hunter.lua]],
+        [[ActionProfileLists/actions-mage.lua]],
         [[ActionProfileLists/actions-monk.lua]],
-        -- [[ActionProfileLists/actions-paladin.lua]],
-        -- [[ActionProfileLists/actions-priest.lua]],
-        -- [[ActionProfileLists/actions-rogue.lua]],
-        -- [[ActionProfileLists/actions-shaman.lua]],
-        -- [[ActionProfileLists/actions-warlock.lua]],
+        [[ActionProfileLists/actions-paladin.lua]],
+        [[ActionProfileLists/actions-priest.lua]],
+        [[ActionProfileLists/actions-rogue.lua]],
+        [[ActionProfileLists/actions-shaman.lua]],
+        [[ActionProfileLists/actions-warlock.lua]],
         [[ActionProfileLists/actions-warrior.lua]]
     }
 

@@ -1,5 +1,52 @@
 #!/bin/bash
 
+# Class/spec combos to generate action lists for:
+one_hand_sword=2027 # Scimitar
+one_hand_dagger=4565 # Simple Dagger
+two_hand_sword=1194 # Bastard Sword
+two_hand_staff=2132 # Short Staff
+two_hand_bow=8179 # Cadet's Bow
+allspecs=(
+"playerclass=deathknight charspec=frost mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=deathknight charspec=unholy mainhand=${two_hand_sword}"
+
+"playerclass=demonhunter charspec=vengeance mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=demonhunter charspec=havoc mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+
+"playerclass=druid charspec=balance mainhand=${two_hand_staff}"
+"playerclass=druid charspec=feral mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=druid charspec=guardian mainhand=${two_hand_staff}"
+
+"playerclass=hunter charspec=beast_mastery mainhand=${two_hand_bow}"
+"playerclass=hunter charspec=marksmanship mainhand=${two_hand_bow}"
+"playerclass=hunter charspec=survival mainhand=${two_hand_bow}"
+
+"playerclass=mage charspec=arcane mainhand=${two_hand_staff}"
+"playerclass=mage charspec=fire mainhand=${two_hand_staff}"
+"playerclass=mage charspec=frost mainhand=${two_hand_staff}"
+
+"playerclass=monk charspec=brewmaster mainhand=${two_hand_staff}"
+"playerclass=monk charspec=windwalker mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+
+"playerclass=paladin charspec=retribution mainhand=${two_hand_sword}"
+
+"playerclass=priest charspec=shadow mainhand=${two_hand_staff}"
+
+"playerclass=rogue charspec=assassination mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
+"playerclass=rogue charspec=outlaw mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
+"playerclass=rogue charspec=subtlety mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
+
+"playerclass=shaman charspec=enhancement mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=shaman charspec=elemental mainhand=${two_hand_staff}"
+
+"playerclass=warrior charspec=arms mainhand=${two_hand_sword}"
+"playerclass=warrior charspec=fury mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+
+"playerclass=warlock charspec=affliction mainhand=${two_hand_staff}"
+"playerclass=warlock charspec=demonology mainhand=${two_hand_staff}"
+"playerclass=warlock charspec=destruction mainhand=${two_hand_staff}"
+)
+
 BASE_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${BASE_DIR}"
 
@@ -56,21 +103,11 @@ append_action_profiles_from_branch() {
     fi
 }
 
-rm -rf "${BASE_DIR}/Temp"
-rm -rf "${BASE_DIR}/ActionProfileLists"
+[[ -d "${BASE_DIR}/Temp" ]] && find "${BASE_DIR}/Temp" -type f -delete
+[[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
+[[ -d "${BASE_DIR}/ActionProfileLists" ]] && find "${BASE_DIR}/ActionProfileLists" -type f -delete
+[[ ! -d "${BASE_DIR}/ActionProfileLists" ]] && mkdir -p "${BASE_DIR}/ActionProfileLists"
 
-one_hand_sword=2027 # Scimitar
-two_hand_sword=1194 # Bastard Sword
-two_hand_staff=2132 # Short Staff
-allspecs=(
-"playerclass=demonhunter charspec=vengeance mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=demonhunter charspec=havoc mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=deathknight charspec=frost mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=deathknight charspec=unholy mainhand=${two_hand_sword}"
-"playerclass=monk charspec=brewmaster mainhand=${two_hand_staff}"
-"playerclass=monk charspec=windwalker mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=warrior charspec=arms mainhand=${two_hand_sword}"
-)
 for classspec in "${allspecs[@]}" ; do
     append_action_profiles_from_branch legion-dev "${classspec}"
 done

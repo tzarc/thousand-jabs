@@ -2,6 +2,14 @@
 ..\FrameXML\UI.xsd">
     <Script file="actions-deathknight.lua"/>
     <Script file="actions-demonhunter.lua"/>
+    <Script file="actions-druid.lua"/>
+    <Script file="actions-hunter.lua"/>
+    <Script file="actions-mage.lua"/>
     <Script file="actions-monk.lua"/>
+    <Script file="actions-paladin.lua"/>
+    <Script file="actions-priest.lua"/>
+    <Script file="actions-rogue.lua"/>
+    <Script file="actions-shaman.lua"/>
+    <Script file="actions-warlock.lua"/>
     <Script file="actions-warrior.lua"/>
 </Ui>
