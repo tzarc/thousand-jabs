@@ -15,6 +15,7 @@ externals:
 ignore:
     - .gitignore
     - Parser
+    - Placeholders
     - Screenshots
     - cleanup.sh
     - parse-apls.sh

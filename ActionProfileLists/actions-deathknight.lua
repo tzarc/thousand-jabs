@@ -1,6 +1,32 @@
 local _, internal = ...
 internal.apls = internal.apls or {}
 
+internal.apls["legion-dev::deathknight::blood"] = [[
+actions.precombat=flask,name=countless_armies
+actions.precombat+=/food,name=fishbrul_special
+actions.precombat+=/augmentation,name=defiled
+actions.precombat+=/snapshot_stats
+actions.precombat+=/potion,name=old_war
+actions=auto_attack
+actions+=/mind_freeze
+actions+=/arcane_torrent,if=runic_power.deficit>20
+actions+=/blood_fury,if=!talent.breath_of_sindragosa.enabled|dot.breath_of_sindragosa.ticking
+actions+=/berserking,if=buff.pillar_of_frost.up
+actions+=/potion,name=old_war
+actions+=/sindragosas_fury,if=buff.pillar_of_frost.up
+actions+=/run_action_list,name=bos,if=dot.breath_of_sindragosa.ticking
+actions+=/call_action_list,name=shatter,if=talent.shattering_strikes.enabled
+actions+=/call_action_list,name=generic,if=!talent.shattering_strikes.enabled
+actions.bos=call_action_list,name=core
+actions.bos+=/empower_rune_weapon,if=runic_power<=70
+actions.generic=call_action_list,name=core
+actions.generic+=/empower_rune_weapon,if=talent.breath_of_sindragosa.enabled&cooldown.breath_of_sindragosa.remains>15
+actions.generic+=/empower_rune_weapon,if=!talent.breath_of_sindragosa.enabled
+actions.shatter=call_action_list,name=core
+actions.shatter+=/empower_rune_weapon,if=talent.breath_of_sindragosa.enabled&cooldown.breath_of_sindragosa.remains>15
+actions.shatter+=/empower_rune_weapon,if=!talent.breath_of_sindragosa.enabled
+]]
+
 internal.apls["legion-dev::deathknight::frost"] = [[
 actions.precombat=flask,name=countless_armies
 actions.precombat+=/food,name=fishbrul_special
@@ -153,5 +179,39 @@ actions.valkyr+=/call_action_list,name=aoe,if=active_enemies>=2
 actions.valkyr+=/festering_strike,if=debuff.festering_wound.stack<=3
 actions.valkyr+=/scourge_strike,if=debuff.festering_wound.up
 actions.valkyr+=/clawing_shadows,if=debuff.festering_wound.up
+]]
+
+internal.apls["placeholder::deathknight::blood"] = [[
+actions=auto_attack
+actions+=/call_action_list,name=st,if=active_enemies=1
+actions+=/call_action_list,name=cleave,if=active_enemies=2
+actions+=/call_action_list,name=aoe,if=active_enemies>=3
+actions.st=blood_boil,if=debuff.blood_plague.down
+actions.st+=/death_strike,if=runic_power>95
+actions.st+=/death_and_decay,if=buff.crimson_scourge.up
+actions.st+=/marrowrend,if=buff.bone_shield.stack<5
+actions.st+=/death_strike,if=runic_power>80
+actions.st+=/death_strike,if=incoming_damage_3s>health.max*0.25
+actions.st+=/blood_boil,if=buff.bone_shield.stack<5
+actions.st+=/death_and_decay
+actions.st+=/heart_strike
+actions.cleave=blood_boil,if=debuff.blood_plague.down
+actions.cleave+=/death_strike,if=runic_power>95
+actions.cleave+=/death_and_decay,if=buff.crimson_scourge.up
+actions.cleave+=/marrowrend,if=buff.bone_shield.stack<5
+actions.cleave+=/blood_boil,if=buff.bone_shield.stack<5
+actions.cleave+=/death_strike,if=runic_power>80
+actions.cleave+=/death_strike,if=incoming_damage_3s>health.max*0.25
+actions.cleave+=/death_and_decay
+actions.cleave+=/heart_strike
+actions.aoe=blood_boil,if=debuff.blood_plague.down
+actions.aoe+=/death_strike,if=runic_power>95
+actions.aoe+=/death_and_decay,if=buff.crimson_scourge.up
+actions.aoe+=/marrowrend,if=buff.bone_shield.stack<1
+actions.aoe+=/blood_boil,if=buff.bone_shield.stack<1
+actions.aoe+=/death_strike,if=runic_power>80
+actions.aoe+=/death_strike,if=incoming_damage_3s>health.max*0.25
+actions.aoe+=/death_and_decay
+actions.aoe+=/heart_strike
 ]]
 

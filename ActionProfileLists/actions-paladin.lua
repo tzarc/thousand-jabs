@@ -1,6 +1,65 @@
 local _, internal = ...
 internal.apls = internal.apls or {}
 
+internal.apls["legion-dev::paladin::protection"] = [[
+actions.precombat=flask,type=flask_of_ten_thousand_scars
+actions.precombat+=/flask,type=flask_of_the_countless_armies,if=role.attack|using_apl.max_dps
+actions.precombat+=/food,type=seedbattered_fish_plate
+actions.precombat+=/food,type=azshari_salad,if=role.attack|using_apl.max_dps
+actions.precombat+=/snapshot_stats
+actions.precombat+=/potion,name=unbending_potion
+actions=auto_attack
+actions+=/blood_fury
+actions+=/berserking
+actions+=/arcane_torrent
+actions+=/blood_fury
+actions+=/berserking
+actions+=/arcane_torrent
+actions+=/call_action_list,name=prot
+actions.max_dps=auto_attack
+actions.max_dps+=/blood_fury
+actions.max_dps+=/berserking
+actions.max_dps+=/arcane_torrent
+actions.max_survival=auto_attack
+actions.max_survival+=/blood_fury
+actions.max_survival+=/berserking
+actions.max_survival+=/arcane_torrent
+actions.prot=seraphim,if=talent.seraphim.enabled&action.shield_of_the_righteous.charges>=1.99
+actions.prot+=/shield_of_the_righteous,if=(!talent.seraphim.enabled|action.shield_of_the_righteous.charges>1.99)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)
+actions.prot+=/shield_of_the_righteous,if=(talent.bastion_of_light.enabled&talent.seraphim.enabled&buff.seraphim.up&cooldown.bastion_of_light.up)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)
+actions.prot+=/bastion_of_light,if=talent.bastion_of_light.enabled&action.shield_of_the_righteous.charges<1
+actions.prot+=/light_of_the_protector,if=(health.pct<40)
+actions.prot+=/hand_of_the_protector,if=(health.pct<40)
+actions.prot+=/light_of_the_protector,if=(incoming_damage_10000ms<health.max*1.25)&health.pct<55&talent.righteous_protector.enabled
+actions.prot+=/light_of_the_protector,if=(incoming_damage_13000ms<health.max*1.6)&health.pct<55
+actions.prot+=/hand_of_the_protector,if=(incoming_damage_6000ms<health.max*0.7)&health.pct<65&talent.righteous_protector.enabled
+actions.prot+=/hand_of_the_protector,if=(incoming_damage_9000ms<health.max*1.2)&health.pct<55
+actions.prot+=/divine_steed,if=talent.knight_templar.enabled&incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/eye_of_tyr,if=incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/aegis_of_light,if=incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/guardian_of_ancient_kings,if=incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/divine_shield,if=talent.final_stand.enabled&incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/ardent_defender,if=incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/lay_on_hands,if=health.pct<15
+actions.prot+=/potion,name=unbending_potion
+actions.prot+=/potion,name=draenic_strength,if=incoming_damage_2500ms>health.max*0.4&&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)|target.time_to_die<=25
+actions.prot+=/stoneform,if=incoming_damage_2500ms>health.max*0.4&!(debuff.eye_of_tyr.up|buff.aegis_of_light.up|buff.ardent_defender.up|buff.guardian_of_ancient_kings.up|buff.divine_shield.up|buff.potion.up)
+actions.prot+=/avenging_wrath,if=!talent.seraphim.enabled
+actions.prot+=/avenging_wrath,if=talent.seraphim.enabled&buff.seraphim.up
+actions.prot+=/judgment
+actions.prot+=/avengers_shield,if=talent.crusaders_judgment.enabled&buff.grand_crusader.up
+actions.prot+=/blessed_hammer
+actions.prot+=/avengers_shield
+actions.prot+=/consecration
+actions.prot+=/blinding_light
+actions.prot+=/hammer_of_the_righteous
+actions.prot_aoe=avengers_shield
+actions.prot_aoe+=/blessed_hammer
+actions.prot_aoe+=/judgment
+actions.prot_aoe+=/consecration
+actions.prot_aoe+=/hammer_of_the_righteous
+]]
+
 internal.apls["legion-dev::paladin::retribution"] = [[
 actions.precombat=flask,type=flask_of_the_countless_armies
 actions.precombat+=/food,type=azshari_salad

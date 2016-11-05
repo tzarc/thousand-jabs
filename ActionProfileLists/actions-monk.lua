@@ -74,3 +74,22 @@ actions.st+=/chi_burst,if=energy.time_to_max>=2.25
 actions.st+=/tiger_palm,cycle_targets=1,if=!prev_gcd.tiger_palm
 ]]
 
+internal.apls["placeholder::monk::brewmaster"] = [[
+actions=auto_attack
+actions+=/call_action_list,name=st,if=active_enemies<3
+actions+=/call_action_list,name=aoe,if=active_enemies>=3
+actions.st=keg_smash
+actions.st+=/tiger_palm,if=energy>65
+actions.st+=/blackout_strike
+actions.st+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
+actions.st+=/breath_of_fire,if=debuff.keg_smash.up
+actions.st+=/chi_wave,if=talent.chi_wave.enabled
+actions.aoe=keg_smash
+actions.aoe+=/chi_burst,if=talent.chi_burst.enabled
+actions.aoe+=/breath_of_fire,if=debuff.keg_smash.up
+actions.aoe+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
+actions.aoe+=/tiger_palm,if=energy>65
+actions.aoe+=/blackout_strike
+actions.aoe+=/chi_wave,if=talent.chi_wave.enabled
+]]
+

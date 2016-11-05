@@ -1,7 +1,7 @@
 #!/bin/bash
 
 tjfind() {
-    find . \( "$@" \) -and -not -path './.git/*' -and -not -path '*__pycache__*' -and -not -path '*PythonEnvironment*' -and -not -path './simc*' -print
+    find . \( "$@" \) -and -not -path './.git/*' -and -not -path '*__pycache__*' -and -not -path '*PythonEnvironment*' -and -not -path './simc*' -and -not -path './Temp*' -print
 }
 
 for file in $(tjfind -type f) ; do
@@ -9,7 +9,7 @@ for file in $(tjfind -type f) ; do
     chmod -x "${file}"
 done
 
-for file in $(tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py') ; do
+for file in $(tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc') ; do
     dos2unix $file
     chmod -x $file
     sed -i 's/[ \t]*$//' $file

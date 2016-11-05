@@ -5,28 +5,6 @@ local Z = internal.Z
 -- Brewmaster profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
-internal.apls['dummy::monk::brewmaster'] = [[
-actions=auto_attack
-
-actions+=/call_action_list,name=st,if=active_enemies<3
-actions+=/call_action_list,name=aoe,if=active_enemies>=3
-
-actions.st=keg_smash
-actions.st+=/tiger_palm,if=energy>65
-actions.st+=/blackout_strike
-actions.st+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
-actions.st+=/breath_of_fire,if=debuff.keg_smash.up
-actions.st+=/chi_wave,if=talent.chi_wave.enabled
-
-actions.aoe=keg_smash
-actions.aoe+=/chi_burst,if=talent.chi_burst.enabled
-actions.aoe+=/breath_of_fire,if=debuff.keg_smash.up
-actions.aoe+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
-actions.aoe+=/tiger_palm,if=energy>65
-actions.aoe+=/blackout_strike
-actions.aoe+=/chi_wave,if=talent.chi_wave.enabled
-]]
-
 -- exported with /tj _esd
 local brewmaster_abilities_exported = {
     black_ox_brew = { SpellIDs = { 115399 }, TalentIDs = { 3, 2 }, },
@@ -100,7 +78,7 @@ Z:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,
-    action_profile = 'dummy::monk::brewmaster',
+    action_profile = 'placeholder::monk::brewmaster',
     resources = { 'energy', 'energy_per_time' },
     actions = {
         brewmaster_abilities_exported,
