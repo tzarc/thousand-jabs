@@ -4,9 +4,9 @@ internal.actions = internal.actions or {}
 -- keywords: legion-dev::mage::arcane
 ---- active_enemies
 ---- arcane_blast.spell_cast_time
----- arcane_charge.spell_stack
+---- arcane_charge.aura_stack
 ---- arcane_explosion.spell_cast_time
----- arcane_missiles.spell_react
+---- arcane_missiles.aura_up
 ---- arcane_power.aura_down
 ---- arcane_power.aura_remains
 ---- arcane_power.aura_up
@@ -16,7 +16,7 @@ internal.actions = internal.actions or {}
 ---- bloodlust.aura_down
 ---- burn_phase
 ---- burn_phase_duration
----- casting.spell_react
+---- casting.aura_up
 ---- equipped
 ---- execute_time
 ---- gcd
@@ -24,7 +24,7 @@ internal.actions = internal.actions or {}
 ---- mana.percent
 ---- mark_of_aluneth.cooldown_remains
 ---- nether_tempest.aura_remains
----- nether_tempest.spell_ticking
+---- nether_tempest.aura_up
 ---- overpowered.talent_selected
 ---- presence_of_mind.aura_up
 ---- prev_gcd.evocation
@@ -44,20 +44,26 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'charged_up',
             condition = 'buff.arcane_charge.stack<=1',
-            condition_converted = '((arcane_charge.spell_stack_as_number) <= (1))',
+            condition_converted = '((arcane_charge.aura_stack_as_number) <= (1))',
             condition_keywords = {
-                'arcane_charge.spell_stack',
+                'arcane_charge.aura_stack',
             },
             simc_line = 'actions.build=charged_up,if=buff.arcane_charge.stack<=1',
         },
         {
             action = 'arcane_missiles',
             condition = 'buff.arcane_missiles.react=3',
-            condition_converted = '((arcane_missiles.spell_react) == (3))',
+            condition_converted = '((arcane_missiles.aura_up) == (3))',
             condition_keywords = {
-                'arcane_missiles.spell_react',
+                'arcane_missiles.aura_up',
             },
             simc_line = 'actions.build+=/arcane_missiles,if=buff.arcane_missiles.react=3',
+        },
+        {
+            action = 'arcane_orb',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.build+=/arcane_orb',
         },
         {
             action = 'arcane_explosion',
@@ -68,19 +74,27 @@ internal.actions['legion-dev::mage::arcane'] = {
             },
             simc_line = 'actions.build+=/arcane_explosion,if=active_enemies>1',
         },
+        {
+            action = 'arcane_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.build+=/arcane_blast',
+        },
     },
     burn = {
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cooldowns',
             simc_line = 'actions.burn=call_action_list,name=cooldowns',
         },
         {
             action = 'arcane_missiles',
             condition = 'buff.arcane_missiles.react=3',
-            condition_converted = '((arcane_missiles.spell_react) == (3))',
+            condition_converted = '((arcane_missiles.aura_up) == (3))',
             condition_keywords = {
-                'arcane_missiles.spell_react',
+                'arcane_missiles.aura_up',
             },
             simc_line = 'actions.burn+=/arcane_missiles,if=buff.arcane_missiles.react=3',
         },
@@ -108,9 +122,10 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'nether_tempest',
             condition = 'dot.nether_tempest.remains<=2|!ticking',
-            condition_converted = '((((nether_tempest.aura_remains_as_number) <= (2))) or ((nether_tempest.aura_remains == 0)))',
+            condition_converted = '((((nether_tempest.aura_remains_as_number) <= (2))) or ((not (nether_tempest.aura_up))))',
             condition_keywords = {
                 'nether_tempest.aura_remains',
+                'nether_tempest.aura_up',
             },
             simc_line = 'actions.burn+=/nether_tempest,if=dot.nether_tempest.remains<=2|!ticking',
         },
@@ -141,9 +156,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'arcane_missiles',
             condition = 'buff.arcane_missiles.react>1',
-            condition_converted = '((arcane_missiles.spell_react_as_number) > (1))',
+            condition_converted = '((arcane_missiles.aura_up_as_number) > (1))',
             condition_keywords = {
-                'arcane_missiles.spell_react',
+                'arcane_missiles.aura_up',
             },
             simc_line = 'actions.burn+=/arcane_missiles,if=buff.arcane_missiles.react>1',
         },
@@ -199,7 +214,15 @@ internal.actions['legion-dev::mage::arcane'] = {
             simc_line = 'actions.burn+=/arcane_explosion,if=active_enemies>1',
         },
         {
+            action = 'arcane_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.burn+=/arcane_blast',
+        },
+        {
             action = 'evocation',
+            condition = 'true',
+            condition_converted = 'true',
             interrupt_if = 'mana.pct>99',
             simc_line = 'actions.burn+=/evocation,interrupt_if=mana.pct>99',
         },
@@ -208,9 +231,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'arcane_missiles',
             condition = 'buff.arcane_missiles.react=3',
-            condition_converted = '((arcane_missiles.spell_react) == (3))',
+            condition_converted = '((arcane_missiles.aura_up) == (3))',
             condition_keywords = {
-                'arcane_missiles.spell_react',
+                'arcane_missiles.aura_up',
             },
             simc_line = 'actions.conserve=arcane_missiles,if=buff.arcane_missiles.react=3',
         },
@@ -237,9 +260,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'nether_tempest',
             condition = '(refreshable|!ticking)',
-            condition_converted = '(((refreshable) or ((nether_tempest.aura_remains == 0))))',
+            condition_converted = '(((refreshable) or ((not (nether_tempest.aura_up)))))',
             condition_keywords = {
-                'nether_tempest.aura_remains',
+                'nether_tempest.aura_up',
                 'refreshable',
             },
             simc_line = 'actions.conserve+=/nether_tempest,if=(refreshable|!ticking)',
@@ -253,6 +276,12 @@ internal.actions['legion-dev::mage::arcane'] = {
                 'rhonins_assaulting_armwraps.aura_up',
             },
             simc_line = 'actions.conserve+=/arcane_blast,if=buff.rhonins_assaulting_armwraps.up&equipped.132413',
+        },
+        {
+            action = 'arcane_missiles',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.conserve+=/arcane_missiles',
         },
         {
             action = 'supernova',
@@ -312,6 +341,12 @@ internal.actions['legion-dev::mage::arcane'] = {
             },
             simc_line = 'actions.conserve+=/arcane_explosion,if=active_enemies>1',
         },
+        {
+            action = 'arcane_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.conserve+=/arcane_blast',
+        },
     },
     cooldowns = {
         {
@@ -323,6 +358,30 @@ internal.actions['legion-dev::mage::arcane'] = {
                 'mana.percent',
             },
             simc_line = 'actions.cooldowns=rune_of_power,if=mana.pct>45&buff.arcane_power.down',
+        },
+        {
+            action = 'arcane_power',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/arcane_power',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/berserking',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/arcane_torrent',
         },
         {
             action = 'potion',
@@ -341,9 +400,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'counterspell',
             condition = 'target.debuff.casting.react',
-            condition_converted = 'casting.spell_react',
+            condition_converted = 'casting.aura_up',
             condition_keywords = {
-                'casting.spell_react',
+                'casting.aura_up',
             },
             simc_line = 'actions=counterspell,if=target.debuff.casting.react',
         },
@@ -390,9 +449,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'call_action_list',
             condition = 'buff.arcane_charge.stack<4',
-            condition_converted = '((arcane_charge.spell_stack_as_number) < (4))',
+            condition_converted = '((arcane_charge.aura_stack_as_number) < (4))',
             condition_keywords = {
-                'arcane_charge.spell_stack',
+                'arcane_charge.aura_stack',
             },
             name = 'build',
             simc_line = 'actions+=/call_action_list,name=build,if=buff.arcane_charge.stack<4',
@@ -400,9 +459,9 @@ internal.actions['legion-dev::mage::arcane'] = {
         {
             action = 'call_action_list',
             condition = 'buff.arcane_power.down&buff.arcane_charge.stack=4&(cooldown.mark_of_aluneth.remains=0|cooldown.mark_of_aluneth.remains>20)&(!talent.rune_of_power.enabled|(cooldown.arcane_power.remains<=action.rune_of_power.cast_time|action.rune_of_power.recharge_time<cooldown.arcane_power.remains))|target.time_to_die<45',
-            condition_converted = '((((arcane_power.aura_down) and (((((arcane_charge.spell_stack) == (4))) and ((((((((mark_of_aluneth.cooldown_remains) == (0))) or (((mark_of_aluneth.cooldown_remains_as_number) > (20)))))) and (((((not (rune_of_power.talent_selected))) or ((((((arcane_power.cooldown_remains_as_number) <= (rune_of_power.spell_cast_time_as_number))) or (((rune_of_power.spell_recharge_time_as_number) < (arcane_power.cooldown_remains_as_number))))))))))))))) or (((target.time_to_die_as_number) < (45))))',
+            condition_converted = '((((arcane_power.aura_down) and (((((arcane_charge.aura_stack) == (4))) and ((((((((mark_of_aluneth.cooldown_remains) == (0))) or (((mark_of_aluneth.cooldown_remains_as_number) > (20)))))) and (((((not (rune_of_power.talent_selected))) or ((((((arcane_power.cooldown_remains_as_number) <= (rune_of_power.spell_cast_time_as_number))) or (((rune_of_power.spell_recharge_time_as_number) < (arcane_power.cooldown_remains_as_number))))))))))))))) or (((target.time_to_die_as_number) < (45))))',
             condition_keywords = {
-                'arcane_charge.spell_stack',
+                'arcane_charge.aura_stack',
                 'arcane_power.aura_down',
                 'arcane_power.cooldown_remains',
                 'mark_of_aluneth.cooldown_remains',
@@ -437,6 +496,8 @@ internal.actions['legion-dev::mage::arcane'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'conserve',
             simc_line = 'actions+=/call_action_list,name=conserve',
         },
@@ -444,23 +505,55 @@ internal.actions['legion-dev::mage::arcane'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_whispered_pact',
             type = 'flask_of_the_whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=the_hungry_magister',
             type = 'the_hungry_magister',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'summon_arcane_familiar',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/summon_arcane_familiar',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'mirror_image',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/mirror_image',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'arcane_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/arcane_blast',
         },
     },
 }
@@ -468,7 +561,7 @@ internal.actions['legion-dev::mage::arcane'] = {
 
 -- keywords: legion-dev::mage::fire
 ---- bloodlust.aura_down
----- casting.spell_react
+---- casting.aura_up
 ---- combustion.aura_down
 ---- combustion.aura_up
 ---- combustion.cooldown_remains
@@ -487,9 +580,9 @@ internal.actions['legion-dev::mage::fire'] = {
         {
             action = 'counterspell',
             condition = 'target.debuff.casting.react',
-            condition_converted = 'casting.spell_react',
+            condition_converted = 'casting.aura_up',
             condition_keywords = {
-                'casting.spell_react',
+                'casting.aura_up',
             },
             simc_line = 'actions=counterspell,if=target.debuff.casting.react',
         },
@@ -555,6 +648,8 @@ internal.actions['legion-dev::mage::fire'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'single_target',
             simc_line = 'actions+=/call_action_list,name=single_target',
         },
@@ -562,23 +657,49 @@ internal.actions['legion-dev::mage::fire'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_whispered_pact',
             type = 'flask_of_the_whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=the_hungry_magister',
             type = 'the_hungry_magister',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'mirror_image',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/mirror_image',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'pyroblast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/pyroblast',
         },
     },
 }
@@ -589,14 +710,14 @@ internal.actions['legion-dev::mage::fire'] = {
 ---- arctic_gale.talent_selected
 ---- blizzard.spell_cast_time
 ---- bloodlust.aura_down
----- brain_freeze.spell_react
----- casting.spell_react
+---- brain_freeze.aura_up
+---- casting.aura_up
 ---- equipped
----- fingers_of_frost.spell_react
----- fingers_of_frost.spell_stack
+---- fingers_of_frost.aura_stack
+---- fingers_of_frost.aura_up
 ---- frost_bomb.aura_remains
 ---- ice_lance.spell_travel_time
----- icy_hand.artifact_enabled
+---- icy_hand.artifact_selected
 ---- icy_veins.aura_down
 ---- icy_veins.aura_up
 ---- icy_veins.cooldown_remains
@@ -612,7 +733,7 @@ internal.actions['legion-dev::mage::fire'] = {
 ---- time_to_die.target_remains
 ---- winters_chill.aura_up
 ---- zannesu_journey.aura_remains
----- zannesu_journey.spell_stack
+---- zannesu_journey.aura_stack
 
 internal.actions['legion-dev::mage::frost'] = {
     cooldowns = {
@@ -639,6 +760,30 @@ internal.actions['legion-dev::mage::frost'] = {
             simc_line = 'actions.cooldowns+=/icy_veins,if=buff.icy_veins.down',
         },
         {
+            action = 'mirror_image',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/mirror_image',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/berserking',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cooldowns+=/arcane_torrent',
+        },
+        {
             action = 'potion',
             condition = 'cooldown.icy_veins.remains<1',
             condition_converted = '((icy_veins.cooldown_remains_as_number) < (1))',
@@ -653,18 +798,18 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'counterspell',
             condition = 'target.debuff.casting.react',
-            condition_converted = 'casting.spell_react',
+            condition_converted = 'casting.aura_up',
             condition_keywords = {
-                'casting.spell_react',
+                'casting.aura_up',
             },
             simc_line = 'actions=counterspell,if=target.debuff.casting.react',
         },
         {
             action = 'ice_lance',
             condition = 'buff.fingers_of_frost.react=0&prev_gcd.flurry',
-            condition_converted = '((((fingers_of_frost.spell_react) == (0))) and (prev_gcd.flurry))',
+            condition_converted = '((((fingers_of_frost.aura_up) == (0))) and (prev_gcd.flurry))',
             condition_keywords = {
-                'fingers_of_frost.spell_react',
+                'fingers_of_frost.aura_up',
                 'prev_gcd.flurry',
             },
             simc_line = 'actions+=/ice_lance,if=buff.fingers_of_frost.react=0&prev_gcd.flurry',
@@ -682,6 +827,8 @@ internal.actions['legion-dev::mage::frost'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cooldowns',
             simc_line = 'actions+=/call_action_list,name=cooldowns',
         },
@@ -706,11 +853,11 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'water_jet',
             condition = 'prev_gcd.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0',
-            condition_converted = '((prev_gcd.frostbolt) and (((((fingers_of_frost.spell_stack_as_number) < ((2 + icy_hand.artifact_enabled_as_number)))) and (((brain_freeze.spell_react) == (0))))))',
+            condition_converted = '((prev_gcd.frostbolt) and (((((fingers_of_frost.aura_stack_as_number) < ((2 + icy_hand.artifact_selected_as_number)))) and (((brain_freeze.aura_up) == (0))))))',
             condition_keywords = {
-                'brain_freeze.spell_react',
-                'fingers_of_frost.spell_stack',
-                'icy_hand.artifact_enabled',
+                'brain_freeze.aura_up',
+                'fingers_of_frost.aura_stack',
+                'icy_hand.artifact_selected',
                 'prev_gcd.frostbolt',
             },
             simc_line = 'actions+=/water_jet,if=prev_gcd.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0',
@@ -730,10 +877,10 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'flurry',
             condition = 'buff.brain_freeze.react&buff.fingers_of_frost.react=0&prev_gcd.frostbolt',
-            condition_converted = '((brain_freeze.spell_react) and (((((fingers_of_frost.spell_react) == (0))) and (prev_gcd.frostbolt))))',
+            condition_converted = '((brain_freeze.aura_up) and (((((fingers_of_frost.aura_up) == (0))) and (prev_gcd.frostbolt))))',
             condition_keywords = {
-                'brain_freeze.spell_react',
-                'fingers_of_frost.spell_react',
+                'brain_freeze.aura_up',
+                'fingers_of_frost.aura_up',
                 'prev_gcd.frostbolt',
             },
             simc_line = 'actions+=/flurry,if=buff.brain_freeze.react&buff.fingers_of_frost.react=0&prev_gcd.frostbolt',
@@ -741,10 +888,10 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'frozen_touch',
             condition = 'buff.fingers_of_frost.stack<=(0+artifact.icy_hand.enabled)&((cooldown.icy_veins.remains>30&talent.thermal_void.enabled)|!talent.thermal_void.enabled)',
-            condition_converted = '((((fingers_of_frost.spell_stack_as_number) <= ((0 + icy_hand.artifact_enabled_as_number)))) and (((((((((icy_veins.cooldown_remains_as_number) > (30))) and (thermal_void.talent_selected)))) or ((not (thermal_void.talent_selected)))))))',
+            condition_converted = '((((fingers_of_frost.aura_stack_as_number) <= ((0 + icy_hand.artifact_selected_as_number)))) and (((((((((icy_veins.cooldown_remains_as_number) > (30))) and (thermal_void.talent_selected)))) or ((not (thermal_void.talent_selected)))))))',
             condition_keywords = {
-                'fingers_of_frost.spell_stack',
-                'icy_hand.artifact_enabled',
+                'fingers_of_frost.aura_stack',
+                'icy_hand.artifact_selected',
                 'icy_veins.cooldown_remains',
                 'thermal_void.talent_selected',
             },
@@ -753,9 +900,9 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'frost_bomb',
             condition = 'debuff.frost_bomb.remains<action.ice_lance.travel_time&buff.fingers_of_frost.react>0',
-            condition_converted = '((((frost_bomb.aura_remains_as_number) < (ice_lance.spell_travel_time_as_number))) and (((fingers_of_frost.spell_react_as_number) > (0))))',
+            condition_converted = '((((frost_bomb.aura_remains_as_number) < (ice_lance.spell_travel_time_as_number))) and (((fingers_of_frost.aura_up_as_number) > (0))))',
             condition_keywords = {
-                'fingers_of_frost.spell_react',
+                'fingers_of_frost.aura_up',
                 'frost_bomb.aura_remains',
                 'ice_lance.spell_travel_time',
             },
@@ -764,58 +911,120 @@ internal.actions['legion-dev::mage::frost'] = {
         {
             action = 'ice_lance',
             condition = 'buff.fingers_of_frost.react>0&cooldown.icy_veins.remains>10|buff.fingers_of_frost.react>2',
-            condition_converted = '((((((fingers_of_frost.spell_react_as_number) > (0))) and (((icy_veins.cooldown_remains_as_number) > (10))))) or (((fingers_of_frost.spell_react_as_number) > (2))))',
+            condition_converted = '((((((fingers_of_frost.aura_up_as_number) > (0))) and (((icy_veins.cooldown_remains_as_number) > (10))))) or (((fingers_of_frost.aura_up_as_number) > (2))))',
             condition_keywords = {
-                'fingers_of_frost.spell_react',
+                'fingers_of_frost.aura_up',
                 'icy_veins.cooldown_remains',
             },
             simc_line = 'actions+=/ice_lance,if=buff.fingers_of_frost.react>0&cooldown.icy_veins.remains>10|buff.fingers_of_frost.react>2',
         },
         {
+            action = 'frozen_orb',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/frozen_orb',
+        },
+        {
+            action = 'ice_nova',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/ice_nova',
+        },
+        {
+            action = 'comet_storm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/comet_storm',
+        },
+        {
             action = 'blizzard',
             condition = 'talent.arctic_gale.enabled|active_enemies>1|((buff.zannesu_journey.stack>4|buff.zannesu_journey.remains<cast_time+1)&equipped.133970)',
-            condition_converted = '((arctic_gale.talent_selected) or (((((active_enemies_as_number) > (1))) or (((((((((zannesu_journey.spell_stack_as_number) > (4))) or (((zannesu_journey.aura_remains_as_number) < ((blizzard.spell_cast_time_as_number + 1))))))) and (equipped[133970])))))))',
+            condition_converted = '((arctic_gale.talent_selected) or (((((active_enemies_as_number) > (1))) or (((((((((zannesu_journey.aura_stack_as_number) > (4))) or (((zannesu_journey.aura_remains_as_number) < ((blizzard.spell_cast_time_as_number + 1))))))) and (equipped[133970])))))))',
             condition_keywords = {
                 'active_enemies',
                 'arctic_gale.talent_selected',
                 'blizzard.spell_cast_time',
                 'equipped',
                 'zannesu_journey.aura_remains',
-                'zannesu_journey.spell_stack',
+                'zannesu_journey.aura_stack',
             },
             simc_line = 'actions+=/blizzard,if=talent.arctic_gale.enabled|active_enemies>1|((buff.zannesu_journey.stack>4|buff.zannesu_journey.remains<cast_time+1)&equipped.133970)',
         },
         {
             action = 'ebonbolt',
             condition = 'buff.fingers_of_frost.stack<=(0+artifact.icy_hand.enabled)',
-            condition_converted = '((fingers_of_frost.spell_stack_as_number) <= ((0 + icy_hand.artifact_enabled_as_number)))',
+            condition_converted = '((fingers_of_frost.aura_stack_as_number) <= ((0 + icy_hand.artifact_selected_as_number)))',
             condition_keywords = {
-                'fingers_of_frost.spell_stack',
-                'icy_hand.artifact_enabled',
+                'fingers_of_frost.aura_stack',
+                'icy_hand.artifact_selected',
             },
             simc_line = 'actions+=/ebonbolt,if=buff.fingers_of_frost.stack<=(0+artifact.icy_hand.enabled)',
+        },
+        {
+            action = 'glacial_spike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/glacial_spike',
+        },
+        {
+            action = 'frostbolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/frostbolt',
         },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_whispered_pact',
             type = 'flask_of_the_whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=azshari_salad',
             type = 'azshari_salad',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'water_elemental',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/water_elemental',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'mirror_image',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/mirror_image',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'frostbolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/frostbolt',
         },
     },
 }

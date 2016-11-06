@@ -2,8 +2,8 @@ local _, internal = ...
 internal.actions = internal.actions or {}
 
 -- keywords: legion-dev::deathknight::blood
+---- breath_of_sindragosa.aura_up
 ---- breath_of_sindragosa.cooldown_remains
----- breath_of_sindragosa.spell_ticking
 ---- breath_of_sindragosa.talent_selected
 ---- pillar_of_frost.aura_up
 ---- runic_power.curr
@@ -14,6 +14,8 @@ internal.actions['legion-dev::deathknight::blood'] = {
     bos = {
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.bos=call_action_list,name=core',
         },
@@ -29,6 +31,18 @@ internal.actions['legion-dev::deathknight::blood'] = {
     },
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
+            action = 'mind_freeze',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/mind_freeze',
+        },
+        {
             action = 'arcane_torrent',
             condition = 'runic_power.deficit>20',
             condition_converted = '((runic_power.deficit_as_number) > (20))',
@@ -40,9 +54,9 @@ internal.actions['legion-dev::deathknight::blood'] = {
         {
             action = 'blood_fury',
             condition = '!talent.breath_of_sindragosa.enabled|dot.breath_of_sindragosa.ticking',
-            condition_converted = '(((not (breath_of_sindragosa.talent_selected))) or (breath_of_sindragosa.spell_ticking))',
+            condition_converted = '(((not (breath_of_sindragosa.talent_selected))) or (breath_of_sindragosa.aura_up))',
             condition_keywords = {
-                'breath_of_sindragosa.spell_ticking',
+                'breath_of_sindragosa.aura_up',
                 'breath_of_sindragosa.talent_selected',
             },
             simc_line = 'actions+=/blood_fury,if=!talent.breath_of_sindragosa.enabled|dot.breath_of_sindragosa.ticking',
@@ -58,6 +72,8 @@ internal.actions['legion-dev::deathknight::blood'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions+=/potion,name=old_war',
         },
@@ -73,9 +89,9 @@ internal.actions['legion-dev::deathknight::blood'] = {
         {
             action = 'run_action_list',
             condition = 'dot.breath_of_sindragosa.ticking',
-            condition_converted = 'breath_of_sindragosa.spell_ticking',
+            condition_converted = 'breath_of_sindragosa.aura_up',
             condition_keywords = {
-                'breath_of_sindragosa.spell_ticking',
+                'breath_of_sindragosa.aura_up',
             },
             name = 'bos',
             simc_line = 'actions+=/run_action_list,name=bos,if=dot.breath_of_sindragosa.ticking',
@@ -104,6 +120,8 @@ internal.actions['legion-dev::deathknight::blood'] = {
     generic = {
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.generic=call_action_list,name=core',
         },
@@ -130,21 +148,35 @@ internal.actions['legion-dev::deathknight::blood'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'countless_armies',
             simc_line = 'actions.precombat=flask,name=countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'fishbrul_special',
             simc_line = 'actions.precombat+=/food,name=fishbrul_special',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
@@ -152,6 +184,8 @@ internal.actions['legion-dev::deathknight::blood'] = {
     shatter = {
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.shatter=call_action_list,name=core',
         },
@@ -179,17 +213,18 @@ internal.actions['legion-dev::deathknight::blood'] = {
 
 
 -- keywords: legion-dev::deathknight::frost
+---- breath_of_sindragosa.aura_up
 ---- breath_of_sindragosa.cooldown_remains
----- breath_of_sindragosa.spell_ticking
 ---- breath_of_sindragosa.talent_selected
+---- frost_fever.aura_up
 ---- frostscythe.talent_selected
 ---- frozen_pulse.talent_selected
 ---- gathering_storm.talent_selected
----- killing_machine.spell_react
+---- killing_machine.aura_up
 ---- obliteration.aura_up
 ---- pillar_of_frost.aura_up
----- razorice.spell_stack
----- rime.spell_react
+---- razorice.aura_stack
+---- rime.aura_up
 ---- runic_power.curr
 ---- runic_power.deficit
 ---- shattering_strikes.talent_selected
@@ -199,13 +234,26 @@ internal.actions['legion-dev::deathknight::frost'] = {
     bos = {
         {
             action = 'howling_blast',
+            condition = '!! target_if !!',
+            condition_converted = '(not (frost_fever.aura_up))',
+            condition_keywords = {
+                'frost_fever.aura_up',
+            },
             simc_line = 'actions.bos=howling_blast,target_if=!dot.frost_fever.ticking',
             target_if = '!dot.frost_fever.ticking',
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.bos+=/call_action_list,name=core',
+        },
+        {
+            action = 'horn_of_winter',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.bos+=/horn_of_winter',
         },
         {
             action = 'empower_rune_weapon',
@@ -217,11 +265,17 @@ internal.actions['legion-dev::deathknight::frost'] = {
             simc_line = 'actions.bos+=/empower_rune_weapon,if=runic_power<=70',
         },
         {
+            action = 'hungering_rune_weapon',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.bos+=/hungering_rune_weapon',
+        },
+        {
             action = 'howling_blast',
             condition = 'buff.rime.react',
-            condition_converted = 'rime.spell_react',
+            condition_converted = 'rime.aura_up',
             condition_keywords = {
-                'rime.spell_react',
+                'rime.aura_up',
             },
             simc_line = 'actions.bos+=/howling_blast,if=buff.rime.react',
         },
@@ -230,9 +284,9 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'frost_strike',
             condition = 'buff.obliteration.up&!buff.killing_machine.react',
-            condition_converted = '((obliteration.aura_up) and ((not (killing_machine.spell_react))))',
+            condition_converted = '((obliteration.aura_up) and ((not (killing_machine.aura_up))))',
             condition_keywords = {
-                'killing_machine.spell_react',
+                'killing_machine.aura_up',
                 'obliteration.aura_up',
             },
             simc_line = 'actions.core=frost_strike,if=buff.obliteration.up&!buff.killing_machine.react',
@@ -240,11 +294,11 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'remorseless_winter',
             condition = '(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!(talent.frostscythe.enabled&buff.killing_machine.react&spell_targets.frostscythe>=2)',
-            condition_converted = '(((((((spell_targets_as_number) >= (2))) or (gathering_storm.talent_selected)))) and ((not ((((frostscythe.talent_selected) and (((killing_machine.spell_react) and (((spell_targets_as_number) >= (2)))))))))))',
+            condition_converted = '(((((((spell_targets_as_number) >= (2))) or (gathering_storm.talent_selected)))) and ((not ((((frostscythe.talent_selected) and (((killing_machine.aura_up) and (((spell_targets_as_number) >= (2)))))))))))',
             condition_keywords = {
                 'frostscythe.talent_selected',
                 'gathering_storm.talent_selected',
-                'killing_machine.spell_react',
+                'killing_machine.aura_up',
                 'spell_targets',
             },
             simc_line = 'actions.core+=/remorseless_winter,if=(spell_targets.remorseless_winter>=2|talent.gathering_storm.enabled)&!(talent.frostscythe.enabled&buff.killing_machine.react&spell_targets.frostscythe>=2)',
@@ -252,9 +306,9 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'frostscythe',
             condition = '(buff.killing_machine.react&spell_targets.frostscythe>=2)',
-            condition_converted = '(((killing_machine.spell_react) and (((spell_targets_as_number) >= (2)))))',
+            condition_converted = '(((killing_machine.aura_up) and (((spell_targets_as_number) >= (2)))))',
             condition_keywords = {
-                'killing_machine.spell_react',
+                'killing_machine.aura_up',
                 'spell_targets',
             },
             simc_line = 'actions.core+=/frostscythe,if=(buff.killing_machine.react&spell_targets.frostscythe>=2)',
@@ -280,11 +334,23 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'obliterate',
             condition = 'buff.killing_machine.react',
-            condition_converted = 'killing_machine.spell_react',
+            condition_converted = 'killing_machine.aura_up',
             condition_keywords = {
-                'killing_machine.spell_react',
+                'killing_machine.aura_up',
             },
             simc_line = 'actions.core+=/obliterate,if=buff.killing_machine.react',
+        },
+        {
+            action = 'obliterate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.core+=/obliterate',
+        },
+        {
+            action = 'glacial_advance',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.core+=/glacial_advance',
         },
         {
             action = 'remorseless_winter',
@@ -298,6 +364,24 @@ internal.actions['legion-dev::deathknight::frost'] = {
     },
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
+            action = 'pillar_of_frost',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/pillar_of_frost',
+        },
+        {
+            action = 'mind_freeze',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/mind_freeze',
+        },
+        {
             action = 'arcane_torrent',
             condition = 'runic_power.deficit>20',
             condition_converted = '((runic_power.deficit_as_number) > (20))',
@@ -309,9 +393,9 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'blood_fury',
             condition = '!talent.breath_of_sindragosa.enabled|dot.breath_of_sindragosa.ticking',
-            condition_converted = '(((not (breath_of_sindragosa.talent_selected))) or (breath_of_sindragosa.spell_ticking))',
+            condition_converted = '(((not (breath_of_sindragosa.talent_selected))) or (breath_of_sindragosa.aura_up))',
             condition_keywords = {
-                'breath_of_sindragosa.spell_ticking',
+                'breath_of_sindragosa.aura_up',
                 'breath_of_sindragosa.talent_selected',
             },
             simc_line = 'actions+=/blood_fury,if=!talent.breath_of_sindragosa.enabled|dot.breath_of_sindragosa.ticking',
@@ -327,6 +411,8 @@ internal.actions['legion-dev::deathknight::frost'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions+=/potion,name=old_war',
         },
@@ -340,6 +426,12 @@ internal.actions['legion-dev::deathknight::frost'] = {
             simc_line = 'actions+=/sindragosas_fury,if=buff.pillar_of_frost.up',
         },
         {
+            action = 'obliteration',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/obliteration',
+        },
+        {
             action = 'breath_of_sindragosa',
             condition = 'runic_power>=50',
             condition_converted = '((runic_power.curr_as_number) >= (50))',
@@ -351,9 +443,9 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'run_action_list',
             condition = 'dot.breath_of_sindragosa.ticking',
-            condition_converted = 'breath_of_sindragosa.spell_ticking',
+            condition_converted = 'breath_of_sindragosa.aura_up',
             condition_keywords = {
-                'breath_of_sindragosa.spell_ticking',
+                'breath_of_sindragosa.aura_up',
             },
             name = 'bos',
             simc_line = 'actions+=/run_action_list,name=bos,if=dot.breath_of_sindragosa.ticking',
@@ -382,15 +474,20 @@ internal.actions['legion-dev::deathknight::frost'] = {
     generic = {
         {
             action = 'howling_blast',
+            condition = '!! target_if !!',
+            condition_converted = '(not (frost_fever.aura_up))',
+            condition_keywords = {
+                'frost_fever.aura_up',
+            },
             simc_line = 'actions.generic=howling_blast,target_if=!dot.frost_fever.ticking',
             target_if = '!dot.frost_fever.ticking',
         },
         {
             action = 'howling_blast',
             condition = 'buff.rime.react',
-            condition_converted = 'rime.spell_react',
+            condition_converted = 'rime.aura_up',
             condition_keywords = {
-                'rime.spell_react',
+                'rime.aura_up',
             },
             simc_line = 'actions.generic+=/howling_blast,if=buff.rime.react',
         },
@@ -405,6 +502,8 @@ internal.actions['legion-dev::deathknight::frost'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.generic+=/call_action_list,name=core',
         },
@@ -488,21 +587,35 @@ internal.actions['legion-dev::deathknight::frost'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'countless_armies',
             simc_line = 'actions.precombat=flask,name=countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'fishbrul_special',
             simc_line = 'actions.precombat+=/food,name=fishbrul_special',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
@@ -511,23 +624,28 @@ internal.actions['legion-dev::deathknight::frost'] = {
         {
             action = 'frost_strike',
             condition = 'debuff.razorice.stack=5',
-            condition_converted = '((razorice.spell_stack) == (5))',
+            condition_converted = '((razorice.aura_stack) == (5))',
             condition_keywords = {
-                'razorice.spell_stack',
+                'razorice.aura_stack',
             },
             simc_line = 'actions.shatter=frost_strike,if=debuff.razorice.stack=5',
         },
         {
             action = 'howling_blast',
+            condition = '!! target_if !!',
+            condition_converted = '(not (frost_fever.aura_up))',
+            condition_keywords = {
+                'frost_fever.aura_up',
+            },
             simc_line = 'actions.shatter+=/howling_blast,target_if=!dot.frost_fever.ticking',
             target_if = '!dot.frost_fever.ticking',
         },
         {
             action = 'howling_blast',
             condition = 'buff.rime.react',
-            condition_converted = 'rime.spell_react',
+            condition_converted = 'rime.aura_up',
             condition_keywords = {
-                'rime.spell_react',
+                'rime.aura_up',
             },
             simc_line = 'actions.shatter+=/howling_blast,if=buff.rime.react',
         },
@@ -542,6 +660,8 @@ internal.actions['legion-dev::deathknight::frost'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'core',
             simc_line = 'actions.shatter+=/call_action_list,name=core',
         },
@@ -633,13 +753,12 @@ internal.actions['legion-dev::deathknight::frost'] = {
 ---- dark_arbiter.talent_selected
 ---- dark_transformation.aura_up
 ---- dark_transformation.cooldown_remains
----- death_and_decay.spell_ticking
----- defile.spell_ticking
+---- death_and_decay.aura_up
+---- defile.aura_up
 ---- equipped
+---- festering_wound.aura_stack
 ---- festering_wound.aura_up
----- festering_wound.spell_stack
 ---- necrosis.aura_up
----- necrosis.spell_react
 ---- necrosis.talent_selected
 ---- rune.curr
 ---- runic_power.deficit
@@ -649,8 +768,9 @@ internal.actions['legion-dev::deathknight::frost'] = {
 ---- sudden_doom.aura_up
 ---- summon_gargoyle.cooldown_remains
 ---- target.time_to_die
----- unholy_strength.spell_react
+---- unholy_strength.aura_up
 ---- valkyr_battlemaiden.pet_active
+---- virulent_plague.aura_up
 
 internal.actions['legion-dev::deathknight::unholy'] = {
     aoe = {
@@ -675,10 +795,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'spell_targets.scourge_strike>=2&(dot.death_and_decay.ticking|dot.defile.ticking)',
-            condition_converted = '((((spell_targets_as_number) >= (2))) and ((((death_and_decay.spell_ticking) or (defile.spell_ticking)))))',
+            condition_converted = '((((spell_targets_as_number) >= (2))) and ((((death_and_decay.aura_up) or (defile.aura_up)))))',
             condition_keywords = {
-                'death_and_decay.spell_ticking',
-                'defile.spell_ticking',
+                'death_and_decay.aura_up',
+                'defile.aura_up',
                 'spell_targets',
             },
             simc_line = 'actions.aoe+=/scourge_strike,if=spell_targets.scourge_strike>=2&(dot.death_and_decay.ticking|dot.defile.ticking)',
@@ -686,10 +806,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'spell_targets.clawing_shadows>=2&(dot.death_and_decay.ticking|dot.defile.ticking)',
-            condition_converted = '((((spell_targets_as_number) >= (2))) and ((((death_and_decay.spell_ticking) or (defile.spell_ticking)))))',
+            condition_converted = '((((spell_targets_as_number) >= (2))) and ((((death_and_decay.aura_up) or (defile.aura_up)))))',
             condition_keywords = {
-                'death_and_decay.spell_ticking',
-                'defile.spell_ticking',
+                'death_and_decay.aura_up',
+                'defile.aura_up',
                 'spell_targets',
             },
             simc_line = 'actions.aoe+=/clawing_shadows,if=spell_targets.clawing_shadows>=2&(dot.death_and_decay.ticking|dot.defile.ticking)',
@@ -708,9 +828,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<=4&runic_power.deficit>23',
-            condition_converted = '((((festering_wound.spell_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
             },
             simc_line = 'actions.castigator=festering_strike,if=debuff.festering_wound.stack<=4&runic_power.deficit>23',
@@ -729,10 +849,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.necrosis.react&debuff.festering_wound.stack>=3&runic_power.deficit>23',
-            condition_converted = '((necrosis.spell_react) and (((((festering_wound.spell_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
+            condition_converted = '((necrosis.aura_up) and (((((festering_wound.aura_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
-                'necrosis.spell_react',
+                'festering_wound.aura_stack',
+                'necrosis.aura_up',
                 'runic_power.deficit',
             },
             simc_line = 'actions.castigator+=/scourge_strike,if=buff.necrosis.react&debuff.festering_wound.stack>=3&runic_power.deficit>23',
@@ -740,20 +860,20 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.unholy_strength.react&debuff.festering_wound.stack>=3&runic_power.deficit>23',
-            condition_converted = '((unholy_strength.spell_react) and (((((festering_wound.spell_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
+            condition_converted = '((unholy_strength.aura_up) and (((((festering_wound.aura_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             simc_line = 'actions.castigator+=/scourge_strike,if=buff.unholy_strength.react&debuff.festering_wound.stack>=3&runic_power.deficit>23',
         },
         {
             action = 'scourge_strike',
             condition = 'rune>=2&debuff.festering_wound.stack>=3&runic_power.deficit>23',
-            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.spell_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
+            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.aura_stack_as_number) >= (3))) and (((runic_power.deficit_as_number) > (23))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'rune.curr',
                 'runic_power.deficit',
             },
@@ -805,6 +925,12 @@ internal.actions['legion-dev::deathknight::unholy'] = {
     },
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
             action = 'arcane_torrent',
             condition = 'runic_power.deficit>20',
             condition_converted = '((runic_power.deficit_as_number) > (20))',
@@ -814,17 +940,34 @@ internal.actions['legion-dev::deathknight::unholy'] = {
             simc_line = 'actions+=/arcane_torrent,if=runic_power.deficit>20',
         },
         {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
             action = 'potion',
             condition = 'buff.unholy_strength.react',
-            condition_converted = 'unholy_strength.spell_react',
+            condition_converted = 'unholy_strength.aura_up',
             condition_keywords = {
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             name = 'old_war',
             simc_line = 'actions+=/potion,name=old_war,if=buff.unholy_strength.react',
         },
         {
             action = 'outbreak',
+            condition = '!! target_if !!',
+            condition_converted = '(not (virulent_plague.aura_up))',
+            condition_keywords = {
+                'virulent_plague.aura_up',
+            },
             simc_line = 'actions+=/outbreak,target_if=!dot.virulent_plague.ticking',
             target_if = '!dot.virulent_plague.ticking',
         },
@@ -946,6 +1089,8 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'generic',
             simc_line = 'actions+=/call_action_list,name=generic',
         },
@@ -995,19 +1140,19 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'soul_reaper',
             condition = 'debuff.festering_wound.stack>=7&cooldown.apocalypse.remains<2',
-            condition_converted = '((((festering_wound.spell_stack_as_number) >= (7))) and (((apocalypse.cooldown_remains_as_number) < (2))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) >= (7))) and (((apocalypse.cooldown_remains_as_number) < (2))))',
             condition_keywords = {
                 'apocalypse.cooldown_remains',
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.generic+=/soul_reaper,if=debuff.festering_wound.stack>=7&cooldown.apocalypse.remains<2',
         },
         {
             action = 'apocalypse',
             condition = 'debuff.festering_wound.stack>=7',
-            condition_converted = '((festering_wound.spell_stack_as_number) >= (7))',
+            condition_converted = '((festering_wound.aura_stack_as_number) >= (7))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.generic+=/apocalypse,if=debuff.festering_wound.stack>=7',
         },
@@ -1047,10 +1192,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<7&cooldown.apocalypse.remains<5',
-            condition_converted = '((((festering_wound.spell_stack_as_number) < (7))) and (((apocalypse.cooldown_remains_as_number) < (5))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) < (7))) and (((apocalypse.cooldown_remains_as_number) < (5))))',
             condition_keywords = {
                 'apocalypse.cooldown_remains',
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.generic+=/festering_strike,if=debuff.festering_wound.stack<7&cooldown.apocalypse.remains<5',
         },
@@ -1067,9 +1212,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'soul_reaper',
             condition = 'debuff.festering_wound.stack>=3',
-            condition_converted = '((festering_wound.spell_stack_as_number) >= (3))',
+            condition_converted = '((festering_wound.aura_stack_as_number) >= (3))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.generic+=/soul_reaper,if=debuff.festering_wound.stack>=3',
         },
@@ -1086,9 +1231,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'debuff.soul_reaper.up&debuff.festering_wound.stack>=1',
-            condition_converted = '((soul_reaper.aura_up) and (((festering_wound.spell_stack_as_number) >= (1))))',
+            condition_converted = '((soul_reaper.aura_up) and (((festering_wound.aura_stack_as_number) >= (1))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'soul_reaper.aura_up',
             },
             simc_line = 'actions.generic+=/scourge_strike,if=debuff.soul_reaper.up&debuff.festering_wound.stack>=1',
@@ -1096,12 +1241,18 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'debuff.soul_reaper.up&debuff.festering_wound.stack>=1',
-            condition_converted = '((soul_reaper.aura_up) and (((festering_wound.spell_stack_as_number) >= (1))))',
+            condition_converted = '((soul_reaper.aura_up) and (((festering_wound.aura_stack_as_number) >= (1))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'soul_reaper.aura_up',
             },
             simc_line = 'actions.generic+=/clawing_shadows,if=debuff.soul_reaper.up&debuff.festering_wound.stack>=1',
+        },
+        {
+            action = 'defile',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.generic+=/defile',
         },
         {
             action = 'call_action_list',
@@ -1150,9 +1301,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<=4&runic_power.deficit>23',
-            condition_converted = '((((festering_wound.spell_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
             },
             simc_line = 'actions.instructors=festering_strike,if=debuff.festering_wound.stack<=4&runic_power.deficit>23',
@@ -1171,10 +1322,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.necrosis.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((necrosis.spell_react) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((necrosis.aura_up) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
-                'necrosis.spell_react',
+                'festering_wound.aura_stack',
+                'necrosis.aura_up',
                 'runic_power.deficit',
             },
             simc_line = 'actions.instructors+=/scourge_strike,if=buff.necrosis.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
@@ -1182,10 +1333,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'buff.necrosis.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((necrosis.spell_react) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((necrosis.aura_up) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
-                'necrosis.spell_react',
+                'festering_wound.aura_stack',
+                'necrosis.aura_up',
                 'runic_power.deficit',
             },
             simc_line = 'actions.instructors+=/clawing_shadows,if=buff.necrosis.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
@@ -1193,31 +1344,31 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.unholy_strength.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((unholy_strength.spell_react) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((unholy_strength.aura_up) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             simc_line = 'actions.instructors+=/scourge_strike,if=buff.unholy_strength.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
         },
         {
             action = 'clawing_shadows',
             condition = 'buff.unholy_strength.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((unholy_strength.spell_react) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((unholy_strength.aura_up) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             simc_line = 'actions.instructors+=/clawing_shadows,if=buff.unholy_strength.react&debuff.festering_wound.stack>=5&runic_power.deficit>29',
         },
         {
             action = 'scourge_strike',
             condition = 'rune>=2&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'rune.curr',
                 'runic_power.deficit',
             },
@@ -1226,9 +1377,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'rune>=2&debuff.festering_wound.stack>=5&runic_power.deficit>29',
-            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.spell_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
+            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.aura_stack_as_number) >= (5))) and (((runic_power.deficit_as_number) > (29))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'rune.curr',
                 'runic_power.deficit',
             },
@@ -1281,32 +1432,58 @@ internal.actions['legion-dev::deathknight::unholy'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'countless_armies',
             simc_line = 'actions.precombat=flask,name=countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'the_hungry_magister',
             simc_line = 'actions.precombat+=/food,name=the_hungry_magister',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
+        },
+        {
+            action = 'raise_dead',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/raise_dead',
+        },
+        {
+            action = 'army_of_the_dead',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/army_of_the_dead',
         },
     },
     standard = {
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<=4&runic_power.deficit>23',
-            condition_converted = '((((festering_wound.spell_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) <= (4))) and (((runic_power.deficit_as_number) > (23))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
             },
             simc_line = 'actions.standard=festering_strike,if=debuff.festering_wound.stack<=4&runic_power.deficit>23',
@@ -1325,10 +1502,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.necrosis.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((necrosis.spell_react) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((necrosis.aura_up) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
-                'necrosis.spell_react',
+                'festering_wound.aura_stack',
+                'necrosis.aura_up',
                 'runic_power.deficit',
             },
             simc_line = 'actions.standard+=/scourge_strike,if=buff.necrosis.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
@@ -1336,10 +1513,10 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'buff.necrosis.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((necrosis.spell_react) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((necrosis.aura_up) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
-                'necrosis.spell_react',
+                'festering_wound.aura_stack',
+                'necrosis.aura_up',
                 'runic_power.deficit',
             },
             simc_line = 'actions.standard+=/clawing_shadows,if=buff.necrosis.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
@@ -1347,31 +1524,31 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'scourge_strike',
             condition = 'buff.unholy_strength.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((unholy_strength.spell_react) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((unholy_strength.aura_up) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             simc_line = 'actions.standard+=/scourge_strike,if=buff.unholy_strength.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
         },
         {
             action = 'clawing_shadows',
             condition = 'buff.unholy_strength.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((unholy_strength.spell_react) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((unholy_strength.aura_up) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'runic_power.deficit',
-                'unholy_strength.spell_react',
+                'unholy_strength.aura_up',
             },
             simc_line = 'actions.standard+=/clawing_shadows,if=buff.unholy_strength.react&debuff.festering_wound.stack>=1&runic_power.deficit>15',
         },
         {
             action = 'scourge_strike',
             condition = 'rune>=2&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'rune.curr',
                 'runic_power.deficit',
             },
@@ -1380,9 +1557,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'clawing_shadows',
             condition = 'rune>=2&debuff.festering_wound.stack>=1&runic_power.deficit>15',
-            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.spell_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
+            condition_converted = '((((rune.curr_as_number) >= (2))) and (((((festering_wound.aura_stack_as_number) >= (1))) and (((runic_power.deficit_as_number) > (15))))))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
                 'rune.curr',
                 'runic_power.deficit',
             },
@@ -1434,21 +1611,27 @@ internal.actions['legion-dev::deathknight::unholy'] = {
     },
     valkyr = {
         {
+            action = 'death_coil',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.valkyr=death_coil',
+        },
+        {
             action = 'apocalypse',
             condition = 'debuff.festering_wound.stack=8',
-            condition_converted = '((festering_wound.spell_stack) == (8))',
+            condition_converted = '((festering_wound.aura_stack) == (8))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.valkyr+=/apocalypse,if=debuff.festering_wound.stack=8',
         },
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<8&cooldown.apocalypse.remains<5',
-            condition_converted = '((((festering_wound.spell_stack_as_number) < (8))) and (((apocalypse.cooldown_remains_as_number) < (5))))',
+            condition_converted = '((((festering_wound.aura_stack_as_number) < (8))) and (((apocalypse.cooldown_remains_as_number) < (5))))',
             condition_keywords = {
                 'apocalypse.cooldown_remains',
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.valkyr+=/festering_strike,if=debuff.festering_wound.stack<8&cooldown.apocalypse.remains<5',
         },
@@ -1465,9 +1648,9 @@ internal.actions['legion-dev::deathknight::unholy'] = {
         {
             action = 'festering_strike',
             condition = 'debuff.festering_wound.stack<=3',
-            condition_converted = '((festering_wound.spell_stack_as_number) <= (3))',
+            condition_converted = '((festering_wound.aura_stack_as_number) <= (3))',
             condition_keywords = {
-                'festering_wound.spell_stack',
+                'festering_wound.aura_stack',
             },
             simc_line = 'actions.valkyr+=/festering_strike,if=debuff.festering_wound.stack<=3',
         },
@@ -1496,7 +1679,7 @@ internal.actions['legion-dev::deathknight::unholy'] = {
 -- keywords: placeholder::deathknight::blood
 ---- active_enemies
 ---- blood_plague.aura_down
----- bone_shield.spell_stack
+---- bone_shield.aura_stack
 ---- crimson_scourge.aura_up
 ---- health.max
 ---- incoming_damage_over_3000
@@ -1534,18 +1717,18 @@ internal.actions['placeholder::deathknight::blood'] = {
         {
             action = 'marrowrend',
             condition = 'buff.bone_shield.stack<1',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (1))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (1))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.aoe+=/marrowrend,if=buff.bone_shield.stack<1',
         },
         {
             action = 'blood_boil',
             condition = 'buff.bone_shield.stack<1',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (1))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (1))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.aoe+=/blood_boil,if=buff.bone_shield.stack<1',
         },
@@ -1567,6 +1750,18 @@ internal.actions['placeholder::deathknight::blood'] = {
                 'incoming_damage_over_3000',
             },
             simc_line = 'actions.aoe+=/death_strike,if=incoming_damage_3s>health.max*0.25',
+        },
+        {
+            action = 'death_and_decay',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/death_and_decay',
+        },
+        {
+            action = 'heart_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/heart_strike',
         },
     },
     cleave = {
@@ -1600,18 +1795,18 @@ internal.actions['placeholder::deathknight::blood'] = {
         {
             action = 'marrowrend',
             condition = 'buff.bone_shield.stack<5',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (5))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (5))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.cleave+=/marrowrend,if=buff.bone_shield.stack<5',
         },
         {
             action = 'blood_boil',
             condition = 'buff.bone_shield.stack<5',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (5))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (5))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.cleave+=/blood_boil,if=buff.bone_shield.stack<5',
         },
@@ -1634,8 +1829,26 @@ internal.actions['placeholder::deathknight::blood'] = {
             },
             simc_line = 'actions.cleave+=/death_strike,if=incoming_damage_3s>health.max*0.25',
         },
+        {
+            action = 'death_and_decay',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/death_and_decay',
+        },
+        {
+            action = 'heart_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/heart_strike',
+        },
     },
     default = {
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
         {
             action = 'call_action_list',
             condition = 'active_enemies=1',
@@ -1698,9 +1911,9 @@ internal.actions['placeholder::deathknight::blood'] = {
         {
             action = 'marrowrend',
             condition = 'buff.bone_shield.stack<5',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (5))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (5))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.st+=/marrowrend,if=buff.bone_shield.stack<5',
         },
@@ -1726,11 +1939,23 @@ internal.actions['placeholder::deathknight::blood'] = {
         {
             action = 'blood_boil',
             condition = 'buff.bone_shield.stack<5',
-            condition_converted = '((bone_shield.spell_stack_as_number) < (5))',
+            condition_converted = '((bone_shield.aura_stack_as_number) < (5))',
             condition_keywords = {
-                'bone_shield.spell_stack',
+                'bone_shield.aura_stack',
             },
             simc_line = 'actions.st+=/blood_boil,if=buff.bone_shield.stack<5',
+        },
+        {
+            action = 'death_and_decay',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/death_and_decay',
+        },
+        {
+            action = 'heart_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/heart_strike',
         },
     },
 }

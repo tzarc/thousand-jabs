@@ -3,10 +3,11 @@ internal.actions = internal.actions or {}
 
 -- keywords: legion-dev::rogue::assassination
 ---- active_dot.rupture
+---- adds.raid_event_in
 ---- agonizing_poison.aura_remains
 ---- agonizing_poison.spell_duration
 ---- agonizing_poison.talent_selected
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- combo_points
 ---- combo_points.deficit
 ---- cp_max_spend
@@ -21,19 +22,18 @@ internal.actions = internal.actions or {}
 ---- garrote.spell_refreshable
 ---- nightstalker.talent_selected
 ---- prev_gcd.rupture
----- raid_event.adds.in
 ---- refreshable
 ---- rupture.aura_remains
+---- rupture.aura_up
 ---- rupture.spell_exsanguinated
 ---- rupture.spell_refreshable
----- rupture.spell_ticking
 ---- spell_targets
 ---- stealthed
 ---- subterfuge.talent_selected
 ---- target.time_to_die
----- the_dreadlords_deceit.spell_stack
+---- the_dreadlords_deceit.aura_stack
 ---- time_since_combat_start
----- urge_to_kill.artifact_enabled
+---- urge_to_kill.artifact_selected
 ---- vendetta.aura_up
 ---- vendetta.cooldown_remains
 
@@ -42,9 +42,9 @@ internal.actions['legion-dev::rogue::assassination'] = {
         {
             action = 'potion',
             condition = 'buff.bloodlust.react|target.time_to_die<=25|debuff.vendetta.up',
-            condition_converted = '((bloodlust.spell_react) or (((((target.time_to_die_as_number) <= (25))) or (vendetta.aura_up))))',
+            condition_converted = '((bloodlust.aura_up) or (((((target.time_to_die_as_number) <= (25))) or (vendetta.aura_up))))',
             condition_keywords = {
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'target.time_to_die',
                 'vendetta.aura_up',
             },
@@ -93,22 +93,22 @@ internal.actions['legion-dev::rogue::assassination'] = {
         {
             action = 'vendetta',
             condition = 'talent.exsanguinate.enabled&cooldown.exsanguinate.remains<5&dot.rupture.ticking',
-            condition_converted = '((exsanguinate.talent_selected) and (((((exsanguinate.cooldown_remains_as_number) < (5))) and (rupture.spell_ticking))))',
+            condition_converted = '((exsanguinate.talent_selected) and (((((exsanguinate.cooldown_remains_as_number) < (5))) and (rupture.aura_up))))',
             condition_keywords = {
                 'exsanguinate.cooldown_remains',
                 'exsanguinate.talent_selected',
-                'rupture.spell_ticking',
+                'rupture.aura_up',
             },
             simc_line = 'actions.cds+=/vendetta,if=talent.exsanguinate.enabled&cooldown.exsanguinate.remains<5&dot.rupture.ticking',
         },
         {
             action = 'vendetta',
             condition = '!talent.exsanguinate.enabled&(!artifact.urge_to_kill.enabled|energy.deficit>=70)',
-            condition_converted = '(((not (exsanguinate.talent_selected))) and (((((not urge_to_kill.artifact_enabled)) or (((energy.deficit_as_number) >= (70)))))))',
+            condition_converted = '(((not (exsanguinate.talent_selected))) and (((((not (urge_to_kill.artifact_selected))) or (((energy.deficit_as_number) >= (70)))))))',
             condition_keywords = {
                 'energy.deficit',
                 'exsanguinate.talent_selected',
-                'urge_to_kill.artifact_enabled',
+                'urge_to_kill.artifact_selected',
             },
             simc_line = 'actions.cds+=/vendetta,if=!talent.exsanguinate.enabled&(!artifact.urge_to_kill.enabled|energy.deficit>=70)',
         },
@@ -175,6 +175,8 @@ internal.actions['legion-dev::rogue::assassination'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cds',
             simc_line = 'actions+=/call_action_list,name=cds',
         },
@@ -218,6 +220,8 @@ internal.actions['legion-dev::rogue::assassination'] = {
         },
         {
             action = 'pool_resource',
+            condition = 'true',
+            condition_converted = 'true',
             for_next = '1',
             simc_line = 'actions+=/pool_resource,for_next=1',
         },
@@ -254,13 +258,13 @@ internal.actions['legion-dev::rogue::assassination'] = {
         {
             action = 'rupture',
             condition = 'talent.exsanguinate.enabled&!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2)',
-            condition_converted = '((exsanguinate.talent_selected) and ((((rupture.aura_remains == 0)) and ((((((time_since_combat_start_as_number) > (10))) or (((combo_points_as_number) >= ((2 + (urge_to_kill.artifact_enabled_as_number * 2)))))))))))',
+            condition_converted = '((exsanguinate.talent_selected) and ((((not (rupture.aura_up))) and ((((((time_since_combat_start_as_number) > (10))) or (((combo_points_as_number) >= ((2 + (urge_to_kill.artifact_selected_as_number * 2)))))))))))',
             condition_keywords = {
                 'combo_points',
                 'exsanguinate.talent_selected',
-                'rupture.aura_remains',
+                'rupture.aura_up',
                 'time_since_combat_start',
-                'urge_to_kill.artifact_enabled',
+                'urge_to_kill.artifact_selected',
             },
             simc_line = 'actions+=/rupture,if=talent.exsanguinate.enabled&!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2)',
         },
@@ -276,10 +280,10 @@ internal.actions['legion-dev::rogue::assassination'] = {
         {
             action = 'hemorrhage',
             condition = 'refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
-            condition_converted = '((refreshable) and (((rupture.spell_ticking) and (((spell_targets_as_number) <= (3))))))',
+            condition_converted = '((refreshable) and (((rupture.aura_up) and (((spell_targets_as_number) <= (3))))))',
             condition_keywords = {
                 'refreshable',
-                'rupture.spell_ticking',
+                'rupture.aura_up',
                 'spell_targets',
             },
             simc_line = 'actions+=/hemorrhage,target_if=max:dot.rupture.duration,if=refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
@@ -299,10 +303,10 @@ internal.actions['legion-dev::rogue::assassination'] = {
         {
             action = 'fan_of_knives',
             condition = 'spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
-            condition_converted = '((((spell_targets_as_number) >= (3))) or (((the_dreadlords_deceit.spell_stack_as_number) >= (29))))',
+            condition_converted = '((((spell_targets_as_number) >= (3))) or (((the_dreadlords_deceit.aura_stack_as_number) >= (29))))',
             condition_keywords = {
                 'spell_targets',
-                'the_dreadlords_deceit.spell_stack',
+                'the_dreadlords_deceit.aura_stack',
             },
             simc_line = 'actions+=/fan_of_knives,if=spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
         },
@@ -319,34 +323,66 @@ internal.actions['legion-dev::rogue::assassination'] = {
             cycle_targets = '1',
             simc_line = 'actions+=/mutilate,cycle_targets=1,if=(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)',
         },
+        {
+            action = 'mutilate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/mutilate',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'flask_of_the_seventh_demon',
             simc_line = 'actions.precombat=flask,name=flask_of_the_seventh_demon',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'seedbattered_fish_plate',
             simc_line = 'actions.precombat+=/food,name=seedbattered_fish_plate',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'apply_poison',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/apply_poison',
+        },
+        {
+            action = 'stealth',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/stealth',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
         {
             action = 'marked_for_death',
             condition = 'raid_event.adds.in>40',
-            condition_converted = '((raid_event.adds.in_as_number) > (40))',
+            condition_converted = '((adds.raid_event_in_as_number) > (40))',
             condition_keywords = {
-                'raid_event.adds.in',
+                'adds.raid_event_in',
             },
             simc_line = 'actions.precombat+=/marked_for_death,if=raid_event.adds.in>40',
         },
@@ -355,13 +391,14 @@ internal.actions['legion-dev::rogue::assassination'] = {
 
 
 -- keywords: legion-dev::rogue::outlaw
+---- adds.raid_event_in
 ---- adrenaline_rush.aura_up
----- alacrity.spell_stack
+---- alacrity.aura_stack
 ---- alacrity.talent_selected
 ---- anticipation.talent_selected
 ---- blade_flurry.aura_up
 ---- blade_flurry.cooldown_up
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- blunderbuss.aura_up
 ---- broadsides.aura_up
 ---- combo_points
@@ -388,7 +425,6 @@ internal.actions['legion-dev::rogue::assassination'] = {
 ---- jolly_roger.aura_up
 ---- opportunity.aura_up
 ---- quick_draw.talent_selected
----- raid_event.adds.in
 ---- roll_the_bones.aura_remains
 ---- rtb_buffs
 ---- rtb_list.any
@@ -479,14 +515,26 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         {
             action = 'potion',
             condition = 'buff.bloodlust.react|target.time_to_die<=25|buff.adrenaline_rush.up',
-            condition_converted = '((bloodlust.spell_react) or (((((target.time_to_die_as_number) <= (25))) or (adrenaline_rush.aura_up))))',
+            condition_converted = '((bloodlust.aura_up) or (((((target.time_to_die_as_number) <= (25))) or (adrenaline_rush.aura_up))))',
             condition_keywords = {
                 'adrenaline_rush.aura_up',
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'target.time_to_die',
             },
             name = 'old_war',
             simc_line = 'actions.cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|buff.adrenaline_rush.up',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cds+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cds+=/berserking',
         },
         {
             action = 'arcane_torrent',
@@ -519,12 +567,12 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         {
             action = 'marked_for_death',
             condition = 'target.time_to_die<combo_points.deficit|((raid_event.adds.in>40|buff.true_bearing.remains>15)&combo_points.deficit>=4+talent.deeper_strategem.enabled+talent.anticipation.enabled)',
-            condition_converted = '((((target.time_to_die_as_number) < (combo_points.deficit_as_number))) or (((((((((raid_event.adds.in_as_number) > (40))) or (((true_bearing.aura_remains_as_number) > (15)))))) and (((combo_points.deficit_as_number) >= ((4 + deeper_strategem.talent_selected_as_number + anticipation.talent_selected_as_number))))))))',
+            condition_converted = '((((target.time_to_die_as_number) < (combo_points.deficit_as_number))) or (((((((((adds.raid_event_in_as_number) > (40))) or (((true_bearing.aura_remains_as_number) > (15)))))) and (((combo_points.deficit_as_number) >= ((4 + deeper_strategem.talent_selected_as_number + anticipation.talent_selected_as_number))))))))',
             condition_keywords = {
+                'adds.raid_event_in',
                 'anticipation.talent_selected',
                 'combo_points.deficit',
                 'deeper_strategem.talent_selected',
-                'raid_event.adds.in',
                 'target.time_to_die',
                 'true_bearing.aura_remains',
             },
@@ -556,6 +604,8 @@ internal.actions['legion-dev::rogue::outlaw'] = {
     default = {
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'rtb_reroll',
             simc_line = 'actions=variable,name=rtb_reroll,value=!talent.slice_and_dice.enabled&(rtb_buffs<=1&!rtb_list.any.6&((!buff.curse_of_the_dreadblades.up&!buff.adrenaline_rush.up)|!rtb_list.any.5))',
             value = '!talent.slice_and_dice.enabled&(rtb_buffs<=1&!rtb_list.any.6&((!buff.curse_of_the_dreadblades.up&!buff.adrenaline_rush.up)|!rtb_list.any.5))',
@@ -570,12 +620,14 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'ss_useable_noreroll',
             simc_line = 'actions+=/variable,name=ss_useable_noreroll,value=(combo_points<5+talent.deeper_stratagem.enabled-(buff.broadsides.up|buff.jolly_roger.up)-(talent.alacrity.enabled&buff.alacrity.stack<=4))',
             value = '(combo_points<5+talent.deeper_stratagem.enabled-(buff.broadsides.up|buff.jolly_roger.up)-(talent.alacrity.enabled&buff.alacrity.stack<=4))',
-            value_converted = '(((combo_points_as_number) < ((5 + deeper_stratagem.talent_selected_as_number - (((broadsides.aura_up) or (jolly_roger.aura_up))) - (((alacrity.talent_selected) and (((alacrity.spell_stack_as_number) <= (4)))))))))',
+            value_converted = '(((combo_points_as_number) < ((5 + deeper_stratagem.talent_selected_as_number - (((broadsides.aura_up) or (jolly_roger.aura_up))) - (((alacrity.talent_selected) and (((alacrity.aura_stack_as_number) <= (4)))))))))',
             value_keywords = {
-                'alacrity.spell_stack',
+                'alacrity.aura_stack',
                 'alacrity.talent_selected',
                 'broadsides.aura_up',
                 'combo_points',
@@ -585,6 +637,8 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'ss_useable',
             simc_line = 'actions+=/variable,name=ss_useable,value=(talent.anticipation.enabled&combo_points<4)|(!talent.anticipation.enabled&((variable.rtb_reroll&combo_points<4+talent.deeper_stratagem.enabled)|(!variable.rtb_reroll&variable.ss_useable_noreroll)))',
             value = '(talent.anticipation.enabled&combo_points<4)|(!talent.anticipation.enabled&((variable.rtb_reroll&combo_points<4+talent.deeper_stratagem.enabled)|(!variable.rtb_reroll&variable.ss_useable_noreroll)))',
@@ -599,11 +653,15 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'bf',
             simc_line = 'actions+=/call_action_list,name=bf',
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cds',
             simc_line = 'actions+=/call_action_list,name=cds',
         },
@@ -665,6 +723,8 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'build',
             simc_line = 'actions+=/call_action_list,name=build',
         },
@@ -715,30 +775,50 @@ internal.actions['legion-dev::rogue::outlaw'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'flask_of_the_seventh_demon',
             simc_line = 'actions.precombat=flask,name=flask_of_the_seventh_demon',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'seedbattered_fish_plate',
             simc_line = 'actions.precombat+=/food,name=seedbattered_fish_plate',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'stealth',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/stealth',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
         {
             action = 'marked_for_death',
             condition = 'raid_event.adds.in>40',
-            condition_converted = '((raid_event.adds.in_as_number) > (40))',
+            condition_converted = '((adds.raid_event_in_as_number) > (40))',
             condition_keywords = {
-                'raid_event.adds.in',
+                'adds.raid_event_in',
             },
             simc_line = 'actions.precombat+=/marked_for_death,if=raid_event.adds.in>40',
         },
@@ -755,6 +835,8 @@ internal.actions['legion-dev::rogue::outlaw'] = {
     stealth = {
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'stealth_condition',
             simc_line = 'actions.stealth=variable,name=stealth_condition,value=(combo_points.deficit>=2+2*(talent.ghostly_strike.enabled&!debuff.ghostly_strike.up)+buff.broadsides.up&energy>60&!buff.jolly_roger.up&!buff.hidden_blade.up&!buff.curse_of_the_dreadblades.up)',
             value = '(combo_points.deficit>=2+2*(talent.ghostly_strike.enabled&!debuff.ghostly_strike.up)+buff.broadsides.up&energy>60&!buff.jolly_roger.up&!buff.hidden_blade.up&!buff.curse_of_the_dreadblades.up)',
@@ -769,6 +851,12 @@ internal.actions['legion-dev::rogue::outlaw'] = {
                 'hidden_blade.aura_up',
                 'jolly_roger.aura_up',
             },
+        },
+        {
+            action = 'ambush',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.stealth+=/ambush',
         },
         {
             action = 'vanish',
@@ -793,8 +881,9 @@ internal.actions['legion-dev::rogue::outlaw'] = {
 
 
 -- keywords: legion-dev::rogue::subtlety
+---- adds.raid_event_in
 ---- anticipation.talent_selected
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- combo_points
 ---- combo_points.deficit
 ---- deeper_strategem.talent_selected
@@ -810,7 +899,6 @@ internal.actions['legion-dev::rogue::outlaw'] = {
 ---- nightblade.aura_remains
 ---- nightblade.spell_tick_time
 ---- premeditation.talent_selected
----- raid_event.adds.in
 ---- refreshable
 ---- shadow_blades.aura_up
 ---- shadow_dance.aura_up
@@ -824,7 +912,7 @@ internal.actions['legion-dev::rogue::outlaw'] = {
 ---- symbols_of_death.spell_duration
 ---- target.distance
 ---- target.time_to_die
----- the_dreadlords_deceit.spell_stack
+---- the_dreadlords_deceit.aura_stack
 ---- time_since_combat_start
 ---- vanish.cooldown_up
 ---- variable.ed_threshold
@@ -842,14 +930,26 @@ internal.actions['legion-dev::rogue::subtlety'] = {
             },
             simc_line = 'actions.build=shuriken_storm,if=spell_targets.shuriken_storm>=2',
         },
+        {
+            action = 'gloomblade',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.build+=/gloomblade',
+        },
+        {
+            action = 'backstab',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.build+=/backstab',
+        },
     },
     cds = {
         {
             action = 'potion',
             condition = 'buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up',
-            condition_converted = '((bloodlust.spell_react) or (((((target.time_to_die_as_number) <= (25))) or (shadow_blades.aura_up))))',
+            condition_converted = '((bloodlust.aura_up) or (((((target.time_to_die_as_number) <= (25))) or (shadow_blades.aura_up))))',
             condition_keywords = {
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'shadow_blades.aura_up',
                 'target.time_to_die',
             },
@@ -911,12 +1011,12 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         {
             action = 'marked_for_death',
             condition = 'target.time_to_die<combo_points.deficit|(raid_event.adds.in>40&combo_points.deficit>=4+talent.deeper_strategem.enabled+talent.anticipation.enabled)',
-            condition_converted = '((((target.time_to_die_as_number) < (combo_points.deficit_as_number))) or ((((((raid_event.adds.in_as_number) > (40))) and (((combo_points.deficit_as_number) >= ((4 + deeper_strategem.talent_selected_as_number + anticipation.talent_selected_as_number))))))))',
+            condition_converted = '((((target.time_to_die_as_number) < (combo_points.deficit_as_number))) or ((((((adds.raid_event_in_as_number) > (40))) and (((combo_points.deficit_as_number) >= ((4 + deeper_strategem.talent_selected_as_number + anticipation.talent_selected_as_number))))))))',
             condition_keywords = {
+                'adds.raid_event_in',
                 'anticipation.talent_selected',
                 'combo_points.deficit',
                 'deeper_strategem.talent_selected',
-                'raid_event.adds.in',
                 'target.time_to_die',
             },
             simc_line = 'actions.cds+=/marked_for_death,target_if=min:target.time_to_die,if=target.time_to_die<combo_points.deficit|(raid_event.adds.in>40&combo_points.deficit>=4+talent.deeper_strategem.enabled+talent.anticipation.enabled)',
@@ -926,6 +1026,8 @@ internal.actions['legion-dev::rogue::subtlety'] = {
     default = {
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'ssw_er',
             simc_line = 'actions=variable,name=ssw_er,value=equipped.shadow_satyrs_walk*(10+floor(target.distance*0.5))',
             value = 'equipped.shadow_satyrs_walk*(10+floor(target.distance*0.5))',
@@ -938,6 +1040,8 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'ed_threshold',
             simc_line = 'actions+=/variable,name=ed_threshold,value=energy.deficit<=(20+talent.vigor.enabled*35+talent.master_of_shadows.enabled*25+variable.ssw_er)',
             value = 'energy.deficit<=(20+talent.vigor.enabled*35+talent.master_of_shadows.enabled*25+variable.ssw_er)',
@@ -951,6 +1055,8 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cds',
             simc_line = 'actions+=/call_action_list,name=cds',
         },
@@ -1039,36 +1145,74 @@ internal.actions['legion-dev::rogue::subtlety'] = {
             simc_line = 'actions.finish+=/nightblade,target_if=max:target.time_to_die,if=target.time_to_die>8&((refreshable&(!finality|buff.finality_nightblade.up))|remains<tick_time)',
             target_if = 'max:target.time_to_die',
         },
+        {
+            action = 'death_from_above',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.finish+=/death_from_above',
+        },
+        {
+            action = 'eviscerate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.finish+=/eviscerate',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'flask_of_the_seventh_demon',
             simc_line = 'actions.precombat=flask,name=flask_of_the_seventh_demon',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'defiled',
             simc_line = 'actions.precombat+=/augmentation,name=defiled',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'seedbattered_fish_plate',
             simc_line = 'actions.precombat+=/food,name=seedbattered_fish_plate',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
+            action = 'stealth',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/stealth',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
         {
             action = 'marked_for_death',
             condition = 'raid_event.adds.in>40',
-            condition_converted = '((raid_event.adds.in_as_number) > (40))',
+            condition_converted = '((adds.raid_event_in_as_number) > (40))',
             condition_keywords = {
-                'raid_event.adds.in',
+                'adds.raid_event_in',
             },
             simc_line = 'actions.precombat+=/marked_for_death,if=raid_event.adds.in>40',
+        },
+        {
+            action = 'symbols_of_death',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/symbols_of_death',
         },
     },
     stealthed = {
@@ -1099,16 +1243,22 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         {
             action = 'shuriken_storm',
             condition = 'buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk)|buff.the_dreadlords_deceit.stack>=29)',
-            condition_converted = '((shadowmeld.aura_down) and (((((((((combo_points.deficit_as_number) >= (3))) and (((spell_targets_as_number) >= ((2 + premeditation.talent_selected_as_number + equipped.shadow_satyrs_walk_as_number))))))) or (((the_dreadlords_deceit.spell_stack_as_number) >= (29)))))))',
+            condition_converted = '((shadowmeld.aura_down) and (((((((((combo_points.deficit_as_number) >= (3))) and (((spell_targets_as_number) >= ((2 + premeditation.talent_selected_as_number + equipped.shadow_satyrs_walk_as_number))))))) or (((the_dreadlords_deceit.aura_stack_as_number) >= (29)))))))',
             condition_keywords = {
                 'combo_points.deficit',
                 'equipped.shadow_satyrs_walk',
                 'premeditation.talent_selected',
                 'shadowmeld.aura_down',
                 'spell_targets',
-                'the_dreadlords_deceit.spell_stack',
+                'the_dreadlords_deceit.aura_stack',
             },
             simc_line = 'actions.stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk)|buff.the_dreadlords_deceit.stack>=29)',
+        },
+        {
+            action = 'shadowstrike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.stealthed+=/shadowstrike',
         },
     },
 }

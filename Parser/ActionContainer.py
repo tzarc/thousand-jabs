@@ -46,11 +46,15 @@ class ActionContainer():
                     if isinstance(action[key], str):
                         s = s + ("  "*3) + "{key} = '{value}',\n".format(key = key, value = action[key])
                     elif isinstance(action[key], list):
-                        s = s + ("  "*3) + "{key} = {{\n".format(key = key)
+                        actionKeywords = set()
                         for kw in sorted(set(action[key])):
                             if not kw in skippedKeywords:
+                                actionKeywords.add(kw)
+                        if len(actionKeywords) > 0:
+                            s = s + ("  "*3) + "{key} = {{\n".format(key = key)
+                            for kw in sorted(actionKeywords):
                                 s = s + ("  "*4) + "'{value}',\n".format(value = kw)
-                        s = s + ("  "*3) + "},\n"
+                            s = s + ("  "*3) + "},\n"
                     else:
                         s = s + ("  "*3) + "{key} = nil, -- not a string or a table\n".format(key = key)
                 s = s + ("  "*2) + "},\n"

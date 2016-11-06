@@ -7,6 +7,12 @@ internal.actions = internal.actions or {}
 internal.actions['legion-dev::monk::brewmaster'] = {
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
             action = 'call_action_list',
             condition = 'active_enemies<3',
             condition_converted = '((active_enemies_as_number) < (3))',
@@ -20,18 +26,104 @@ internal.actions['legion-dev::monk::brewmaster'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=greater_draenic_agility_flask',
             type = 'greater_draenic_agility_flask',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=sleeper_sushi',
             type = 'sleeper_sushi',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'draenic_agility',
             simc_line = 'actions.precombat+=/potion,name=draenic_agility',
+        },
+        {
+            action = 'diffuse_magic',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/diffuse_magic',
+        },
+        {
+            action = 'dampen_harm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/dampen_harm',
+        },
+        {
+            action = 'chi_burst',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/chi_burst',
+        },
+        {
+            action = 'chi_wave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/chi_wave',
+        },
+    },
+    st = {
+        {
+            action = 'keg_smash',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st=keg_smash',
+        },
+        {
+            action = 'blackout_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/blackout_strike',
+        },
+        {
+            action = 'exploding_keg',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/exploding_keg',
+        },
+        {
+            action = 'chi_burst',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/chi_burst',
+        },
+        {
+            action = 'chi_wave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/chi_wave',
+        },
+        {
+            action = 'rushing_jade_wind',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/rushing_jade_wind',
+        },
+        {
+            action = 'breath_of_fire',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/breath_of_fire',
+        },
+        {
+            action = 'tiger_palm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/tiger_palm',
         },
     },
 }
@@ -39,9 +131,9 @@ internal.actions['legion-dev::monk::brewmaster'] = {
 
 -- keywords: legion-dev::monk::windwalker
 ---- active_enemies
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- bok_proc.aura_up
----- casting.spell_react
+---- casting.aura_up
 ---- chi.curr
 ---- chi.max
 ---- energy.curr
@@ -49,7 +141,7 @@ internal.actions['legion-dev::monk::brewmaster'] = {
 ---- energy.time_to_max
 ---- equipped
 ---- fists_of_fury.cooldown_remains
----- gale_burst.artifact_enabled
+---- gale_burst.artifact_selected
 ---- prev_gcd.blackout_kick
 ---- prev_gcd.rushing_jade_wind
 ---- prev_gcd.spinning_crane_kick
@@ -60,7 +152,7 @@ internal.actions['legion-dev::monk::brewmaster'] = {
 ---- serenity.cooldown_remains
 ---- serenity.talent_selected
 ---- storm_earth_and_fire.aura_up
----- strike_of_the_windlord.artifact_enabled
+---- strike_of_the_windlord.artifact_selected
 ---- strike_of_the_windlord.cooldown_remains
 ---- target.time_to_die
 ---- trinket.proc.agility.react
@@ -68,12 +160,30 @@ internal.actions['legion-dev::monk::brewmaster'] = {
 internal.actions['legion-dev::monk::windwalker'] = {
     cd = {
         {
+            action = 'invoke_xuen',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cd=invoke_xuen',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cd+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cd+=/berserking',
+        },
+        {
             action = 'touch_of_death',
             condition = '!artifact.gale_burst.enabled&equipped.137057&!prev_gcd.touch_of_death',
-            condition_converted = '(((not gale_burst.artifact_enabled)) and (((equipped[137057]) and ((not (prev_gcd.touch_of_death))))))',
+            condition_converted = '(((not (gale_burst.artifact_selected))) and (((equipped[137057]) and ((not (prev_gcd.touch_of_death))))))',
             condition_keywords = {
                 'equipped',
-                'gale_burst.artifact_enabled',
+                'gale_burst.artifact_selected',
                 'prev_gcd.touch_of_death',
             },
             cycle_targets = '1',
@@ -83,21 +193,21 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'touch_of_death',
             condition = '!artifact.gale_burst.enabled&!equipped.137057',
-            condition_converted = '(((not gale_burst.artifact_enabled)) and ((not (equipped[137057]))))',
+            condition_converted = '(((not (gale_burst.artifact_selected))) and ((not (equipped[137057]))))',
             condition_keywords = {
                 'equipped',
-                'gale_burst.artifact_enabled',
+                'gale_burst.artifact_selected',
             },
             simc_line = 'actions.cd+=/touch_of_death,if=!artifact.gale_burst.enabled&!equipped.137057',
         },
         {
             action = 'touch_of_death',
             condition = 'artifact.gale_burst.enabled&equipped.137057&cooldown.strike_of_the_windlord.remains<8&cooldown.fists_of_fury.remains<=4&cooldown.rising_sun_kick.remains<7&!prev_gcd.touch_of_death',
-            condition_converted = '((gale_burst.artifact_enabled) and (((equipped[137057]) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (8))) and (((((fists_of_fury.cooldown_remains_as_number) <= (4))) and (((((rising_sun_kick.cooldown_remains_as_number) < (7))) and ((not (prev_gcd.touch_of_death))))))))))))',
+            condition_converted = '((gale_burst.artifact_selected) and (((equipped[137057]) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (8))) and (((((fists_of_fury.cooldown_remains_as_number) <= (4))) and (((((rising_sun_kick.cooldown_remains_as_number) < (7))) and ((not (prev_gcd.touch_of_death))))))))))))',
             condition_keywords = {
                 'equipped',
                 'fists_of_fury.cooldown_remains',
-                'gale_burst.artifact_enabled',
+                'gale_burst.artifact_selected',
                 'prev_gcd.touch_of_death',
                 'rising_sun_kick.cooldown_remains',
                 'strike_of_the_windlord.cooldown_remains',
@@ -109,11 +219,11 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'touch_of_death',
             condition = 'artifact.gale_burst.enabled&!equipped.137057&cooldown.strike_of_the_windlord.remains<8&cooldown.fists_of_fury.remains<=4&cooldown.rising_sun_kick.remains<7',
-            condition_converted = '((gale_burst.artifact_enabled) and ((((not (equipped[137057]))) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (8))) and (((((fists_of_fury.cooldown_remains_as_number) <= (4))) and (((rising_sun_kick.cooldown_remains_as_number) < (7))))))))))',
+            condition_converted = '((gale_burst.artifact_selected) and ((((not (equipped[137057]))) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (8))) and (((((fists_of_fury.cooldown_remains_as_number) <= (4))) and (((rising_sun_kick.cooldown_remains_as_number) < (7))))))))))',
             condition_keywords = {
                 'equipped',
                 'fists_of_fury.cooldown_remains',
-                'gale_burst.artifact_enabled',
+                'gale_burst.artifact_selected',
                 'rising_sun_kick.cooldown_remains',
                 'strike_of_the_windlord.cooldown_remains',
             },
@@ -122,20 +232,26 @@ internal.actions['legion-dev::monk::windwalker'] = {
     },
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
             action = 'spear_hand_strike',
             condition = 'target.debuff.casting.react',
-            condition_converted = 'casting.spell_react',
+            condition_converted = 'casting.aura_up',
             condition_keywords = {
-                'casting.spell_react',
+                'casting.aura_up',
             },
             simc_line = 'actions+=/spear_hand_strike,if=target.debuff.casting.react',
         },
         {
             action = 'potion',
             condition = 'buff.serenity.up|buff.storm_earth_and_fire.up|(!talent.serenity.enabled&trinket.proc.agility.react)|buff.bloodlust.react|target.time_to_die<=60',
-            condition_converted = '((serenity.aura_up) or (((storm_earth_and_fire.aura_up) or (((((((not (serenity.talent_selected))) and (trinket.proc.agility.react)))) or (((bloodlust.spell_react) or (((target.time_to_die_as_number) <= (60))))))))))',
+            condition_converted = '((serenity.aura_up) or (((storm_earth_and_fire.aura_up) or (((((((not (serenity.talent_selected))) and (trinket.proc.agility.react)))) or (((bloodlust.aura_up) or (((target.time_to_die_as_number) <= (60))))))))))',
             condition_keywords = {
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'serenity.aura_up',
                 'serenity.talent_selected',
                 'storm_earth_and_fire.aura_up',
@@ -148,13 +264,13 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'call_action_list',
             condition = '(talent.serenity.enabled&cooldown.serenity.remains<=0)&((artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.remains<=14&cooldown.rising_sun_kick.remains<=4)|buff.serenity.up)',
-            condition_converted = '(((((serenity.talent_selected) and (((serenity.cooldown_remains_as_number) <= (0)))))) and (((((((strike_of_the_windlord.artifact_enabled) and (((((strike_of_the_windlord.cooldown_remains_as_number) <= (14))) and (((rising_sun_kick.cooldown_remains_as_number) <= (4)))))))) or (serenity.aura_up)))))',
+            condition_converted = '(((((serenity.talent_selected) and (((serenity.cooldown_remains_as_number) <= (0)))))) and (((((((strike_of_the_windlord.artifact_selected) and (((((strike_of_the_windlord.cooldown_remains_as_number) <= (14))) and (((rising_sun_kick.cooldown_remains_as_number) <= (4)))))))) or (serenity.aura_up)))))',
             condition_keywords = {
                 'rising_sun_kick.cooldown_remains',
                 'serenity.aura_up',
                 'serenity.cooldown_remains',
                 'serenity.talent_selected',
-                'strike_of_the_windlord.artifact_enabled',
+                'strike_of_the_windlord.artifact_selected',
                 'strike_of_the_windlord.cooldown_remains',
             },
             name = 'serenity',
@@ -163,13 +279,13 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'call_action_list',
             condition = '!talent.serenity.enabled&((artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.remains<=14&cooldown.fists_of_fury.remains<=6&cooldown.rising_sun_kick.remains<=6)|buff.storm_earth_and_fire.up)',
-            condition_converted = '(((not (serenity.talent_selected))) and (((((((strike_of_the_windlord.artifact_enabled) and (((((strike_of_the_windlord.cooldown_remains_as_number) <= (14))) and (((((fists_of_fury.cooldown_remains_as_number) <= (6))) and (((rising_sun_kick.cooldown_remains_as_number) <= (6)))))))))) or (storm_earth_and_fire.aura_up)))))',
+            condition_converted = '(((not (serenity.talent_selected))) and (((((((strike_of_the_windlord.artifact_selected) and (((((strike_of_the_windlord.cooldown_remains_as_number) <= (14))) and (((((fists_of_fury.cooldown_remains_as_number) <= (6))) and (((rising_sun_kick.cooldown_remains_as_number) <= (6)))))))))) or (storm_earth_and_fire.aura_up)))))',
             condition_keywords = {
                 'fists_of_fury.cooldown_remains',
                 'rising_sun_kick.cooldown_remains',
                 'serenity.talent_selected',
                 'storm_earth_and_fire.aura_up',
-                'strike_of_the_windlord.artifact_enabled',
+                'strike_of_the_windlord.artifact_selected',
                 'strike_of_the_windlord.cooldown_remains',
             },
             name = 'sef',
@@ -178,14 +294,14 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'call_action_list',
             condition = '(talent.serenity.enabled&cooldown.serenity.remains<=0)&(!artifact.strike_of_the_windlord.enabled&cooldown.strike_of_the_windlord.remains<14&cooldown.fists_of_fury.remains<=15&cooldown.rising_sun_kick.remains<7)|buff.serenity.up',
-            condition_converted = '(((((((serenity.talent_selected) and (((serenity.cooldown_remains_as_number) <= (0)))))) and (((((not strike_of_the_windlord.artifact_enabled)) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (14))) and (((((fists_of_fury.cooldown_remains_as_number) <= (15))) and (((rising_sun_kick.cooldown_remains_as_number) < (7)))))))))))) or (serenity.aura_up))',
+            condition_converted = '(((((((serenity.talent_selected) and (((serenity.cooldown_remains_as_number) <= (0)))))) and (((((not (strike_of_the_windlord.artifact_selected))) and (((((strike_of_the_windlord.cooldown_remains_as_number) < (14))) and (((((fists_of_fury.cooldown_remains_as_number) <= (15))) and (((rising_sun_kick.cooldown_remains_as_number) < (7)))))))))))) or (serenity.aura_up))',
             condition_keywords = {
                 'fists_of_fury.cooldown_remains',
                 'rising_sun_kick.cooldown_remains',
                 'serenity.aura_up',
                 'serenity.cooldown_remains',
                 'serenity.talent_selected',
-                'strike_of_the_windlord.artifact_enabled',
+                'strike_of_the_windlord.artifact_selected',
                 'strike_of_the_windlord.cooldown_remains',
             },
             name = 'serenity',
@@ -194,19 +310,21 @@ internal.actions['legion-dev::monk::windwalker'] = {
         {
             action = 'call_action_list',
             condition = '!talent.serenity.enabled&((!artifact.strike_of_the_windlord.enabled&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5)|buff.storm_earth_and_fire.up)',
-            condition_converted = '(((not (serenity.talent_selected))) and ((((((((not strike_of_the_windlord.artifact_enabled)) and (((((fists_of_fury.cooldown_remains_as_number) <= (9))) and (((rising_sun_kick.cooldown_remains_as_number) <= (5)))))))) or (storm_earth_and_fire.aura_up)))))',
+            condition_converted = '(((not (serenity.talent_selected))) and ((((((((not (strike_of_the_windlord.artifact_selected))) and (((((fists_of_fury.cooldown_remains_as_number) <= (9))) and (((rising_sun_kick.cooldown_remains_as_number) <= (5)))))))) or (storm_earth_and_fire.aura_up)))))',
             condition_keywords = {
                 'fists_of_fury.cooldown_remains',
                 'rising_sun_kick.cooldown_remains',
                 'serenity.talent_selected',
                 'storm_earth_and_fire.aura_up',
-                'strike_of_the_windlord.artifact_enabled',
+                'strike_of_the_windlord.artifact_selected',
             },
             name = 'sef',
             simc_line = 'actions+=/call_action_list,name=sef,if=!talent.serenity.enabled&((!artifact.strike_of_the_windlord.enabled&cooldown.fists_of_fury.remains<=9&cooldown.rising_sun_kick.remains<=5)|buff.storm_earth_and_fire.up)',
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'st',
             simc_line = 'actions+=/call_action_list,name=st',
         },
@@ -214,26 +332,46 @@ internal.actions['legion-dev::monk::windwalker'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=fishbrul_special',
             type = 'fishbrul_special',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
     },
     sef = {
+        {
+            action = 'energizing_elixir',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.sef=energizing_elixir',
+        },
         {
             action = 'arcane_torrent',
             condition = 'chi.max-chi>=1&energy.time_to_max>=0.5',
@@ -247,20 +385,50 @@ internal.actions['legion-dev::monk::windwalker'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cd',
             simc_line = 'actions.sef+=/call_action_list,name=cd',
         },
         {
+            action = 'storm_earth_and_fire',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.sef+=/storm_earth_and_fire',
+        },
+        {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'st',
             simc_line = 'actions.sef+=/call_action_list,name=st',
         },
     },
     serenity = {
         {
+            action = 'energizing_elixir',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.serenity=energizing_elixir',
+        },
+        {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cd',
             simc_line = 'actions.serenity+=/call_action_list,name=cd',
+        },
+        {
+            action = 'serenity',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.serenity+=/serenity',
+        },
+        {
+            action = 'strike_of_the_windlord',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.serenity+=/strike_of_the_windlord',
         },
         {
             action = 'rising_sun_kick',
@@ -271,6 +439,12 @@ internal.actions['legion-dev::monk::windwalker'] = {
             },
             cycle_targets = '1',
             simc_line = 'actions.serenity+=/rising_sun_kick,cycle_targets=1,if=active_enemies<3',
+        },
+        {
+            action = 'fists_of_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.serenity+=/fists_of_fury',
         },
         {
             action = 'spinning_crane_kick',
@@ -324,6 +498,8 @@ internal.actions['legion-dev::monk::windwalker'] = {
     st = {
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cd',
             simc_line = 'actions.st=call_action_list,name=cd',
         },
@@ -360,9 +536,23 @@ internal.actions['legion-dev::monk::windwalker'] = {
             simc_line = 'actions.st+=/strike_of_the_windlord,if=talent.serenity.enabled|active_enemies<6',
         },
         {
+            action = 'fists_of_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/fists_of_fury',
+        },
+        {
             action = 'rising_sun_kick',
+            condition = 'true',
+            condition_converted = 'true',
             cycle_targets = '1',
             simc_line = 'actions.st+=/rising_sun_kick,cycle_targets=1',
+        },
+        {
+            action = 'whirling_dragon_punch',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/whirling_dragon_punch',
         },
         {
             action = 'spinning_crane_kick',
@@ -440,6 +630,12 @@ internal.actions['legion-dev::monk::windwalker'] = {
 internal.actions['placeholder::monk::brewmaster'] = {
     aoe = {
         {
+            action = 'keg_smash',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe=keg_smash',
+        },
+        {
             action = 'chi_burst',
             condition = 'talent.chi_burst.enabled',
             condition_converted = 'chi_burst.talent_selected',
@@ -476,6 +672,12 @@ internal.actions['placeholder::monk::brewmaster'] = {
             simc_line = 'actions.aoe+=/tiger_palm,if=energy>65',
         },
         {
+            action = 'blackout_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/blackout_strike',
+        },
+        {
             action = 'chi_wave',
             condition = 'talent.chi_wave.enabled',
             condition_converted = 'chi_wave.talent_selected',
@@ -486,6 +688,12 @@ internal.actions['placeholder::monk::brewmaster'] = {
         },
     },
     default = {
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
         {
             action = 'call_action_list',
             condition = 'active_enemies<3',
@@ -509,6 +717,12 @@ internal.actions['placeholder::monk::brewmaster'] = {
     },
     st = {
         {
+            action = 'keg_smash',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st=keg_smash',
+        },
+        {
             action = 'tiger_palm',
             condition = 'energy>65',
             condition_converted = '((energy.curr_as_number) > (65))',
@@ -516,6 +730,12 @@ internal.actions['placeholder::monk::brewmaster'] = {
                 'energy.curr',
             },
             simc_line = 'actions.st+=/tiger_palm,if=energy>65',
+        },
+        {
+            action = 'blackout_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.st+=/blackout_strike',
         },
         {
             action = 'rushing_jade_wind',

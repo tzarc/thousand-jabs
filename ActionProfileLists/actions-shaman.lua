@@ -13,22 +13,27 @@ internal.actions = internal.actions or {}
 ---- feral_spirit.remains
 ---- flametongue.aura_remains
 ---- frostbrand.aura_remains
----- fury_of_air.aura_remains
----- fury_of_air.spell_ticking
+---- fury_of_air.aura_up
 ---- gcd
 ---- hailstorm.talent_selected
 ---- health.target_percent
----- hot_hand.spell_react
+---- hot_hand.aura_up
 ---- level
 ---- maelstrom
 ---- overcharge.talent_selected
 ---- prev_gcd.feral_spirit
----- stormbringer.spell_react
+---- stormbringer.aura_up
 ---- target.time_to_die
 ---- time_since_combat_start
 
 internal.actions['legion-dev::shaman::enhancement'] = {
     default = {
+        {
+            action = 'wind_shear',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=wind_shear',
+        },
         {
             action = 'bloodlust',
             condition = 'target.health.pct<25|time>0.500',
@@ -38,6 +43,18 @@ internal.actions['legion-dev::shaman::enhancement'] = {
                 'time_since_combat_start',
             },
             simc_line = 'actions+=/bloodlust,if=target.health.pct<25|time>0.500',
+        },
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/auto_attack',
+        },
+        {
+            action = 'feral_spirit',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/feral_spirit',
         },
         {
             action = 'crash_lightning',
@@ -70,6 +87,12 @@ internal.actions['legion-dev::shaman::enhancement'] = {
                 'level',
             },
             simc_line = 'actions+=/berserking,if=buff.ascendance.up|!talent.ascendance.enabled|level<100',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
         },
         {
             action = 'crash_lightning',
@@ -140,18 +163,18 @@ internal.actions['legion-dev::shaman::enhancement'] = {
         {
             action = 'windstrike',
             condition = 'buff.stormbringer.react',
-            condition_converted = 'stormbringer.spell_react',
+            condition_converted = 'stormbringer.aura_up',
             condition_keywords = {
-                'stormbringer.spell_react',
+                'stormbringer.aura_up',
             },
             simc_line = 'actions+=/windstrike,if=buff.stormbringer.react',
         },
         {
             action = 'stormstrike',
             condition = 'buff.stormbringer.react',
-            condition_converted = 'stormbringer.spell_react',
+            condition_converted = 'stormbringer.aura_up',
             condition_keywords = {
-                'stormbringer.spell_react',
+                'stormbringer.aura_up',
             },
             simc_line = 'actions+=/stormstrike,if=buff.stormbringer.react',
         },
@@ -177,13 +200,31 @@ internal.actions['legion-dev::shaman::enhancement'] = {
             simc_line = 'actions+=/flametongue,if=buff.flametongue.remains<gcd',
         },
         {
+            action = 'windsong',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/windsong',
+        },
+        {
+            action = 'ascendance',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/ascendance',
+        },
+        {
             action = 'fury_of_air',
             condition = '!ticking',
-            condition_converted = '(fury_of_air.aura_remains == 0)',
+            condition_converted = '(not (fury_of_air.aura_up))',
             condition_keywords = {
-                'fury_of_air.aura_remains',
+                'fury_of_air.aura_up',
             },
             simc_line = 'actions+=/fury_of_air,if=!ticking',
+        },
+        {
+            action = 'doom_winds',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/doom_winds',
         },
         {
             action = 'crash_lightning',
@@ -193,6 +234,18 @@ internal.actions['legion-dev::shaman::enhancement'] = {
                 'active_enemies',
             },
             simc_line = 'actions+=/crash_lightning,if=active_enemies>=3',
+        },
+        {
+            action = 'windstrike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/windstrike',
+        },
+        {
+            action = 'stormstrike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/stormstrike',
         },
         {
             action = 'lightning_bolt',
@@ -207,11 +260,17 @@ internal.actions['legion-dev::shaman::enhancement'] = {
         {
             action = 'lava_lash',
             condition = 'buff.hot_hand.react',
-            condition_converted = 'hot_hand.spell_react',
+            condition_converted = 'hot_hand.aura_up',
             condition_keywords = {
-                'hot_hand.spell_react',
+                'hot_hand.aura_up',
             },
             simc_line = 'actions+=/lava_lash,if=buff.hot_hand.react',
+        },
+        {
+            action = 'earthen_spike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/earthen_spike',
         },
         {
             action = 'crash_lightning',
@@ -244,6 +303,12 @@ internal.actions['legion-dev::shaman::enhancement'] = {
             simc_line = 'actions+=/flametongue,if=buff.flametongue.remains<4.8',
         },
         {
+            action = 'sundering',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/sundering',
+        },
+        {
             action = 'lava_lash',
             condition = 'maelstrom>=90',
             condition_converted = '((maelstrom_as_number) >= (90))',
@@ -252,27 +317,65 @@ internal.actions['legion-dev::shaman::enhancement'] = {
             },
             simc_line = 'actions+=/lava_lash,if=maelstrom>=90',
         },
+        {
+            action = 'rockbiter',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/rockbiter',
+        },
+        {
+            action = 'flametongue',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/flametongue',
+        },
+        {
+            action = 'boulderfist',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/boulderfist',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=seventh_demon',
             type = 'seventh_demon',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'nightborne_delicacy_platter',
             simc_line = 'actions.precombat+=/food,name=nightborne_delicacy_platter',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
+        },
+        {
+            action = 'lightning_shield',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/lightning_shield',
         },
     },
 }
@@ -280,6 +383,8 @@ internal.actions['legion-dev::shaman::enhancement'] = {
 
 -- keywords: legion-dev::shaman::elemental
 ---- active_enemies
+---- adds.raid_event_count
+---- adds.raid_event_in
 ---- ascendance.aura_up
 ---- ascendance.cooldown_remains
 ---- ascendance.spell_duration
@@ -289,22 +394,22 @@ internal.actions['legion-dev::shaman::enhancement'] = {
 ---- echoes_of_the_great_sundering.aura_up
 ---- elemental_focus.aura_up
 ---- flame_shock.aura_remains
+---- flame_shock.aura_up
 ---- flame_shock.spell_duration
----- flame_shock.spell_ticking
 ---- health.target_percent
 ---- icefury.aura_remains
+---- icefury.aura_stack
 ---- icefury.aura_up
 ---- icefury.spell_duration
----- icefury.spell_stack
 ---- icefury.talent_selected
 ---- lava_burst.cooldown_remains
 ---- lava_burst.spell_cast_time
 ---- lava_surge.aura_up
+---- lightning_rod.aura_up
 ---- maelstrom
+---- movement.raid_event_in
 ---- power_of_the_maelstrom.aura_up
----- raid_event.adds.count
----- raid_event.adds.in
----- raid_event.movement.in
+---- refreshable
 ---- resonance_totem.aura_remains
 ---- spell_haste
 ---- spell_targets
@@ -314,6 +419,24 @@ internal.actions['legion-dev::shaman::enhancement'] = {
 
 internal.actions['legion-dev::shaman::elemental'] = {
     aoe = {
+        {
+            action = 'stormkeeper',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe=stormkeeper',
+        },
+        {
+            action = 'ascendance',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/ascendance',
+        },
+        {
+            action = 'liquid_magma_totem',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/liquid_magma_totem',
+        },
         {
             action = 'flame_shock',
             condition = 'spell_targets.chain_lightning=3&maelstrom>=20',
@@ -326,6 +449,12 @@ internal.actions['legion-dev::shaman::elemental'] = {
             target_if = 'refreshable',
         },
         {
+            action = 'earthquake',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/earthquake',
+        },
+        {
             action = 'lava_burst',
             condition = 'buff.lava_surge.up&spell_targets.chain_lightning=3',
             condition_converted = '((lava_surge.aura_up) and (((spell_targets) == (3))))',
@@ -336,17 +465,41 @@ internal.actions['legion-dev::shaman::elemental'] = {
             simc_line = 'actions.aoe+=/lava_burst,if=buff.lava_surge.up&spell_targets.chain_lightning=3',
         },
         {
+            action = 'lava_beam',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/lava_beam',
+        },
+        {
             action = 'chain_lightning',
+            condition = '!! target_if !!',
+            condition_converted = '(not (lightning_rod.aura_up))',
+            condition_keywords = {
+                'lightning_rod.aura_up',
+            },
             simc_line = 'actions.aoe+=/chain_lightning,target_if=!debuff.lightning_rod.up',
             target_if = '!debuff.lightning_rod.up',
         },
         {
+            action = 'chain_lightning',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/chain_lightning',
+        },
+        {
             action = 'lava_burst',
+            condition = 'true',
+            condition_converted = 'true',
             moving = '1',
             simc_line = 'actions.aoe+=/lava_burst,moving=1',
         },
         {
             action = 'flame_shock',
+            condition = '!! target_if !!',
+            condition_converted = 'refreshable',
+            condition_keywords = {
+                'refreshable',
+            },
             moving = '1',
             simc_line = 'actions.aoe+=/flame_shock,moving=1,target_if=refreshable',
             target_if = 'refreshable',
@@ -384,6 +537,24 @@ internal.actions['legion-dev::shaman::elemental'] = {
             simc_line = 'actions+=/totem_mastery,if=buff.resonance_totem.remains<2',
         },
         {
+            action = 'fire_elemental',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/fire_elemental',
+        },
+        {
+            action = 'storm_elemental',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/storm_elemental',
+        },
+        {
+            action = 'elemental_mastery',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/elemental_mastery',
+        },
+        {
             action = 'blood_fury',
             condition = '!talent.ascendance.enabled|buff.ascendance.up|cooldown.ascendance.remains>50',
             condition_converted = '(((not (ascendance.talent_selected))) or (((ascendance.aura_up) or (((ascendance.cooldown_remains_as_number) > (50))))))',
@@ -417,6 +588,8 @@ internal.actions['legion-dev::shaman::elemental'] = {
         },
         {
             action = 'run_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'single',
             simc_line = 'actions+=/run_action_list,name=single',
         },
@@ -424,23 +597,49 @@ internal.actions['legion-dev::shaman::elemental'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=whispered_pact',
             type = 'whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'fishbrul_special',
             simc_line = 'actions.precombat+=/food,name=fishbrul_special',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'stormkeeper',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/stormkeeper',
+        },
+        {
+            action = 'totem_mastery',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/totem_mastery',
         },
     },
     single = {
@@ -461,9 +660,9 @@ internal.actions['legion-dev::shaman::elemental'] = {
         {
             action = 'flame_shock',
             condition = '!ticking',
-            condition_converted = '(flame_shock.aura_remains == 0)',
+            condition_converted = '(not (flame_shock.aura_up))',
             condition_keywords = {
-                'flame_shock.aura_remains',
+                'flame_shock.aura_up',
             },
             simc_line = 'actions.single+=/flame_shock,if=!ticking',
         },
@@ -492,9 +691,9 @@ internal.actions['legion-dev::shaman::elemental'] = {
         {
             action = 'icefury',
             condition = 'raid_event.movement.in<5',
-            condition_converted = '((raid_event.movement.in_as_number) < (5))',
+            condition_converted = '((movement.raid_event_in_as_number) < (5))',
             condition_keywords = {
-                'raid_event.movement.in',
+                'movement.raid_event_in',
             },
             simc_line = 'actions.single+=/icefury,if=raid_event.movement.in<5',
         },
@@ -509,6 +708,12 @@ internal.actions['legion-dev::shaman::elemental'] = {
                 'lava_burst.spell_cast_time',
             },
             simc_line = 'actions.single+=/lava_burst,if=dot.flame_shock.remains>cast_time&(cooldown_react|buff.ascendance.up)',
+        },
+        {
+            action = 'elemental_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.single+=/elemental_blast',
         },
         {
             action = 'earthquake',
@@ -533,14 +738,14 @@ internal.actions['legion-dev::shaman::elemental'] = {
         {
             action = 'frost_shock',
             condition = 'talent.icefury.enabled&buff.icefury.up&((maelstrom>=20&raid_event.movement.in>buff.icefury.remains)|buff.icefury.remains<(1.5*spell_haste*buff.icefury.stack))',
-            condition_converted = '((icefury.talent_selected) and (((icefury.aura_up) and (((((((((maelstrom_as_number) >= (20))) and (((raid_event.movement.in_as_number) > (icefury.aura_remains_as_number)))))) or (((icefury.aura_remains_as_number) < ((1.5 * spell_haste_as_number * icefury.spell_stack_as_number))))))))))',
+            condition_converted = '((icefury.talent_selected) and (((icefury.aura_up) and (((((((((maelstrom_as_number) >= (20))) and (((movement.raid_event_in_as_number) > (icefury.aura_remains_as_number)))))) or (((icefury.aura_remains_as_number) < ((1.5 * spell_haste_as_number * icefury.aura_stack_as_number))))))))))',
             condition_keywords = {
                 'icefury.aura_remains',
+                'icefury.aura_stack',
                 'icefury.aura_up',
-                'icefury.spell_stack',
                 'icefury.talent_selected',
                 'maelstrom',
-                'raid_event.movement.in',
+                'movement.raid_event_in',
                 'spell_haste',
             },
             simc_line = 'actions.single+=/frost_shock,if=talent.icefury.enabled&buff.icefury.up&((maelstrom>=20&raid_event.movement.in>buff.icefury.remains)|buff.icefury.remains<(1.5*spell_haste*buff.icefury.stack))',
@@ -567,23 +772,23 @@ internal.actions['legion-dev::shaman::elemental'] = {
         {
             action = 'icefury',
             condition = 'maelstrom<=70&raid_event.movement.in>30&((talent.ascendance.enabled&cooldown.ascendance.remains>buff.icefury.duration)|!talent.ascendance.enabled)',
-            condition_converted = '((((maelstrom_as_number) <= (70))) and (((((raid_event.movement.in_as_number) > (30))) and (((((((ascendance.talent_selected) and (((ascendance.cooldown_remains_as_number) > (icefury.spell_duration_as_number)))))) or ((not (ascendance.talent_selected)))))))))',
+            condition_converted = '((((maelstrom_as_number) <= (70))) and (((((movement.raid_event_in_as_number) > (30))) and (((((((ascendance.talent_selected) and (((ascendance.cooldown_remains_as_number) > (icefury.spell_duration_as_number)))))) or ((not (ascendance.talent_selected)))))))))',
             condition_keywords = {
                 'ascendance.cooldown_remains',
                 'ascendance.talent_selected',
                 'icefury.spell_duration',
                 'maelstrom',
-                'raid_event.movement.in',
+                'movement.raid_event_in',
             },
             simc_line = 'actions.single+=/icefury,if=maelstrom<=70&raid_event.movement.in>30&((talent.ascendance.enabled&cooldown.ascendance.remains>buff.icefury.duration)|!talent.ascendance.enabled)',
         },
         {
             action = 'liquid_magma_totem',
             condition = 'raid_event.adds.count<3|raid_event.adds.in>50',
-            condition_converted = '((((raid_event.adds.count_as_number) < (3))) or (((raid_event.adds.in_as_number) > (50))))',
+            condition_converted = '((((adds.raid_event_count_as_number) < (3))) or (((adds.raid_event_in_as_number) > (50))))',
             condition_keywords = {
-                'raid_event.adds.count',
-                'raid_event.adds.in',
+                'adds.raid_event_count',
+                'adds.raid_event_in',
             },
             simc_line = 'actions.single+=/liquid_magma_totem,if=raid_event.adds.count<3|raid_event.adds.in>50',
         },
@@ -660,17 +865,35 @@ internal.actions['legion-dev::shaman::elemental'] = {
         },
         {
             action = 'lightning_bolt',
+            condition = '!! target_if !!',
+            condition_converted = '(not (lightning_rod.aura_up))',
+            condition_keywords = {
+                'lightning_rod.aura_up',
+            },
             simc_line = 'actions.single+=/lightning_bolt,target_if=!debuff.lightning_rod.up',
             target_if = '!debuff.lightning_rod.up',
         },
         {
+            action = 'lightning_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.single+=/lightning_bolt',
+        },
+        {
             action = 'flame_shock',
+            condition = '!! target_if !!',
+            condition_converted = 'refreshable',
+            condition_keywords = {
+                'refreshable',
+            },
             moving = '1',
             simc_line = 'actions.single+=/flame_shock,moving=1,target_if=refreshable',
             target_if = 'refreshable',
         },
         {
             action = 'earth_shock',
+            condition = 'true',
+            condition_converted = 'true',
             moving = '1',
             simc_line = 'actions.single+=/earth_shock,moving=1',
         },

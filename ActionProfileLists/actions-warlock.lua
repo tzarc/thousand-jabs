@@ -7,7 +7,7 @@ internal.actions = internal.actions or {}
 ---- agony.aura_remains
 ---- agony.spell_duration
 ---- agony.spell_tick_time
----- compounding_horror.spell_react
+---- compounding_horror.aura_up
 ---- contagion.talent_selected
 ---- corruption.aura_remains
 ---- corruption.spell_duration
@@ -34,7 +34,7 @@ internal.actions = internal.actions or {}
 ---- soul_shard.curr
 ---- spell_targets
 ---- target.time_to_die
----- tormented_souls.spell_react
+---- tormented_souls.aura_up
 ---- trinket.proc.any.react
 ---- trinket.proc.crit.react
 ---- trinket.proc.intellect.react
@@ -47,12 +47,12 @@ internal.actions['legion-dev::warlock::affliction'] = {
         {
             action = 'reap_souls',
             condition = '!buff.deadwind_harvester.remains&(buff.soul_harvest.remains|buff.tormented_souls.react>=8|target.time_to_die<=buff.tormented_souls.react*5|trinket.proc.any.react)',
-            condition_converted = '(((deadwind_harvester.aura_remains == 0)) and ((((soul_harvest.aura_remains) or (((((tormented_souls.spell_react_as_number) >= (8))) or (((((target.time_to_die_as_number) <= ((tormented_souls.spell_react_as_number * 5)))) or (trinket.proc.any.react)))))))))',
+            condition_converted = '(((deadwind_harvester.aura_remains == 0)) and ((((soul_harvest.aura_remains) or (((((tormented_souls.aura_up_as_number) >= (8))) or (((((target.time_to_die_as_number) <= ((tormented_souls.aura_up_as_number * 5)))) or (trinket.proc.any.react)))))))))',
             condition_keywords = {
                 'deadwind_harvester.aura_remains',
                 'soul_harvest.aura_remains',
                 'target.time_to_die',
-                'tormented_souls.spell_react',
+                'tormented_souls.aura_up',
                 'trinket.proc.any.react',
             },
             simc_line = 'actions=reap_souls,if=actions=reap_souls,if=!buff.deadwind_harvester.remains&(buff.soul_harvest.remains|buff.tormented_souls.react>=8|target.time_to_die<=buff.tormented_souls.react*5|trinket.proc.any.react)',
@@ -135,6 +135,30 @@ internal.actions['legion-dev::warlock::affliction'] = {
             simc_line = 'actions+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&spell_targets.summon_infernal>=3&equipped.132379&!cooldown.sindorei_spite_icd.remains',
         },
         {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
+            action = 'soul_harvest',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/soul_harvest',
+        },
+        {
             action = 'potion',
             condition = 'buff.soul_harvest.remains|trinket.proc.any.react|target.time_to_die<=45',
             condition_converted = '((soul_harvest.aura_remains) or (((trinket.proc.any.react) or (((target.time_to_die_as_number) <= (45))))))',
@@ -184,11 +208,17 @@ internal.actions['legion-dev::warlock::affliction'] = {
             simc_line = 'actions+=/mana_tap,if=buff.mana_tap.remains<=buff.mana_tap.duration*0.3&(mana.pct<20|buff.mana_tap.remains<=gcd)&target.time_to_die>buff.mana_tap.duration*0.3',
         },
         {
+            action = 'phantom_singularity',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/phantom_singularity',
+        },
+        {
             action = 'unstable_affliction',
             condition = 'talent.contagion.enabled|(soul_shard>=4|trinket.proc.intellect.react|trinket.stacking_proc.mastery.react|trinket.proc.mastery.react|trinket.proc.crit.react|trinket.proc.versatility.react|buff.soul_harvest.remains|buff.deadwind_harvester.remains|buff.compounding_horror.react=5|target.time_to_die<=20)',
-            condition_converted = '((contagion.talent_selected) or ((((((soul_shard.curr_as_number) >= (4))) or (((trinket.proc.intellect.react) or (((trinket.stacking_proc.mastery.react) or (((trinket.proc.mastery.react) or (((trinket.proc.crit.react) or (((trinket.proc.versatility.react) or (((soul_harvest.aura_remains) or (((deadwind_harvester.aura_remains) or (((((compounding_horror.spell_react) == (5))) or (((target.time_to_die_as_number) <= (20)))))))))))))))))))))))',
+            condition_converted = '((contagion.talent_selected) or ((((((soul_shard.curr_as_number) >= (4))) or (((trinket.proc.intellect.react) or (((trinket.stacking_proc.mastery.react) or (((trinket.proc.mastery.react) or (((trinket.proc.crit.react) or (((trinket.proc.versatility.react) or (((soul_harvest.aura_remains) or (((deadwind_harvester.aura_remains) or (((((compounding_horror.aura_up) == (5))) or (((target.time_to_die_as_number) <= (20)))))))))))))))))))))))',
             condition_keywords = {
-                'compounding_horror.spell_react',
+                'compounding_horror.aura_up',
                 'contagion.talent_selected',
                 'deadwind_harvester.aura_remains',
                 'soul_harvest.aura_remains',
@@ -227,6 +257,12 @@ internal.actions['legion-dev::warlock::affliction'] = {
             simc_line = 'actions+=/corruption,cycle_targets=1,if=remains<=duration*0.3&target.time_to_die>=remains',
         },
         {
+            action = 'haunt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/haunt',
+        },
+        {
             action = 'siphon_life',
             condition = 'remains<=duration*0.3&target.time_to_die>=remains',
             condition_converted = '((((siphon_life.aura_remains_as_number) <= ((siphon_life.spell_duration_as_number * 0.3)))) and (((target.time_to_die_as_number) >= (siphon_life.aura_remains_as_number))))',
@@ -250,24 +286,38 @@ internal.actions['legion-dev::warlock::affliction'] = {
         {
             action = 'drain_soul',
             chain = '1',
+            condition = 'true',
+            condition_converted = 'true',
             interrupt = '1',
             simc_line = 'actions+=/drain_soul,chain=1,interrupt=1',
         },
         {
             action = 'drain_life',
             chain = '1',
+            condition = 'true',
+            condition_converted = 'true',
             interrupt = '1',
             simc_line = 'actions+=/drain_life,chain=1,interrupt=1',
+        },
+        {
+            action = 'life_tap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/life_tap',
         },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=whispered_pact',
             type = 'whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=nightborne_delicacy_platter',
             type = 'nightborne_delicacy_platter',
         },
@@ -315,8 +365,16 @@ internal.actions['legion-dev::warlock::affliction'] = {
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
         },
         {
             action = 'grimoire_of_sacrifice',
@@ -329,6 +387,8 @@ internal.actions['legion-dev::warlock::affliction'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
         },
@@ -352,12 +412,12 @@ internal.actions['legion-dev::warlock::affliction'] = {
 ---- call_dreadstalkers.spell_cast_time
 ---- darkglare_no_de
 ---- demonbolt.talent_selected
----- demonic_calling.spell_react
+---- demonic_calling.aura_up
 ---- demonic_power.aura_down
 ---- demonic_synergy.aura_remains
 ---- doom.aura_remains
+---- doom.aura_up
 ---- doom.spell_duration
----- doom.spell_ticking
 ---- doomguard_no_de
 ---- dreadstalker_no_de
 ---- dreadstalker_remaining_duration
@@ -379,8 +439,8 @@ internal.actions['legion-dev::warlock::affliction'] = {
 ---- shadow_bolt.spell_cast_time
 ---- shadow_bolt.spell_execute_time
 ---- shadowflame.aura_remains
+---- shadowflame.aura_stack
 ---- shadowflame.spell_charges
----- shadowflame.spell_stack
 ---- sindorei_spite_icd.cooldown_remains
 ---- soul_harvest.aura_remains
 ---- soul_shard.curr
@@ -445,14 +505,20 @@ internal.actions['legion-dev::warlock::demonology'] = {
         {
             action = 'shadowflame',
             condition = 'debuff.shadowflame.stack>0&remains<action.shadow_bolt.cast_time+travel_time',
-            condition_converted = '((((shadowflame.spell_stack_as_number) > (0))) and (((shadowflame.aura_remains_as_number) < ((shadow_bolt.spell_cast_time_as_number + travel_time_as_number)))))',
+            condition_converted = '((((shadowflame.aura_stack_as_number) > (0))) and (((shadowflame.aura_remains_as_number) < ((shadow_bolt.spell_cast_time_as_number + travel_time_as_number)))))',
             condition_keywords = {
                 'shadow_bolt.spell_cast_time',
                 'shadowflame.aura_remains',
-                'shadowflame.spell_stack',
+                'shadowflame.aura_stack',
                 'travel_time',
             },
             simc_line = 'actions+=/shadowflame,if=debuff.shadowflame.stack>0&remains<action.shadow_bolt.cast_time+travel_time',
+        },
+        {
+            action = 'service_pet',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/service_pet',
         },
         {
             action = 'summon_doomguard',
@@ -563,10 +629,10 @@ internal.actions['legion-dev::warlock::demonology'] = {
         {
             action = 'summon_darkglare',
             condition = 'cooldown.call_dreadstalkers.remains<=action.summon_darkglare.cast_time&soul_shard>=1&buff.demonic_calling.react',
-            condition_converted = '((((call_dreadstalkers.cooldown_remains_as_number) <= (summon_darkglare.spell_cast_time_as_number))) and (((((soul_shard.curr_as_number) >= (1))) and (demonic_calling.spell_react))))',
+            condition_converted = '((((call_dreadstalkers.cooldown_remains_as_number) <= (summon_darkglare.spell_cast_time_as_number))) and (((((soul_shard.curr_as_number) >= (1))) and (demonic_calling.aura_up))))',
             condition_keywords = {
                 'call_dreadstalkers.cooldown_remains',
-                'demonic_calling.spell_react',
+                'demonic_calling.aura_up',
                 'soul_shard.curr',
                 'summon_darkglare.spell_cast_time',
             },
@@ -613,10 +679,10 @@ internal.actions['legion-dev::warlock::demonology'] = {
         {
             action = 'call_dreadstalkers',
             condition = 'talent.summon_darkglare.enabled&(spell_targets.implosion<3|!talent.implosion.enabled)&cooldown.summon_darkglare.remains<=action.call_dreadstalkers.cast_time&soul_shard>=1&buff.demonic_calling.react',
-            condition_converted = '((summon_darkglare.talent_selected) and ((((((((spell_targets_as_number) < (3))) or ((not (implosion.talent_selected)))))) and (((((summon_darkglare.cooldown_remains_as_number) <= (call_dreadstalkers.spell_cast_time_as_number))) and (((((soul_shard.curr_as_number) >= (1))) and (demonic_calling.spell_react))))))))',
+            condition_converted = '((summon_darkglare.talent_selected) and ((((((((spell_targets_as_number) < (3))) or ((not (implosion.talent_selected)))))) and (((((summon_darkglare.cooldown_remains_as_number) <= (call_dreadstalkers.spell_cast_time_as_number))) and (((((soul_shard.curr_as_number) >= (1))) and (demonic_calling.aura_up))))))))',
             condition_keywords = {
                 'call_dreadstalkers.spell_cast_time',
-                'demonic_calling.spell_react',
+                'demonic_calling.aura_up',
                 'implosion.talent_selected',
                 'soul_shard.curr',
                 'spell_targets',
@@ -680,17 +746,48 @@ internal.actions['legion-dev::warlock::demonology'] = {
             simc_line = 'actions+=/demonic_empowerment,if=dreadstalker_no_de>0|darkglare_no_de>0|doomguard_no_de>0|infernal_no_de>0|service_no_de>0',
         },
         {
+            action = 'felguard:felstorm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/felguard:felstorm',
+        },
+        {
             action = 'doom',
             condition = '!talent.hand_of_doom.enabled&target.time_to_die>duration&(!ticking|remains<duration*0.3)',
-            condition_converted = '(((not (hand_of_doom.talent_selected))) and (((((target.time_to_die_as_number) > (doom.spell_duration_as_number))) and (((((doom.aura_remains == 0)) or (((doom.aura_remains_as_number) < ((doom.spell_duration_as_number * 0.3))))))))))',
+            condition_converted = '(((not (hand_of_doom.talent_selected))) and (((((target.time_to_die_as_number) > (doom.spell_duration_as_number))) and (((((not (doom.aura_up))) or (((doom.aura_remains_as_number) < ((doom.spell_duration_as_number * 0.3))))))))))',
             condition_keywords = {
                 'doom.aura_remains',
+                'doom.aura_up',
                 'doom.spell_duration',
                 'hand_of_doom.talent_selected',
                 'target.time_to_die',
             },
             cycle_targets = '1',
             simc_line = 'actions+=/doom,cycle_targets=1,if=!talent.hand_of_doom.enabled&target.time_to_die>duration&(!ticking|remains<duration*0.3)',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'soul_harvest',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/soul_harvest',
         },
         {
             action = 'potion',
@@ -750,19 +847,43 @@ internal.actions['legion-dev::warlock::demonology'] = {
         {
             action = 'demonwrath',
             chain = '1',
+            condition = 'true',
+            condition_converted = 'true',
             interrupt = '1',
             moving = '1',
             simc_line = 'actions+=/demonwrath,moving=1,chain=1,interrupt=1',
+        },
+        {
+            action = 'demonbolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/demonbolt',
+        },
+        {
+            action = 'shadow_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/shadow_bolt',
+        },
+        {
+            action = 'life_tap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/life_tap',
         },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=whispered_pact',
             type = 'whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=azshari_salad',
             type = 'azshari_salad',
         },
@@ -810,13 +931,29 @@ internal.actions['legion-dev::warlock::demonology'] = {
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'demonic_empowerment',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/demonic_empowerment',
         },
         {
             action = 'demonbolt',
@@ -870,7 +1007,7 @@ internal.actions['legion-dev::warlock::demonology'] = {
 ---- mana_tap.talent_selected
 ---- prev_gcd.incinerate
 ---- roaring_blaze.aura_remains
----- roaring_blaze.spell_stack
+---- roaring_blaze.aura_stack
 ---- roaring_blaze.talent_selected
 ---- sindorei_spite_icd.cooldown_remains
 ---- soul_harvest.aura_remains
@@ -957,6 +1094,24 @@ internal.actions['legion-dev::warlock::destruction'] = {
             simc_line = 'actions+=/immolate,if=talent.roaring_blaze.enabled&remains<=duration&!debuff.roaring_blaze.remains&target.time_to_die>10&(action.conflagrate.charges=2|(action.conflagrate.charges>=1&action.conflagrate.recharge_time<cast_time+gcd)|target.time_to_die<24)',
         },
         {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
             action = 'potion',
             condition = '(buff.soul_harvest.remains|trinket.proc.any.react|target.time_to_die<=45)',
             condition_converted = '(((soul_harvest.aura_remains) or (((trinket.proc.any.react) or (((target.time_to_die_as_number) <= (45)))))))',
@@ -984,12 +1139,12 @@ internal.actions['legion-dev::warlock::destruction'] = {
         {
             action = 'conflagrate',
             condition = 'talent.roaring_blaze.enabled&debuff.roaring_blaze.stack>0&dot.immolate.remains>dot.immolate.duration*0.3&(active_enemies=1|soul_shard<3)&soul_shard<5',
-            condition_converted = '((roaring_blaze.talent_selected) and (((((roaring_blaze.spell_stack_as_number) > (0))) and (((((immolate.aura_remains_as_number) > ((immolate.spell_duration_as_number * 0.3)))) and ((((((((active_enemies) == (1))) or (((soul_shard.curr_as_number) < (3)))))) and (((soul_shard.curr_as_number) < (5))))))))))',
+            condition_converted = '((roaring_blaze.talent_selected) and (((((roaring_blaze.aura_stack_as_number) > (0))) and (((((immolate.aura_remains_as_number) > ((immolate.spell_duration_as_number * 0.3)))) and ((((((((active_enemies) == (1))) or (((soul_shard.curr_as_number) < (3)))))) and (((soul_shard.curr_as_number) < (5))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'immolate.aura_remains',
                 'immolate.spell_duration',
-                'roaring_blaze.spell_stack',
+                'roaring_blaze.aura_stack',
                 'roaring_blaze.talent_selected',
                 'soul_shard.curr',
             },
@@ -1020,6 +1175,12 @@ internal.actions['legion-dev::warlock::destruction'] = {
                 'soul_shard.curr',
             },
             simc_line = 'actions+=/conflagrate,if=!talent.roaring_blaze.enabled&!buff.backdraft.remains&(charges=1&recharge_time<action.chaos_bolt.cast_time|charges=2)&soul_shard<5',
+        },
+        {
+            action = 'service_pet',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/service_pet',
         },
         {
             action = 'summon_infernal',
@@ -1088,6 +1249,12 @@ internal.actions['legion-dev::warlock::destruction'] = {
                 'spell_targets',
             },
             simc_line = 'actions+=/summon_infernal,if=talent.grimoire_of_supremacy.enabled&spell_targets.summon_infernal>=3&equipped.132379&!cooldown.sindorei_spite_icd.remains',
+        },
+        {
+            action = 'soul_harvest',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/soul_harvest',
         },
         {
             action = 'channel_demonfire',
@@ -1162,6 +1329,12 @@ internal.actions['legion-dev::warlock::destruction'] = {
             simc_line = 'actions+=/rain_of_fire,if=active_enemies>=6&talent.wreak_havoc.enabled',
         },
         {
+            action = 'dimensional_rift',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/dimensional_rift',
+        },
+        {
             action = 'mana_tap',
             condition = 'buff.mana_tap.remains<=buff.mana_tap.duration*0.3&(mana.pct<20|buff.mana_tap.remains<=action.chaos_bolt.cast_time)&target.time_to_die>buff.mana_tap.duration*0.3',
             condition_converted = '((((mana_tap.aura_remains_as_number) <= ((mana_tap.spell_duration_as_number * 0.3)))) and ((((((((mana.percent_as_number) < (20))) or (((mana_tap.aura_remains_as_number) <= (chaos_bolt.spell_cast_time_as_number)))))) and (((target.time_to_die_as_number) > ((mana_tap.spell_duration_as_number * 0.3)))))))',
@@ -1173,6 +1346,18 @@ internal.actions['legion-dev::warlock::destruction'] = {
                 'target.time_to_die',
             },
             simc_line = 'actions+=/mana_tap,if=buff.mana_tap.remains<=buff.mana_tap.duration*0.3&(mana.pct<20|buff.mana_tap.remains<=action.chaos_bolt.cast_time)&target.time_to_die>buff.mana_tap.duration*0.3',
+        },
+        {
+            action = 'chaos_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/chaos_bolt',
+        },
+        {
+            action = 'cataclysm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/cataclysm',
         },
         {
             action = 'conflagrate',
@@ -1205,15 +1390,31 @@ internal.actions['legion-dev::warlock::destruction'] = {
             },
             simc_line = 'actions+=/life_tap,if=talent.mana_tap.enabled&mana.pct<=10',
         },
+        {
+            action = 'incinerate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/incinerate',
+        },
+        {
+            action = 'life_tap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/life_tap',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=whispered_pact',
             type = 'whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=azshari_salad',
             type = 'azshari_salad',
         },
@@ -1261,8 +1462,16 @@ internal.actions['legion-dev::warlock::destruction'] = {
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
         },
         {
             action = 'grimoire_of_sacrifice',
@@ -1275,6 +1484,8 @@ internal.actions['legion-dev::warlock::destruction'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
         },
@@ -1287,6 +1498,12 @@ internal.actions['legion-dev::warlock::destruction'] = {
                 'mana_tap.talent_selected',
             },
             simc_line = 'actions.precombat+=/mana_tap,if=talent.mana_tap.enabled&!buff.mana_tap.remains',
+        },
+        {
+            action = 'chaos_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/chaos_bolt',
         },
     },
 }

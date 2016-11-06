@@ -2,6 +2,8 @@ local _, internal = ...
 internal.actions = internal.actions or {}
 
 -- keywords: legion-dev::warrior::arms
+---- adds.raid_event_exists
+---- adds.raid_event_in
 ---- battle_cry.aura_remains
 ---- battle_cry.aura_up
 ---- battle_cry_deadly_calm.aura_down
@@ -15,28 +17,26 @@ internal.actions = internal.actions or {}
 ---- desired_targets
 ---- equipped.archavons_heavy_hand
 ---- fervor_of_battle.talent_selected
+---- focused_rage.aura_stack
+---- focused_rage.aura_up
 ---- focused_rage.cooldown_remains
----- focused_rage.spell_react
----- focused_rage.spell_stack
 ---- focused_rage.talent_selected
 ---- gcd
 ---- gcd_remains
 ---- health.target_percent
 ---- mortal_strike.cooldown_remains
 ---- mortal_strike.cooldown_up
----- overpower.spell_react
+---- overpower.aura_up
 ---- precise_strikes.aura_down
 ---- prev_gcd.mortal_strike
 ---- rage.curr
 ---- rage.deficit
----- raid_event.adds.exists
----- raid_event.adds.in
 ---- rend.aura_remains
 ---- rend.spell_duration
 ---- shattered_defenses.aura_down
 ---- shattered_defenses.aura_up
 ---- spell_targets
----- stone_heart.spell_react
+---- stone_heart.aura_up
 ---- sweeping_strikes.talent_selected
 ---- target.time_to_die
 ---- time_since_combat_start
@@ -45,11 +45,17 @@ internal.actions = internal.actions or {}
 internal.actions['legion-dev::warrior::arms'] = {
     aoe = {
         {
+            action = 'mortal_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe=mortal_strike',
+        },
+        {
             action = 'execute',
             condition = 'buff.stone_heart.react',
-            condition_converted = 'stone_heart.spell_react',
+            condition_converted = 'stone_heart.aura_up',
             condition_keywords = {
-                'stone_heart.spell_react',
+                'stone_heart.aura_up',
             },
             simc_line = 'actions.aoe+=/execute,if=buff.stone_heart.react',
         },
@@ -97,6 +103,18 @@ internal.actions['legion-dev::warrior::arms'] = {
             simc_line = 'actions.aoe+=/rend,if=remains<=duration*0.3',
         },
         {
+            action = 'bladestorm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/bladestorm',
+        },
+        {
+            action = 'cleave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/cleave',
+        },
+        {
             action = 'execute',
             condition = 'rage>90',
             condition_converted = '((rage.curr_as_number) > (90))',
@@ -114,14 +132,32 @@ internal.actions['legion-dev::warrior::arms'] = {
             },
             simc_line = 'actions.aoe+=/whirlwind,if=rage>=40',
         },
+        {
+            action = 'shockwave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/shockwave',
+        },
+        {
+            action = 'storm_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/storm_bolt',
+        },
     },
     cleave = {
         {
+            action = 'mortal_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave=mortal_strike',
+        },
+        {
             action = 'execute',
             condition = 'buff.stone_heart.react',
-            condition_converted = 'stone_heart.spell_react',
+            condition_converted = 'stone_heart.aura_up',
             condition_keywords = {
-                'stone_heart.spell_react',
+                'stone_heart.aura_up',
             },
             simc_line = 'actions.cleave+=/execute,if=buff.stone_heart.react',
         },
@@ -179,6 +215,18 @@ internal.actions['legion-dev::warrior::arms'] = {
             simc_line = 'actions.cleave+=/rend,if=remains<=duration*0.3',
         },
         {
+            action = 'bladestorm',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/bladestorm',
+        },
+        {
+            action = 'cleave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/cleave',
+        },
+        {
             action = 'whirlwind',
             condition = 'rage>40|buff.cleave.up',
             condition_converted = '((((rage.curr_as_number) > (40))) or (cleave.aura_up))',
@@ -188,8 +236,32 @@ internal.actions['legion-dev::warrior::arms'] = {
             },
             simc_line = 'actions.cleave+=/whirlwind,if=rage>40|buff.cleave.up',
         },
+        {
+            action = 'shockwave',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/shockwave',
+        },
+        {
+            action = 'storm_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.cleave+=/storm_bolt',
+        },
     },
     default = {
+        {
+            action = 'charge',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=charge',
+        },
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/auto_attack',
+        },
         {
             action = 'potion',
             condition = '(target.health.pct<20&buff.battle_cry.up)|target.time_to_die<=26',
@@ -279,12 +351,12 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'focused_rage',
             condition = 'buff.battle_cry_deadly_calm.remains>cooldown.focused_rage.remains&(buff.focused_rage.stack<3|!cooldown.mortal_strike.up)&((!buff.focused_rage.react&prev_gcd.mortal_strike)|!prev_gcd.mortal_strike)',
-            condition_converted = '((((battle_cry_deadly_calm.aura_remains_as_number) > (focused_rage.cooldown_remains_as_number))) and ((((((((focused_rage.spell_stack_as_number) < (3))) or ((not (mortal_strike.cooldown_up)))))) and ((((((((not (focused_rage.spell_react))) and (prev_gcd.mortal_strike)))) or ((not (prev_gcd.mortal_strike)))))))))',
+            condition_converted = '((((battle_cry_deadly_calm.aura_remains_as_number) > (focused_rage.cooldown_remains_as_number))) and ((((((((focused_rage.aura_stack_as_number) < (3))) or ((not (mortal_strike.cooldown_up)))))) and ((((((((not (focused_rage.aura_up))) and (prev_gcd.mortal_strike)))) or ((not (prev_gcd.mortal_strike)))))))))',
             condition_keywords = {
                 'battle_cry_deadly_calm.aura_remains',
+                'focused_rage.aura_stack',
+                'focused_rage.aura_up',
                 'focused_rage.cooldown_remains',
-                'focused_rage.spell_react',
-                'focused_rage.spell_stack',
                 'mortal_strike.cooldown_up',
                 'prev_gcd.mortal_strike',
             },
@@ -309,11 +381,17 @@ internal.actions['legion-dev::warrior::arms'] = {
             simc_line = 'actions+=/warbreaker,if=debuff.colossus_smash.down',
         },
         {
+            action = 'ravager',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/ravager',
+        },
+        {
             action = 'overpower',
             condition = 'buff.overpower.react',
-            condition_converted = 'overpower.spell_react',
+            condition_converted = 'overpower.aura_up',
             condition_keywords = {
-                'overpower.spell_react',
+                'overpower.aura_up',
             },
             simc_line = 'actions+=/overpower,if=buff.overpower.react',
         },
@@ -341,6 +419,12 @@ internal.actions['legion-dev::warrior::arms'] = {
         },
         {
             action = 'run_action_list',
+            condition = '!! target_if !!',
+            condition_converted = '((((health.target_percent_as_number) <= (20))) and (((spell_targets_as_number) < (5))))',
+            condition_keywords = {
+                'health.target_percent',
+                'spell_targets',
+            },
             name = 'execute',
             simc_line = 'actions+=/run_action_list,name=execute,target_if=target.health.pct<=20&spell_targets.whirlwind<5',
             target_if = 'target.health.pct<=20&spell_targets.whirlwind<5',
@@ -360,10 +444,10 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'mortal_strike',
             condition = 'buff.battle_cry.up&buff.focused_rage.stack=3',
-            condition_converted = '((battle_cry.aura_up) and (((focused_rage.spell_stack) == (3))))',
+            condition_converted = '((battle_cry.aura_up) and (((focused_rage.aura_stack) == (3))))',
             condition_keywords = {
                 'battle_cry.aura_up',
-                'focused_rage.spell_stack',
+                'focused_rage.aura_stack',
             },
             simc_line = 'actions.execute=mortal_strike,if=buff.battle_cry.up&buff.focused_rage.stack=3',
         },
@@ -437,11 +521,11 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'bladestorm',
             condition = 'raid_event.adds.in>90|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets',
-            condition_converted = '((((raid_event.adds.in_as_number) > (90))) or ((((not (raid_event.adds.exists))) or (((spell_targets_as_number) > (desired_targets_as_number))))))',
+            condition_converted = '((((adds.raid_event_in_as_number) > (90))) or ((((not (adds.raid_event_exists))) or (((spell_targets_as_number) > (desired_targets_as_number))))))',
             condition_keywords = {
+                'adds.raid_event_exists',
+                'adds.raid_event_in',
                 'desired_targets',
-                'raid_event.adds.exists',
-                'raid_event.adds.in',
                 'spell_targets',
             },
             interrupt = '1',
@@ -451,21 +535,35 @@ internal.actions['legion-dev::warrior::arms'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=countless_armies',
             type = 'countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=nightborne_delicacy_platter',
             type = 'nightborne_delicacy_platter',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
@@ -474,11 +572,11 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'mortal_strike',
             condition = 'buff.battle_cry.up&buff.focused_rage.stack>=1&buff.battle_cry.remains<gcd',
-            condition_converted = '((battle_cry.aura_up) and (((((focused_rage.spell_stack_as_number) >= (1))) and (((battle_cry.aura_remains_as_number) < (gcd_as_number))))))',
+            condition_converted = '((battle_cry.aura_up) and (((((focused_rage.aura_stack_as_number) >= (1))) and (((battle_cry.aura_remains_as_number) < (gcd_as_number))))))',
             condition_keywords = {
                 'battle_cry.aura_remains',
                 'battle_cry.aura_up',
-                'focused_rage.spell_stack',
+                'focused_rage.aura_stack',
                 'gcd',
             },
             simc_line = 'actions.single=mortal_strike,if=buff.battle_cry.up&buff.focused_rage.stack>=1&buff.battle_cry.remains<gcd',
@@ -506,11 +604,11 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'focused_rage',
             condition = '(((!buff.focused_rage.react&prev_gcd.mortal_strike)|!prev_gcd.mortal_strike)&buff.focused_rage.stack<3&(buff.shattered_defenses.up|cooldown.colossus_smash.remains))&rage>60',
-            condition_converted = '((((((((((((not (focused_rage.spell_react))) and (prev_gcd.mortal_strike)))) or ((not (prev_gcd.mortal_strike)))))) and (((((focused_rage.spell_stack_as_number) < (3))) and ((((shattered_defenses.aura_up) or (colossus_smash.cooldown_remains))))))))) and (((rage.curr_as_number) > (60))))',
+            condition_converted = '((((((((((((not (focused_rage.aura_up))) and (prev_gcd.mortal_strike)))) or ((not (prev_gcd.mortal_strike)))))) and (((((focused_rage.aura_stack_as_number) < (3))) and ((((shattered_defenses.aura_up) or (colossus_smash.cooldown_remains))))))))) and (((rage.curr_as_number) > (60))))',
             condition_keywords = {
                 'colossus_smash.cooldown_remains',
-                'focused_rage.spell_react',
-                'focused_rage.spell_stack',
+                'focused_rage.aura_stack',
+                'focused_rage.aura_up',
                 'prev_gcd.mortal_strike',
                 'rage.curr',
                 'shattered_defenses.aura_up',
@@ -518,11 +616,17 @@ internal.actions['legion-dev::warrior::arms'] = {
             simc_line = 'actions.single+=/focused_rage,if=(((!buff.focused_rage.react&prev_gcd.mortal_strike)|!prev_gcd.mortal_strike)&buff.focused_rage.stack<3&(buff.shattered_defenses.up|cooldown.colossus_smash.remains))&rage>60',
         },
         {
+            action = 'mortal_strike',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.single+=/mortal_strike',
+        },
+        {
             action = 'execute',
             condition = 'buff.stone_heart.react',
-            condition_converted = 'stone_heart.spell_react',
+            condition_converted = 'stone_heart.aura_up',
             condition_keywords = {
-                'stone_heart.spell_react',
+                'stone_heart.aura_up',
             },
             simc_line = 'actions.single+=/execute,if=buff.stone_heart.react',
         },
@@ -565,11 +669,11 @@ internal.actions['legion-dev::warrior::arms'] = {
         {
             action = 'bladestorm',
             condition = 'raid_event.adds.in>90|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets',
-            condition_converted = '((((raid_event.adds.in_as_number) > (90))) or ((((not (raid_event.adds.exists))) or (((spell_targets_as_number) > (desired_targets_as_number))))))',
+            condition_converted = '((((adds.raid_event_in_as_number) > (90))) or ((((not (adds.raid_event_exists))) or (((spell_targets_as_number) > (desired_targets_as_number))))))',
             condition_keywords = {
+                'adds.raid_event_exists',
+                'adds.raid_event_in',
                 'desired_targets',
-                'raid_event.adds.exists',
-                'raid_event.adds.in',
                 'spell_targets',
             },
             interrupt = '1',
@@ -580,6 +684,8 @@ internal.actions['legion-dev::warrior::arms'] = {
 
 
 -- keywords: legion-dev::warrior::fury
+---- adds.raid_event_exists
+---- adds.raid_event_in
 ---- battle_cry.aura_up
 ---- battle_cry.cooldown_remains
 ---- bloodthirst.cooldown_remains
@@ -592,14 +698,12 @@ internal.actions['legion-dev::warrior::arms'] = {
 ---- health.target_percent
 ---- meat_cleaver.aura_up
 ---- movement.distance
+---- movement.raid_event_distance
+---- movement.raid_event_exists
+---- movement.raid_event_in
 ---- odyns_fury.cooldown_remains
 ---- rage.curr
 ---- rage.max
----- raid_event.adds.exists
----- raid_event.adds.in
----- raid_event.movement.distance
----- raid_event.movement.exists
----- raid_event.movement.in
 ---- spell_targets
 ---- target.time_to_die
 
@@ -617,6 +721,8 @@ internal.actions['legion-dev::warrior::fury'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'bladestorm',
             simc_line = 'actions.aoe+=/call_action_list,name=bladestorm',
         },
@@ -640,6 +746,12 @@ internal.actions['legion-dev::warrior::fury'] = {
             simc_line = 'actions.aoe+=/whirlwind,if=buff.enrage.up',
         },
         {
+            action = 'dragon_roar',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/dragon_roar',
+        },
+        {
             action = 'rampage',
             condition = 'buff.meat_cleaver.up',
             condition_converted = 'meat_cleaver.aura_up',
@@ -648,23 +760,47 @@ internal.actions['legion-dev::warrior::fury'] = {
             },
             simc_line = 'actions.aoe+=/rampage,if=buff.meat_cleaver.up',
         },
+        {
+            action = 'bloodthirst',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/bloodthirst',
+        },
+        {
+            action = 'whirlwind',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.aoe+=/whirlwind',
+        },
     },
     bladestorm = {
         {
             action = 'bladestorm',
             condition = 'buff.enrage.remains>2&(raid_event.adds.in>90|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets)',
-            condition_converted = '((((enrage.aura_remains_as_number) > (2))) and ((((((raid_event.adds.in_as_number) > (90))) or ((((not (raid_event.adds.exists))) or (((spell_targets_as_number) > (desired_targets_as_number)))))))))',
+            condition_converted = '((((enrage.aura_remains_as_number) > (2))) and ((((((adds.raid_event_in_as_number) > (90))) or ((((not (adds.raid_event_exists))) or (((spell_targets_as_number) > (desired_targets_as_number)))))))))',
             condition_keywords = {
+                'adds.raid_event_exists',
+                'adds.raid_event_in',
                 'desired_targets',
                 'enrage.aura_remains',
-                'raid_event.adds.exists',
-                'raid_event.adds.in',
                 'spell_targets',
             },
             simc_line = 'actions.bladestorm=bladestorm,if=buff.enrage.remains>2&(raid_event.adds.in>90|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets)',
         },
     },
     default = {
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
+            action = 'charge',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/charge',
+        },
         {
             action = 'run_action_list',
             condition = 'movement.distance>5',
@@ -678,11 +814,11 @@ internal.actions['legion-dev::warrior::fury'] = {
         {
             action = 'heroic_leap',
             condition = '(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists',
-            condition_converted = '(((((((raid_event.movement.distance_as_number) > (25))) and (((raid_event.movement.in_as_number) > (45)))))) or ((not (raid_event.movement.exists))))',
+            condition_converted = '(((((((movement.raid_event_distance_as_number) > (25))) and (((movement.raid_event_in_as_number) > (45)))))) or ((not (movement.raid_event_exists))))',
             condition_keywords = {
-                'raid_event.movement.distance',
-                'raid_event.movement.exists',
-                'raid_event.movement.in',
+                'movement.raid_event_distance',
+                'movement.raid_event_exists',
+                'movement.raid_event_in',
             },
             simc_line = 'actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists',
         },
@@ -782,28 +918,52 @@ internal.actions['legion-dev::warrior::fury'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'single_target',
             simc_line = 'actions+=/call_action_list,name=single_target',
+        },
+    },
+    movement = {
+        {
+            action = 'heroic_leap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.movement=heroic_leap',
         },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=countless_armies',
             type = 'countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=nightborne_delicacy_platter',
             type = 'nightborne_delicacy_platter',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },
@@ -838,7 +998,39 @@ internal.actions['legion-dev::warrior::fury'] = {
 internal.actions['legion-dev::warrior::protection'] = {
     default = {
         {
+            action = 'intercept',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=intercept',
+        },
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/auto_attack',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'prot',
             simc_line = 'actions+=/call_action_list,name=prot',
         },
@@ -846,21 +1038,35 @@ internal.actions['legion-dev::warrior::protection'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=countless_armies',
             type = 'countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=seedbattered_fish_plate',
             type = 'seedbattered_fish_plate',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'unbending_potion',
             simc_line = 'actions.precombat+=/potion,name=unbending_potion',
         },
@@ -1034,6 +1240,12 @@ internal.actions['legion-dev::warrior::protection'] = {
                 'shield_slam.cooldown_remains',
             },
             simc_line = 'actions.prot+=/revenge,if=cooldown.shield_slam.remains<=gcd.max*2',
+        },
+        {
+            action = 'devastate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/devastate',
         },
     },
 }

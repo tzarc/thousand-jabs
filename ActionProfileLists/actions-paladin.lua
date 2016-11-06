@@ -32,7 +32,51 @@ internal.actions = internal.actions or {}
 internal.actions['legion-dev::paladin::protection'] = {
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'arcane_torrent',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/arcane_torrent',
+        },
+        {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'prot',
             simc_line = 'actions+=/call_action_list,name=prot',
         },
@@ -40,6 +84,8 @@ internal.actions['legion-dev::paladin::protection'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_ten_thousand_scars',
             type = 'flask_of_ten_thousand_scars',
         },
@@ -56,6 +102,8 @@ internal.actions['legion-dev::paladin::protection'] = {
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=seedbattered_fish_plate',
             type = 'seedbattered_fish_plate',
         },
@@ -71,7 +119,15 @@ internal.actions['legion-dev::paladin::protection'] = {
             type = 'azshari_salad',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'unbending_potion',
             simc_line = 'actions.precombat+=/potion,name=unbending_potion',
         },
@@ -304,6 +360,8 @@ internal.actions['legion-dev::paladin::protection'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'unbending_potion',
             simc_line = 'actions.prot+=/potion,name=unbending_potion',
         },
@@ -361,6 +419,12 @@ internal.actions['legion-dev::paladin::protection'] = {
             simc_line = 'actions.prot+=/avenging_wrath,if=talent.seraphim.enabled&buff.seraphim.up',
         },
         {
+            action = 'judgment',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/judgment',
+        },
+        {
             action = 'avengers_shield',
             condition = 'talent.crusaders_judgment.enabled&buff.grand_crusader.up',
             condition_converted = '((crusaders_judgment.talent_selected) and (grand_crusader.aura_up))',
@@ -370,6 +434,36 @@ internal.actions['legion-dev::paladin::protection'] = {
             },
             simc_line = 'actions.prot+=/avengers_shield,if=talent.crusaders_judgment.enabled&buff.grand_crusader.up',
         },
+        {
+            action = 'blessed_hammer',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/blessed_hammer',
+        },
+        {
+            action = 'avengers_shield',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/avengers_shield',
+        },
+        {
+            action = 'consecration',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/consecration',
+        },
+        {
+            action = 'blinding_light',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/blinding_light',
+        },
+        {
+            action = 'hammer_of_the_righteous',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.prot+=/hammer_of_the_righteous',
+        },
     },
 }
 
@@ -377,7 +471,7 @@ internal.actions['legion-dev::paladin::protection'] = {
 -- keywords: legion-dev::paladin::retribution
 ---- avenging_wrath.aura_up
 ---- blade_of_justice.cooldown_remains
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- crusade.aura_up
 ---- crusade.cooldown_remains
 ---- crusade.talent_selected
@@ -386,7 +480,6 @@ internal.actions['legion-dev::paladin::protection'] = {
 ---- divine_hammer.cooldown_remains
 ---- divine_purpose.aura_remains
 ---- divine_purpose.aura_up
----- divine_purpose.spell_react
 ---- equipped.whisper_of_the_nathrezim
 ---- gcd
 ---- greater_judgment.talent_selected
@@ -397,9 +490,9 @@ internal.actions['legion-dev::paladin::protection'] = {
 ---- judgment.cooldown_remains
 ---- spell_targets
 ---- target.time_to_die
----- the_fires_of_justice.spell_react
+---- the_fires_of_justice.aura_up
 ---- time_since_combat_start
----- wake_of_ashes.artifact_enabled
+---- wake_of_ashes.artifact_selected
 ---- wake_of_ashes.cooldown_remains
 ---- whisper_of_the_nathrezim.aura_remains
 ---- whisper_of_the_nathrezim.aura_up
@@ -409,17 +502,47 @@ internal.actions['legion-dev::paladin::protection'] = {
 internal.actions['legion-dev::paladin::retribution'] = {
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
+            action = 'rebuke',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/rebuke',
+        },
+        {
             action = 'potion',
             condition = '(buff.bloodlust.react|buff.avenging_wrath.up|buff.crusade.up|target.time_to_die<=40)',
-            condition_converted = '(((bloodlust.spell_react) or (((avenging_wrath.aura_up) or (((crusade.aura_up) or (((target.time_to_die_as_number) <= (40)))))))))',
+            condition_converted = '(((bloodlust.aura_up) or (((avenging_wrath.aura_up) or (((crusade.aura_up) or (((target.time_to_die_as_number) <= (40)))))))))',
             condition_keywords = {
                 'avenging_wrath.aura_up',
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'crusade.aura_up',
                 'target.time_to_die',
             },
             name = 'old_war',
             simc_line = 'actions+=/potion,name=old_war,if=(buff.bloodlust.react|buff.avenging_wrath.up|buff.crusade.up|target.time_to_die<=40)',
+        },
+        {
+            action = 'holy_wrath',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/holy_wrath',
+        },
+        {
+            action = 'avenging_wrath',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/avenging_wrath',
+        },
+        {
+            action = 'shield_of_vengeance',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/shield_of_vengeance',
         },
         {
             action = 'crusade',
@@ -455,6 +578,18 @@ internal.actions['legion-dev::paladin::retribution'] = {
             simc_line = 'actions+=/execution_sentence,if=spell_targets.divine_storm<=3&(cooldown.judgment.remains<gcd*4.5|debuff.judgment.remains>gcd*4.67)&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*2)',
         },
         {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
             action = 'arcane_torrent',
             condition = 'holy_power<5',
             condition_converted = '((holy_power_as_number) < (5))',
@@ -479,9 +614,9 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'divine_storm',
             condition = 'debuff.judgment.up&spell_targets.divine_storm>=2&holy_power>=5&buff.divine_purpose.react',
-            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (((((holy_power_as_number) >= (5))) and (divine_purpose.spell_react))))))',
+            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (((((holy_power_as_number) >= (5))) and (divine_purpose.aura_up))))))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'holy_power',
                 'judgment.aura_up',
                 'spell_targets',
@@ -518,9 +653,9 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'justicars_vengeance',
             condition = 'debuff.judgment.up&holy_power>=5&buff.divine_purpose.react&!equipped.whisper_of_the_nathrezim',
-            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (5))) and (((divine_purpose.spell_react) and ((not (equipped.whisper_of_the_nathrezim))))))))',
+            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (5))) and (((divine_purpose.aura_up) and ((not (equipped.whisper_of_the_nathrezim))))))))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'equipped.whisper_of_the_nathrezim',
                 'holy_power',
                 'judgment.aura_up',
@@ -542,9 +677,9 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'templars_verdict',
             condition = 'debuff.judgment.up&holy_power>=5&buff.divine_purpose.react',
-            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (5))) and (divine_purpose.spell_react))))',
+            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (5))) and (divine_purpose.aura_up))))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'holy_power',
                 'judgment.aura_up',
             },
@@ -566,7 +701,7 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'divine_storm',
             condition = 'debuff.judgment.up&holy_power>=3&spell_targets.divine_storm>=2&(cooldown.wake_of_ashes.remains<gcd*2&artifact.wake_of_ashes.enabled|buff.whisper_of_the_nathrezim.up&buff.whisper_of_the_nathrezim.remains<gcd)&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*4)',
-            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and (((((spell_targets_as_number) >= (2))) and ((((((((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (wake_of_ashes.artifact_enabled))) or (((whisper_of_the_nathrezim.aura_up) and (((whisper_of_the_nathrezim.aura_remains_as_number) < (gcd_as_number)))))))) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 4))))))))))))))',
+            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and (((((spell_targets_as_number) >= (2))) and ((((((((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (wake_of_ashes.artifact_selected))) or (((whisper_of_the_nathrezim.aura_up) and (((whisper_of_the_nathrezim.aura_remains_as_number) < (gcd_as_number)))))))) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 4))))))))))))))',
             condition_keywords = {
                 'crusade.cooldown_remains',
                 'crusade.talent_selected',
@@ -574,7 +709,7 @@ internal.actions['legion-dev::paladin::retribution'] = {
                 'holy_power',
                 'judgment.aura_up',
                 'spell_targets',
-                'wake_of_ashes.artifact_enabled',
+                'wake_of_ashes.artifact_selected',
                 'wake_of_ashes.cooldown_remains',
                 'whisper_of_the_nathrezim.aura_remains',
                 'whisper_of_the_nathrezim.aura_up',
@@ -584,14 +719,14 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'justicars_vengeance',
             condition = 'debuff.judgment.up&holy_power>=3&buff.divine_purpose.up&cooldown.wake_of_ashes.remains<gcd*2&artifact.wake_of_ashes.enabled&!equipped.whisper_of_the_nathrezim',
-            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and (((divine_purpose.aura_up) and (((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (((wake_of_ashes.artifact_enabled) and ((not (equipped.whisper_of_the_nathrezim))))))))))))',
+            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and (((divine_purpose.aura_up) and (((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (((wake_of_ashes.artifact_selected) and ((not (equipped.whisper_of_the_nathrezim))))))))))))',
             condition_keywords = {
                 'divine_purpose.aura_up',
                 'equipped.whisper_of_the_nathrezim',
                 'gcd',
                 'holy_power',
                 'judgment.aura_up',
-                'wake_of_ashes.artifact_enabled',
+                'wake_of_ashes.artifact_selected',
                 'wake_of_ashes.cooldown_remains',
             },
             simc_line = 'actions+=/justicars_vengeance,if=debuff.judgment.up&holy_power>=3&buff.divine_purpose.up&cooldown.wake_of_ashes.remains<gcd*2&artifact.wake_of_ashes.enabled&!equipped.whisper_of_the_nathrezim',
@@ -599,14 +734,14 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'templars_verdict',
             condition = 'debuff.judgment.up&holy_power>=3&(cooldown.wake_of_ashes.remains<gcd*2&artifact.wake_of_ashes.enabled|buff.whisper_of_the_nathrezim.up&buff.whisper_of_the_nathrezim.remains<gcd)&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*4)',
-            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and ((((((((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (wake_of_ashes.artifact_enabled))) or (((whisper_of_the_nathrezim.aura_up) and (((whisper_of_the_nathrezim.aura_remains_as_number) < (gcd_as_number)))))))) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 4))))))))))))',
+            condition_converted = '((judgment.aura_up) and (((((holy_power_as_number) >= (3))) and ((((((((((wake_of_ashes.cooldown_remains_as_number) < ((gcd_as_number * 2)))) and (wake_of_ashes.artifact_selected))) or (((whisper_of_the_nathrezim.aura_up) and (((whisper_of_the_nathrezim.aura_remains_as_number) < (gcd_as_number)))))))) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 4))))))))))))',
             condition_keywords = {
                 'crusade.cooldown_remains',
                 'crusade.talent_selected',
                 'gcd',
                 'holy_power',
                 'judgment.aura_up',
-                'wake_of_ashes.artifact_enabled',
+                'wake_of_ashes.artifact_selected',
                 'wake_of_ashes.cooldown_remains',
                 'whisper_of_the_nathrezim.aura_remains',
                 'whisper_of_the_nathrezim.aura_up',
@@ -686,11 +821,17 @@ internal.actions['legion-dev::paladin::retribution'] = {
             simc_line = 'actions+=/judgment,if=holy_power>=3|((cooldown.zeal.charges_fractional<=1.67|cooldown.crusader_strike.charges_fractional<=1.67)&(cooldown.divine_hammer.remains>gcd|cooldown.blade_of_justice.remains>gcd))|(talent.greater_judgment.enabled&target.health.pct>50)',
         },
         {
+            action = 'consecration',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/consecration',
+        },
+        {
             action = 'divine_storm',
             condition = 'debuff.judgment.up&spell_targets.divine_storm>=2&buff.divine_purpose.react',
-            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (divine_purpose.spell_react))))',
+            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (divine_purpose.aura_up))))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'judgment.aura_up',
                 'spell_targets',
             },
@@ -699,14 +840,14 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'divine_storm',
             condition = 'debuff.judgment.up&spell_targets.divine_storm>=2&buff.the_fires_of_justice.react&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*3)',
-            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (((the_fires_of_justice.spell_react) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 3))))))))))))',
+            condition_converted = '((judgment.aura_up) and (((((spell_targets_as_number) >= (2))) and (((the_fires_of_justice.aura_up) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 3))))))))))))',
             condition_keywords = {
                 'crusade.cooldown_remains',
                 'crusade.talent_selected',
                 'gcd',
                 'judgment.aura_up',
                 'spell_targets',
-                'the_fires_of_justice.spell_react',
+                'the_fires_of_justice.aura_up',
             },
             simc_line = 'actions+=/divine_storm,if=debuff.judgment.up&spell_targets.divine_storm>=2&buff.the_fires_of_justice.react&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*3)',
         },
@@ -731,9 +872,9 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'justicars_vengeance',
             condition = 'debuff.judgment.up&buff.divine_purpose.react&!equipped.whisper_of_the_nathrezim',
-            condition_converted = '((judgment.aura_up) and (((divine_purpose.spell_react) and ((not (equipped.whisper_of_the_nathrezim))))))',
+            condition_converted = '((judgment.aura_up) and (((divine_purpose.aura_up) and ((not (equipped.whisper_of_the_nathrezim))))))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'equipped.whisper_of_the_nathrezim',
                 'judgment.aura_up',
             },
@@ -742,9 +883,9 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'templars_verdict',
             condition = 'debuff.judgment.up&buff.divine_purpose.react',
-            condition_converted = '((judgment.aura_up) and (divine_purpose.spell_react))',
+            condition_converted = '((judgment.aura_up) and (divine_purpose.aura_up))',
             condition_keywords = {
-                'divine_purpose.spell_react',
+                'divine_purpose.aura_up',
                 'judgment.aura_up',
             },
             simc_line = 'actions+=/templars_verdict,if=debuff.judgment.up&buff.divine_purpose.react',
@@ -752,13 +893,13 @@ internal.actions['legion-dev::paladin::retribution'] = {
         {
             action = 'templars_verdict',
             condition = 'debuff.judgment.up&buff.the_fires_of_justice.react&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*3)',
-            condition_converted = '((judgment.aura_up) and (((the_fires_of_justice.spell_react) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 3))))))))))',
+            condition_converted = '((judgment.aura_up) and (((the_fires_of_justice.aura_up) and (((((not (crusade.talent_selected))) or (((crusade.cooldown_remains_as_number) > ((gcd_as_number * 3))))))))))',
             condition_keywords = {
                 'crusade.cooldown_remains',
                 'crusade.talent_selected',
                 'gcd',
                 'judgment.aura_up',
-                'the_fires_of_justice.spell_react',
+                'the_fires_of_justice.aura_up',
             },
             simc_line = 'actions+=/templars_verdict,if=debuff.judgment.up&buff.the_fires_of_justice.react&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*3)',
         },
@@ -828,21 +969,41 @@ internal.actions['legion-dev::paladin::retribution'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_countless_armies',
             type = 'flask_of_the_countless_armies',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=azshari_salad',
             type = 'azshari_salad',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'greater_blessing_of_might',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/greater_blessing_of_might',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
         },

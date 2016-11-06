@@ -55,19 +55,26 @@ local arms_base_overrides = {
         CanCast = function(spell,env)
             return env.charge.spell_can_cast and env.heroic_leap.spell_can_cast
         end,
+        PerformCast = function(spell,env)
+            env.movement.distance = 20 -- ranged
+        end,
     },
     charge = {
         CanCast = function(spell,env)
-            return spell.in_range
+            return not env.melee.in_range
         end,
         PerformCast = function(spell,env)
             env.rage.gained = env.rage.gained + 20
-        end
+            env.movement.distance = 5 -- melee
+        end,
     },
     heroic_leap = {
         CanCast = function(spell,env)
-            return spell.in_range
-        end
+            return not env.melee.in_range
+        end,
+        PerformCast = function(spell,env)
+            env.movement.distance = 5 -- melee
+        end,
     },
     execute = {
         CanCast = function(spell,env)
@@ -132,6 +139,8 @@ local arms_base_overrides = {
         AuraID = 772,
         AuraUnit = 'target',
         AuraMine = true,
+        AuraApplied = 'rend',
+        AuraApplyLength = 15,
         spell_duration = 15,
         spell_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
     },

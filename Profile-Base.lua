@@ -33,9 +33,13 @@ function Z:RegisterPlayerClass(config)
             counts[listName] = counts[listName] or {}
             for _,entry in pairs(listTable) do
                 counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
-                entry.key = fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
+                entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
+                    and fmt("%s:%s[%s]", listName, entry.action, entry.name)
+                    or fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
 
-                entry.precondition = entry.action == ("run_action_list" or entry.action == "call_action_list") and "true" or fmt("%s.spell_can_cast", entry.action)
+                entry.precondition = (entry.action == "run_action_list" or entry.action == "call_action_list")
+                    and "true"
+                    or fmt("%s.spell_can_cast", entry.action)
                 if type(entry.sync) ~= "nil" then
                     entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.sync, entry.sync, entry.sync)
                 end

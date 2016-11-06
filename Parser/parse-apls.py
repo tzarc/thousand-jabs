@@ -85,7 +85,7 @@ def KeywordModifier(keyword, thisSpell):
         keyword = "incoming_damage_over_%d" % (int(r.group('msecs')))
 
     # Triplet conversion (spell.blah.up) => (blah.spell_up)
-    r = re.match("""^(?P<head>aura|artifact|talent|spell|cooldown|pet|player|target)\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
+    r = re.match("""^(?P<head>aura|artifact|talent|spell|cooldown|pet|player|target|raid_event)\.(?P<spell>[^\.]+)\.(?P<tail>[^\.]+)$""", keyword)
     if r != None:
         keyword = "%s.%s_%s" % (r.group('spell'), r.group('head'), r.group('tail'))
 
@@ -130,10 +130,14 @@ def KeywordModifier(keyword, thisSpell):
         keyword = re.sub("""^\(\((?P<inner>[^\(\)]+)\)\)$""", "(\g<inner>)", keyword)
 
     # Final keyword substitutions
+    keyword = re.sub('spell_stack', 'aura_stack', keyword)
+    keyword = re.sub('spell_ticking', 'aura_up', keyword)
     keyword = re.sub('spell_up', 'aura_up', keyword)
+    keyword = re.sub('spell_react', 'aura_up', keyword)
     keyword = re.sub('spell_down', 'aura_down', keyword)
     keyword = re.sub('spell_remains', 'aura_remains', keyword)
     keyword = re.sub('talent_enabled', 'talent_selected', keyword)
+    keyword = re.sub('artifact_enabled', 'artifact_selected', keyword)
 
     # Copy out all the keywords we found, so they can be referenced later
     r = re.findall('([a-zA-Z][a-zA-Z0-9\._]*)', keyword)
@@ -146,7 +150,7 @@ def KeywordModifier(keyword, thisSpell):
 def ConvertExpression(expr, thisSpell):
     return ExpressionTranslator(modifier = lambda x: KeywordModifier(x, thisSpell)).parse(expr)
 
-actionMatcher = re.compile("""actions((\.(?P<list>[a-zA-Z0-9]+))?)([\+]?=[\/]?)(?P<action>[^,]+),(?P<params>.*)""")
+actionMatcher = re.compile("""actions((\.(?P<list>[a-zA-Z0-9]+))?)([\+]?=[\/]?)(?P<action>[^,]+),?(?P<params>.*)""")
 paramMatcher = re.compile("""(?P<name>[^=]+)=(?P<value>.*)""")
 
 
@@ -217,6 +221,17 @@ if simcFile[-5:] == ".simc":
                     actionDict["value_converted"] = converted
                     actionDict['value_keywords'] = convertedKeywords
 
+                if not 'condition' in actionDict:
+                    actionDict['condition'] = 'true'
+                    actionDict['condition_converted'] = 'true'
+                    actionDict['condition_keywords'] = []
+
+                # Override the condition if target_if is present instead
+                if actionDict['condition'] == 'true' and 'target_if' in actionDict:
+                    (expr, converted, convertedKeywords) = GetConvertedAndKeywords(actionDict['target_if'], action)
+                    actionDict["condition"] = "!! target_if !!"
+                    actionDict["condition_converted"] = converted
+                    actionDict['condition_keywords'] = convertedKeywords
 
                 actionContainer.AddEntry(actionList, actionDict)
 

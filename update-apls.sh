@@ -8,49 +8,49 @@ two_hand_staff=2132 # Short Staff
 two_hand_bow=8179 # Cadet's Bow
 shield=17190 # Ornate Buckler
 
-# Class/spec combos to generate action lists for:
+# Class/spec combos to generate action lists for, talents retrieved from Wowhead's artifact calculator, with the extra ability enabled:
 allspecs=(
-"playerclass=deathknight charspec=blood mainhand=${two_hand_sword}"
-"playerclass=deathknight charspec=frost mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=deathknight charspec=unholy mainhand=${two_hand_sword}"
+"playerclass=deathknight charspec=blood mainhand=128402 artifact=15:0:0:0:0:289:1"
+"playerclass=deathknight charspec=frost mainhand=128292 offhand=128293 artifact=12:0:0:0:0:122:1"
+"playerclass=deathknight charspec=unholy mainhand=128403 artifact=16:0:0:0:0:149:1"
 
-"playerclass=demonhunter charspec=vengeance mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=demonhunter charspec=havoc mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=demonhunter charspec=vengeance mainhand=128832 offhand=128831 artifact=60:0:0:0:0:1096:1"
+"playerclass=demonhunter charspec=havoc mainhand=127829 offhand=127830 artifact=3:0:0:0:0:1010:1"
 
-"playerclass=druid charspec=balance mainhand=${two_hand_staff}"
-"playerclass=druid charspec=feral mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=druid charspec=guardian mainhand=${two_hand_staff}"
+"playerclass=druid charspec=balance mainhand=128858 artifact=59:0:0:0:0:1049:1"
+"playerclass=druid charspec=feral mainhand=128860 offhand=128859 artifact=58:0:0:0:0:1153:1"
+"playerclass=druid charspec=guardian mainhand=128821 offhand=128822 artifact=57:0:0:0:0:960:1"
 
-"playerclass=hunter charspec=beast_mastery mainhand=${two_hand_bow}"
-"playerclass=hunter charspec=marksmanship mainhand=${two_hand_bow}"
-"playerclass=hunter charspec=survival mainhand=${two_hand_bow}"
+"playerclass=hunter charspec=beast_mastery mainhand=128861 artifact=56:0:0:0:0:881:1"
+"playerclass=hunter charspec=marksmanship mainhand=128826 artifact=55:0:0:0:0:307:1"
+"playerclass=hunter charspec=survival mainhand=128808 artifact=34:0:0:0:0:1068:1"
 
-"playerclass=mage charspec=arcane mainhand=${two_hand_staff}"
-"playerclass=mage charspec=fire mainhand=${two_hand_staff}"
-"playerclass=mage charspec=frost mainhand=${two_hand_staff}"
+"playerclass=mage charspec=arcane mainhand=127857 artifact=4:0:0:0:0:290:1"
+"playerclass=mage charspec=fire mainhand=128820 offhand=133959 artifact=54:0:0:0:0:748:1"
+"playerclass=mage charspec=frost mainhand=128862 artifact=53:0:0:0:0:783:1"
 
-"playerclass=monk charspec=brewmaster mainhand=${two_hand_staff}"
-"playerclass=monk charspec=windwalker mainhand=${one_hand_sword} offhand=${one_hand_sword}"
+"playerclass=monk charspec=brewmaster mainhand=128938 artifact=52:0:0:0:0:1277:1"
+"playerclass=monk charspec=windwalker mainhand=128940 offhand=133948 artifact=50:0:0:0:0:831:1"
 
-"playerclass=paladin charspec=protection mainhand=${one_hand_sword} offhand=${shield}"
-"playerclass=paladin charspec=retribution mainhand=${two_hand_sword}"
+"playerclass=paladin charspec=protection mainhand=128867 offhand=128866 artifact=49:0:0:0:0:1120:1"
+"playerclass=paladin charspec=retribution mainhand=120978 artifact=2:0:0:0:0:40:1"
 
-"playerclass=priest charspec=shadow mainhand=${two_hand_staff}"
+"playerclass=priest charspec=shadow mainhand=128827 offhand=133958 artifact=47:0:0:0:0:764:1"
 
-"playerclass=rogue charspec=assassination mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
-"playerclass=rogue charspec=outlaw mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
-"playerclass=rogue charspec=subtlety mainhand=${one_hand_dagger} offhand=${one_hand_dagger}"
+"playerclass=rogue charspec=assassination mainhand=128870 offhand=128869 artifact=43:0:0:0:0:346:1"
+"playerclass=rogue charspec=outlaw mainhand=128872 offhand=134552 artifact=44:0:0:0:0:1052:1"
+"playerclass=rogue charspec=subtlety mainhand=128476 offhand=128479 artifact=17:0:0:0:0:851:1"
 
-"playerclass=shaman charspec=enhancement mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=shaman charspec=elemental mainhand=${two_hand_staff}"
+"playerclass=shaman charspec=enhancement mainhand=128819 offhand=128873 artifact=41:0:0:0:0:899:1"
+"playerclass=shaman charspec=elemental mainhand=128935 offhand=128936 artifact=40:0:0:0:0:291:1"
 
-"playerclass=warrior charspec=arms mainhand=${two_hand_sword}"
-"playerclass=warrior charspec=fury mainhand=${one_hand_sword} offhand=${one_hand_sword}"
-"playerclass=warrior charspec=protection mainhand=${one_hand_sword} offhand=${shield}"
+"playerclass=warlock charspec=affliction mainhand=128942 artifact=39:0:0:0:0:999:1"
+"playerclass=warlock charspec=demonology mainhand=137246 offhand=128943 artifact=37:0:0:0:0:1170:1"
+"playerclass=warlock charspec=destruction mainhand=128941 artifact=38:0:0:0:0:803:1"
 
-"playerclass=warlock charspec=affliction mainhand=${two_hand_staff}"
-"playerclass=warlock charspec=demonology mainhand=${two_hand_staff}"
-"playerclass=warlock charspec=destruction mainhand=${two_hand_staff}"
+"playerclass=warrior charspec=arms mainhand=128910 artifact=36:0:0:0:0:1136:1"
+"playerclass=warrior charspec=fury mainhand=128908 offhand=134553 artifact=35:0:0:0:0:984:1"
+"playerclass=warrior charspec=protection mainhand=128288 offhand=128289 artifact=11:0:0:0:0:91:1"
 )
 
 # Generate some placeholder APLs because simc doesn't have functional profiles
@@ -103,6 +103,7 @@ append_action_profiles_from_branch() {
 
     local mh=""; [[ ! -z "${mainhand}" ]] && mh="main_hand=,id=${mainhand}"
     local oh=""; [[ ! -z "${offhand}" ]] && oh="off_hand=,id=${offhand}"
+    local af=""; [[ ! -z "${artifact}" ]] && af="artifact=${artifact}"
 
     OIFS=$IFS
     IFS=$'\r\n'
@@ -116,7 +117,7 @@ append_action_profiles_from_branch() {
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
     local NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}-${playerclass}_${charspec}.simc"
-    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} level=110 spec=${charspec} ${mh} ${oh} "save=${NEW_SIMC_FILE}"
+    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}"
 
     append_action_profile ${BRANCH} ${playerclass} ${charspec} "${NEW_SIMC_FILE}"
 }

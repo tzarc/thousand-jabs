@@ -206,7 +206,7 @@ internal.resources = {
             local swingspeed = UnitAttackSpeed('player')
             if Z.lastAutoAttack < GetTime() - swingspeed then Z.lastAutoAttack = GetTime() end
             local predicted = floor((env.currentTime - Z.lastAutoAttack) / swingspeed)
-            DBG("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, Z.lastAutoAttack, (env.currentTime - Z.lastAutoAttack))
+            --DBG("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, Z.lastAutoAttack, (env.currentTime - Z.lastAutoAttack))
             predicted = (predicted > 0) and predicted or 0
             return predicted * 25
         end,

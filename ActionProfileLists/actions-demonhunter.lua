@@ -4,10 +4,9 @@ internal.actions = internal.actions or {}
 -- keywords: legion-dev::demonhunter::vengeance
 ---- demon_spikes.aura_down
 ---- demon_spikes.spell_charges
----- fiery_brand.aura_remains
+---- fiery_brand.aura_up
 ---- fiery_brand.cooldown_remains
----- fiery_brand.spell_ticking
----- fiery_demise.artifact_enabled
+---- fiery_demise.artifact_selected
 ---- frailty.aura_down
 ---- health.max
 ---- in_flight
@@ -34,6 +33,12 @@ internal.actions = internal.actions or {}
 internal.actions['legion-dev::demonhunter::vengeance'] = {
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
             action = 'fiery_brand',
             condition = 'buff.demon_spikes.down&buff.metamorphosis.down',
             condition_converted = '((demon_spikes.aura_down) and (metamorphosis.aura_down))',
@@ -46,11 +51,11 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
         {
             action = 'demon_spikes',
             condition = 'charges=2|buff.demon_spikes.down&!dot.fiery_brand.ticking&buff.metamorphosis.down',
-            condition_converted = '((((demon_spikes.spell_charges) == (2))) or (((demon_spikes.aura_down) and ((((fiery_brand.aura_remains == 0)) and (metamorphosis.aura_down))))))',
+            condition_converted = '((((demon_spikes.spell_charges) == (2))) or (((demon_spikes.aura_down) and ((((not (fiery_brand.aura_up))) and (metamorphosis.aura_down))))))',
             condition_keywords = {
                 'demon_spikes.aura_down',
                 'demon_spikes.spell_charges',
-                'fiery_brand.aura_remains',
+                'fiery_brand.aura_up',
                 'metamorphosis.aura_down',
             },
             simc_line = 'actions+=/demon_spikes,if=charges=2|buff.demon_spikes.down&!dot.fiery_brand.ticking&buff.metamorphosis.down',
@@ -67,10 +72,10 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
         {
             action = 'infernal_strike',
             condition = '!sigil_placed&!in_flight&remains-travel_time-delay<0.3*duration&artifact.fiery_demise.enabled&dot.fiery_brand.ticking',
-            condition_converted = '(((not (sigil_placed))) and ((((not (in_flight))) and ((((((infernal_strike.aura_remains_as_number - travel_time_as_number - infernal_strike.spell_delay_as_number)) < ((0.3 * infernal_strike.spell_duration_as_number)))) and (((fiery_demise.artifact_enabled) and (fiery_brand.spell_ticking))))))))',
+            condition_converted = '(((not (sigil_placed))) and ((((not (in_flight))) and ((((((infernal_strike.aura_remains_as_number - travel_time_as_number - infernal_strike.spell_delay_as_number)) < ((0.3 * infernal_strike.spell_duration_as_number)))) and (((fiery_demise.artifact_selected) and (fiery_brand.aura_up))))))))',
             condition_keywords = {
-                'fiery_brand.spell_ticking',
-                'fiery_demise.artifact_enabled',
+                'fiery_brand.aura_up',
+                'fiery_demise.artifact_selected',
                 'in_flight',
                 'infernal_strike.aura_remains',
                 'infernal_strike.spell_delay',
@@ -83,10 +88,10 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
         {
             action = 'infernal_strike',
             condition = '!sigil_placed&!in_flight&remains-travel_time-delay<0.3*duration&(!artifact.fiery_demise.enabled|(max_charges-charges_fractional)*recharge_time<cooldown.fiery_brand.remains+5)&(cooldown.sigil_of_flame.remains>7|charges=2)',
-            condition_converted = '(((not (sigil_placed))) and ((((not (in_flight))) and ((((((infernal_strike.aura_remains_as_number - travel_time_as_number - infernal_strike.spell_delay_as_number)) < ((0.3 * infernal_strike.spell_duration_as_number)))) and (((((((not fiery_demise.artifact_enabled)) or (((((infernal_strike.spell_max_charges_as_number - infernal_strike.spell_charges_fractional_as_number) * infernal_strike.spell_recharge_time_as_number)) < ((fiery_brand.cooldown_remains_as_number + 5))))))) and ((((((sigil_of_flame.cooldown_remains_as_number) > (7))) or (((infernal_strike.spell_charges) == (2)))))))))))))',
+            condition_converted = '(((not (sigil_placed))) and ((((not (in_flight))) and ((((((infernal_strike.aura_remains_as_number - travel_time_as_number - infernal_strike.spell_delay_as_number)) < ((0.3 * infernal_strike.spell_duration_as_number)))) and (((((((not (fiery_demise.artifact_selected))) or (((((infernal_strike.spell_max_charges_as_number - infernal_strike.spell_charges_fractional_as_number) * infernal_strike.spell_recharge_time_as_number)) < ((fiery_brand.cooldown_remains_as_number + 5))))))) and ((((((sigil_of_flame.cooldown_remains_as_number) > (7))) or (((infernal_strike.spell_charges) == (2)))))))))))))',
             condition_keywords = {
                 'fiery_brand.cooldown_remains',
-                'fiery_demise.artifact_enabled',
+                'fiery_demise.artifact_selected',
                 'in_flight',
                 'infernal_strike.aura_remains',
                 'infernal_strike.spell_charges',
@@ -111,6 +116,15 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
             simc_line = 'actions+=/spirit_bomb,if=debuff.frailty.down',
         },
         {
+            action = 'soul_carver',
+            condition = 'dot.fiery_brand.ticking',
+            condition_converted = 'fiery_brand.aura_up',
+            condition_keywords = {
+                'fiery_brand.aura_up',
+            },
+            simc_line = 'actions+=/soul_carver,if=dot.fiery_brand.ticking',
+        },
+        {
             action = 'immolation_aura',
             condition = 'pain<=80',
             condition_converted = '((pain.curr_as_number) <= (80))',
@@ -129,6 +143,12 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
             simc_line = 'actions+=/felblade,if=pain<=70',
         },
         {
+            action = 'soul_barrier',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/soul_barrier',
+        },
+        {
             action = 'soul_cleave',
             condition = 'soul_fragments=5',
             condition_converted = '((soul_fragments.curr) == (5))',
@@ -140,10 +160,10 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
         {
             action = 'metamorphosis',
             condition = 'buff.demon_spikes.down&!dot.fiery_brand.ticking&buff.metamorphosis.down&incoming_damage_5s>health.max*0.70',
-            condition_converted = '((demon_spikes.aura_down) and ((((fiery_brand.aura_remains == 0)) and (((metamorphosis.aura_down) and (((incoming_damage_over_5000_as_number) > ((health.max_as_number * 0.70)))))))))',
+            condition_converted = '((demon_spikes.aura_down) and ((((not (fiery_brand.aura_up))) and (((metamorphosis.aura_down) and (((incoming_damage_over_5000_as_number) > ((health.max_as_number * 0.70)))))))))',
             condition_keywords = {
                 'demon_spikes.aura_down',
-                'fiery_brand.aura_remains',
+                'fiery_brand.aura_up',
                 'health.max',
                 'incoming_damage_over_5000',
                 'metamorphosis.aura_down',
@@ -169,6 +189,12 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
                 'incoming_damage_over_5000',
             },
             simc_line = 'actions+=/soul_cleave,if=incoming_damage_5s>=health.max*0.70',
+        },
+        {
+            action = 'fel_eruption',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/fel_eruption',
         },
         {
             action = 'sigil_of_flame',
@@ -202,25 +228,45 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
             },
             simc_line = 'actions+=/soul_cleave,if=pain>=80',
         },
+        {
+            action = 'shear',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/shear',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=the_hungry_magister',
             type = 'the_hungry_magister',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'unbending_potion',
             simc_line = 'actions.precombat+=/potion,name=unbending_potion',
         },
@@ -230,13 +276,15 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
 
 -- keywords: legion-dev::demonhunter::havoc
 ---- active_enemies
----- anguish_of_the_deceiver.artifact_enabled
+---- adds.raid_event_exists
+---- adds.raid_event_in
+---- anguish_of_the_deceiver.artifact_selected
 ---- bloodlet.talent_selected
 ---- chaos_blades.cooldown_ready
 ---- chaos_blades.talent_selected
 ---- chaos_cleave.talent_selected
 ---- demon_blades.talent_selected
----- demon_speed.artifact_enabled
+---- demon_speed.artifact_selected
 ---- demonic.talent_selected
 ---- demonic_appetite.talent_selected
 ---- desired_targets
@@ -262,6 +310,7 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
 ---- momentum.aura_up
 ---- momentum.talent_selected
 ---- movement.distance
+---- movement.raid_event_in
 ---- nemesis.aura_down
 ---- nemesis.aura_up
 ---- nemesis.cooldown_ready
@@ -270,9 +319,6 @@ internal.actions['legion-dev::demonhunter::vengeance'] = {
 ---- prepared.aura_down
 ---- prepared.aura_up
 ---- prepared.talent_selected
----- raid_event.adds.exists
----- raid_event.adds.in
----- raid_event.movement.in
 ---- raid_movement.aura_up
 ---- spell_targets
 ---- target.time_to_die
@@ -290,13 +336,13 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'nemesis',
             condition = 'raid_event.adds.exists&debuff.nemesis.down&(active_enemies>desired_targets|raid_event.adds.in>60)',
-            condition_converted = '((raid_event.adds.exists) and (((nemesis.aura_down) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((raid_event.adds.in_as_number) > (60)))))))))',
+            condition_converted = '((adds.raid_event_exists) and (((nemesis.aura_down) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((adds.raid_event_in_as_number) > (60)))))))))',
             condition_keywords = {
                 'active_enemies',
+                'adds.raid_event_exists',
+                'adds.raid_event_in',
                 'desired_targets',
                 'nemesis.aura_down',
-                'raid_event.adds.exists',
-                'raid_event.adds.in',
             },
             simc_line = 'actions.cooldown=nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&(active_enemies>desired_targets|raid_event.adds.in>60)',
             target_if = 'min:target.time_to_die',
@@ -304,10 +350,10 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'nemesis',
             condition = '!raid_event.adds.exists&(cooldown.metamorphosis.remains>100|target.time_to_die<70)',
-            condition_converted = '(((not (raid_event.adds.exists))) and ((((((metamorphosis.cooldown_remains_as_number) > (100))) or (((target.time_to_die_as_number) < (70)))))))',
+            condition_converted = '(((not (adds.raid_event_exists))) and ((((((metamorphosis.cooldown_remains_as_number) > (100))) or (((target.time_to_die_as_number) < (70)))))))',
             condition_keywords = {
+                'adds.raid_event_exists',
                 'metamorphosis.cooldown_remains',
-                'raid_event.adds.exists',
                 'target.time_to_die',
             },
             simc_line = 'actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(cooldown.metamorphosis.remains>100|target.time_to_die<70)',
@@ -315,9 +361,9 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'nemesis',
             condition = '!raid_event.adds.exists',
-            condition_converted = '(not (raid_event.adds.exists))',
+            condition_converted = '(not (adds.raid_event_exists))',
             condition_keywords = {
-                'raid_event.adds.exists',
+                'adds.raid_event_exists',
             },
             simc_line = 'actions.cooldown+=/nemesis,sync=metamorphosis,if=!raid_event.adds.exists',
             sync = 'metamorphosis',
@@ -359,7 +405,15 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
     },
     default = {
         {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
+        {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'pooling_for_meta',
             simc_line = 'actions+=/variable,name=pooling_for_meta,value=cooldown.metamorphosis.ready&buff.metamorphosis.down&(!talent.demonic.enabled|!cooldown.eye_beam.ready)&(!talent.chaos_blades.enabled|cooldown.chaos_blades.ready)&(!talent.nemesis.enabled|debuff.nemesis.up|cooldown.nemesis.ready)',
             value = 'cooldown.metamorphosis.ready&buff.metamorphosis.down&(!talent.demonic.enabled|!cooldown.eye_beam.ready)&(!talent.chaos_blades.enabled|cooldown.chaos_blades.ready)&(!talent.nemesis.enabled|debuff.nemesis.up|cooldown.nemesis.ready)',
@@ -378,6 +432,8 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'blade_dance',
             simc_line = 'actions+=/variable,name=blade_dance,value=talent.first_blood.enabled|spell_targets.blade_dance1>=2+talent.chaos_cleave.enabled',
             value = 'talent.first_blood.enabled|spell_targets.blade_dance1>=2+talent.chaos_cleave.enabled',
@@ -390,6 +446,8 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'pooling_for_blade_dance',
             simc_line = 'actions+=/variable,name=pooling_for_blade_dance,value=variable.blade_dance&fury-40<35-talent.first_blood.enabled*20&spell_targets.blade_dance1>=2',
             value = 'variable.blade_dance&fury-40<35-talent.first_blood.enabled*20&spell_targets.blade_dance1>=2',
@@ -404,9 +462,9 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'blur',
             condition = 'artifact.demon_speed.enabled&cooldown.fel_rush.charges_fractional<0.5&cooldown.vengeful_retreat.remains-buff.momentum.remains>4',
-            condition_converted = '((demon_speed.artifact_enabled) and (((((fel_rush.cooldown_charges_fractional_as_number) < (0.5))) and ((((vengeful_retreat.cooldown_remains_as_number - momentum.aura_remains_as_number)) > (4))))))',
+            condition_converted = '((demon_speed.artifact_selected) and (((((fel_rush.cooldown_charges_fractional_as_number) < (0.5))) and ((((vengeful_retreat.cooldown_remains_as_number - momentum.aura_remains_as_number)) > (4))))))',
             condition_keywords = {
-                'demon_speed.artifact_enabled',
+                'demon_speed.artifact_selected',
                 'fel_rush.cooldown_charges_fractional',
                 'momentum.aura_remains',
                 'vengeful_retreat.cooldown_remains',
@@ -415,6 +473,8 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cooldown',
             simc_line = 'actions+=/call_action_list,name=cooldown',
         },
@@ -439,6 +499,12 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
             simc_line = 'actions+=/pick_up_fragment,if=talent.demonic_appetite.enabled&fury.deficit>=30',
         },
         {
+            action = 'consume_magic',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/consume_magic',
+        },
+        {
             action = 'vengeful_retreat',
             condition = '(talent.prepared.enabled|talent.momentum.enabled)&buff.prepared.down&buff.momentum.down',
             condition_converted = '(((((prepared.talent_selected) or (momentum.talent_selected)))) and (((prepared.aura_down) and (momentum.aura_down))))',
@@ -454,15 +520,15 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
             action = 'fel_rush',
             animation_cancel = '1',
             condition = '(talent.momentum.enabled|talent.fel_mastery.enabled)&(!talent.momentum.enabled|(charges=2|cooldown.vengeful_retreat.remains>4)&buff.momentum.down)&(!talent.fel_mastery.enabled|fury.deficit>=25)&(charges=2|(raid_event.movement.in>10&raid_event.adds.in>10))',
-            condition_converted = '(((((momentum.talent_selected) or (fel_mastery.talent_selected)))) and (((((((not (momentum.talent_selected))) or ((((((((fel_rush.spell_charges) == (2))) or (((vengeful_retreat.cooldown_remains_as_number) > (4)))))) and (momentum.aura_down)))))) and (((((((not (fel_mastery.talent_selected))) or (((fury.deficit_as_number) >= (25)))))) and ((((((fel_rush.spell_charges) == (2))) or ((((((raid_event.movement.in_as_number) > (10))) and (((raid_event.adds.in_as_number) > (10))))))))))))))',
+            condition_converted = '(((((momentum.talent_selected) or (fel_mastery.talent_selected)))) and (((((((not (momentum.talent_selected))) or ((((((((fel_rush.spell_charges) == (2))) or (((vengeful_retreat.cooldown_remains_as_number) > (4)))))) and (momentum.aura_down)))))) and (((((((not (fel_mastery.talent_selected))) or (((fury.deficit_as_number) >= (25)))))) and ((((((fel_rush.spell_charges) == (2))) or ((((((movement.raid_event_in_as_number) > (10))) and (((adds.raid_event_in_as_number) > (10))))))))))))))',
             condition_keywords = {
+                'adds.raid_event_in',
                 'fel_mastery.talent_selected',
                 'fel_rush.spell_charges',
                 'fury.deficit',
                 'momentum.aura_down',
                 'momentum.talent_selected',
-                'raid_event.adds.in',
-                'raid_event.movement.in',
+                'movement.raid_event_in',
                 'vengeful_retreat.cooldown_remains',
             },
             simc_line = 'actions+=/fel_rush,animation_cancel=1,if=(talent.momentum.enabled|talent.fel_mastery.enabled)&(!talent.momentum.enabled|(charges=2|cooldown.vengeful_retreat.remains>4)&buff.momentum.down)&(!talent.fel_mastery.enabled|fury.deficit>=25)&(charges=2|(raid_event.movement.in>10&raid_event.adds.in>10))',
@@ -470,14 +536,14 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'fel_barrage',
             condition = 'charges>=5&(buff.momentum.up|!talent.momentum.enabled)&(active_enemies>desired_targets|raid_event.adds.in>30)',
-            condition_converted = '((((fel_barrage.spell_charges_as_number) >= (5))) and ((((((momentum.aura_up) or ((not (momentum.talent_selected)))))) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((raid_event.adds.in_as_number) > (30)))))))))',
+            condition_converted = '((((fel_barrage.spell_charges_as_number) >= (5))) and ((((((momentum.aura_up) or ((not (momentum.talent_selected)))))) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((adds.raid_event_in_as_number) > (30)))))))))',
             condition_keywords = {
                 'active_enemies',
+                'adds.raid_event_in',
                 'desired_targets',
                 'fel_barrage.spell_charges',
                 'momentum.aura_up',
                 'momentum.talent_selected',
-                'raid_event.adds.in',
             },
             simc_line = 'actions+=/fel_barrage,if=charges>=5&(buff.momentum.up|!talent.momentum.enabled)&(active_enemies>desired_targets|raid_event.adds.in>30)',
         },
@@ -492,6 +558,19 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
                 'throw_glaive.spell_charges',
             },
             simc_line = 'actions+=/throw_glaive,if=talent.bloodlet.enabled&(!talent.momentum.enabled|buff.momentum.up)&charges=2',
+        },
+        {
+            action = 'fury_of_the_illidari',
+            condition = 'active_enemies>desired_targets|raid_event.adds.in>55&(!talent.momentum.enabled|buff.momentum.up)',
+            condition_converted = '((((active_enemies_as_number) > (desired_targets_as_number))) or (((((adds.raid_event_in_as_number) > (55))) and (((((not (momentum.talent_selected))) or (momentum.aura_up)))))))',
+            condition_keywords = {
+                'active_enemies',
+                'adds.raid_event_in',
+                'desired_targets',
+                'momentum.aura_up',
+                'momentum.talent_selected',
+            },
+            simc_line = 'actions+=/fury_of_the_illidari,if=active_enemies>desired_targets|raid_event.adds.in>55&(!talent.momentum.enabled|buff.momentum.up)',
         },
         {
             action = 'eye_beam',
@@ -525,19 +604,25 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'throw_glaive',
             condition = 'talent.bloodlet.enabled&spell_targets>=2+talent.chaos_cleave.enabled&(!talent.master_of_the_glaive.enabled|!talent.momentum.enabled|buff.momentum.up)&(spell_targets>=3|raid_event.adds.in>recharge_time+cooldown)',
-            condition_converted = '((bloodlet.talent_selected) and (((((spell_targets_as_number) >= ((2 + chaos_cleave.talent_selected_as_number)))) and (((((((not (master_of_the_glaive.talent_selected))) or ((((not (momentum.talent_selected))) or (momentum.aura_up)))))) and ((((((spell_targets_as_number) >= (3))) or (((raid_event.adds.in_as_number) > ((throw_glaive.spell_recharge_time_as_number + throw_glaive.cooldown_remains_as_number))))))))))))',
+            condition_converted = '((bloodlet.talent_selected) and (((((spell_targets_as_number) >= ((2 + chaos_cleave.talent_selected_as_number)))) and (((((((not (master_of_the_glaive.talent_selected))) or ((((not (momentum.talent_selected))) or (momentum.aura_up)))))) and ((((((spell_targets_as_number) >= (3))) or (((adds.raid_event_in_as_number) > ((throw_glaive.spell_recharge_time_as_number + throw_glaive.cooldown_remains_as_number))))))))))))',
             condition_keywords = {
+                'adds.raid_event_in',
                 'bloodlet.talent_selected',
                 'chaos_cleave.talent_selected',
                 'master_of_the_glaive.talent_selected',
                 'momentum.aura_up',
                 'momentum.talent_selected',
-                'raid_event.adds.in',
                 'spell_targets',
                 'throw_glaive.cooldown_remains',
                 'throw_glaive.spell_recharge_time',
             },
             simc_line = 'actions+=/throw_glaive,if=talent.bloodlet.enabled&spell_targets>=2+talent.chaos_cleave.enabled&(!talent.master_of_the_glaive.enabled|!talent.momentum.enabled|buff.momentum.up)&(spell_targets>=3|raid_event.adds.in>recharge_time+cooldown)',
+        },
+        {
+            action = 'fel_eruption',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/fel_eruption',
         },
         {
             action = 'felblade',
@@ -567,13 +652,13 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'throw_glaive',
             condition = 'talent.bloodlet.enabled&(!talent.master_of_the_glaive.enabled|!talent.momentum.enabled|buff.momentum.up)&raid_event.adds.in>recharge_time+cooldown',
-            condition_converted = '((bloodlet.talent_selected) and (((((((not (master_of_the_glaive.talent_selected))) or ((((not (momentum.talent_selected))) or (momentum.aura_up)))))) and (((raid_event.adds.in_as_number) > ((throw_glaive.spell_recharge_time_as_number + throw_glaive.cooldown_remains_as_number)))))))',
+            condition_converted = '((bloodlet.talent_selected) and (((((((not (master_of_the_glaive.talent_selected))) or ((((not (momentum.talent_selected))) or (momentum.aura_up)))))) and (((adds.raid_event_in_as_number) > ((throw_glaive.spell_recharge_time_as_number + throw_glaive.cooldown_remains_as_number)))))))',
             condition_keywords = {
+                'adds.raid_event_in',
                 'bloodlet.talent_selected',
                 'master_of_the_glaive.talent_selected',
                 'momentum.aura_up',
                 'momentum.talent_selected',
-                'raid_event.adds.in',
                 'throw_glaive.cooldown_remains',
                 'throw_glaive.spell_recharge_time',
             },
@@ -582,14 +667,14 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'eye_beam',
             condition = '!talent.demonic.enabled&((spell_targets.eye_beam_tick>desired_targets&active_enemies>1)|(raid_event.adds.in>45&!variable.pooling_for_meta&buff.metamorphosis.down&(artifact.anguish_of_the_deceiver.enabled|active_enemies>1)))',
-            condition_converted = '(((not (demonic.talent_selected))) and (((((((((spell_targets_as_number) > (desired_targets_as_number))) and (((active_enemies_as_number) > (1)))))) or ((((((raid_event.adds.in_as_number) > (45))) and ((((not (variable.pooling_for_meta))) and (((metamorphosis.aura_down) and ((((anguish_of_the_deceiver.artifact_enabled) or (((active_enemies_as_number) > (1)))))))))))))))))',
+            condition_converted = '(((not (demonic.talent_selected))) and (((((((((spell_targets_as_number) > (desired_targets_as_number))) and (((active_enemies_as_number) > (1)))))) or ((((((adds.raid_event_in_as_number) > (45))) and ((((not (variable.pooling_for_meta))) and (((metamorphosis.aura_down) and ((((anguish_of_the_deceiver.artifact_selected) or (((active_enemies_as_number) > (1)))))))))))))))))',
             condition_keywords = {
                 'active_enemies',
-                'anguish_of_the_deceiver.artifact_enabled',
+                'adds.raid_event_in',
+                'anguish_of_the_deceiver.artifact_selected',
                 'demonic.talent_selected',
                 'desired_targets',
                 'metamorphosis.aura_down',
-                'raid_event.adds.in',
                 'spell_targets',
                 'variable.pooling_for_meta',
             },
@@ -651,15 +736,15 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
         {
             action = 'fel_barrage',
             condition = 'charges=4&buff.metamorphosis.down&(buff.momentum.up|!talent.momentum.enabled)&(active_enemies>desired_targets|raid_event.adds.in>30)',
-            condition_converted = '((((fel_barrage.spell_charges) == (4))) and (((metamorphosis.aura_down) and ((((((momentum.aura_up) or ((not (momentum.talent_selected)))))) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((raid_event.adds.in_as_number) > (30)))))))))))',
+            condition_converted = '((((fel_barrage.spell_charges) == (4))) and (((metamorphosis.aura_down) and ((((((momentum.aura_up) or ((not (momentum.talent_selected)))))) and ((((((active_enemies_as_number) > (desired_targets_as_number))) or (((adds.raid_event_in_as_number) > (30)))))))))))',
             condition_keywords = {
                 'active_enemies',
+                'adds.raid_event_in',
                 'desired_targets',
                 'fel_barrage.spell_charges',
                 'metamorphosis.aura_down',
                 'momentum.aura_up',
                 'momentum.talent_selected',
-                'raid_event.adds.in',
             },
             simc_line = 'actions+=/fel_barrage,if=charges=4&buff.metamorphosis.down&(buff.momentum.up|!talent.momentum.enabled)&(active_enemies>desired_targets|raid_event.adds.in>30)',
         },
@@ -667,13 +752,19 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
             action = 'fel_rush',
             animation_cancel = '1',
             condition = '!talent.momentum.enabled&raid_event.movement.in>charges*10',
-            condition_converted = '(((not (momentum.talent_selected))) and (((raid_event.movement.in_as_number) > ((fel_rush.spell_charges_as_number * 10)))))',
+            condition_converted = '(((not (momentum.talent_selected))) and (((movement.raid_event_in_as_number) > ((fel_rush.spell_charges_as_number * 10)))))',
             condition_keywords = {
                 'fel_rush.spell_charges',
                 'momentum.talent_selected',
-                'raid_event.movement.in',
+                'movement.raid_event_in',
             },
             simc_line = 'actions+=/fel_rush,animation_cancel=1,if=!talent.momentum.enabled&raid_event.movement.in>charges*10',
+        },
+        {
+            action = 'demons_bite',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/demons_bite',
         },
         {
             action = 'throw_glaive',
@@ -719,23 +810,43 @@ internal.actions['legion-dev::demonhunter::havoc'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=the_hungry_magister',
             type = 'the_hungry_magister',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'old_war',
             simc_line = 'actions.precombat+=/potion,name=old_war',
+        },
+        {
+            action = 'metamorphosis',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/metamorphosis',
         },
     },
 }

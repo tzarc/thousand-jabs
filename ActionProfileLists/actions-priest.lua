@@ -4,13 +4,13 @@ internal.actions = internal.actions or {}
 -- keywords: legion-dev::priest::shadow
 ---- active_enemies
 ---- auspicious_spirits.talent_selected
----- bloodlust.spell_react
+---- bloodlust.aura_up
 ---- current_insanity_drain
 ---- fortress_of_the_mind.talent_selected
 ---- gcd
 ---- gcd.max
 ---- insanity.curr
----- insanity_drain_stacks.spell_stack
+---- insanity_drain_stacks.aura_stack
 ---- legacy_of_the_void.talent_selected
 ---- mass_hysteria.artifact_rank
 ---- mind_blast.spell_usable_in
@@ -26,7 +26,7 @@ internal.actions = internal.actions or {}
 ---- shadow_word_death.cooldown_charges
 ---- shadow_word_death.cooldown_up
 ---- shadow_word_pain.aura_remains
----- shadow_word_pain.spell_ticking
+---- shadow_word_pain.aura_up
 ---- shadowform.aura_up
 ---- shadowy_apparitions_in_flight
 ---- shadowy_insight.aura_up
@@ -38,40 +38,40 @@ internal.actions = internal.actions or {}
 ---- time_since_combat_start
 ---- unleash_the_shadows.artifact_rank
 ---- vampiric_touch.aura_remains
----- vampiric_touch.spell_ticking
+---- vampiric_touch.aura_up
 ---- variable.actors_fight_time_mod
 ---- variable.s2mcheck
 ---- void_bolt.cooldown_up
 ---- void_bolt.spell_usable
 ---- void_bolt.spell_usable_in
 ---- void_torrent.cooldown_up
+---- voidform.aura_stack
 ---- voidform.aura_up
----- voidform.spell_stack
 
 internal.actions['legion-dev::priest::shadow'] = {
     default = {
         {
             action = 'potion',
             condition = 'buff.bloodlust.react|target.time_to_die<=40|(buff.voidform.stack>80&buff.power_infusion.up)',
-            condition_converted = '((bloodlust.spell_react) or (((((target.time_to_die_as_number) <= (40))) or ((((((voidform.spell_stack_as_number) > (80))) and (power_infusion.aura_up)))))))',
+            condition_converted = '((bloodlust.aura_up) or (((((target.time_to_die_as_number) <= (40))) or ((((((voidform.aura_stack_as_number) > (80))) and (power_infusion.aura_up)))))))',
             condition_keywords = {
-                'bloodlust.spell_react',
+                'bloodlust.aura_up',
                 'power_infusion.aura_up',
                 'target.time_to_die',
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             name = 'deadly_grace',
             simc_line = 'actions=potion,name=deadly_grace,if=buff.bloodlust.react|target.time_to_die<=40|(buff.voidform.stack>80&buff.power_infusion.up)',
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'actors_fight_time_mod',
             op = 'set',
             simc_line = 'actions+=/variable,op=set,name=actors_fight_time_mod,value=0',
             value = '0',
             value_converted = '0',
-            value_keywords = {
-            },
         },
         {
             action = 'variable',
@@ -111,6 +111,8 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 's2mcheck',
             op = 'set',
             simc_line = 'actions+=/variable,op=set,name=s2mcheck,value=0.8*(135+((raw_haste_pct*25)*(2+(1*talent.reaper_of_souls.enabled)+(2*artifact.mass_hysteria.rank)-(1*talent.sanlayn.enabled))))-(variable.actors_fight_time_mod*nonexecute_actors_pct)',
@@ -127,13 +129,13 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 's2mcheck',
             op = 'min',
             simc_line = 'actions+=/variable,op=min,name=s2mcheck,value=180',
             value = '180',
             value_converted = '180',
-            value_keywords = {
-            },
         },
         {
             action = 'call_action_list',
@@ -158,6 +160,8 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'main',
             simc_line = 'actions+=/call_action_list,name=main',
         },
@@ -249,11 +253,11 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&talent.legacy_of_the_void.enabled&insanity>=70',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((legacy_of_the_void.talent_selected) and (((insanity.curr_as_number) >= (70))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((legacy_of_the_void.talent_selected) and (((insanity.curr_as_number) >= (70))))))',
             condition_keywords = {
                 'insanity.curr',
                 'legacy_of_the_void.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
             },
             cycle_targets = '1',
             simc_line = 'actions.main+=/shadow_word_pain,if=!ticking&talent.legacy_of_the_void.enabled&insanity>=70,cycle_targets=1',
@@ -261,11 +265,11 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&talent.legacy_of_the_void.enabled&insanity>=70',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and (((legacy_of_the_void.talent_selected) and (((insanity.curr_as_number) >= (70))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and (((legacy_of_the_void.talent_selected) and (((insanity.curr_as_number) >= (70))))))',
             condition_keywords = {
                 'insanity.curr',
                 'legacy_of_the_void.talent_selected',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             cycle_targets = '1',
             simc_line = 'actions.main+=/vampiric_touch,if=!ticking&talent.legacy_of_the_void.enabled&insanity>=70,cycle_targets=1',
@@ -317,11 +321,11 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&(talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled))',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'shadowy_insight.talent_selected',
                 'target.time_to_die',
             },
@@ -331,14 +335,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
                 'sanlayn.talent_selected',
                 'target.time_to_die',
                 'unleash_the_shadows.artifact_rank',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             cycle_targets = '1',
             simc_line = 'actions.main+=/vampiric_touch,if=!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank)),cycle_targets=1',
@@ -346,10 +350,10 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&artifact.sphere_of_insanity.rank)',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
             condition_keywords = {
                 'active_enemies',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'sphere_of_insanity.artifact_rank',
                 'target.time_to_die',
             },
@@ -410,25 +414,45 @@ internal.actions['legion-dev::priest::shadow'] = {
             },
             simc_line = 'actions.main+=/mind_spike,if=talent.mind_spike.enabled',
         },
+        {
+            action = 'shadow_word_pain',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.main+=/shadow_word_pain',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_whispered_pact',
             type = 'flask_of_the_whispered_pact',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=azshari_salad',
             type = 'azshari_salad',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
         {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
         },
@@ -440,6 +464,12 @@ internal.actions['legion-dev::priest::shadow'] = {
                 'shadowform.aura_up',
             },
             simc_line = 'actions.precombat+=/shadowform,if=!buff.shadowform.up',
+        },
+        {
+            action = 'mind_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/mind_blast',
         },
     },
     s2m = {
@@ -474,21 +504,21 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'berserking',
             condition = 'buff.voidform.stack>=80',
-            condition_converted = '((voidform.spell_stack_as_number) >= (80))',
+            condition_converted = '((voidform.aura_stack_as_number) >= (80))',
             condition_keywords = {
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.s2m+=/berserking,if=buff.voidform.stack>=80',
         },
         {
             action = 'shadow_word_death',
             condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
-            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 15))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.spell_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
+            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 15))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
             condition_keywords = {
                 'current_insanity_drain',
                 'gcd.max',
                 'insanity.curr',
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'power_infusion.aura_up',
                 'reaper_of_souls.talent_selected',
                 'shadow_word_death.cooldown_charges',
@@ -498,12 +528,12 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_death',
             condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+65)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
-            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 65))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.spell_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
+            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 65))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
             condition_keywords = {
                 'current_insanity_drain',
                 'gcd.max',
                 'insanity.curr',
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'power_infusion.aura_up',
                 'reaper_of_souls.talent_selected',
                 'shadow_word_death.cooldown_charges',
@@ -566,6 +596,12 @@ internal.actions['legion-dev::priest::shadow'] = {
             simc_line = 'actions.s2m+=/void_bolt,if=dot.shadow_word_pain.remains<3.5*gcd&artifact.sphere_of_insanity.rank&target.time_to_die>10,cycle_targets=1',
         },
         {
+            action = 'void_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.s2m+=/void_bolt',
+        },
+        {
             action = 'shadow_word_death',
             condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100',
             condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 15))) < (100))))))',
@@ -592,9 +628,9 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'power_infusion',
             condition = 'buff.insanity_drain_stacks.stack>=77',
-            condition_converted = '((insanity_drain_stacks.spell_stack_as_number) >= (77))',
+            condition_converted = '((insanity_drain_stacks.aura_stack_as_number) >= (77))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
             },
             simc_line = 'actions.s2m+=/power_infusion,if=buff.insanity_drain_stacks.stack>=77',
         },
@@ -622,6 +658,12 @@ internal.actions['legion-dev::priest::shadow'] = {
             simc_line = 'actions.s2m+=/dispersion,if=current_insanity_drain*gcd.max>insanity&!buff.power_infusion.up',
         },
         {
+            action = 'mind_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.s2m+=/mind_blast',
+        },
+        {
             action = 'wait',
             condition = 'action.mind_blast.usable_in<gcd.max*0.28',
             condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
@@ -644,9 +686,9 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadowfiend',
             condition = 'buff.voidform.stack>15',
-            condition_converted = '((voidform.spell_stack_as_number) > (15))',
+            condition_converted = '((voidform.aura_stack_as_number) > (15))',
             condition_keywords = {
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.s2m+=/shadowfiend,if=!talent.mindbender.enabled,if=buff.voidform.stack>15',
         },
@@ -664,11 +706,11 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&(active_enemies<5|talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled|artifact.sphere_of_insanity.rank)',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and ((((((active_enemies_as_number) < (5))) or (((auspicious_spirits.talent_selected) or (((shadowy_insight.talent_selected) or (sphere_of_insanity.artifact_rank)))))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and ((((((active_enemies_as_number) < (5))) or (((auspicious_spirits.talent_selected) or (((shadowy_insight.talent_selected) or (sphere_of_insanity.artifact_rank)))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'shadowy_insight.talent_selected',
                 'sphere_of_insanity.artifact_rank',
             },
@@ -677,24 +719,24 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
                 'sanlayn.talent_selected',
                 'unleash_the_shadows.artifact_rank',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             simc_line = 'actions.s2m+=/vampiric_touch,if=!ticking&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
         },
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&(talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled))',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'shadowy_insight.talent_selected',
                 'target.time_to_die',
             },
@@ -704,14 +746,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
                 'sanlayn.talent_selected',
                 'target.time_to_die',
                 'unleash_the_shadows.artifact_rank',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             cycle_targets = '1',
             simc_line = 'actions.s2m+=/vampiric_touch,if=!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank)),cycle_targets=1',
@@ -719,10 +761,10 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&artifact.sphere_of_insanity.rank)',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
             condition_keywords = {
                 'active_enemies',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'sphere_of_insanity.artifact_rank',
                 'target.time_to_die',
             },
@@ -791,10 +833,10 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'surrender_to_madness',
             condition = 'talent.surrender_to_madness.enabled&insanity>=25&(cooldown.void_bolt.up|cooldown.void_torrent.up|cooldown.shadow_word_death.up|buff.shadowy_insight.up)&target.time_to_die<=variable.s2mcheck-(buff.insanity_drain_stacks.stack)',
-            condition_converted = '((surrender_to_madness.talent_selected) and (((((insanity.curr_as_number) >= (25))) and ((((((void_bolt.cooldown_up) or (((void_torrent.cooldown_up) or (((shadow_word_death.cooldown_up) or (shadowy_insight.aura_up)))))))) and (((target.time_to_die_as_number) <= ((variable.s2mcheck_as_number - (insanity_drain_stacks.spell_stack_as_number))))))))))',
+            condition_converted = '((surrender_to_madness.talent_selected) and (((((insanity.curr_as_number) >= (25))) and ((((((void_bolt.cooldown_up) or (((void_torrent.cooldown_up) or (((shadow_word_death.cooldown_up) or (shadowy_insight.aura_up)))))))) and (((target.time_to_die_as_number) <= ((variable.s2mcheck_as_number - (insanity_drain_stacks.aura_stack_as_number))))))))))',
             condition_keywords = {
                 'insanity.curr',
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'shadow_word_death.cooldown_up',
                 'shadowy_insight.aura_up',
                 'surrender_to_madness.talent_selected',
@@ -817,9 +859,9 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'void_torrent',
             condition = 'dot.shadow_word_pain.remains>5.5&dot.vampiric_touch.remains>5.5&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+60',
-            condition_converted = '((((shadow_word_pain.aura_remains_as_number) > (5.5))) and (((((vampiric_touch.aura_remains_as_number) > (5.5))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.spell_stack_as_number) + 60)))))))))',
+            condition_converted = '((((shadow_word_pain.aura_remains_as_number) > (5.5))) and (((((vampiric_touch.aura_remains_as_number) > (5.5))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.aura_stack_as_number) + 60)))))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'shadow_word_pain.aura_remains',
                 'surrender_to_madness.talent_selected',
                 'target.time_to_die',
@@ -850,9 +892,9 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'mindbender',
             condition = 'talent.mindbender.enabled&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+30',
-            condition_converted = '((mindbender.talent_selected) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.spell_stack_as_number) + 30)))))))',
+            condition_converted = '((mindbender.talent_selected) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.aura_stack_as_number) + 30)))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'mindbender.talent_selected',
                 'surrender_to_madness.talent_selected',
                 'target.time_to_die',
@@ -863,48 +905,48 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'power_infusion',
             condition = 'buff.voidform.stack>=10&buff.insanity_drain_stacks.stack<=30&!talent.surrender_to_madness.enabled',
-            condition_converted = '((((voidform.spell_stack_as_number) >= (10))) and (((((insanity_drain_stacks.spell_stack_as_number) <= (30))) and ((not (surrender_to_madness.talent_selected))))))',
+            condition_converted = '((((voidform.aura_stack_as_number) >= (10))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (30))) and ((not (surrender_to_madness.talent_selected))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'surrender_to_madness.talent_selected',
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.vf+=/power_infusion,if=buff.voidform.stack>=10&buff.insanity_drain_stacks.stack<=30&!talent.surrender_to_madness.enabled',
         },
         {
             action = 'power_infusion',
             condition = 'buff.voidform.stack>=10&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+25',
-            condition_converted = '((((voidform.spell_stack_as_number) >= (10))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.spell_stack_as_number) + 25)))))))',
+            condition_converted = '((((voidform.aura_stack_as_number) >= (10))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.aura_stack_as_number) + 25)))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'surrender_to_madness.talent_selected',
                 'target.time_to_die',
                 'variable.s2mcheck',
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.vf+=/power_infusion,if=buff.voidform.stack>=10&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+25',
         },
         {
             action = 'berserking',
             condition = 'buff.voidform.stack>=10&buff.insanity_drain_stacks.stack<=20&!talent.surrender_to_madness.enabled',
-            condition_converted = '((((voidform.spell_stack_as_number) >= (10))) and (((((insanity_drain_stacks.spell_stack_as_number) <= (20))) and ((not (surrender_to_madness.talent_selected))))))',
+            condition_converted = '((((voidform.aura_stack_as_number) >= (10))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (20))) and ((not (surrender_to_madness.talent_selected))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'surrender_to_madness.talent_selected',
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.vf+=/berserking,if=buff.voidform.stack>=10&buff.insanity_drain_stacks.stack<=20&!talent.surrender_to_madness.enabled',
         },
         {
             action = 'berserking',
             condition = 'buff.voidform.stack>=10&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+60',
-            condition_converted = '((((voidform.spell_stack_as_number) >= (10))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.spell_stack_as_number) + 60)))))))',
+            condition_converted = '((((voidform.aura_stack_as_number) >= (10))) and (((surrender_to_madness.talent_selected) and (((target.time_to_die_as_number) > ((variable.s2mcheck_as_number - (insanity_drain_stacks.aura_stack_as_number) + 60)))))))',
             condition_keywords = {
-                'insanity_drain_stacks.spell_stack',
+                'insanity_drain_stacks.aura_stack',
                 'surrender_to_madness.talent_selected',
                 'target.time_to_die',
                 'variable.s2mcheck',
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.vf+=/berserking,if=buff.voidform.stack>=10&talent.surrender_to_madness.enabled&target.time_to_die>variable.s2mcheck-(buff.insanity_drain_stacks.stack)+60',
         },
@@ -964,6 +1006,12 @@ internal.actions['legion-dev::priest::shadow'] = {
             simc_line = 'actions.vf+=/void_bolt,if=dot.shadow_word_pain.remains<3.5*gcd&artifact.sphere_of_insanity.rank&target.time_to_die>10,cycle_targets=1',
         },
         {
+            action = 'void_bolt',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.vf+=/void_bolt',
+        },
+        {
             action = 'shadow_word_death',
             condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+10)<100',
             condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 10))) < (100))))))',
@@ -999,6 +1047,12 @@ internal.actions['legion-dev::priest::shadow'] = {
             simc_line = 'actions.vf+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable_in<gcd.max*0.28',
         },
         {
+            action = 'mind_blast',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.vf+=/mind_blast',
+        },
+        {
             action = 'wait',
             condition = 'action.mind_blast.usable_in<gcd.max*0.28',
             condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
@@ -1021,9 +1075,9 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadowfiend',
             condition = 'buff.voidform.stack>15',
-            condition_converted = '((voidform.spell_stack_as_number) > (15))',
+            condition_converted = '((voidform.aura_stack_as_number) > (15))',
             condition_keywords = {
-                'voidform.spell_stack',
+                'voidform.aura_stack',
             },
             simc_line = 'actions.vf+=/shadowfiend,if=!talent.mindbender.enabled,if=buff.voidform.stack>15',
         },
@@ -1041,11 +1095,11 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&(active_enemies<5|talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled|artifact.sphere_of_insanity.rank)',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and ((((((active_enemies_as_number) < (5))) or (((auspicious_spirits.talent_selected) or (((shadowy_insight.talent_selected) or (sphere_of_insanity.artifact_rank)))))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and ((((((active_enemies_as_number) < (5))) or (((auspicious_spirits.talent_selected) or (((shadowy_insight.talent_selected) or (sphere_of_insanity.artifact_rank)))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'shadowy_insight.talent_selected',
                 'sphere_of_insanity.artifact_rank',
             },
@@ -1054,24 +1108,24 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
                 'sanlayn.talent_selected',
                 'unleash_the_shadows.artifact_rank',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             simc_line = 'actions.vf+=/vampiric_touch,if=!ticking&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
         },
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&(talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled))',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and ((((auspicious_spirits.talent_selected) or (shadowy_insight.talent_selected))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'shadowy_insight.talent_selected',
                 'target.time_to_die',
             },
@@ -1081,14 +1135,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'vampiric_touch',
             condition = '!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank))',
-            condition_converted = '(((vampiric_touch.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
+            condition_converted = '(((not (vampiric_touch.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (4))) or (((sanlayn.talent_selected) or ((((auspicious_spirits.talent_selected) and (unleash_the_shadows.artifact_rank))))))))))))',
             condition_keywords = {
                 'active_enemies',
                 'auspicious_spirits.talent_selected',
                 'sanlayn.talent_selected',
                 'target.time_to_die',
                 'unleash_the_shadows.artifact_rank',
-                'vampiric_touch.aura_remains',
+                'vampiric_touch.aura_up',
             },
             cycle_targets = '1',
             simc_line = 'actions.vf+=/vampiric_touch,if=!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank)),cycle_targets=1',
@@ -1096,10 +1150,10 @@ internal.actions['legion-dev::priest::shadow'] = {
         {
             action = 'shadow_word_pain',
             condition = '!ticking&target.time_to_die>10&(active_enemies<5&artifact.sphere_of_insanity.rank)',
-            condition_converted = '(((shadow_word_pain.aura_remains == 0)) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
+            condition_converted = '(((not (shadow_word_pain.aura_up))) and (((((target.time_to_die_as_number) > (10))) and ((((((active_enemies_as_number) < (5))) and (sphere_of_insanity.artifact_rank)))))))',
             condition_keywords = {
                 'active_enemies',
-                'shadow_word_pain.aura_remains',
+                'shadow_word_pain.aura_up',
                 'sphere_of_insanity.artifact_rank',
                 'target.time_to_die',
             },
@@ -1163,6 +1217,12 @@ internal.actions['legion-dev::priest::shadow'] = {
                 'mind_spike.talent_selected',
             },
             simc_line = 'actions.vf+=/mind_spike,if=talent.mind_spike.enabled',
+        },
+        {
+            action = 'shadow_word_pain',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.vf+=/shadow_word_pain',
         },
     },
 }

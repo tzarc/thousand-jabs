@@ -21,6 +21,12 @@ internal.actions = internal.actions or {}
 internal.actions['legion-dev::hunter::beast_mastery'] = {
     default = {
         {
+            action = 'auto_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_shot',
+        },
+        {
             action = 'arcane_torrent',
             condition = 'focus.deficit>=30',
             condition_converted = '((focus.deficit_as_number) >= (30))',
@@ -30,9 +36,29 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
             simc_line = 'actions+=/arcane_torrent,if=focus.deficit>=30',
         },
         {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions+=/potion,name=deadly_grace',
+        },
+        {
+            action = 'a_murder_of_crows',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/a_murder_of_crows',
         },
         {
             action = 'stampede',
@@ -95,6 +121,12 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
             simc_line = 'actions+=/titans_thunder,if=cooldown.dire_beast.remains>=3|buff.bestial_wrath.up&pet.dire_beast.active',
         },
         {
+            action = 'bestial_wrath',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/bestial_wrath',
+        },
+        {
             action = 'multi_shot',
             condition = 'spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)',
             condition_converted = '((((spell_targets_as_number) > (4))) and ((((((beast_cleave.aura_remains_as_number) < (gcd.max_as_number))) or (beast_cleave.aura_down)))))',
@@ -105,6 +137,12 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
                 'spell_targets',
             },
             simc_line = 'actions+=/multi_shot,if=spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)',
+        },
+        {
+            action = 'kill_command',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/kill_command',
         },
         {
             action = 'multi_shot',
@@ -144,13 +182,29 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=fishbrul_special',
             type = 'fishbrul_special',
+        },
+        {
+            action = 'summon_pet',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/summon_pet',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
         },
         {
             action = 'potion',
@@ -164,11 +218,15 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
@@ -181,9 +239,8 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
 ---- a_murder_of_crows.spell_duration
 ---- active_enemies
 ---- bloodlust.aura_up
----- bloodlust.spell_react
----- bullseye.spell_react
----- bullseye.spell_stack
+---- bullseye.aura_stack
+---- bullseye.aura_up
 ---- call_action_list.cooldown_remains
 ---- call_action_list.spell_duration
 ---- execute_time
@@ -210,7 +267,6 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
 ---- trueshot.aura_up
 ---- trueshot.cooldown_remains
 ---- trueshot.spell_duration
----- trueshot.spell_react
 ---- volley.talent_selected
 ---- vulnerability.aura_remains
 
@@ -219,13 +275,13 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         {
             action = 'potion',
             condition = 'spell_targets.multishot>2&((buff.trueshot.react&buff.bloodlust.react)|buff.bullseye.react>=23|target.time_to_die<62)',
-            condition_converted = '((((spell_targets_as_number) > (2))) and (((((((trueshot.spell_react) and (bloodlust.spell_react)))) or (((((bullseye.spell_react_as_number) >= (23))) or (((target.time_to_die_as_number) < (62)))))))))',
+            condition_converted = '((((spell_targets_as_number) > (2))) and (((((((trueshot.aura_up) and (bloodlust.aura_up)))) or (((((bullseye.aura_up_as_number) >= (23))) or (((target.time_to_die_as_number) < (62)))))))))',
             condition_keywords = {
-                'bloodlust.spell_react',
-                'bullseye.spell_react',
+                'bloodlust.aura_up',
+                'bullseye.aura_up',
                 'spell_targets',
                 'target.time_to_die',
-                'trueshot.spell_react',
+                'trueshot.aura_up',
             },
             name = 'prolonged_power',
             simc_line = 'actions.cooldowns=potion,name=prolonged_power,if=spell_targets.multishot>2&((buff.trueshot.react&buff.bloodlust.react)|buff.bullseye.react>=23|target.time_to_die<62)',
@@ -233,12 +289,12 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         {
             action = 'potion',
             condition = '(buff.trueshot.react&buff.bloodlust.react)|buff.bullseye.react>=23|target.time_to_die<31',
-            condition_converted = '(((((trueshot.spell_react) and (bloodlust.spell_react)))) or (((((bullseye.spell_react_as_number) >= (23))) or (((target.time_to_die_as_number) < (31))))))',
+            condition_converted = '(((((trueshot.aura_up) and (bloodlust.aura_up)))) or (((((bullseye.aura_up_as_number) >= (23))) or (((target.time_to_die_as_number) < (31))))))',
             condition_keywords = {
-                'bloodlust.spell_react',
-                'bullseye.spell_react',
+                'bloodlust.aura_up',
+                'bullseye.aura_up',
                 'target.time_to_die',
-                'trueshot.spell_react',
+                'trueshot.aura_up',
             },
             name = 'deadly_grace',
             simc_line = 'actions.cooldowns+=/potion,name=deadly_grace,if=(buff.trueshot.react&buff.bloodlust.react)|buff.bullseye.react>=23|target.time_to_die<31',
@@ -246,10 +302,10 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         {
             action = 'trueshot',
             condition = 'time<5|buff.bloodlust.react|target.time_to_die>=(cooldown+duration)|buff.bullseye.react>25|target.time_to_die<16',
-            condition_converted = '((((time_since_combat_start_as_number) < (5))) or (((bloodlust.spell_react) or (((((target.time_to_die_as_number) >= ((trueshot.cooldown_remains_as_number + trueshot.spell_duration_as_number)))) or (((((bullseye.spell_react_as_number) > (25))) or (((target.time_to_die_as_number) < (16))))))))))',
+            condition_converted = '((((time_since_combat_start_as_number) < (5))) or (((bloodlust.aura_up) or (((((target.time_to_die_as_number) >= ((trueshot.cooldown_remains_as_number + trueshot.spell_duration_as_number)))) or (((((bullseye.aura_up_as_number) > (25))) or (((target.time_to_die_as_number) < (16))))))))))',
             condition_keywords = {
-                'bloodlust.spell_react',
-                'bullseye.spell_react',
+                'bloodlust.aura_up',
+                'bullseye.aura_up',
                 'target.time_to_die',
                 'time_since_combat_start',
                 'trueshot.cooldown_remains',
@@ -259,6 +315,12 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         },
     },
     default = {
+        {
+            action = 'auto_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_shot',
+        },
         {
             action = 'arcane_torrent',
             condition = 'focus.deficit>=30&(!talent.sidewinders.enabled|cooldown.sidewinders.charges<2)',
@@ -271,7 +333,27 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             simc_line = 'actions+=/arcane_torrent,if=focus.deficit>=30&(!talent.sidewinders.enabled|cooldown.sidewinders.charges<2)',
         },
         {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'auto_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/auto_shot',
+        },
+        {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'safe_to_build',
             simc_line = 'actions+=/variable,name=safe_to_build,value=debuff.hunters_mark.down|(buff.trueshot.down&buff.marking_targets.down)',
             value = 'debuff.hunters_mark.down|(buff.trueshot.down&buff.marking_targets.down)',
@@ -284,6 +366,8 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         },
         {
             action = 'variable',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'use_multishot',
             simc_line = 'actions+=/variable,name=use_multishot,value=((buff.marking_targets.up|buff.trueshot.up)&spell_targets.multishot>1)|(buff.marking_targets.down&buff.trueshot.down&spell_targets.multishot>2)',
             value = '((buff.marking_targets.up|buff.trueshot.up)&spell_targets.multishot>1)|(buff.marking_targets.down&buff.trueshot.down&spell_targets.multishot>2)',
@@ -327,6 +411,8 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         },
         {
             action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'cooldowns',
             simc_line = 'actions+=/call_action_list,name=cooldowns',
         },
@@ -366,9 +452,9 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         {
             action = 'barrage',
             condition = '(target.time_to_20pct>10|target.health.pct<=20|spell_targets>1)&((buff.trueshot.down|(target.health.pct<=20&buff.bullseye.stack<29)|spell_targets>1)&debuff.hunters_mark.down|(debuff.hunters_mark.remains>execute_time&debuff.vulnerability.remains>execute_time&focus+(focus.regen*debuff.vulnerability.remains)>=90&focus+(focus.regen*debuff.hunters_mark.remains)>=90))',
-            condition_converted = '(((((((target.time_to_20pct_as_number) > (10))) or (((((health.target_percent_as_number) <= (20))) or (((spell_targets_as_number) > (1)))))))) and (((((((((trueshot.aura_down) or ((((((((health.target_percent_as_number) <= (20))) and (((bullseye.spell_stack_as_number) < (29)))))) or (((spell_targets_as_number) > (1)))))))) and (hunters_mark.aura_down))) or ((((((hunters_mark.aura_remains_as_number) > (execute_time_as_number))) and (((((vulnerability.aura_remains_as_number) > (execute_time_as_number))) and ((((((focus.curr_as_number + (focus.regen_as_number * vulnerability.aura_remains_as_number))) >= (90))) and ((((focus.curr_as_number + (focus.regen_as_number * hunters_mark.aura_remains_as_number))) >= (90))))))))))))))',
+            condition_converted = '(((((((target.time_to_20pct_as_number) > (10))) or (((((health.target_percent_as_number) <= (20))) or (((spell_targets_as_number) > (1)))))))) and (((((((((trueshot.aura_down) or ((((((((health.target_percent_as_number) <= (20))) and (((bullseye.aura_stack_as_number) < (29)))))) or (((spell_targets_as_number) > (1)))))))) and (hunters_mark.aura_down))) or ((((((hunters_mark.aura_remains_as_number) > (execute_time_as_number))) and (((((vulnerability.aura_remains_as_number) > (execute_time_as_number))) and ((((((focus.curr_as_number + (focus.regen_as_number * vulnerability.aura_remains_as_number))) >= (90))) and ((((focus.curr_as_number + (focus.regen_as_number * hunters_mark.aura_remains_as_number))) >= (90))))))))))))))',
             condition_keywords = {
-                'bullseye.spell_stack',
+                'bullseye.aura_stack',
                 'execute_time',
                 'focus.curr',
                 'focus.regen',
@@ -416,6 +502,30 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
     },
     open = {
         {
+            action = 'a_murder_of_crows',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open=a_murder_of_crows',
+        },
+        {
+            action = 'trueshot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/trueshot',
+        },
+        {
+            action = 'piercing_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/piercing_shot',
+        },
+        {
+            action = 'explosive_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/explosive_shot',
+        },
+        {
             action = 'barrage',
             condition = '!talent.patient_sniper.enabled',
             condition_converted = '(not (patient_sniper.talent_selected))',
@@ -426,6 +536,8 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         },
         {
             action = 'arcane_shot',
+            condition = 'true',
+            condition_converted = 'true',
             line_cd = '16&!talent.patient_sniper.enabled',
             simc_line = 'actions.open+=/arcane_shot,line_cd=16&!talent.patient_sniper.enabled',
         },
@@ -440,6 +552,12 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
                 'trueshot.aura_remains',
             },
             simc_line = 'actions.open+=/sidewinders,if=(buff.marking_targets.down&buff.trueshot.remains<2)|(charges_fractional>=1.9&focus<80)',
+        },
+        {
+            action = 'marked_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/marked_shot',
         },
         {
             action = 'barrage',
@@ -476,6 +594,24 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             simc_line = 'actions.open+=/aimed_shot,if=buff.lock_and_load.up&execute_time<debuff.vulnerability.remains',
         },
         {
+            action = 'black_arrow',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/black_arrow',
+        },
+        {
+            action = 'barrage',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/barrage',
+        },
+        {
+            action = 'arcane_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/arcane_shot',
+        },
+        {
             action = 'aimed_shot',
             condition = 'execute_time<debuff.vulnerability.remains',
             condition_converted = '((execute_time_as_number) < (vulnerability.aura_remains_as_number))',
@@ -485,17 +621,45 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             },
             simc_line = 'actions.open+=/aimed_shot,if=execute_time<debuff.vulnerability.remains',
         },
+        {
+            action = 'sidewinders',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/sidewinders',
+        },
+        {
+            action = 'aimed_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.open+=/aimed_shot',
+        },
     },
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=nightborne_delicacy_platter',
             type = 'nightborne_delicacy_platter',
+        },
+        {
+            action = 'summon_pet',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/summon_pet',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
         },
         {
             action = 'potion',
@@ -509,11 +673,15 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
         },
         {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'deadly_grace',
             simc_line = 'actions.precombat+=/potion,name=deadly_grace',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
         },
@@ -526,8 +694,26 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             },
             simc_line = 'actions.precombat+=/volley,if=talent.volley.enabled',
         },
+        {
+            action = 'windburst',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/windburst',
+        },
     },
     targetdie = {
+        {
+            action = 'marked_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.targetdie=marked_shot',
+        },
+        {
+            action = 'windburst',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.targetdie+=/windburst',
+        },
         {
             action = 'aimed_shot',
             condition = 'debuff.vulnerability.remains>execute_time&target.time_to_die>execute_time',
@@ -539,8 +725,32 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             },
             simc_line = 'actions.targetdie+=/aimed_shot,if=debuff.vulnerability.remains>execute_time&target.time_to_die>execute_time',
         },
+        {
+            action = 'sidewinders',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.targetdie+=/sidewinders',
+        },
+        {
+            action = 'aimed_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.targetdie+=/aimed_shot',
+        },
+        {
+            action = 'arcane_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.targetdie+=/arcane_shot',
+        },
     },
     trueshotaoe = {
+        {
+            action = 'marked_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.trueshotaoe=marked_shot',
+        },
         {
             action = 'barrage',
             condition = '!talent.patient_sniper.enabled',
@@ -549,6 +759,18 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
                 'patient_sniper.talent_selected',
             },
             simc_line = 'actions.trueshotaoe+=/barrage,if=!talent.patient_sniper.enabled',
+        },
+        {
+            action = 'piercing_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.trueshotaoe+=/piercing_shot',
+        },
+        {
+            action = 'explosive_shot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.trueshotaoe+=/explosive_shot',
         },
         {
             action = 'aimed_shot',
@@ -563,6 +785,12 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
                 'vulnerability.aura_remains',
             },
             simc_line = 'actions.trueshotaoe+=/aimed_shot,if=(!talent.patient_sniper.enabled|talent.trick_shot.enabled)&spell_targets.multishot=2&buff.lock_and_load.up&execute_time<debuff.vulnerability.remains',
+        },
+        {
+            action = 'multishot',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.trueshotaoe+=/multishot',
         },
     },
 }
@@ -581,7 +809,7 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
 ---- gcd
 ---- gcd.max
 ---- lacerate.aura_remains
----- lacerate.spell_ticking
+---- lacerate.aura_up
 ---- moknathal_tactics.aura_down
 ---- moknathal_tactics.aura_remains
 ---- mongoose_bite.cooldown_remains
@@ -589,7 +817,7 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
 ---- mongoose_fury.aura_remains
 ---- mongoose_fury.aura_up
 ---- serpent_sting.aura_remains
----- serpent_sting.spell_ticking
+---- serpent_sting.aura_up
 ---- serpent_sting.talent_selected
 ---- spell_targets
 ---- target.time_to_die
@@ -598,6 +826,12 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
 
 internal.actions['legion-dev::hunter::survival'] = {
     default = {
+        {
+            action = 'auto_attack',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions=auto_attack',
+        },
         {
             action = 'arcane_torrent',
             condition = 'focus.deficit>=30',
@@ -608,6 +842,18 @@ internal.actions['legion-dev::hunter::survival'] = {
             simc_line = 'actions+=/arcane_torrent,if=focus.deficit>=30',
         },
         {
+            action = 'blood_fury',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/blood_fury',
+        },
+        {
+            action = 'berserking',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/berserking',
+        },
+        {
             action = 'potion',
             condition = 'buff.aspect_of_the_eagle.remains',
             condition_converted = 'aspect_of_the_eagle.aura_remains',
@@ -616,6 +862,18 @@ internal.actions['legion-dev::hunter::survival'] = {
             },
             name = 'old_war',
             simc_line = 'actions+=/potion,name=old_war,if=buff.aspect_of_the_eagle.remains',
+        },
+        {
+            action = 'steel_trap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/steel_trap',
+        },
+        {
+            action = 'explosive_trap',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/explosive_trap',
         },
         {
             action = 'raptor_strike',
@@ -629,13 +887,26 @@ internal.actions['legion-dev::hunter::survival'] = {
             simc_line = 'actions+=/raptor_strike,if=talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd.max',
         },
         {
+            action = 'dragonsfire_grenade',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/dragonsfire_grenade',
+        },
+        {
+            action = 'caltrops',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/caltrops',
+        },
+        {
             action = 'carve',
             condition = 'talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)',
-            condition_converted = '((serpent_sting.talent_selected) and (((((active_enemies_as_number) >= (3))) and (((((serpent_sting.aura_remains == 0)) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))',
+            condition_converted = '((serpent_sting.talent_selected) and (((((active_enemies_as_number) >= (3))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))',
             condition_keywords = {
                 'active_enemies',
                 'gcd.max',
                 'serpent_sting.aura_remains',
+                'serpent_sting.aura_up',
                 'serpent_sting.talent_selected',
             },
             cycle_targets = '1',
@@ -644,17 +915,24 @@ internal.actions['legion-dev::hunter::survival'] = {
         {
             action = 'raptor_strike',
             condition = 'talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
-            condition_converted = '((((serpent_sting.talent_selected) and (((((active_enemies_as_number) <= (2))) and (((((serpent_sting.aura_remains == 0)) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))) or (((way_of_the_moknathal.talent_selected) and (moknathal_tactics.aura_down))))',
+            condition_converted = '((((serpent_sting.talent_selected) and (((((active_enemies_as_number) <= (2))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))) or (((way_of_the_moknathal.talent_selected) and (moknathal_tactics.aura_down))))',
             condition_keywords = {
                 'active_enemies',
                 'gcd.max',
                 'moknathal_tactics.aura_down',
                 'serpent_sting.aura_remains',
+                'serpent_sting.aura_up',
                 'serpent_sting.talent_selected',
                 'way_of_the_moknathal.talent_selected',
             },
             cycle_targets = '1',
             simc_line = 'actions+=/raptor_strike,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
+        },
+        {
+            action = 'aspect_of_the_eagle',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/aspect_of_the_eagle',
         },
         {
             action = 'fury_of_the_eagle',
@@ -683,12 +961,18 @@ internal.actions['legion-dev::hunter::survival'] = {
             simc_line = 'actions+=/mongoose_bite,if=buff.aspect_of_the_eagle.up&(charges>=2|charges>=1&cooldown.mongoose_bite.remains<=2)|(buff.mongoose_fury.up|cooldown.fury_of_the_eagle.remains<5|charges=3)',
         },
         {
+            action = 'a_murder_of_crows',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/a_murder_of_crows',
+        },
+        {
             action = 'lacerate',
             condition = 'dot.lacerate.ticking&dot.lacerate.remains<=3|target.time_to_die>=5',
-            condition_converted = '((((lacerate.spell_ticking) and (((lacerate.aura_remains_as_number) <= (3))))) or (((target.time_to_die_as_number) >= (5))))',
+            condition_converted = '((((lacerate.aura_up) and (((lacerate.aura_remains_as_number) <= (3))))) or (((target.time_to_die_as_number) >= (5))))',
             condition_keywords = {
                 'lacerate.aura_remains',
-                'lacerate.spell_ticking',
+                'lacerate.aura_up',
                 'target.time_to_die',
             },
             simc_line = 'actions+=/lacerate,if=dot.lacerate.ticking&dot.lacerate.remains<=3|target.time_to_die>=5',
@@ -734,6 +1018,18 @@ internal.actions['legion-dev::hunter::survival'] = {
             simc_line = 'actions+=/carve,if=spell_targets.carve>=4',
         },
         {
+            action = 'spitting_cobra',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/spitting_cobra',
+        },
+        {
+            action = 'throwing_axes',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/throwing_axes',
+        },
+        {
             action = 'raptor_strike',
             condition = '!talent.throwing_axes.enabled&focus>75-cooldown.flanking_strike.remains*focus.regen',
             condition_converted = '(((not (throwing_axes.talent_selected))) and (((focus.curr_as_number) > ((75 - (flanking_strike.cooldown_remains_as_number * focus.regen_as_number))))))',
@@ -749,23 +1045,49 @@ internal.actions['legion-dev::hunter::survival'] = {
     precombat = {
         {
             action = 'flask',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat=flask,type=flask_of_the_seventh_demon',
             type = 'flask_of_the_seventh_demon',
         },
         {
             action = 'food',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/food,type=seedbattered_fish_plate',
             type = 'seedbattered_fish_plate',
         },
         {
+            action = 'summon_pet',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/summon_pet',
+        },
+        {
+            action = 'snapshot_stats',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/snapshot_stats',
+        },
+        {
             action = 'potion',
+            condition = 'true',
+            condition_converted = 'true',
             name = 'potion_of_the_old_war',
             simc_line = 'actions.precombat+=/potion,name=potion_of_the_old_war',
         },
         {
             action = 'augmentation',
+            condition = 'true',
+            condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
+        },
+        {
+            action = 'harpoon',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.precombat+=/harpoon',
         },
     },
 }

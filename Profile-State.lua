@@ -189,6 +189,7 @@ function Z:CreateNewState(numTargets)
         state.env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
         state.env.player_level = UnitLevel('player')
         state.env.movement.distance = internal.range_to_unit('target')
+        state.env.gcd = Z.currentGCD * state.env.playerHasteMultiplier
 
         -- Reset the prev_gcd/equipped tables
         state.env.prev_gcd = prev_gcd
@@ -294,7 +295,12 @@ function Z:CreateNewState(numTargets)
     function state:ExecuteActionProfileList(listname)
 
         -- Get the requested action list to execute
-        local actionList = profile.parsedActions[listname]
+        local actionList = profile.parsedActions[listname] or {}
+        if #actionList == 0 then
+            DBG("|cFFFF0000%s (ERROR EXECUTING): Invalid list (zero actions): '%s'|r", tostring(listname))
+            internal.error(internal.fmt("|cFFFF0000%s (ERROR EXECUTING): Invalid list (zero actions): '%s'|r", tostring(listname)))
+            return nil
+        end
 
         -- Loop through all the actions in the list
         for i=1,#actionList do
@@ -354,7 +360,7 @@ function Z:CreateNewState(numTargets)
 
                         -- ...we're running another action list, so run that recursively
                         DBG("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.name, action.fullconditionfuncsrc)
-                        local action = state:ExecuteActionProfileList(action.list)
+                        local action = state:ExecuteActionProfileList(action.name)
                         if action then
                             return action
                         end
