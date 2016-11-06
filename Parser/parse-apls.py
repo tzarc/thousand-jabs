@@ -6,12 +6,12 @@ from ExpressionTranslator import ExpressionTranslator
 from ActionContainer import ActionContainer
 
 ###### Simple logic validation
-testCondition = ExpressionTranslator().parse('(a|b&c|d&e|f)|g')
+testCondition = ExpressionTranslator().parse('((a|b&c|d&e|f)|g=-3<2)')
 def pbool(b):
     return "1" if b else "0"
 def test(a, b, c, d, e, f, g):
     r1 = True if eval(testCondition) else False
-    r2 = True if ((a or (b and c) or (d and e) or f) or g) else False
+    r2 = True if (((a or (b and c) or (d and e) or f) or (g == (-3 < 2)))) else False
     if r1 != r2:
         print("a=%s | b=%s & c=%s | d=%s & e=%s | f=%s | g=%s = r1=%s/r2=%s" % (pbool(a), pbool(b), pbool(c), pbool(d), pbool(e), pbool(f), pbool(g), pbool(r1), pbool(r2)))
         raise Exception("Logic did not match!")
