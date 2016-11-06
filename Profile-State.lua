@@ -29,6 +29,14 @@ function Z:CreateNewState(numTargets)
     -- Set up a proxy table which correctly calls functions to retrieve data instead
     state.env = setmetatable({}, {
         __index = function(env, idx)
+            -- Handle conversions to number
+            local asnumbersuffix = "_as_number"
+            if idx:match(asnumbersuffix) then
+                idx = idx:gsub(asnumbersuffix,"")
+                local v = env[idx]
+                return type(v) == 'number' and v or (v and 1 or 0)
+            end
+
             -- Handle incoming damage queries
             local dmgprefix = "incoming_damage_over_"
             if idx:match(dmgprefix) then
@@ -39,6 +47,7 @@ function Z:CreateNewState(numTargets)
                 end
                 return val
             end
+
             -- Forward to the base table
             local e = state.env_base[idx]
             if type(e) == 'function' then
@@ -61,7 +70,7 @@ function Z:CreateNewState(numTargets)
                         return rawget(v, idx) -- allow function calls to the base table ONLY for these keys
                     end
 
-                    -- Handle conversions from bool to number
+                    -- Handle conversions to number
                     local asnumbersuffix = "_as_number"
                     if idx:match(asnumbersuffix) then
                         idx = idx:gsub(asnumbersuffix,"")
@@ -293,7 +302,7 @@ function Z:CreateNewState(numTargets)
             -- Get the action under consideration
             local action = actionList[i]
 
-            if action.name == "variable" then
+            if action.action == "variable" then
 
                 -- Execute the variable value function with the current state
                 setfenv(action.value, state.env)
@@ -302,49 +311,49 @@ function Z:CreateNewState(numTargets)
                 -- If we got a failure, then print out in the debugging and console
                 if not status then
 
-                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
+                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullvaluefuncsrc)
                     internal.error(internal.fmt("Error executing variable function: %s", action.key),
-                        internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.condition))
+                        internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.fullvaluefuncsrc))
 
                 else
 
                     -- Update the value
-                    state.env.variable[action.param_name] = ret
+                    state.env.variable[action.name] = ret
 
-                    DBG("|cFFFF99FF%s ==> '|cFFDD00FF%s|cFFFF99FF': %s|r", action.key, action.param_name, tostring(ret))
+                    DBG("|cFFFF99FF%s ==> '|cFFDD00FF%s|cFFFF99FF': %s|r", action.key, action.name, tostring(ret))
 
                 end
 
                 -- Validate that it isn't blacklisted, and there's a valid check function
-            elseif tcontains(profile.blacklisted, action.name) then
+            elseif tcontains(profile.blacklisted, action.action) then
 
             -- DBG("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
 
-            elseif action.check then -- We have a valid check function
+            elseif action.condition_func then -- We have a valid check function
 
                 -- Execute the check function with the current state
-                setfenv(action.check, state.env)
-                local status, ret = pcall(action.check)
+                setfenv(action.condition_func, state.env)
+                local status, ret = pcall(action.condition_func)
 
                 -- If we got a failure, then print out in the debugging and console
                 if not status then
 
-                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.condition)
+                    DBG("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullconditionfuncsrc)
                     internal.error(internal.fmt("Error executing condition function: %s", action.key),
-                        internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.condition))
+                        internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.fullconditionfuncsrc))
 
                 elseif ret == false then
 
                     -- Ran correctly, but the condition failed...
-                    DBG("|cFFCCCCCC%s: %s|r", action.key, action.condition)
+                    DBG("|cFFCCCCCC%s: %s|r", action.key, action.fullconditionfuncsrc)
 
                 elseif ret == true then
 
                     -- If the condition succeeded....
-                    if action.name == 'call_action_list' or action.name == 'run_action_list' then
+                    if action.action == 'call_action_list' or action.action == 'run_action_list' then
 
                         -- ...we're running another action list, so run that recursively
-                        DBG("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.list, action.condition)
+                        DBG("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.name, action.fullconditionfuncsrc)
                         local action = state:ExecuteActionProfileList(action.list)
                         if action then
                             return action
@@ -353,8 +362,8 @@ function Z:CreateNewState(numTargets)
                     else
 
                         -- We have an ability, so send it back
-                        DBG("|cFF99FF99%s ==> '|cFF00FF00%s|cFF99FF99': %s|r", action.key, action.name, action.condition)
-                        return action.name
+                        DBG("|cFF99FF99%s ==> '|cFF00FF00%s|cFF99FF99': %s|r", action.key, action.action, action.fullconditionfuncsrc)
+                        return action.action
 
                     end
 

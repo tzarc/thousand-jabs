@@ -166,7 +166,7 @@ function Z:PerformUpdate()
 
     if self.currentProfile then
         if internal.devMode and internal.devMode == true then
-            self.currentProfile:ParseAPL()
+            self.currentProfile:LoadActions()
         end
 
         self:ExecuteAllActionProfiles()
@@ -448,4 +448,3 @@ function Z:GetIncomingDamage(timestamp, secs)
     LTC:Release(toDelete)
     return value
 end
-

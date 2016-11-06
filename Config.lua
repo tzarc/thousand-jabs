@@ -250,9 +250,9 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
 
             for aplName,apl in pairs(profile.parsedActions) do
                 for _, entry in pairs(apl) do
-                    local action = rawget(profile.actions, entry.name)
+                    local action = rawget(profile.actions, entry.action)
                     if action then
-                        allActions[--[[action.Name or]] entry.name] = entry.name
+                        allActions[--[[action.Name or]] entry.action] = entry.action
                     end
                 end
             end

@@ -37,16 +37,18 @@ def KeywordModifier(keyword, thisSpell):
         keyword = "(not player.is_casting)"
 
     # Single-word conversions
+    if keyword == "time":
+        keyword = "time_since_combat_start"
     if keyword == "cooldown":
         keyword = "cooldown.THIS_SPELL.remains"
     if keyword == "duration":
-        keyword = "spell.THIS_SPELL.duration"
+        keyword = "aura.THIS_SPELL.duration"
     if keyword == "ticking":
-        keyword = "spell.THIS_SPELL.ticking"
+        keyword = "aura.THIS_SPELL.ticking"
     if keyword == "delay":
         keyword = "spell.THIS_SPELL.delay"
     if keyword == "remains":
-        keyword = "spell.THIS_SPELL.remains"
+        keyword = "aura.THIS_SPELL.remains"
     if keyword == "cast_time":
         keyword = "spell.THIS_SPELL.cast_time"
     if keyword == "tick_time":
@@ -59,6 +61,8 @@ def KeywordModifier(keyword, thisSpell):
         keyword = "spell.THIS_SPELL.max_charges"
     if keyword == "recharge_time":
         keyword = "spell.THIS_SPELL.recharge_time"
+    if keyword == "gcd.remains":
+        keyword = "gcd_remains"
 
     # Convert spell_targets.????? to just spell_targets
     if re.match("^spell_targets\.[a-zA-Z0-9_]+$", keyword):
@@ -89,10 +93,6 @@ def KeywordModifier(keyword, thisSpell):
     keyword = re.sub("_selected$", "_enabled", keyword)
 
     # Convert boolean checks:
-    # -- (blah.spell_up) => (blah.spell_remains > 0)
-    keyword = re.sub("""^(?P<name>[a-zA-Z0-9_\.]+)(?P<tail>_up|_react)$""", "(\g<name>_remains > 0)", keyword)
-    # -- (blah.spell_down) => (blah.spell_remains == 0)
-    keyword = re.sub("""^(?P<name>[a-zA-Z0-9_\.]+)(?P<tail>_down)$""", "(\g<name>_remains == 0)", keyword)
     # -- (not (blah.spell_remains)) => (blah.spell_remains == 0)
     keyword = re.sub("""^\(not \((?P<name>[a-zA-Z0-9_\.]+)(?P<tail>remains)\)\)$""", "(\g<name>\g<tail> == 0)", keyword)
     # -- (not (blah.spell_enabled)) => (blah.spell_selected)
@@ -128,6 +128,12 @@ def KeywordModifier(keyword, thisSpell):
     # Collapse multiple enclosing brackets (if no inner brackets)
     while re.search("""^\(\(([^\(\)]+)\)\)$""", keyword):
         keyword = re.sub("""^\(\((?P<inner>[^\(\)]+)\)\)$""", "(\g<inner>)", keyword)
+
+    # Final keyword substitutions
+    keyword = re.sub('spell_up', 'aura_up', keyword)
+    keyword = re.sub('spell_down', 'aura_down', keyword)
+    keyword = re.sub('spell_remains', 'aura_remains', keyword)
+    keyword = re.sub('talent_enabled', 'talent_selected', keyword)
 
     # Copy out all the keywords we found, so they can be referenced later
     r = re.findall('([a-zA-Z][a-zA-Z0-9\._]*)', keyword)

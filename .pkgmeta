@@ -20,5 +20,4 @@ ignore:
     - cleanup.sh
     - parse-apls.sh
     - perform-tag.sh
-    - test-parser.sh
     - update-apls.sh

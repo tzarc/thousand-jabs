@@ -26,9 +26,33 @@ function Z:RegisterPlayerClass(config)
     self.profiles[config.class_id] = self.profiles[config.class_id] or {}
     self.profiles[config.class_id][config.spec_id] = profile
 
-    function profile:ParseAPL()
-        -- Parse the APL for this class
-        profile.parsedActions = not internal.devMode and profile.parsedActions or Z:ParseActionProfileList(internal.apls[config.action_profile], config.conditional_substitutions)
+    function profile:LoadActions()
+        local emptyEnvironment = setmetatable({ type = _G.type }, { __index = function() return nil end })
+        local counts = {}
+        for listName,listTable in pairs(internal.actions[config.action_profile]) do
+            counts[listName] = counts[listName] or {}
+            for _,entry in pairs(listTable) do
+                counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
+                entry.key = fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
+
+                entry.precondition = entry.action == ("run_action_list" or entry.action == "call_action_list") and "true" or fmt("%s.spell_can_cast", entry.action)
+                if type(entry.sync) ~= "nil" then
+                    entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.sync, entry.sync, entry.sync)
+                end
+
+                if type(entry.condition_func) == "nil" and type(entry.condition_converted) ~= "nil" then
+                    entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, entry.condition_converted)
+                    entry.condition_func = Z:LoadFunctionString(fmt("return function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
+                end
+
+                if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
+                    entry.fullvaluefuncsrc = entry.value_converted
+                    entry.value_func = Z:LoadFunctionString(fmt("return function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
+                end
+            end
+        end
+
+        profile.parsedActions = internal.actions[config.action_profile]
     end
 
     function profile:FindActionForSpellID(spellID)
@@ -51,8 +75,8 @@ function Z:RegisterPlayerClass(config)
         profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
         local actions = profile.actions
 
-        -- Parse the APL
-        self:ParseAPL()
+        -- Load the actions table
+        self:LoadActions()
 
         -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
         profile.guessed = Z:DetectAbilitiesFromSpellBook()
