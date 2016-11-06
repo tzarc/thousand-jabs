@@ -113,7 +113,7 @@ append_action_profiles_from_branch() {
     fi
     IFS=$OIFS
 
-    (cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
+    (cd "${BASE_DIR}/simc" && git pull && cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
     local NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}-${playerclass}_${charspec}.simc"

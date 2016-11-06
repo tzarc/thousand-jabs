@@ -135,18 +135,18 @@ internal.actions['legion-dev::paladin::protection'] = {
     prot = {
         {
             action = 'seraphim',
-            condition = 'talent.seraphim.enabled&action.shield_of_the_righteous.charges>=1.99',
-            condition_converted = '((seraphim.talent_selected) and (((shield_of_the_righteous.spell_charges_as_number) >= (1.99))))',
+            condition = 'talent.seraphim.enabled&action.shield_of_the_righteous.charges>=2',
+            condition_converted = '((seraphim.talent_selected) and (((shield_of_the_righteous.spell_charges_as_number) >= (2))))',
             condition_keywords = {
                 'seraphim.talent_selected',
                 'shield_of_the_righteous.spell_charges',
             },
-            simc_line = 'actions.prot=seraphim,if=talent.seraphim.enabled&action.shield_of_the_righteous.charges>=1.99',
+            simc_line = 'actions.prot=seraphim,if=talent.seraphim.enabled&action.shield_of_the_righteous.charges>=2',
         },
         {
             action = 'shield_of_the_righteous',
-            condition = '(!talent.seraphim.enabled|action.shield_of_the_righteous.charges>1.99)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
-            condition_converted = '((((((not (seraphim.talent_selected))) or (((shield_of_the_righteous.spell_charges_as_number) > (1.99)))))) and ((not ((((eye_of_tyr.aura_up) and (((aegis_of_light.aura_up) and (((ardent_defender.aura_up) and (((guardian_of_ancient_kings.aura_up) and (((divine_shield.aura_up) and (potion.aura_up)))))))))))))))',
+            condition = '(!talent.seraphim.enabled|action.shield_of_the_righteous.charges>2)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
+            condition_converted = '((((((not (seraphim.talent_selected))) or (((shield_of_the_righteous.spell_charges_as_number) > (2)))))) and ((not ((((eye_of_tyr.aura_up) and (((aegis_of_light.aura_up) and (((ardent_defender.aura_up) and (((guardian_of_ancient_kings.aura_up) and (((divine_shield.aura_up) and (potion.aura_up)))))))))))))))',
             condition_keywords = {
                 'aegis_of_light.aura_up',
                 'ardent_defender.aura_up',
@@ -157,7 +157,7 @@ internal.actions['legion-dev::paladin::protection'] = {
                 'seraphim.talent_selected',
                 'shield_of_the_righteous.spell_charges',
             },
-            simc_line = 'actions.prot+=/shield_of_the_righteous,if=(!talent.seraphim.enabled|action.shield_of_the_righteous.charges>1.99)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
+            simc_line = 'actions.prot+=/shield_of_the_righteous,if=(!talent.seraphim.enabled|action.shield_of_the_righteous.charges>2)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
         },
         {
             action = 'shield_of_the_righteous',
@@ -176,6 +176,23 @@ internal.actions['legion-dev::paladin::protection'] = {
                 'seraphim.talent_selected',
             },
             simc_line = 'actions.prot+=/shield_of_the_righteous,if=(talent.bastion_of_light.enabled&talent.seraphim.enabled&buff.seraphim.up&cooldown.bastion_of_light.up)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
+        },
+        {
+            action = 'shield_of_the_righteous',
+            condition = '(talent.bastion_of_light.enabled&!talent.seraphim.enabled&cooldown.bastion_of_light.up)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
+            condition_converted = '(((((bastion_of_light.talent_selected) and ((((not (seraphim.talent_selected))) and (bastion_of_light.cooldown_up)))))) and ((not ((((eye_of_tyr.aura_up) and (((aegis_of_light.aura_up) and (((ardent_defender.aura_up) and (((guardian_of_ancient_kings.aura_up) and (((divine_shield.aura_up) and (potion.aura_up)))))))))))))))',
+            condition_keywords = {
+                'aegis_of_light.aura_up',
+                'ardent_defender.aura_up',
+                'bastion_of_light.cooldown_up',
+                'bastion_of_light.talent_selected',
+                'divine_shield.aura_up',
+                'eye_of_tyr.aura_up',
+                'guardian_of_ancient_kings.aura_up',
+                'potion.aura_up',
+                'seraphim.talent_selected',
+            },
+            simc_line = 'actions.prot+=/shield_of_the_righteous,if=(talent.bastion_of_light.enabled&!talent.seraphim.enabled&cooldown.bastion_of_light.up)&!(debuff.eye_of_tyr.up&buff.aegis_of_light.up&buff.ardent_defender.up&buff.guardian_of_ancient_kings.up&buff.divine_shield.up&buff.potion.up)',
         },
         {
             action = 'bastion_of_light',

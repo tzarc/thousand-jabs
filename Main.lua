@@ -165,7 +165,7 @@ function Z:PerformUpdate()
     LUC:UpdateUnitCache('target')
 
     if self.currentProfile then
-        if internal.devMode and internal.devMode == true then
+        if internal.devMode == true then
             self.currentProfile:LoadActions()
         end
 

@@ -215,7 +215,7 @@ function internal.DBGSTR()
     return tconcat(dbglist, '\n  ')
 end
 
-function TJ:DBG(...)
+function internal.TJ:DBG(...)
     internal.DBG(...)
 end
 

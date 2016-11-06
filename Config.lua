@@ -46,7 +46,7 @@ end
 
 function internal.GetSpecConf(e)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
+    return internal.GetConf("class", classID, "spec", specID, "config", e)
 end
 
 function TJ:GetSpecConf(e)

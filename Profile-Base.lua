@@ -27,46 +27,48 @@ function Z:RegisterPlayerClass(config)
     self.profiles[config.class_id][config.spec_id] = profile
 
     function profile:LoadActions()
-        local emptyEnvironment = setmetatable({ type = _G.type }, { __index = function() return nil end })
-        local counts = {}
-        for listName,listTable in pairs(internal.actions[config.action_profile]) do
-            counts[listName] = counts[listName] or {}
-            for _,entry in pairs(listTable) do
-                counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
-                entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
-                    and fmt("%s:%s[%s]", listName, entry.action, entry.name)
-                    or fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
+        if internal.devMode or not profile.parsedActions then
+            local emptyEnvironment = setmetatable({ type = _G.type }, { __index = function() return nil end })
+            local counts = {}
+            for listName,listTable in pairs(internal.actions[config.action_profile]) do
+                counts[listName] = counts[listName] or {}
+                for _,entry in pairs(listTable) do
+                    counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
+                    entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
+                        and fmt("%s:%s[%s]", listName, entry.action, entry.name)
+                        or fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
 
-                entry.precondition = (entry.action == "run_action_list" or entry.action == "call_action_list")
-                    and "true"
-                    or fmt("%s.spell_can_cast", entry.action)
-                if type(entry.sync) ~= "nil" then
-                    entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.sync, entry.sync, entry.sync)
-                end
-
-                if type(entry.condition_func) == "nil" and type(entry.condition_converted) ~= "nil" then
-                    entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, entry.condition_converted)
-                    if config.conditional_substitutions then
-                        for _,e in pairs(config.conditional_substitutions) do
-                            entry.fullconditionfuncsrc = entry.fullconditionfuncsrc:gsub(e[1], e[2])
-                        end
+                    entry.precondition = (entry.action == "run_action_list" or entry.action == "call_action_list")
+                        and "true"
+                        or fmt("%s.spell_can_cast", entry.action)
+                    if type(entry.sync) ~= "nil" then
+                        entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.sync, entry.sync, entry.sync)
                     end
-                    entry.condition_func = Z:LoadFunctionString(fmt("return function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
-                end
 
-                if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
-                    entry.fullvaluefuncsrc = entry.value_converted
-                    if config.conditional_substitutions then
-                        for _,e in pairs(config.conditional_substitutions) do
-                            entry.fullvaluefuncsrc = entry.fullvaluefuncsrc:gsub(e[1], e[2])
+                    if type(entry.condition_func) == "nil" and type(entry.condition_converted) ~= "nil" then
+                        entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, entry.condition_converted)
+                        if config.conditional_substitutions then
+                            for _,e in pairs(config.conditional_substitutions) do
+                                entry.fullconditionfuncsrc = entry.fullconditionfuncsrc:gsub(e[1], e[2])
+                            end
                         end
+                        entry.condition_func = Z:LoadFunctionString(fmt("return function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
                     end
-                    entry.value_func = Z:LoadFunctionString(fmt("return function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
+
+                    if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
+                        entry.fullvaluefuncsrc = entry.value_converted
+                        if config.conditional_substitutions then
+                            for _,e in pairs(config.conditional_substitutions) do
+                                entry.fullvaluefuncsrc = entry.fullvaluefuncsrc:gsub(e[1], e[2])
+                            end
+                        end
+                        entry.value_func = Z:LoadFunctionString(fmt("return function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
+                    end
                 end
             end
-        end
 
-        profile.parsedActions = internal.actions[config.action_profile]
+            profile.parsedActions = internal.actions[config.action_profile]
+        end
     end
 
     function profile:FindActionForSpellID(spellID)
