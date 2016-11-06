@@ -147,6 +147,21 @@ function Z:ExportAbilitiesFromSpellBook()
     addline("}")
     addline("")
 
+    -- Artifact traits
+    -- /run for p=1,1500 do local spellId,_,_,maxRank,_,x,y,_,isStart,isGoldMedal,isFinal = C_ArtifactUI.GetPowerInfo(p); if (spellId ~= nil) then print(p, GetSpellInfo(spellId), maxRank, x, y, isStart, isGoldMedal, isFinal) end end
+    addline("local artifact_traits_list = {")
+    for traitId=1,1500 do
+        local traitData = { C_ArtifactUI.GetPowerInfo(traitId) }
+        local spellId = traitData[1]
+        local isAbility = traitData[8]
+        if spellId ~= nil and isAbility then
+            local name = GetSpellInfo(spellId)
+            addline("    { %d, %d, \"%s\" },", traitId, spellId, name or '')
+        end
+    end
+    addline("}")
+    addline("")
+
     -- Display the exported data
     self:OpenDebugWindow(addonName .. ' Actions Data Export', export)
 

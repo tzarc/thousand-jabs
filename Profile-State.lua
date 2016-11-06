@@ -311,8 +311,8 @@ function Z:CreateNewState(numTargets)
             if action.action == "variable" then
 
                 -- Execute the variable value function with the current state
-                setfenv(action.value, state.env)
-                local status, ret = pcall(action.value)
+                setfenv(action.value_func, state.env)
+                local status, ret = pcall(action.value_func)
 
                 -- If we got a failure, then print out in the debugging and console
                 if not status then

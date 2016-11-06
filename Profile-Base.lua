@@ -46,11 +46,17 @@ function Z:RegisterPlayerClass(config)
 
                 if type(entry.condition_func) == "nil" and type(entry.condition_converted) ~= "nil" then
                     entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, entry.condition_converted)
+                    for _,e in pairs(config.conditional_substitutions) do
+                        entry.fullconditionfuncsrc = entry.fullconditionfuncsrc:gsub(e[1], e[2])
+                    end
                     entry.condition_func = Z:LoadFunctionString(fmt("return function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
                 end
 
                 if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
                     entry.fullvaluefuncsrc = entry.value_converted
+                    for _,e in pairs(config.conditional_substitutions) do
+                        entry.fullvaluefuncsrc = entry.fullvaluefuncsrc:gsub(e[1], e[2])
+                    end
                     entry.value_func = Z:LoadFunctionString(fmt("return function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
                 end
             end
@@ -233,6 +239,9 @@ function Z:RegisterPlayerClass(config)
                     end
                     v.spell_charges = function(spell, env)
                         return (spell.cooldown_remains > 0) and 0 or 1
+                    end
+                    v.cooldown_ready = function(spell, env)
+                        return (spell.cooldown_remains == 0) and true or false
                     end
                 end
 

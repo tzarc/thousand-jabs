@@ -59,9 +59,10 @@ local vengeance_base_overrides = {
     },
     infernal_strike = {
         in_flight = false,
+        travel_time = 1,
         spell_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_duration or 0 end,
         spell_delay = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_delay or 0 end,
-        spell_remains = function(spell,env) return env.flame_crash.talent_selected and spell.spell_duration - spell.actual_time_since_last_cast or 0 end,
+        aura_remains = function(spell,env) return env.flame_crash.talent_selected and spell.spell_duration - spell.actual_time_since_last_cast or 0 end,
 
         -- Why do these use a different spellID?!
         actual_cast_spellid = 189111,
@@ -152,7 +153,7 @@ local function sigilInitialiser(duration)
         spell_delay = function(spell, env) return env.quickened_sigils.talent_selected and 1 or 2 end,
         spell_duration = function(spell, env) return 8 + spell.spell_delay end,
         placed = function(spell, env) return spell.time_since_last_cast < spell.spell_duration end,
-        spell_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
+        aura_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
     }
 end
 
@@ -217,9 +218,9 @@ Z:RegisterPlayerClass({
         fiery_demise_selected = true,
     },
     conditional_substitutions = {
-        { " in_flight ", " infernal_strike.in_flight " },
-        { " travel_time ", " 1 " }, -- infernal_strike.travel_time
-        { " sigil_placed ", " any_flame_sigil.placed " },
+        { "in_flight", "infernal_strike.in_flight" },
+        { "travel_time", "infernal_strike.travel_time" },
+        { "sigil_placed", "any_flame_sigil.placed" },
     },
 })
 
