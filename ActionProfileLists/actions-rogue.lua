@@ -15,11 +15,13 @@ internal.actions = internal.actions or {}
 ---- elaborate_planning.aura_remains
 ---- elaborate_planning.talent_selected
 ---- energy.deficit
+---- energy.time_to_max
 ---- exsanguinate.cooldown_remains
 ---- exsanguinate.talent_selected
 ---- exsanguinated
 ---- garrote.aura_remains
 ---- garrote.spell_refreshable
+---- mutilated_flesh.spell_refreshable
 ---- nightstalker.talent_selected
 ---- prev_gcd.rupture
 ---- refreshable
@@ -27,8 +29,10 @@ internal.actions = internal.actions or {}
 ---- rupture.aura_up
 ---- rupture.spell_exsanguinated
 ---- rupture.spell_refreshable
+---- set_bonus.tier19_2pc
+---- shadow_focus.talent_selected
 ---- spell_targets
----- stealthed
+---- stealthed.rogue
 ---- subterfuge.talent_selected
 ---- target.time_to_die
 ---- the_dreadlords_deceit.aura_stack
@@ -38,6 +42,60 @@ internal.actions = internal.actions or {}
 ---- vendetta.cooldown_remains
 
 internal.actions['legion-dev::rogue::assassination'] = {
+    build = {
+        {
+            action = 'hemorrhage',
+            condition = 'refreshable',
+            condition_converted = 'refreshable',
+            condition_keywords = {
+                'refreshable',
+            },
+            simc_line = 'actions.build=hemorrhage,if=refreshable',
+        },
+        {
+            action = 'hemorrhage',
+            condition = 'refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
+            condition_converted = '((refreshable) and (((rupture.aura_up) and (((spell_targets_as_number) <= (3))))))',
+            condition_keywords = {
+                'refreshable',
+                'rupture.aura_up',
+                'spell_targets',
+            },
+            cycle_targets = '1',
+            simc_line = 'actions.build+=/hemorrhage,cycle_targets=1,if=refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
+        },
+        {
+            action = 'fan_of_knives',
+            condition = 'spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
+            condition_converted = '((((spell_targets_as_number) >= (3))) or (((the_dreadlords_deceit.aura_stack_as_number) >= (29))))',
+            condition_keywords = {
+                'spell_targets',
+                'the_dreadlords_deceit.aura_stack',
+            },
+            simc_line = 'actions.build+=/fan_of_knives,if=spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
+        },
+        {
+            action = 'mutilate',
+            condition = '(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)|(set_bonus.tier19_2pc=1&dot.mutilated_flesh.refreshable)',
+            condition_converted = '((((((not (agonizing_poison.talent_selected))) and (deadly_poison_dot.spell_refreshable)))) or ((((((agonizing_poison.talent_selected) and (((agonizing_poison.aura_remains_as_number) < ((agonizing_poison.spell_duration_as_number * 0.3))))))) or ((((((set_bonus.tier19_2pc) == (1))) and (mutilated_flesh.spell_refreshable)))))))',
+            condition_keywords = {
+                'agonizing_poison.aura_remains',
+                'agonizing_poison.spell_duration',
+                'agonizing_poison.talent_selected',
+                'deadly_poison_dot.spell_refreshable',
+                'mutilated_flesh.spell_refreshable',
+                'set_bonus.tier19_2pc',
+            },
+            cycle_targets = '1',
+            simc_line = 'actions.build+=/mutilate,cycle_targets=1,if=(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)|(set_bonus.tier19_2pc=1&dot.mutilated_flesh.refreshable)',
+        },
+        {
+            action = 'mutilate',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions.build+=/mutilate',
+        },
+    },
     cds = {
         {
             action = 'potion',
@@ -114,34 +172,41 @@ internal.actions['legion-dev::rogue::assassination'] = {
         },
         {
             action = 'vanish',
-            condition = 'talent.exsanguinate.enabled&talent.nightstalker.enabled&combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1',
-            condition_converted = '((exsanguinate.talent_selected) and (((nightstalker.talent_selected) and (((((combo_points_as_number) >= (cp_max_spend_as_number))) and (((exsanguinate.cooldown_remains_as_number) < (1))))))))',
+            condition = 'talent.nightstalker.enabled&combo_points>=cp_max_spend&((talent.exsanguinate.enabled&cooldown.exsanguinate.remains<1)|(!talent.exsanguinate.enabled&dot.rupture.refreshable))',
+            condition_converted = '((nightstalker.talent_selected) and (((((combo_points_as_number) >= (cp_max_spend_as_number))) and (((((((exsanguinate.talent_selected) and (((exsanguinate.cooldown_remains_as_number) < (1)))))) or (((((not (exsanguinate.talent_selected))) and (rupture.spell_refreshable))))))))))',
             condition_keywords = {
                 'combo_points',
                 'cp_max_spend',
                 'exsanguinate.cooldown_remains',
                 'exsanguinate.talent_selected',
                 'nightstalker.talent_selected',
+                'rupture.spell_refreshable',
             },
-            simc_line = 'actions.cds+=/vanish,if=talent.exsanguinate.enabled&talent.nightstalker.enabled&combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1',
+            simc_line = 'actions.cds+=/vanish,if=talent.nightstalker.enabled&combo_points>=cp_max_spend&((talent.exsanguinate.enabled&cooldown.exsanguinate.remains<1)|(!talent.exsanguinate.enabled&dot.rupture.refreshable))',
         },
         {
             action = 'vanish',
-            condition = '(!talent.exsanguinate.enabled&talent.nightstalker.enabled&combo_points>=cp_max_spend&dot.rupture.refreshable)|(talent.subterfuge.enabled&dot.garrote.refreshable)',
-            condition_converted = '((((((not (exsanguinate.talent_selected))) and (((nightstalker.talent_selected) and (((((combo_points_as_number) >= (cp_max_spend_as_number))) and (rupture.spell_refreshable)))))))) or ((((subterfuge.talent_selected) and (garrote.spell_refreshable)))))',
+            condition = 'talent.subterfuge.enabled&dot.garrote.refreshable&((spell_targets.fan_of_knives<=3&combo_points.deficit>=1+spell_targets.fan_of_knives)|(spell_targets.fan_of_knives>=4&combo_points.deficit>=4))',
+            condition_converted = '((subterfuge.talent_selected) and (((garrote.spell_refreshable) and (((((((((spell_targets_as_number) <= (3))) and (((combo_points.deficit_as_number) >= ((1 + spell_targets_as_number))))))) or ((((((spell_targets_as_number) >= (4))) and (((combo_points.deficit_as_number) >= (4))))))))))))',
             condition_keywords = {
-                'combo_points',
-                'cp_max_spend',
-                'exsanguinate.talent_selected',
+                'combo_points.deficit',
                 'garrote.spell_refreshable',
-                'nightstalker.talent_selected',
-                'rupture.spell_refreshable',
+                'spell_targets',
                 'subterfuge.talent_selected',
             },
-            simc_line = 'actions.cds+=/vanish,if=(!talent.exsanguinate.enabled&talent.nightstalker.enabled&combo_points>=cp_max_spend&dot.rupture.refreshable)|(talent.subterfuge.enabled&dot.garrote.refreshable)',
+            simc_line = 'actions.cds+=/vanish,if=talent.subterfuge.enabled&dot.garrote.refreshable&((spell_targets.fan_of_knives<=3&combo_points.deficit>=1+spell_targets.fan_of_knives)|(spell_targets.fan_of_knives>=4&combo_points.deficit>=4))',
         },
-    },
-    default = {
+        {
+            action = 'vanish',
+            condition = 'talent.shadow_focus.enabled&energy.time_to_max>=2&combo_points.deficit>=4',
+            condition_converted = '((shadow_focus.talent_selected) and (((((energy.time_to_max_as_number) >= (2))) and (((combo_points.deficit_as_number) >= (4))))))',
+            condition_keywords = {
+                'combo_points.deficit',
+                'energy.time_to_max',
+                'shadow_focus.talent_selected',
+            },
+            simc_line = 'actions.cds+=/vanish,if=talent.shadow_focus.enabled&energy.time_to_max>=2&combo_points.deficit>=4',
+        },
         {
             action = 'exsanguinate',
             condition = 'prev_gcd.rupture&dot.rupture.remains>4+4*cp_max_spend',
@@ -151,46 +216,95 @@ internal.actions['legion-dev::rogue::assassination'] = {
                 'prev_gcd.rupture',
                 'rupture.aura_remains',
             },
-            simc_line = 'actions=exsanguinate,if=prev_gcd.rupture&dot.rupture.remains>4+4*cp_max_spend',
+            simc_line = 'actions.cds+=/exsanguinate,if=prev_gcd.rupture&dot.rupture.remains>4+4*cp_max_spend',
         },
-        {
-            action = 'rupture',
-            condition = 'talent.nightstalker.enabled&stealthed',
-            condition_converted = '((nightstalker.talent_selected) and (stealthed))',
-            condition_keywords = {
-                'nightstalker.talent_selected',
-                'stealthed',
-            },
-            simc_line = 'actions+=/rupture,if=talent.nightstalker.enabled&stealthed',
-        },
-        {
-            action = 'garrote',
-            condition = 'talent.subterfuge.enabled&stealthed',
-            condition_converted = '((subterfuge.talent_selected) and (stealthed))',
-            condition_keywords = {
-                'stealthed',
-                'subterfuge.talent_selected',
-            },
-            simc_line = 'actions+=/garrote,if=talent.subterfuge.enabled&stealthed',
-        },
+    },
+    default = {
         {
             action = 'call_action_list',
             condition = 'true',
             condition_converted = 'true',
             name = 'cds',
-            simc_line = 'actions+=/call_action_list,name=cds',
+            simc_line = 'actions=call_action_list,name=cds',
         },
         {
+            action = 'call_action_list',
+            condition = 'true',
+            condition_converted = 'true',
+            name = 'maintain',
+            simc_line = 'actions+=/call_action_list,name=maintain',
+        },
+        {
+            action = 'call_action_list',
+            condition = '(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)&(!dot.rupture.refreshable|(dot.rupture.exsanguinated&dot.rupture.remains>=3.5)|target.time_to_die-dot.rupture.remains<=4)&active_dot.rupture>=spell_targets.rupture',
+            condition_converted = '((((((not (exsanguinate.talent_selected))) or (((exsanguinate.cooldown_remains_as_number) > (2)))))) and (((((((not (rupture.spell_refreshable))) or ((((((rupture.spell_exsanguinated) and (((rupture.aura_remains_as_number) >= (3.5)))))) or ((((target.time_to_die_as_number - rupture.aura_remains_as_number)) <= (4)))))))) and (((active_dot.rupture_as_number) >= (spell_targets_as_number))))))',
+            condition_keywords = {
+                'active_dot.rupture',
+                'exsanguinate.cooldown_remains',
+                'exsanguinate.talent_selected',
+                'rupture.aura_remains',
+                'rupture.spell_exsanguinated',
+                'rupture.spell_refreshable',
+                'spell_targets',
+                'target.time_to_die',
+            },
+            name = 'finish',
+            simc_line = 'actions+=/call_action_list,name=finish,if=(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)&(!dot.rupture.refreshable|(dot.rupture.exsanguinated&dot.rupture.remains>=3.5)|target.time_to_die-dot.rupture.remains<=4)&active_dot.rupture>=spell_targets.rupture',
+        },
+        {
+            action = 'call_action_list',
+            condition = '(combo_points.deficit>0|energy.time_to_max<1)',
+            condition_converted = '(((((combo_points.deficit_as_number) > (0))) or (((energy.time_to_max_as_number) < (1)))))',
+            condition_keywords = {
+                'combo_points.deficit',
+                'energy.time_to_max',
+            },
+            name = 'build',
+            simc_line = 'actions+=/call_action_list,name=build,if=(combo_points.deficit>0|energy.time_to_max<1)',
+        },
+    },
+    finish = {
+        {
+            action = 'death_from_above',
+            condition = 'combo_points>=cp_max_spend',
+            condition_converted = '((combo_points_as_number) >= (cp_max_spend_as_number))',
+            condition_keywords = {
+                'combo_points',
+                'cp_max_spend',
+            },
+            simc_line = 'actions.finish=death_from_above,if=combo_points>=cp_max_spend',
+        },
+        {
+            action = 'envenom',
+            condition = 'combo_points>=cp_max_spend|(talent.elaborate_planning.enabled&combo_points>=3+!talent.exsanguinate.enabled&buff.elaborate_planning.remains<2)',
+            condition_converted = '((((combo_points_as_number) >= (cp_max_spend_as_number))) or ((((elaborate_planning.talent_selected) and (((((combo_points_as_number) >= ((3 + (not (exsanguinate.talent_selected)))))) and (((elaborate_planning.aura_remains_as_number) < (2)))))))))',
+            condition_keywords = {
+                'combo_points',
+                'cp_max_spend',
+                'elaborate_planning.aura_remains',
+                'elaborate_planning.talent_selected',
+                'exsanguinate.talent_selected',
+            },
+            simc_line = 'actions.finish+=/envenom,if=combo_points>=cp_max_spend|(talent.elaborate_planning.enabled&combo_points>=3+!talent.exsanguinate.enabled&buff.elaborate_planning.remains<2)',
+        },
+    },
+    maintain = {
+        {
             action = 'rupture',
-            condition = 'talent.exsanguinate.enabled&combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1',
-            condition_converted = '((exsanguinate.talent_selected) and (((((combo_points_as_number) >= (cp_max_spend_as_number))) and (((exsanguinate.cooldown_remains_as_number) < (1))))))',
+            condition = '(talent.nightstalker.enabled&stealthed.rogue)|(talent.exsanguinate.enabled&((combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1)|(!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2))))',
+            condition_converted = '(((((nightstalker.talent_selected) and (stealthed.rogue)))) or ((((exsanguinate.talent_selected) and (((((((((combo_points_as_number) >= (cp_max_spend_as_number))) and (((exsanguinate.cooldown_remains_as_number) < (1)))))) or (((((not (rupture.aura_up))) and ((((((time_since_combat_start_as_number) > (10))) or (((combo_points_as_number) >= ((2 + (urge_to_kill.artifact_selected_as_number * 2))))))))))))))))))',
             condition_keywords = {
                 'combo_points',
                 'cp_max_spend',
                 'exsanguinate.cooldown_remains',
                 'exsanguinate.talent_selected',
+                'nightstalker.talent_selected',
+                'rupture.aura_up',
+                'stealthed.rogue',
+                'time_since_combat_start',
+                'urge_to_kill.artifact_selected',
             },
-            simc_line = 'actions+=/rupture,if=talent.exsanguinate.enabled&combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1',
+            simc_line = 'actions.maintain=rupture,if=(talent.nightstalker.enabled&stealthed.rogue)|(talent.exsanguinate.enabled&((combo_points>=cp_max_spend&cooldown.exsanguinate.remains<1)|(!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2))))',
         },
         {
             action = 'rupture',
@@ -206,24 +320,26 @@ internal.actions['legion-dev::rogue::assassination'] = {
                 'target.time_to_die',
             },
             cycle_targets = '1',
-            simc_line = 'actions+=/rupture,cycle_targets=1,if=combo_points>=cp_max_spend-talent.exsanguinate.enabled&refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4',
+            simc_line = 'actions.maintain+=/rupture,cycle_targets=1,if=combo_points>=cp_max_spend-talent.exsanguinate.enabled&refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4',
         },
         {
             action = 'kingsbane',
-            condition = 'talent.exsanguinate.enabled&dot.rupture.exsanguinated',
-            condition_converted = '((exsanguinate.talent_selected) and (rupture.spell_exsanguinated))',
+            condition = '(talent.exsanguinate.enabled&dot.rupture.exsanguinated)|(!talent.exsanguinate.enabled&(debuff.vendetta.up|cooldown.vendetta.remains>10))',
+            condition_converted = '(((((exsanguinate.talent_selected) and (rupture.spell_exsanguinated)))) or (((((not (exsanguinate.talent_selected))) and ((((vendetta.aura_up) or (((vendetta.cooldown_remains_as_number) > (10))))))))))',
             condition_keywords = {
                 'exsanguinate.talent_selected',
                 'rupture.spell_exsanguinated',
+                'vendetta.aura_up',
+                'vendetta.cooldown_remains',
             },
-            simc_line = 'actions+=/kingsbane,if=talent.exsanguinate.enabled&dot.rupture.exsanguinated',
+            simc_line = 'actions.maintain+=/kingsbane,if=(talent.exsanguinate.enabled&dot.rupture.exsanguinated)|(!talent.exsanguinate.enabled&(debuff.vendetta.up|cooldown.vendetta.remains>10))',
         },
         {
             action = 'pool_resource',
             condition = 'true',
             condition_converted = 'true',
             for_next = '1',
-            simc_line = 'actions+=/pool_resource,for_next=1',
+            simc_line = 'actions.maintain+=/pool_resource,for_next=1',
         },
         {
             action = 'garrote',
@@ -236,98 +352,7 @@ internal.actions['legion-dev::rogue::assassination'] = {
                 'target.time_to_die',
             },
             cycle_targets = '1',
-            simc_line = 'actions+=/garrote,cycle_targets=1,if=refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4',
-        },
-        {
-            action = 'envenom',
-            condition = '(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)&!dot.rupture.refreshable&active_dot.rupture>=spell_targets.fan_of_knives&((!talent.elaborate_planning.enabled&combo_points>=cp_max_spend)|(talent.elaborate_planning.enabled&combo_points>=3+!talent.exsanguinate.enabled&buff.elaborate_planning.remains<2))',
-            condition_converted = '((((((not (exsanguinate.talent_selected))) or (((exsanguinate.cooldown_remains_as_number) > (2)))))) and ((((not (rupture.spell_refreshable))) and (((((active_dot.rupture_as_number) >= (spell_targets_as_number))) and ((((((((not (elaborate_planning.talent_selected))) and (((combo_points_as_number) >= (cp_max_spend_as_number)))))) or ((((elaborate_planning.talent_selected) and (((((combo_points_as_number) >= ((3 + (not (exsanguinate.talent_selected)))))) and (((elaborate_planning.aura_remains_as_number) < (2))))))))))))))))',
-            condition_keywords = {
-                'active_dot.rupture',
-                'combo_points',
-                'cp_max_spend',
-                'elaborate_planning.aura_remains',
-                'elaborate_planning.talent_selected',
-                'exsanguinate.cooldown_remains',
-                'exsanguinate.talent_selected',
-                'rupture.spell_refreshable',
-                'spell_targets',
-            },
-            simc_line = 'actions+=/envenom,if=(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)&!dot.rupture.refreshable&active_dot.rupture>=spell_targets.fan_of_knives&((!talent.elaborate_planning.enabled&combo_points>=cp_max_spend)|(talent.elaborate_planning.enabled&combo_points>=3+!talent.exsanguinate.enabled&buff.elaborate_planning.remains<2))',
-        },
-        {
-            action = 'rupture',
-            condition = 'talent.exsanguinate.enabled&!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2)',
-            condition_converted = '((exsanguinate.talent_selected) and ((((not (rupture.aura_up))) and ((((((time_since_combat_start_as_number) > (10))) or (((combo_points_as_number) >= ((2 + (urge_to_kill.artifact_selected_as_number * 2)))))))))))',
-            condition_keywords = {
-                'combo_points',
-                'exsanguinate.talent_selected',
-                'rupture.aura_up',
-                'time_since_combat_start',
-                'urge_to_kill.artifact_selected',
-            },
-            simc_line = 'actions+=/rupture,if=talent.exsanguinate.enabled&!ticking&(time>10|combo_points>=2+artifact.urge_to_kill.enabled*2)',
-        },
-        {
-            action = 'hemorrhage',
-            condition = 'refreshable',
-            condition_converted = 'refreshable',
-            condition_keywords = {
-                'refreshable',
-            },
-            simc_line = 'actions+=/hemorrhage,if=refreshable',
-        },
-        {
-            action = 'hemorrhage',
-            condition = 'refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
-            condition_converted = '((refreshable) and (((rupture.aura_up) and (((spell_targets_as_number) <= (3))))))',
-            condition_keywords = {
-                'refreshable',
-                'rupture.aura_up',
-                'spell_targets',
-            },
-            simc_line = 'actions+=/hemorrhage,target_if=max:dot.rupture.duration,if=refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3',
-            target_if = 'max:dot.rupture.duration',
-        },
-        {
-            action = 'kingsbane',
-            condition = '!talent.exsanguinate.enabled&(debuff.vendetta.up|cooldown.vendetta.remains>10)',
-            condition_converted = '(((not (exsanguinate.talent_selected))) and ((((vendetta.aura_up) or (((vendetta.cooldown_remains_as_number) > (10)))))))',
-            condition_keywords = {
-                'exsanguinate.talent_selected',
-                'vendetta.aura_up',
-                'vendetta.cooldown_remains',
-            },
-            simc_line = 'actions+=/kingsbane,if=!talent.exsanguinate.enabled&(debuff.vendetta.up|cooldown.vendetta.remains>10)',
-        },
-        {
-            action = 'fan_of_knives',
-            condition = 'spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
-            condition_converted = '((((spell_targets_as_number) >= (3))) or (((the_dreadlords_deceit.aura_stack_as_number) >= (29))))',
-            condition_keywords = {
-                'spell_targets',
-                'the_dreadlords_deceit.aura_stack',
-            },
-            simc_line = 'actions+=/fan_of_knives,if=spell_targets>=3|buff.the_dreadlords_deceit.stack>=29',
-        },
-        {
-            action = 'mutilate',
-            condition = '(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)',
-            condition_converted = '((((((not (agonizing_poison.talent_selected))) and (deadly_poison_dot.spell_refreshable)))) or ((((agonizing_poison.talent_selected) and (((agonizing_poison.aura_remains_as_number) < ((agonizing_poison.spell_duration_as_number * 0.3))))))))',
-            condition_keywords = {
-                'agonizing_poison.aura_remains',
-                'agonizing_poison.spell_duration',
-                'agonizing_poison.talent_selected',
-                'deadly_poison_dot.spell_refreshable',
-            },
-            cycle_targets = '1',
-            simc_line = 'actions+=/mutilate,cycle_targets=1,if=(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)',
-        },
-        {
-            action = 'mutilate',
-            condition = 'true',
-            condition_converted = 'true',
-            simc_line = 'actions+=/mutilate',
+            simc_line = 'actions.maintain+=/garrote,cycle_targets=1,if=refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4',
         },
     },
     precombat = {
@@ -432,7 +457,7 @@ internal.actions['legion-dev::rogue::assassination'] = {
 ---- slice_and_dice.aura_remains
 ---- slice_and_dice.talent_selected
 ---- spell_targets
----- stealthed
+---- stealthed.rogue
 ---- target.time_to_die
 ---- time_since_combat_start
 ---- true_bearing.aura_remains
@@ -667,15 +692,15 @@ internal.actions['legion-dev::rogue::outlaw'] = {
         },
         {
             action = 'call_action_list',
-            condition = 'stealthed|cooldown.vanish.up|cooldown.shadowmeld.up',
-            condition_converted = '((stealthed) or (((vanish.cooldown_up) or (shadowmeld.cooldown_up))))',
+            condition = 'stealthed.rogue|cooldown.vanish.up|cooldown.shadowmeld.up',
+            condition_converted = '((stealthed.rogue) or (((vanish.cooldown_up) or (shadowmeld.cooldown_up))))',
             condition_keywords = {
                 'shadowmeld.cooldown_up',
-                'stealthed',
+                'stealthed.rogue',
                 'vanish.cooldown_up',
             },
             name = 'stealth',
-            simc_line = 'actions+=/call_action_list,name=stealth,if=stealthed|cooldown.vanish.up|cooldown.shadowmeld.up',
+            simc_line = 'actions+=/call_action_list,name=stealth,if=stealthed.rogue|cooldown.vanish.up|cooldown.shadowmeld.up',
         },
         {
             action = 'death_from_above',
@@ -901,13 +926,12 @@ internal.actions['legion-dev::rogue::outlaw'] = {
 ---- premeditation.talent_selected
 ---- refreshable
 ---- shadow_blades.aura_up
----- shadow_dance.aura_up
 ---- shadow_dance.cooldown_charges
 ---- shadowmeld.aura_down
----- shadowmeld.aura_up
 ---- shadowmeld.cooldown_up
 ---- spell_targets
----- stealthed
+---- stealthed.all
+---- stealthed.rogue
 ---- symbols_of_death.aura_remains
 ---- symbols_of_death.spell_duration
 ---- target.distance
@@ -958,55 +982,54 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         },
         {
             action = 'blood_fury',
-            condition = 'stealthed',
-            condition_converted = 'stealthed',
+            condition = 'stealthed.rogue',
+            condition_converted = 'stealthed.rogue',
             condition_keywords = {
-                'stealthed',
+                'stealthed.rogue',
             },
-            simc_line = 'actions.cds+=/blood_fury,if=stealthed',
+            simc_line = 'actions.cds+=/blood_fury,if=stealthed.rogue',
         },
         {
             action = 'berserking',
-            condition = 'stealthed',
-            condition_converted = 'stealthed',
+            condition = 'stealthed.rogue',
+            condition_converted = 'stealthed.rogue',
             condition_keywords = {
-                'stealthed',
+                'stealthed.rogue',
             },
-            simc_line = 'actions.cds+=/berserking,if=stealthed',
+            simc_line = 'actions.cds+=/berserking,if=stealthed.rogue',
         },
         {
             action = 'arcane_torrent',
-            condition = 'stealthed&energy.deficit>70',
-            condition_converted = '((stealthed) and (((energy.deficit_as_number) > (70))))',
+            condition = 'stealthed.rogue&energy.deficit>70',
+            condition_converted = '((stealthed.rogue) and (((energy.deficit_as_number) > (70))))',
             condition_keywords = {
                 'energy.deficit',
-                'stealthed',
+                'stealthed.rogue',
             },
-            simc_line = 'actions.cds+=/arcane_torrent,if=stealthed&energy.deficit>70',
+            simc_line = 'actions.cds+=/arcane_torrent,if=stealthed.rogue&energy.deficit>70',
         },
         {
             action = 'shadow_blades',
-            condition = '!(stealthed|buff.shadowmeld.up)',
-            condition_converted = '(not ((((stealthed) or (shadowmeld.aura_up)))))',
+            condition = '!stealthed.all',
+            condition_converted = '(not (stealthed.all))',
             condition_keywords = {
-                'shadowmeld.aura_up',
-                'stealthed',
+                'stealthed.all',
             },
-            simc_line = 'actions.cds+=/shadow_blades,if=!(stealthed|buff.shadowmeld.up)',
+            simc_line = 'actions.cds+=/shadow_blades,if=!stealthed.all',
         },
         {
             action = 'goremaws_bite',
-            condition = '!buff.shadow_dance.up&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+talent.vigor.enabled*25-(time>=10)*15)|target.time_to_die<8)',
-            condition_converted = '(((not (shadow_dance.aura_up))) and (((((((((combo_points.deficit_as_number) >= ((4 - ((((time_since_combat_start_as_number) < (10))) * 2))))) and (((energy.deficit_as_number) > ((50 + (vigor.talent_selected_as_number * 25) - ((((time_since_combat_start_as_number) >= (10))) * 15)))))))) or (((target.time_to_die_as_number) < (8)))))))',
+            condition = '!stealthed.all&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+talent.vigor.enabled*25-(time>=10)*15)|target.time_to_die<8)',
+            condition_converted = '(((not (stealthed.all))) and (((((((((combo_points.deficit_as_number) >= ((4 - ((((time_since_combat_start_as_number) < (10))) * 2))))) and (((energy.deficit_as_number) > ((50 + (vigor.talent_selected_as_number * 25) - ((((time_since_combat_start_as_number) >= (10))) * 15)))))))) or (((target.time_to_die_as_number) < (8)))))))',
             condition_keywords = {
                 'combo_points.deficit',
                 'energy.deficit',
-                'shadow_dance.aura_up',
+                'stealthed.all',
                 'target.time_to_die',
                 'time_since_combat_start',
                 'vigor.talent_selected',
             },
-            simc_line = 'actions.cds+=/goremaws_bite,if=!buff.shadow_dance.up&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+talent.vigor.enabled*25-(time>=10)*15)|target.time_to_die<8)',
+            simc_line = 'actions.cds+=/goremaws_bite,if=!stealthed.all&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+talent.vigor.enabled*25-(time>=10)*15)|target.time_to_die<8)',
         },
         {
             action = 'marked_for_death',
@@ -1062,14 +1085,13 @@ internal.actions['legion-dev::rogue::subtlety'] = {
         },
         {
             action = 'run_action_list',
-            condition = 'stealthed|buff.shadowmeld.up',
-            condition_converted = '((stealthed) or (shadowmeld.aura_up))',
+            condition = 'stealthed.all',
+            condition_converted = 'stealthed.all',
             condition_keywords = {
-                'shadowmeld.aura_up',
-                'stealthed',
+                'stealthed.all',
             },
             name = 'stealthed',
-            simc_line = 'actions+=/run_action_list,name=stealthed,if=stealthed|buff.shadowmeld.up',
+            simc_line = 'actions+=/run_action_list,name=stealthed,if=stealthed.all',
         },
         {
             action = 'call_action_list',

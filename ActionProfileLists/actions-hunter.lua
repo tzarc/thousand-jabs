@@ -267,7 +267,6 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
 ---- trueshot.aura_up
 ---- trueshot.cooldown_remains
 ---- trueshot.spell_duration
----- volley.talent_selected
 ---- vulnerability.aura_remains
 
 internal.actions['legion-dev::hunter::marksmanship'] = {
@@ -343,6 +342,13 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             condition = 'true',
             condition_converted = 'true',
             simc_line = 'actions+=/berserking',
+        },
+        {
+            action = 'volley',
+            condition = 'true',
+            condition_converted = 'true',
+            simc_line = 'actions+=/volley,toggle=on',
+            toggle = 'on',
         },
         {
             action = 'auto_shot',
@@ -684,15 +690,6 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
             condition_converted = 'true',
             simc_line = 'actions.precombat+=/augmentation,type=defiled',
             type = 'defiled',
-        },
-        {
-            action = 'volley',
-            condition = 'talent.volley.enabled',
-            condition_converted = 'volley.talent_selected',
-            condition_keywords = {
-                'volley.talent_selected',
-            },
-            simc_line = 'actions.precombat+=/volley,if=talent.volley.enabled',
         },
         {
             action = 'windburst',
