@@ -73,6 +73,7 @@ create_apl_file() {
     [[ ! -d "$(dirname "${OUTFILE}")" ]] && mkdir -p "$(dirname "${OUTFILE}")"
     echo 'local _, internal = ...' >> ${OUTFILE}
     echo 'internal.apls = internal.apls or {}' >> ${OUTFILE}
+    echo 'internal.actions = internal.actions or {}' >> ${OUTFILE}
     echo >> ${OUTFILE}
 }
 
@@ -87,13 +88,16 @@ append_action_profile() {
     DATA=$(cat "${simcfile}" | grep -P '^action')
 
     if [[ ! -z "${DATA}" ]] ; then
-        echo "internal.apls[\"${branch}::${playerclass}::${charspec}\"] = [[" >> ${OUTFILE}
-        echo "${DATA}" >> ${OUTFILE}
-        echo "]]" >> ${OUTFILE}
-        echo >> ${OUTFILE}
+        echo "internal.apls[\"${branch}::${playerclass}::${charspec}\"] = [[" >> "${OUTFILE}"
+        echo "${DATA}" >> "${OUTFILE}"
+        echo "]]" >> "${OUTFILE}"
+        echo >> "${OUTFILE}"
 
-        "${BASE_DIR}/parse-apls.sh" "${simcfile}" > "Temp/${branch}-${playerclass}_${charspec}.parsed.txt" 2>"Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt"
+        "${BASE_DIR}/parse-apls.sh" "${playerclass}" "${branch}::${playerclass}::${charspec}" "${simcfile}" > "Temp/${branch}-${playerclass}_${charspec}.parsed.txt" 2>"Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt"
         [[ ! -s "Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt" ]] && rm "Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt"
+
+        cat "Temp/${branch}-${playerclass}_${charspec}.parsed.txt" >> "${OUTFILE}"
+        echo >> "${OUTFILE}"
     fi
 }
 
@@ -162,3 +166,5 @@ echo '</Ui>' >> Classes/all.xml
 
 ./cleanup.sh
 ./test-parser.sh
+
+grep -r ERROR "${BASE_DIR}/ActionProfileLists"

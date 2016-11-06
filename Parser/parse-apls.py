@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import sys, re
+import sys, re, json
 from itertools import product
 from ExpressionTranslator import ExpressionTranslator
+from ActionContainer import ActionContainer
 
 ###### Simple logic validation
 testCondition = ExpressionTranslator().parse('(a|b&c|d&e|f)|g')
@@ -142,40 +143,80 @@ def ConvertExpression(expr, thisSpell):
 actionMatcher = re.compile("""actions((\.(?P<list>[a-zA-Z0-9]+))?)([\+]?=[\/]?)(?P<action>[^,]+),(?P<params>.*)""")
 paramMatcher = re.compile("""(?P<name>[^=]+)=(?P<value>.*)""")
 
-for arg in sys.argv:
-    if arg[-5:] == ".simc":
-        f = open(arg, 'r')
-        for line in f:
-            if line[:6] == "action":
-                line = line.rstrip()
-                result = actionMatcher.match(line)
-                if result != None:
-                    print("\n\n\n------------------------------------------------------------------------------------------------------------------------")
-                    print("Line: %s" % line)
-                    action = result.group('action')
-                    print("Action: %s" % action)
-                    actionList = result.group('list')
-                    if actionList == None:
-                        actionList = 'default'
-                    print("List: %s" % actionList)
-                    params = result.group('params').split(",")
-                    if len(params) > 0:
-                        print("Params:")
-                        for param in params:
-                            paramresult = paramMatcher.match(param)
-                            if paramresult != None:
-                                name = paramresult.group('name')
-                                value = paramresult.group('value')
-                                print("  %s: %s" % (name, value))
-                                if name == "if":
-                                    try:
-                                        print("  %s: %s" % (name, ConvertExpression(value, action)))
-                                    except Exception as e:
-                                        print("\n\nERROR!\n\n"+str(e)+"\n\n")
-                                        sys.stderr.write("\n\nERROR!\n\n"+str(e)+"\n\n")
 
-skippedKeywords = set(['&', '&&', 'and', '|', '||', 'or', 'not', '(', ')', '=', '==', '<', '<=', '>', '>=', '+', '-', '*', '/', '%'])
-print('\n\n\nUsed keywords:')
-for kw in sorted(set(usedKeywords)):
-    if not kw in skippedKeywords:
-        print("    %s" % kw)
+# sys.argv[0] == parse-apls.py
+# sys.argv[1] == class (monk)
+# sys.argv[2] == spec-identifier (legion-dev::monk::brewmaster)
+# sys.argv[3] == monk_brewmaster.simc
+className = sys.argv[1]
+specId = sys.argv[2]
+simcFile = sys.argv[3]
+
+actionContainer = ActionContainer(className = className, specId = specId)
+
+def GetConvertedAndKeywords(expr, thisSpell):
+    try:
+        converted = ConvertExpression(expr, action)
+        r = re.findall('([a-zA-Z][a-zA-Z0-9\._]*)', converted)
+        convertedKeywords = []
+        for kw in r:
+            kw = re.sub('_as_number$', '', kw)
+            convertedKeywords.append(kw)
+        return (expr, converted, convertedKeywords)
+    except Exception as e:
+        print("\n\n]] ]] ]] ]] ]] @@@ ERROR! @@@ [[ [[ [[ [[ [[\n\n"+str(e)+"\n\n")
+        sys.stderr.write("\n\nERROR!\n\n"+str(e)+"\n\n")
+        return (expr, '', [])
+
+
+if simcFile[-5:] == ".simc":
+    f = open(simcFile, 'r')
+    for line in f:
+        if line[:6] == "action":
+            line = line.rstrip()
+            result = actionMatcher.match(line)
+            if result != None:
+                action = result.group('action')
+                actionList = result.group('list')
+                if actionList == None:
+                    actionList = 'default'
+
+                actionDict = {
+                    'simc_line': line,
+                    'action': action,
+                }
+
+                params = result.group('params').split(",")
+                if len(params) > 0:
+                    for param in params:
+                        paramresult = paramMatcher.match(param)
+                        if paramresult != None:
+                            name = paramresult.group('name')
+                            value = paramresult.group('value')
+                            if name == "if":
+                                name = "condition"
+                            actionDict[name] = value
+
+                            if name == "condition":
+                                try:
+                                    (expr, converted, convertedKeywords) = GetConvertedAndKeywords(value, action)
+                                    actionDict["%s_converted" % name] = converted
+                                    actionDict['%s_keywords' % name] = convertedKeywords
+                                except Exception as e:
+                                    print("\n\n]] ]] ]] ]] ]] @@@ ERROR! @@@ [[ [[ [[ [[ [[\n\n"+str(e)+"\n\n")
+                                    sys.stderr.write("\n\nERROR!\n\n"+str(e)+"\n\n")
+
+                if actionDict['action'] == 'variable':
+                    (expr, converted, convertedKeywords) = GetConvertedAndKeywords(actionDict['value'], action)
+                    actionDict["value_converted"] = converted
+                    actionDict['value_keywords'] = convertedKeywords
+
+
+                actionContainer.AddEntry(actionList, actionDict)
+
+    skippedKeywords = set(['&', '&&', 'and', '|', '||', 'or', 'not', '(', ')', '=', '==', '<', '<=', '>', '>=', '+', '-', '*', '/', '%'])
+    for kw in sorted(set(usedKeywords)):
+        if not kw in skippedKeywords:
+            actionContainer.AddKeyword(kw)
+
+print(actionContainer.Render())

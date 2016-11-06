@@ -1,3 +1,3 @@
 #!/bin/bash
-lua Profile-APLParser.lua >test-parser-output.txt 2>&1
+lua Profile-APLParser.lua 2>&1 | tee test-parser-output.txt
 echo "Parser output generated in file: test-parser-output.txt"

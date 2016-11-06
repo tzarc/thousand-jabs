@@ -21,7 +21,7 @@ class ExpressionTranslator(NodeVisitor):
         Factor = Primary (Mul / Div)*
         Mul = "*" Primary
         Div = "%" Primary
-        Primary = FloorOp / CeilOp / Parens / Not / Variable
+        Primary = FloorOp / CeilOp / Parens / Not / Variable / Sub
         Not = NotOp Term
         NotOp = "!"
         Variable = ~"[a-zA-Z0-9\._]+"
