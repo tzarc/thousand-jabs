@@ -7,6 +7,7 @@ local defaultConf = {
     scale = 1,
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
+    backgroundOpacity = 0.3,
     position = {
         offsetX = 0,
         offsetY = -180,
@@ -110,9 +111,24 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                             Z.actionsFrame:SetScale(val)
                         end
                     },
+                    backgroundOpacity = {
+                        type = "range",
+                        order = 14,
+                        name = L["Background Opacity"],
+                        min = 0.0,
+                        max = 1.0,
+                        step = 0.05,
+                        get = function(info)
+                            return internal.GetConf("backgroundOpacity")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "backgroundOpacity")
+                            Z.actionsFrame:SetBackdropColor(0, 0, 0, val)
+                        end
+                    },
                     outOfCombatHide = {
                         type = "toggle",
-                        order = 14,
+                        order = 15,
                         name = L["Hide out-of-combat"],
                         get = function(info)
                             return (internal.GetConf("outOfCombatAlpha") == 0) and true or false

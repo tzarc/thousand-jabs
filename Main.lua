@@ -189,11 +189,11 @@ function Z:PerformUpdate()
     if self.actionsFrame then
         -- Update icon textures
         for i=1,4 do
-            self.actionsFrame.iconFrames.singleTarget[i].tex:SetTexture(self.results.single_target[i].icon)
+            self.actionsFrame.iconFrames.singleTarget[i].icon:SetTexture(self.results.single_target[i].icon)
         end
         for i=1,2 do
-            self.actionsFrame.iconFrames.cleave[i].tex:SetTexture(self.results.cleave[i].icon)
-            self.actionsFrame.iconFrames.aoe[i].tex:SetTexture(self.results.aoe[i].icon)
+            self.actionsFrame.iconFrames.cleave[i].icon:SetTexture(self.results.cleave[i].icon)
+            self.actionsFrame.iconFrames.aoe[i].icon:SetTexture(self.results.aoe[i].icon)
         end
 
         -- Let the current profile do its screen updates
@@ -360,7 +360,7 @@ function Z:OnEnable()
 
     -- Create the UI
     if not self.actionsFrame then
-        self.actionsFrame = self:CreateFrames()
+        self.actionsFrame = self:GetModule('UI'):CreateFrames()
         self.actionsFrame:EnableMouse(self.movable)
         self:UpdateAlpha()
 
