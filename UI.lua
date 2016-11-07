@@ -145,6 +145,7 @@ function UI:CreateSingleIconFrame(name, parent, size, xOffset, yOffset, bindPoin
     btn.xOffset = xOffset
     btn.yOffset = yOffset
     UI:ApplyDefaultTheming(btn)
+    btn:EnableMouse(false)
     btn:Show()
 
     local MSQ = LibStub('Masque', true)
