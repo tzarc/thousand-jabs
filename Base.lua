@@ -246,6 +246,7 @@ local function equippedItems()
 end
 
 function Z:GenerateDebuggingInformation()
+    local UI = self:GetModule('UI')
     local export = {
         ['!tj_version'] = GetAddOnMetadata(addonName, "X-Curse-Packaged-Version"),
         ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
@@ -256,8 +257,8 @@ function Z:GenerateDebuggingInformation()
             talent_info = tierSelections(),
         },
         frame = {
-            position = { self.actionsFrame:GetPoint() },
-            scale = self.actionsFrame:GetScale(),
+            position = { UI:GetPoint() },
+            scale = UI:GetScale(),
         },
         errors = {
             global = {
@@ -404,6 +405,7 @@ function Z:OpenConfigDialog()
 end
 
 function Z:ToggleMovement()
+    local UI = self:GetModule('UI')
     if self.movable then
         self.movable = false
         self:Print('Frame movement disabled.')
@@ -411,17 +413,17 @@ function Z:ToggleMovement()
         self.movable = true
         self:Print('Frame movement enabled.')
     end
-    self.actionsFrame:SetMovable(self.movable)
-    self.actionsFrame:EnableMouse(self.movable)
+    UI:SetMovable(self.movable)
+    UI:EnableMouse(self.movable)
 end
 
 function Z:ResetPosition()
+    local UI = self:GetModule('UI')
     self:Print('Resetting position.')
     internal.SetConf(nil, "position")
-    self.actionsFrame:ClearAllPoints()
-    self.actionsFrame:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
-    self.actionsFrame:SetMovable(self.movable)
-    self.actionsFrame:EnableMouse(self.movable)
+    UI:ReapplyLayout()
+    UI:SetMovable(self.movable)
+    UI:EnableMouse(self.movable)
 end
 
 ------------------------------------------------------------------------------------------------------------------------

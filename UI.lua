@@ -7,12 +7,93 @@ local LDB = LibStub("LibDataBroker-1.1")
 
 internal.WrapGlobalAccess()
 
--- Geometry
-local stFrameSizes = { 80, 60, 40, 30 }
-local cleaveFrameSizes = { 40, 25 }
-local aoeFrameSizes = { 35, 20 }
 local padding = 4
-local totalWidth = padding * 7 + aoeFrameSizes[1] + cleaveFrameSizes[1] + stFrameSizes[1] + stFrameSizes[2] + stFrameSizes[3] + stFrameSizes[4]
+
+UI.SINGLE_TARGET = 1
+UI.CLEAVE = 2
+UI.AOE = 3
+
+-- Geometry
+local frameSize = {
+    [UI.SINGLE_TARGET] = { 80, 60, 40, 30 },
+    [UI.CLEAVE] = { 40, 25 },
+    [UI.AOE] = { 35, 20 },
+}
+
+local actionFrames = {
+    actions = {
+        [UI.SINGLE_TARGET] = {},
+        [UI.CLEAVE] = {},
+        [UI.AOE] = {},
+    },
+    containers = {},
+    baseFrame = nil,
+}
+
+local function CreateContainer(isVertical, parent, frameName)
+    local frame = CreateFrame("Frame", frameName, parent)
+    local childElements = {}
+
+    frame.isVertical = isVertical
+    frame.childElements = childElements
+
+    frame.AddElement = function(self, e)
+        childElements[1+#childElements] = e
+    end
+
+    frame.ReapplyLayout = function(self)
+        local padding = internal.GetConf("padding")
+        frame:ClearAllPoints()
+        local totalWidth = 0
+        local totalHeight = 0
+        local first = nil
+        local last = nil
+        for i=1,#childElements do
+            local e = childElements[i]
+            if frame.isVertical and e:IsVisible() then
+                if not first then first = e end
+                last = e
+                if totalWidth < e:GetWidth() then totalWidth = e:GetWidth() end
+                totalHeight = totalHeight + e:GetHeight() + (i == #childElements and 0 or padding)
+            elseif e:IsVisible() then
+                if not first then first = e end
+                last = e
+                totalWidth = totalWidth + e:GetWidth() + (i == #childElements and 0 or padding)
+                if totalHeight < e:GetHeight() then totalHeight = e:GetHeight() end
+            end
+        end
+
+        frame:SetWidth(totalWidth)
+        frame:SetHeight(totalHeight)
+
+        local pointA = frame.isVertical and 'TOP' or 'LEFT'
+        local pointB = frame.isVertical and 'BOTTOM' or 'RIGHT'
+
+        local xPad = frame.isVertical and 0 or padding
+        local yPad = frame.isVertical and -padding or 0
+
+        local prev = nil
+        for i=1,#childElements do
+            local e = childElements[i]
+            if e:IsVisible() then
+                e:ClearAllPoints()
+                if e == first then
+                    e:SetPoint(pointA, frame, pointA)
+                elseif e == last then
+                    e:SetPoint(pointA, prev, pointB, xPad, yPad)
+                    e:SetPoint(pointB, frame, pointB)
+                else
+                    e:SetPoint(pointA, prev, pointB, xPad, yPad)
+                end
+                prev = e
+            end
+        end
+    end
+
+    frame:Show()
+
+    return frame
+end
 
 function UI:OnInitialize()
     -- LDB object
@@ -53,97 +134,160 @@ function UI:OnInitialize()
                     UI:ApplyDefaultTheming(btn)
                 end
             end
+            UI:ReapplyLayout(true)
         end)
     else
         return true
     end
 end
 
-function UI:ApplyDefaultTheming(button)
-    button:SetParent(button.parent)
-    button:SetWidth(button.originalSize)
-    button:SetHeight(button.originalSize)
-    button:ClearAllPoints()
-    button:SetPoint(button.bindPoint, button:GetParent(), button.bindPoint, button.xOffset, button.yOffset)
-
-    -- Create the texture
-    local icon = button and button.icon or button:CreateTexture(button:GetName()..'Overlay', 'OVERLAY')
-    if not icon:GetTexture() then
-        icon:SetTexture('Interface\\Icons\\spell_holy_borrowedtime')
-    end
-    icon:ClearAllPoints()
-    icon:SetAllPoints()
-    button.icon = icon
-
-    local floatingBG = _G[button:GetName()..'FloatingBG']
-    if floatingBG then
-        floatingBG:Hide()
+function UI:SetActionTexture(actionType, actionIndex, texture)
+    local actions = actionFrames.actions[actionType]
+    if actions then
+        local button = actions[actionIndex]
+        if button then
+            button.icon:SetTexture(texture)
+        end
     end
 end
 
+function UI:Show()
+    actionFrames.backdrop:Show()
+end
+
+function UI:Hide()
+    actionFrames.backdrop:Hide()
+end
+
+function UI:SetMovable(enabled)
+    actionFrames.backdrop:SetMovable(enabled)
+end
+
+function UI:GetPoint(...)
+    return actionFrames.backdrop:GetPoint(...)
+end
+
+function UI:GetScale()
+    return actionFrames.backdrop:GetScale()
+end
+
+function UI:EnableMouse(enabled)
+    actionFrames.backdrop:EnableMouse(enabled)
+end
+
+function UI:SetScript(event, func)
+    actionFrames.backdrop:SetScript(event, func)
+end
+
+function UI:SetCooldown(start, duration)
+    actionFrames.cooldown:SetCooldown(start, duration)
+end
+
+function UI:UpdateAlpha()
+    local inCombat = InCombatLockdown()
+    actionFrames.backdrop:SetAlpha(inCombat and internal.GetConf("inCombatAlpha") or internal.GetConf("outOfCombatAlpha"))
+end
+
+function UI:ReapplyLayout(skipMasque)
+    actionFrames.containers[UI.SINGLE_TARGET]:ReapplyLayout()
+
+    if internal.GetConf('showCleave') then
+        actionFrames.containers[UI.CLEAVE]:Show()
+        actionFrames.containers[UI.CLEAVE]:ReapplyLayout()
+    else
+        actionFrames.containers[UI.CLEAVE]:Hide()
+    end
+
+    if internal.GetConf('showAoE') then
+        actionFrames.containers[UI.AOE]:Show()
+        actionFrames.containers[UI.AOE]:ReapplyLayout()
+    else
+        actionFrames.containers[UI.AOE]:Hide()
+    end
+
+    actionFrames.baseFrame:ReapplyLayout()
+
+    if not skipMasque then
+        -- Reapply masque skin if appropriate
+        local MSQ = LibStub("Masque", true)
+        if MSQ then
+            MSQ:Group(addonName, "Actions"):ReSkin()
+        end
+    end
+
+    actionFrames.baseFrame:SetPoint("CENTER", actionFrames.backdrop, "CENTER")
+    actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * internal.GetConf("padding")))
+    actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * internal.GetConf("padding")))
+
+    actionFrames.backdrop:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
+    actionFrames.backdrop:SetScale(internal.GetConf("scale"))
+    actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
+end
+
 function UI:CreateFrames()
-    -- Create the base frame
-    local baseFrame = CreateFrame('Frame', 'ThousandJabs', UIParent)
-    baseFrame:ClearAllPoints()
-    baseFrame:SetBackdrop({
+    if actionFrames.baseFrame then return end
+
+    -- Create the backdrop
+    actionFrames.backdrop = CreateFrame('Frame', addonName.."Backdrop", UIParent)
+    actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
+    actionFrames.backdrop:SetPoint('CENTER', UIParent)
+    actionFrames.backdrop:Show()
+    actionFrames.backdrop:SetBackdrop({
         bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background',
         edgeFile = nil,
         tile = true,
         tileSize = 4,
         edgeSize = 0,
     })
-    baseFrame:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
-    baseFrame:SetPoint('CENTER', UIParent)
-    baseFrame:Show()
+
+    local orientation = false -- true = vertical -- todo, make this an option?
+
+    -- Create the base frame
+    actionFrames.baseFrame = CreateContainer(orientation, actionFrames.backdrop, addonName)
 
     -- Create the icon frames
-    baseFrame.iconFrames = self:CreateIconFrames(baseFrame)
+    actionFrames.containers[UI.SINGLE_TARGET] = CreateContainer(orientation, actionFrames.baseFrame)
+    actionFrames.containers[UI.CLEAVE] = CreateContainer(not orientation, actionFrames.baseFrame)
+    actionFrames.containers[UI.AOE] = CreateContainer(not orientation, actionFrames.baseFrame)
 
-    -- Set the geometry of the base frame
-    baseFrame:SetWidth(totalWidth)
-    baseFrame:SetHeight(padding + stFrameSizes[1] + padding)
-    baseFrame:ClearAllPoints()
-    baseFrame:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
-    baseFrame:SetScale(internal.GetConf("scale"))
-    baseFrame:Hide()
+    actionFrames.baseFrame:AddElement(actionFrames.containers[UI.AOE])
+    actionFrames.baseFrame:AddElement(actionFrames.containers[UI.CLEAVE])
+    actionFrames.baseFrame:AddElement(actionFrames.containers[UI.SINGLE_TARGET])
 
-    return baseFrame
-end
+    actionFrames.cooldown = CreateFrame('Cooldown', ('%s_ST1Cooldown'):format(addonName), actionFrames.containers[UI.SINGLE_TARGET], 'CooldownFrameTemplate')
 
-function UI:CreateIconFrames(parent)
-    local frames = { singleTarget = {}, cleave = {}, aoe = {} }
-    frames.cooldown = CreateFrame('Cooldown', addonName..'_ST1Cooldown', parent, 'CooldownFrameTemplate')
-    -- Create the icon frames
-    local aoeHeight = aoeFrameSizes[1] + padding + aoeFrameSizes[2]
-    local cleaveHeight = cleaveFrameSizes[1] + padding + cleaveFrameSizes[2]
-    local xPos = padding
-    local yPos = (-0.5*stFrameSizes[1])-padding + aoeHeight*0.5
-    frames.aoe[1] = self:CreateSingleIconFrame(addonName..'_AoE1', parent, aoeFrameSizes[1], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[1], yPos)
-    frames.aoe[2] = self:CreateSingleIconFrame(addonName..'_AoE2', parent, aoeFrameSizes[2], xPos + 0.5*aoeFrameSizes[1] - 0.5*aoeFrameSizes[2], yPos - padding - aoeFrameSizes[1])
-    xPos = xPos + aoeFrameSizes[1] + padding
-    yPos = (-0.5*stFrameSizes[1])-padding + cleaveHeight*0.5
-    frames.cleave[1] = self:CreateSingleIconFrame(addonName..'_Cleave1', parent, cleaveFrameSizes[1], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[1], yPos)
-    frames.cleave[2] = self:CreateSingleIconFrame(addonName..'_Cleave2', parent, cleaveFrameSizes[2], xPos + 0.5*cleaveFrameSizes[1] - 0.5*cleaveFrameSizes[2], yPos - padding - cleaveFrameSizes[1])
-    xPos = xPos + cleaveFrameSizes[1] + padding
     for i=1,4 do
-        frames.singleTarget[#frames.singleTarget+1] = self:CreateSingleIconFrame(addonName..'_ST'..i, parent, stFrameSizes[i], xPos, (0.5*stFrameSizes[i]) - (0.5*stFrameSizes[1]) - padding)
-        xPos = xPos + stFrameSizes[i] + padding
+        local parent = actionFrames.containers[UI.SINGLE_TARGET]
+        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, frameSize[UI.SINGLE_TARGET][i])
+        actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
+        actionFrames.actions[UI.SINGLE_TARGET][i] = button
     end
 
-    -- Create the cooldown frame
-    frames.cooldown:SetAllPoints(frames.singleTarget[1])
-    return frames
+    for i=1,2 do
+        local parent = actionFrames.containers[UI.CLEAVE]
+        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, frameSize[UI.CLEAVE][i])
+        actionFrames.containers[UI.CLEAVE]:AddElement(button)
+        actionFrames.actions[UI.CLEAVE][i] = button
+    end
+
+    for i=1,2 do
+        local parent = actionFrames.containers[UI.AOE]
+        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, frameSize[UI.AOE][i])
+        actionFrames.containers[UI.AOE]:AddElement(button)
+        actionFrames.actions[UI.AOE][i] = button
+    end
+
+    actionFrames.cooldown:SetAllPoints(actionFrames.actions[UI.SINGLE_TARGET][1])
+
+    self:ReapplyLayout()
+
+    actionFrames.backdrop:Hide()
 end
 
-function UI:CreateSingleIconFrame(name, parent, size, xOffset, yOffset, bindPoint)
-    bindPoint = bindPoint or 'TOPLEFT'
+function UI:CreateSingleIconFrame(name, parent, size)
     -- Create the background frame for this icon
     local btn = CreateFrame('Button', name, parent)
-    btn.parent = parent
-    btn.originalSize = size
-    btn.bindPoint = bindPoint
-    btn.xOffset = xOffset
-    btn.yOffset = yOffset
+    btn.size = size
     UI:ApplyDefaultTheming(btn)
     btn:EnableMouse(false)
     btn:Show()
@@ -158,4 +302,23 @@ function UI:CreateSingleIconFrame(name, parent, size, xOffset, yOffset, bindPoin
     end
 
     return btn
+end
+
+function UI:ApplyDefaultTheming(button)
+    -- Set the button size
+    button:SetSize(button.size, button.size)
+
+    -- Create the texture
+    local icon = button.icon or button:CreateTexture(button:GetName()..'Overlay', 'OVERLAY')
+    if not icon:GetTexture() then
+        icon:SetTexture('Interface\\Icons\\spell_holy_borrowedtime')
+    end
+    icon:ClearAllPoints()
+    icon:SetAllPoints()
+    button.icon = icon
+
+    local floatingBG = _G[button:GetName()..'FloatingBG']
+    if floatingBG then
+        floatingBG:Hide()
+    end
 end

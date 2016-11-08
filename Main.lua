@@ -122,11 +122,6 @@ end
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:UpdateAlpha()
-    local inCombat = InCombatLockdown()
-    self.actionsFrame:SetAlpha(inCombat and internal.GetConf("inCombatAlpha") or internal.GetConf("outOfCombatAlpha"))
-end
-
 function Z:QueueUpdate()
     local now = GetTime()
 
@@ -139,6 +134,8 @@ function Z:QueueUpdate()
 end
 
 function Z:PerformUpdate()
+    local UI = self:GetModule('UI')
+
     -- Drop out early if we're not needed yet
     local now = GetTime()
     if watchdogScreenUpdateExpiry > now then
@@ -152,7 +149,7 @@ function Z:PerformUpdate()
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
     -- Set up frame fading
-    self:UpdateAlpha()
+    UI:UpdateAlpha()
 
     -- Clear out any errors for the last screen update
     internal.DBGR()
@@ -165,10 +162,6 @@ function Z:PerformUpdate()
     LUC:UpdateUnitCache('target')
 
     if self.currentProfile then
-        if internal.devMode == true then
-            self.currentProfile:LoadActions()
-        end
-
         self:ExecuteAllActionProfiles()
 
         -- Attempt to work out the cooldown frame, based off the GCD
@@ -182,24 +175,7 @@ function Z:PerformUpdate()
         end
         -- set the cooldown
         if start and duration then
-            self.actionsFrame.iconFrames.cooldown:SetCooldown(start, duration)
-        end
-    end
-
-    if self.actionsFrame then
-        -- Update icon textures
-        for i=1,4 do
-            self.actionsFrame.iconFrames.singleTarget[i].icon:SetTexture(self.results.single_target[i].icon)
-        end
-        for i=1,2 do
-            self.actionsFrame.iconFrames.cleave[i].icon:SetTexture(self.results.cleave[i].icon)
-            self.actionsFrame.iconFrames.aoe[i].icon:SetTexture(self.results.aoe[i].icon)
-        end
-
-        -- Let the current profile do its screen updates
-        local pu = self.currentProfile and rawget(self.currentProfile, 'PerformUpdate')
-        if pu then
-            pu(self.currentProfile)
+            UI:SetCooldown(start, duration)
         end
     end
 
@@ -220,6 +196,8 @@ function Z:GetActiveProfile()
 end
 
 function Z:ActivateProfile()
+    local UI = self:GetModule('UI')
+
     -- Set up a base GCD, this will change during combat
     self.currentGCD = 1
 
@@ -237,9 +215,9 @@ function Z:ActivateProfile()
         self.aoe_state = self:CreateNewState(3)
 
         -- Show the frame
-        self.actionsFrame:Show()
-        self.actionsFrame:EnableMouse(self.movable)
-        self:UpdateAlpha()
+        UI:Show()
+        UI:EnableMouse(self.movable)
+        UI:UpdateAlpha()
 
         -- Register event listeners
         Z:RegisterEvent('PLAYER_LEVEL_UP')
@@ -258,14 +236,14 @@ end
 Z:ProfileFunction('ActivateProfile')
 
 function Z:DeactivateProfile()
+    local UI = self:GetModule('UI')
+
     -- Clear the update timer
     if screenUpdateTimer then screenUpdateTimer:Cancel() end
     screenUpdateTimer = nil
 
     -- Hide the frame
-    if self.actionsFrame then
-        self.actionsFrame:Hide()
-    end
+    UI:Hide()
 
     -- Destroy states
     if self.st_state then self.st_state = nil end
@@ -299,50 +277,40 @@ Z:ProfileFunction('DeactivateProfile')
 ------------------------------------------------------------------------------------------------------------------------
 
 function Z:ExecuteAllActionProfiles()
+    local UI = self:GetModule('UI')
+
     DBG("")
     DBG("Single Target")
     -- Calculate the single-target profiles
     self.st_state:Reset()
-    local st1action = self.st_state:PredictNextAction() or "wait"
-    self.results.single_target[1].actionName = st1action
-    self.results.single_target[1].icon = self.st_state.env[st1action].Icon
-    --DBG("Time since incoming damage: %.2f", st_state.env_proxy.time_since_incoming_damage)
+    local action = self.st_state:PredictNextAction() or "wait"
+    UI:SetActionTexture(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon)
+    action = self.st_state:PredictActionFollowing(action) or "wait"
+    UI:SetActionTexture(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon)
+    action = self.st_state:PredictActionFollowing(action) or "wait"
+    UI:SetActionTexture(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon)
+    action = self.st_state:PredictActionFollowing(action) or "wait"
+    UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
 
-    local st2action = self.st_state:PredictActionFollowing(st1action) or "wait"
-    self.results.single_target[2].actionName = st2action
-    self.results.single_target[2].icon = self.st_state.env[st2action].Icon
+    if internal.GetConf('showCleave') then
+        DBG("")
+        DBG("Cleave")
+        self.cleave_state:Reset()
+        action = self.cleave_state:PredictNextAction() or "wait"
+        UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
+        action = self.cleave_state:PredictActionFollowing(action) or "wait"
+        UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
+    end
 
-    local st3action = self.st_state:PredictActionFollowing(st2action) or "wait"
-    self.results.single_target[3].actionName = st3action
-    self.results.single_target[3].icon = self.st_state.env[st3action].Icon
-
-    local st4action = self.st_state:PredictActionFollowing(st3action) or "wait"
-    self.results.single_target[4].actionName = st4action
-    self.results.single_target[4].icon = self.st_state.env[st4action].Icon
-
-    DBG("")
-    DBG("Cleave")
-    -- Calculate the Cleave actions
-    self.cleave_state:Reset()
-    local cleave1action = self.cleave_state:PredictNextAction() or "wait"
-    self.results.cleave[1].actionName = cleave1action
-    self.results.cleave[1].icon = self.cleave_state.env[cleave1action].Icon
-
-    local cleave2action = self.cleave_state:PredictActionFollowing(cleave1action) or "wait"
-    self.results.cleave[2].actionName = cleave2action
-    self.results.cleave[2].icon = self.cleave_state.env[cleave2action].Icon
-
-    DBG("")
-    DBG("AoE")
-    -- Calculate the AoE actions
-    self.aoe_state:Reset()
-    local aoe1action = self.aoe_state:PredictNextAction() or "wait"
-    self.results.aoe[1].actionName = aoe1action
-    self.results.aoe[1].icon = self.aoe_state.env[aoe1action].Icon
-
-    local aoe2action = self.aoe_state:PredictActionFollowing(aoe1action) or "wait"
-    self.results.aoe[2].actionName = aoe2action
-    self.results.aoe[2].icon = self.aoe_state.env[aoe2action].Icon
+    if internal.GetConf('showAoE') then
+        DBG("")
+        DBG("AoE")
+        self.aoe_state:Reset()
+        action = self.aoe_state:PredictNextAction() or "wait"
+        UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
+        action = self.aoe_state:PredictActionFollowing(action) or "wait"
+        UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+    end
 end
 
 Z:ProfileFunction('ExecuteAllActionProfiles')
@@ -352,6 +320,7 @@ Z:ProfileFunction('ExecuteAllActionProfiles')
 ------------------------------------------------------------------------------------------------------------------------
 
 function Z:OnEnable()
+    local UI = self:GetModule('UI')
 
     -- Add event listeners
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED')
@@ -359,39 +328,37 @@ function Z:OnEnable()
     self:RegisterEvent('SPELLS_CHANGED')
 
     -- Create the UI
-    if not self.actionsFrame then
-        self.actionsFrame = self:GetModule('UI'):CreateFrames()
-        self.actionsFrame:EnableMouse(self.movable)
-        self:UpdateAlpha()
+    UI:CreateFrames()
+    UI:EnableMouse(self.movable)
+    UI:UpdateAlpha()
 
-        -- Handle movement if enabled
-        self.actionsFrame:SetScript("OnMouseDown", function(self, button)
-            if Z.movable and button == "LeftButton" and not self.isMoving then
-                self:StartMoving()
-                self.isMoving = true
-            end
-        end)
-        self.actionsFrame:SetScript("OnMouseUp", function(self, button)
-            if button == "LeftButton" and self.isMoving then
-                self:StopMovingOrSizing()
-                self.isMoving = false
-                local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-                internal.SetConf(tgtPoint, "position", "tgtPoint")
-                internal.SetConf(offsetX, "position", "offsetX")
-                internal.SetConf(offsetY, "position", "offsetY")
-            end
-        end)
-        self.actionsFrame:SetScript("OnHide", function(self)
-            if self.isMoving then
-                self:StopMovingOrSizing()
-                self.isMoving = false
-                local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-                internal.SetConf(tgtPoint, "position", "tgtPoint")
-                internal.SetConf(offsetX, "position", "offsetX")
-                internal.SetConf(offsetY, "position", "offsetY")
-            end
-        end)
-    end
+    -- Handle movement if enabled
+    UI:SetScript("OnMouseDown", function(self, button)
+        if Z.movable and button == "LeftButton" and not self.isMoving then
+            self:StartMoving()
+            self.isMoving = true
+        end
+    end)
+    UI:SetScript("OnMouseUp", function(self, button)
+        if button == "LeftButton" and self.isMoving then
+            self:StopMovingOrSizing()
+            self.isMoving = false
+            local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
+            internal.SetConf(tgtPoint, "position", "tgtPoint")
+            internal.SetConf(offsetX, "position", "offsetX")
+            internal.SetConf(offsetY, "position", "offsetY")
+        end
+    end)
+    UI:SetScript("OnHide", function(self)
+        if self.isMoving then
+            self:StopMovingOrSizing()
+            self.isMoving = false
+            local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
+            internal.SetConf(tgtPoint, "position", "tgtPoint")
+            internal.SetConf(offsetX, "position", "offsetX")
+            internal.SetConf(offsetY, "position", "offsetY")
+        end
+    end)
 
     -- Show the debug log if we've enabled debugging
     if internal.GetConf("do_debug") then

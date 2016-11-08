@@ -4,10 +4,13 @@ local Z = internal.Z
 local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs")
 
 local defaultConf = {
+    showCleave = true,
+    showAoE = true,
     scale = 1,
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
     backgroundOpacity = 0.3,
+    padding = 4,
     position = {
         offsetX = 0,
         offsetY = -180,
@@ -26,8 +29,16 @@ end
 function internal.GetConf(...)
     ThousandJabsDB = ThousandJabsDB or {}
     local res = getconf(ThousandJabsDB, ...)
-    if not res then res = getconf(defaultConf, ...) end
+    if type(res) == "nil" then res = getconf(defaultConf, ...) end
     return res
+end
+
+function TJ:GetConf(...)
+    return internal.GetConf(...)
+end
+
+function TJ:SetConf(...)
+    internal.SetConf(...)
 end
 
 local function setconf(value, tbl, ...)
@@ -80,9 +91,33 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         name = L["General Settings"],
                         order = 10,
                     },
+                    showCleave = {
+                        type = "toggle",
+                        order = 11,
+                        name = L["Show Cleave Abilties"],
+                        get = function(info)
+                            return internal.GetConf("showCleave") and true or false
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val and true or false, "showCleave")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    showAoE = {
+                        type = "toggle",
+                        order = 12,
+                        name = L["Show AoE Abilties"],
+                        get = function(info)
+                            return internal.GetConf("showAoE") and true or false
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val and true or false, "showAoE")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
                     lockunlock = {
                         type = "execute",
-                        order = 11,
+                        order = 13,
                         name = L["Toggle Lock"],
                         func = function()
                             Z:ToggleMovement()
@@ -90,7 +125,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     },
                     resetpos = {
                         type = "execute",
-                        order = 12,
+                        order = 14,
                         name = L["Reset Position"],
                         func = function()
                             Z:ResetPosition()
@@ -98,7 +133,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     },
                     scale = {
                         type = "range",
-                        order = 13,
+                        order = 15,
                         name = L["Window Scale"],
                         min = 0.5,
                         max = 2.0,
@@ -108,12 +143,12 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         end,
                         set = function(info, val)
                             internal.SetConf(val, "scale")
-                            Z.actionsFrame:SetScale(val)
+                            Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     backgroundOpacity = {
                         type = "range",
-                        order = 14,
+                        order = 16,
                         name = L["Background Opacity"],
                         min = 0.0,
                         max = 1.0,
@@ -123,19 +158,34 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         end,
                         set = function(info, val)
                             internal.SetConf(val, "backgroundOpacity")
-                            Z.actionsFrame:SetBackdropColor(0, 0, 0, val)
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    padding = {
+                        type = "range",
+                        order = 17,
+                        name = L["Padding"],
+                        min = 0,
+                        max = 20,
+                        step = 1,
+                        get = function(info)
+                            return internal.GetConf("padding")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "padding")
+                            Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     outOfCombatHide = {
                         type = "toggle",
-                        order = 15,
+                        order = 18,
                         name = L["Hide out-of-combat"],
                         get = function(info)
                             return (internal.GetConf("outOfCombatAlpha") == 0) and true or false
                         end,
                         set = function(info, val)
                             internal.SetConf(val and 0 or 1, "outOfCombatAlpha")
-                            Z:UpdateAlpha()
+                            Z:GetModule('UI'):UpdateAlpha()
                         end
                     },
                     fadingHeader = {
@@ -155,7 +205,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         end,
                         set = function(info, val)
                             internal.SetConf(val, "inCombatAlpha")
-                            Z:UpdateAlpha()
+                            Z:GetModule('UI'):UpdateAlpha()
                         end
                     },
                     outOfCombatAlpha = {
@@ -170,7 +220,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         end,
                         set = function(info, val)
                             internal.SetConf(val, "outOfCombatAlpha")
-                            Z:UpdateAlpha()
+                            Z:GetModule('UI'):UpdateAlpha()
                         end
                     },
                 },
