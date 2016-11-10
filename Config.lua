@@ -10,6 +10,12 @@ local defaultConf = {
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
     backgroundOpacity = 0.3,
+    size = {
+        singleTarget = 80,
+        cleave = 40,
+        aoe = 35,
+        decrease = 0.7,
+    },
     padding = 4,
     position = {
         offsetX = 0,
@@ -161,21 +167,6 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
-                    padding = {
-                        type = "range",
-                        order = 17,
-                        name = L["Padding"],
-                        min = 0,
-                        max = 20,
-                        step = 1,
-                        get = function(info)
-                            return internal.GetConf("padding")
-                        end,
-                        set = function(info, val)
-                            internal.SetConf(val, "padding")
-                            Z:GetModule('UI'):ReapplyLayout()
-                        end
-                    },
                     outOfCombatHide = {
                         type = "toggle",
                         order = 18,
@@ -221,6 +212,86 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         set = function(info, val)
                             internal.SetConf(val, "outOfCombatAlpha")
                             Z:GetModule('UI'):UpdateAlpha()
+                        end
+                    },
+                    geometryHeader = {
+                        type = "header",
+                        name = L["Geometry"],
+                        order = 30,
+                    },
+                    singleTargetSize = {
+                        type = "range",
+                        order = 31,
+                        name = L["Single-target Size"],
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return internal.GetConf("size", "singleTarget")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "size", "singleTarget")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    cleaveSize = {
+                        type = "range",
+                        order = 32,
+                        name = L["Cleave Size"],
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return internal.GetConf("size", "cleave")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "size", "cleave")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    aoeSize = {
+                        type = "range",
+                        order = 33,
+                        name = L["AoE Size"],
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return internal.GetConf("size", "aoe")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "size", "aoe")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    nextScale = {
+                        type = "range",
+                        order = 34,
+                        name = L["Next Ability Scale"],
+                        min = 0.1,
+                        max = 1.0,
+                        step = 0.01,
+                        get = function(info)
+                            return internal.GetConf("size", "decrease")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "size", "decrease")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    padding = {
+                        type = "range",
+                        order = 35,
+                        name = L["Padding"],
+                        min = 0,
+                        max = 20,
+                        step = 1,
+                        get = function(info)
+                            return internal.GetConf("padding")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "padding")
+                            Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                 },

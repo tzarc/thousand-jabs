@@ -7,18 +7,9 @@ local LDB = LibStub("LibDataBroker-1.1")
 
 internal.WrapGlobalAccess()
 
-local padding = 4
-
 UI.SINGLE_TARGET = 1
 UI.CLEAVE = 2
 UI.AOE = 3
-
--- Geometry
-local frameSize = {
-    [UI.SINGLE_TARGET] = { 80, 60, 40, 30 },
-    [UI.CLEAVE] = { 40, 25 },
-    [UI.AOE] = { 35, 20 },
-}
 
 local actionFrames = {
     actions = {
@@ -50,6 +41,7 @@ local function CreateContainer(isVertical, parent, frameName)
         local last = nil
         for i=1,#childElements do
             local e = childElements[i]
+            e:ClearAllPoints()
             if frame.isVertical and e:IsVisible() then
                 if not first then first = e end
                 last = e
@@ -189,6 +181,19 @@ function UI:UpdateAlpha()
 end
 
 function UI:ReapplyLayout(skipMasque)
+    for i=1,4 do
+        local btn = actionFrames.actions[UI.SINGLE_TARGET][i]
+        if btn then btn:ClearAllPoints(); btn:Resize(); end
+    end
+    for i=1,2 do
+        local btn = actionFrames.actions[UI.CLEAVE][i]
+        if btn then btn:ClearAllPoints(); btn:Resize(); end
+    end
+    for i=1,2 do
+        local btn = actionFrames.actions[UI.AOE][i]
+        if btn then btn:ClearAllPoints(); btn:Resize(); end
+    end
+
     actionFrames.containers[UI.SINGLE_TARGET]:ReapplyLayout()
 
     if internal.GetConf('showCleave') then
@@ -219,6 +224,7 @@ function UI:ReapplyLayout(skipMasque)
     actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * internal.GetConf("padding")))
     actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * internal.GetConf("padding")))
 
+    actionFrames.backdrop:ClearAllPoints()
     actionFrames.backdrop:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
     actionFrames.backdrop:SetScale(internal.GetConf("scale"))
     actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
@@ -258,21 +264,21 @@ function UI:CreateFrames()
 
     for i=1,4 do
         local parent = actionFrames.containers[UI.SINGLE_TARGET]
-        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, frameSize[UI.SINGLE_TARGET][i])
+        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, "singleTarget", i)
         actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
         actionFrames.actions[UI.SINGLE_TARGET][i] = button
     end
 
     for i=1,2 do
         local parent = actionFrames.containers[UI.CLEAVE]
-        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, frameSize[UI.CLEAVE][i])
+        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, "cleave", i)
         actionFrames.containers[UI.CLEAVE]:AddElement(button)
         actionFrames.actions[UI.CLEAVE][i] = button
     end
 
     for i=1,2 do
         local parent = actionFrames.containers[UI.AOE]
-        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, frameSize[UI.AOE][i])
+        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, "aoe", i)
         actionFrames.containers[UI.AOE]:AddElement(button)
         actionFrames.actions[UI.AOE][i] = button
     end
@@ -284,10 +290,16 @@ function UI:CreateFrames()
     actionFrames.backdrop:Hide()
 end
 
-function UI:CreateSingleIconFrame(name, parent, size)
+function UI:CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
     -- Create the background frame for this icon
     local btn = CreateFrame('Button', name, parent)
-    btn.size = size
+    btn.sizeType = sizeType
+    btn.sizeIndex = sizeIndex
+    function btn:Resize()
+        local size = math.ceil(-0.001 + internal.GetConf("size", self.sizeType) * math.pow(internal.GetConf("size", "decrease"), self.sizeIndex - 1))
+        self:SetSize(size, size)
+    end
+
     UI:ApplyDefaultTheming(btn)
     btn:EnableMouse(false)
     btn:Show()
@@ -306,7 +318,7 @@ end
 
 function UI:ApplyDefaultTheming(button)
     -- Set the button size
-    button:SetSize(button.size, button.size)
+    button:Resize()
 
     -- Create the texture
     local icon = button.icon or button:CreateTexture(button:GetName()..'Overlay', 'OVERLAY')
