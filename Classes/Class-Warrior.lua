@@ -51,17 +51,9 @@ local arms_abilities_exported = {
 }
 
 local arms_base_overrides = {
-    heroic_charge = {
-        CanCast = function(spell,env)
-            return env.charge.spell_can_cast and env.heroic_leap.spell_can_cast
-        end,
-        PerformCast = function(spell,env)
-            env.movement.distance = 20 -- ranged
-        end,
-    },
     charge = {
         CanCast = function(spell,env)
-            return not env.melee.in_range
+            return (12 <= env.movement.distance and env.movement.distance <= 25) -- tooltip says 8, but in-game range is 12... does tooltip mean range-to-max-melee?
         end,
         PerformCast = function(spell,env)
             env.rage.gained = env.rage.gained + 20
