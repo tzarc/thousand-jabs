@@ -33,7 +33,7 @@ local function CreateContainer(isVertical, parent, frameName)
     end
 
     frame.ReapplyLayout = function(self)
-        local padding = internal.GetConf("padding")
+        local padding = internal.GetConf("geometry", "padding")
         frame:ClearAllPoints()
         local totalWidth = 0
         local totalHeight = 0
@@ -221,12 +221,12 @@ function UI:ReapplyLayout(skipMasque)
     end
 
     actionFrames.baseFrame:SetPoint("CENTER", actionFrames.backdrop, "CENTER")
-    actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * internal.GetConf("padding")))
-    actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * internal.GetConf("padding")))
+    actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * internal.GetConf("geometry", "padding")))
+    actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * internal.GetConf("geometry", "padding")))
 
     actionFrames.backdrop:ClearAllPoints()
     actionFrames.backdrop:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
-    actionFrames.backdrop:SetScale(internal.GetConf("scale"))
+    actionFrames.backdrop:SetScale(internal.GetConf("geometry", "scale"))
     actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
 end
 
@@ -264,21 +264,21 @@ function UI:CreateFrames()
 
     for i=1,4 do
         local parent = actionFrames.containers[UI.SINGLE_TARGET]
-        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, "singleTarget", i)
+        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, "singleTargetSize", i)
         actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
         actionFrames.actions[UI.SINGLE_TARGET][i] = button
     end
 
     for i=1,2 do
         local parent = actionFrames.containers[UI.CLEAVE]
-        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, "cleave", i)
+        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, "cleaveSize", i)
         actionFrames.containers[UI.CLEAVE]:AddElement(button)
         actionFrames.actions[UI.CLEAVE][i] = button
     end
 
     for i=1,2 do
         local parent = actionFrames.containers[UI.AOE]
-        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, "aoe", i)
+        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, "aoeSize", i)
         actionFrames.containers[UI.AOE]:AddElement(button)
         actionFrames.actions[UI.AOE][i] = button
     end
@@ -296,7 +296,7 @@ function UI:CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
     btn.sizeType = sizeType
     btn.sizeIndex = sizeIndex
     function btn:Resize()
-        local size = math.ceil(-0.001 + internal.GetConf("size", self.sizeType) * math.pow(internal.GetConf("size", "decrease"), self.sizeIndex - 1))
+        local size = math.ceil(-0.001 + internal.GetConf("geometry", self.sizeType) * math.pow(internal.GetConf("geometry", "sizeDecrease"), self.sizeIndex - 1))
         self:SetSize(size, size)
     end
 

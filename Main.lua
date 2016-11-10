@@ -38,23 +38,7 @@ Z.damageTable = {}
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
 function Z:OnInitialize()
-    -- Pre-create the results table
-    self.results = {
-        single_target = {
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-        },
-        cleave = {
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-        },
-        aoe = {
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-            { actionName = "wait",  icon = "Interface\\Icons\\spell_holy_borrowedtime" },
-        }
-    }
+    TJ:UpgradeConf()
 end
 
 ------------------------------------------------------------------------------------------------------------------------

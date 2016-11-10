@@ -6,17 +6,17 @@ local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs")
 local defaultConf = {
     showCleave = true,
     showAoE = true,
-    scale = 1,
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
     backgroundOpacity = 0.3,
-    size = {
-        singleTarget = 80,
-        cleave = 40,
-        aoe = 35,
-        decrease = 0.7,
+    geometry = {
+        singleTargetSize = 80,
+        cleaveSize = 40,
+        aoeSize = 35,
+        sizeDecrease = 0.7,
+        padding = 4,
+        scale = 1,
     },
-    padding = 4,
     position = {
         offsetX = 0,
         offsetY = -180,
@@ -24,6 +24,16 @@ local defaultConf = {
     },
     do_debug = false,
 }
+
+function TJ:UpgradeConf()
+    -- Added Geometry:
+    if type(TJ:GetConf("scale")) ~= "nil" then
+        TJ:SetConf(TJ:GetConf("scale"), "geometry", "scale")
+        TJ:SetConf(nil, "scale")
+        TJ:SetConf(TJ:GetConf("padding"), "geometry", "padding")
+        TJ:SetConf(nil, "padding")
+    end
+end
 
 local function getconf(tbl, key, ...)
     if select('#', ...) == 0 then return tbl[key] end
@@ -95,11 +105,27 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     generalHeader = {
                         type = "header",
                         name = L["General Settings"],
-                        order = 10,
+                        order = 100,
+                    },
+                    lockunlock = {
+                        type = "execute",
+                        order = 101,
+                        name = L["Toggle Lock"],
+                        func = function()
+                            Z:ToggleMovement()
+                        end
+                    },
+                    resetpos = {
+                        type = "execute",
+                        order = 102,
+                        name = L["Reset Position"],
+                        func = function()
+                            Z:ResetPosition()
+                        end
                     },
                     showCleave = {
                         type = "toggle",
-                        order = 11,
+                        order = 103,
                         name = L["Show Cleave Abilties"],
                         get = function(info)
                             return internal.GetConf("showCleave") and true or false
@@ -111,7 +137,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     },
                     showAoE = {
                         type = "toggle",
-                        order = 12,
+                        order = 104,
                         name = L["Show AoE Abilties"],
                         get = function(info)
                             return internal.GetConf("showAoE") and true or false
@@ -121,40 +147,9 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
-                    lockunlock = {
-                        type = "execute",
-                        order = 13,
-                        name = L["Toggle Lock"],
-                        func = function()
-                            Z:ToggleMovement()
-                        end
-                    },
-                    resetpos = {
-                        type = "execute",
-                        order = 14,
-                        name = L["Reset Position"],
-                        func = function()
-                            Z:ResetPosition()
-                        end
-                    },
-                    scale = {
-                        type = "range",
-                        order = 15,
-                        name = L["Window Scale"],
-                        min = 0.5,
-                        max = 2.0,
-                        step = 0.05,
-                        get = function(info)
-                            return internal.GetConf("scale")
-                        end,
-                        set = function(info, val)
-                            internal.SetConf(val, "scale")
-                            Z:GetModule('UI'):ReapplyLayout()
-                        end
-                    },
                     backgroundOpacity = {
                         type = "range",
-                        order = 16,
+                        order = 105,
                         name = L["Background Opacity"],
                         min = 0.0,
                         max = 1.0,
@@ -169,7 +164,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     },
                     outOfCombatHide = {
                         type = "toggle",
-                        order = 18,
+                        order = 106,
                         name = L["Hide out-of-combat"],
                         get = function(info)
                             return (internal.GetConf("outOfCombatAlpha") == 0) and true or false
@@ -182,11 +177,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     fadingHeader = {
                         type = "header",
                         name = L["Fading"],
-                        order = 20,
+                        order = 200,
                     },
                     inCombatAlpha = {
                         type = "range",
-                        order = 21,
+                        order = 201,
                         name = L["In-combat alpha"],
                         min = 0,
                         max = 1,
@@ -201,7 +196,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     },
                     outOfCombatAlpha = {
                         type = "range",
-                        order = 22,
+                        order = 202,
                         name = L["Out-of-combat alpha"],
                         min = 0,
                         max = 1,
@@ -217,80 +212,104 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     geometryHeader = {
                         type = "header",
                         name = L["Geometry"],
-                        order = 30,
+                        order = 300,
+                    },
+                    scale = {
+                        type = "range",
+                        order = 301,
+                        name = L["Window Scale"],
+                        min = 0.5,
+                        max = 2.0,
+                        step = 0.05,
+                        get = function(info)
+                            return internal.GetConf("geometry", "scale")
+                        end,
+                        set = function(info, val)
+                            internal.SetConf(val, "geometry", "scale")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
                     },
                     singleTargetSize = {
                         type = "range",
-                        order = 31,
+                        order = 302,
                         name = L["Single-target Size"],
                         min = 20,
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("size", "singleTarget")
+                            return internal.GetConf("geometry", "singleTargetSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "size", "singleTarget")
+                            internal.SetConf(val, "geometry", "singleTargetSize")
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     cleaveSize = {
                         type = "range",
-                        order = 32,
+                        order = 303,
                         name = L["Cleave Size"],
                         min = 20,
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("size", "cleave")
+                            return internal.GetConf("geometry", "cleaveSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "size", "cleave")
+                            internal.SetConf(val, "geometry", "cleaveSize")
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     aoeSize = {
                         type = "range",
-                        order = 33,
+                        order = 304,
                         name = L["AoE Size"],
                         min = 20,
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("size", "aoe")
+                            return internal.GetConf("geometry", "aoeSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "size", "aoe")
+                            internal.SetConf(val, "geometry", "aoeSize")
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     nextScale = {
                         type = "range",
-                        order = 34,
+                        order = 305,
                         name = L["Next Ability Scale"],
                         min = 0.1,
                         max = 1.0,
                         step = 0.01,
                         get = function(info)
-                            return internal.GetConf("size", "decrease")
+                            return internal.GetConf("geometry", "sizeDecrease")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "size", "decrease")
+                            internal.SetConf(val, "geometry", "sizeDecrease")
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
                     padding = {
                         type = "range",
-                        order = 35,
+                        order = 306,
                         name = L["Padding"],
                         min = 0,
                         max = 20,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("padding")
+                            return internal.GetConf("geometry", "padding")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "padding")
+                            internal.SetConf(val, "geometry", "padding")
+                            Z:GetModule('UI'):ReapplyLayout()
+                        end
+                    },
+                    resetGeometry = {
+                        type = "execute",
+                        order = 307,
+                        name = L["Reset Geometry"],
+                        func = function()
+                            internal.SetConf(nil, "geometry")
                             Z:GetModule('UI'):ReapplyLayout()
                         end
                     },
