@@ -1,5 +1,5 @@
-local _, internal = ...;
-local Z = internal.Z
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local Config = TJ:GetModule('Config')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Blood profile definition
@@ -82,7 +82,7 @@ local blood_base_abilities = {
     },
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Blood',
     class_id = 6,
     spec_id = 1,
@@ -218,13 +218,13 @@ local unholy_base_abilities = {
     valkyr_battlemaiden = {
         pet_active = function(spell,env)
             -- active for 15secs after last cast
-            local lastCast = env.last_cast_times[207349]
+            local lastCast = env.lastCastTimes[207349]
             return lastCast and (env.currentTime < (lastCast + 15)) and true or false
         end,
     },
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Unholy',
     class_id = 6,
     spec_id = 3,

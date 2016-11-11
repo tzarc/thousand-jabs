@@ -1,5 +1,5 @@
-local _, internal = ...;
-local Z = internal.Z
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local Config = TJ:GetModule('Config')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Brewmaster profile definition
@@ -74,7 +74,7 @@ local brewmaster_talent_overrides = {
     },
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,
@@ -207,10 +207,10 @@ local windwalker_talent_overrides = {
 
 local windwalker_artifact_overrides = {
     gale_burst = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("gale_burst_selected") end,
+        artifact_selected = function(spell,env) return Config:GetSpec("gale_burst_selected") end,
     },
     strike_of_the_windlord = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("strike_of_the_windlord_selected") end,
+        artifact_selected = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
     },
 }
 
@@ -229,7 +229,7 @@ local windwalker_hooks = {
     },
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Windwalker',
     class_id = 10,
     spec_id = 3,

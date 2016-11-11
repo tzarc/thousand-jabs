@@ -1,17 +1,23 @@
-local addonName = ...
-local MAJOR, MINOR = "LibProfiling-1.0", 39
-local LibProfiling, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
+local addonName, internal = ...;
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local Profiling = TJ:GetModule('Profiling')
+local TableCache = TJ:GetModule('TableCache')
 
-local type = type
-local unpack = unpack
+local debugprofilestop = debugprofilestop
+local format = string.format
 local pairs = pairs
+local select = select
+local tconcat = table.concat
 local tinsert = table.insert
 local tsort = table.sort
-local tconcat = table.concat
-local format = string.format
-local debugprofilestop = debugprofilestop
+local type = type
+local unpack = unpack
+local GetNumAddOns = GetNumAddOns
+local IsAddOnLoaded = IsAddOnLoaded
 
-local LTC = LibStub('LibTableCache-1.0')
+internal.Safety()
 
 local addon_count = 0
 for i=1,GetNumAddOns() do
@@ -29,7 +35,7 @@ local function formatHelper(fmt, ...)
 end
 
 local function orderedpairs(t, f)
-    local a = LTC:Acquire()
+    local a = TableCache:Acquire()
     for n in pairs(t) do tinsert(a, n) end
     tsort(a, f)
     local i = 0
@@ -37,7 +43,7 @@ local function orderedpairs(t, f)
         i = i + 1
         local k = a[i]
         if k == nil then
-            LTC:Release(a)
+            TableCache:Release(a)
             return nil
         else
             return k, t[k]
@@ -50,9 +56,9 @@ end
 -- Profiling functions
 ------------------------------------------------------------------------------------------------------------------------
 
-function LibProfiling:ProfilingProlog(...)
+function Profiling:ProfilingProlog(...)
     if not self.profiling.enabled then return end
-    local e = LTC:Acquire()
+    local e = TableCache:Acquire()
     e.func = formatHelper(...)
     e.start = debugprofilestop()
     if do_mem then UpdateAddOnMemoryUsage() end
@@ -60,7 +66,7 @@ function LibProfiling:ProfilingProlog(...)
     self.profiling.stack[1+#self.profiling.stack] = e
 end
 
-function LibProfiling:ProfilingEpilog()
+function Profiling:ProfilingEpilog()
     if not self.profiling.enabled or #self.profiling.stack == 0 then return end
     local now = debugprofilestop()
     if do_mem then UpdateAddOnMemoryUsage() end
@@ -72,10 +78,10 @@ function LibProfiling:ProfilingEpilog()
     d.count = d.count + 1
     d.timeSpent = d.timeSpent + (now - e.start)
     d.memGain = d.memGain + (mem - e.mem)
-    LTC:Release(e)
+    TableCache:Release(e)
 end
 
-function LibProfiling:EnableProfiling(v)
+function Profiling:EnableProfiling(v)
     self.profiling = self.profiling or {}
     self.profiling.enabled = v and true or false
     self.profiling.stack = self.profiling.stack or {}
@@ -83,13 +89,13 @@ function LibProfiling:EnableProfiling(v)
     self.profiling.unembeds = self.profiling.unembeds or {}
 end
 
-function LibProfiling:ProfilingEnabled()
+function Profiling:ProfilingEnabled()
     return self.profiling and self.profiling.enabled and true or false
 end
 
-function LibProfiling:GetProfilingString()
+function Profiling:GetProfilingString()
     if not self.profiling.enabled then return 'Profiling disabled.' end
-    local l = LTC:Acquire()
+    local l = TableCache:Acquire()
     l[1+#l] = 'Profiling data:'
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
@@ -99,11 +105,11 @@ function LibProfiling:GetProfilingString()
         end
     end
     local s = tconcat(l, '\n  ')
-    LTC:Release(l)
+    TableCache:Release(l)
     return s
 end
 
-function LibProfiling:ProfileFunction(a, b, c)
+function Profiling:ProfileFunction(a, b, c)
     local this = self
     self:EnableProfiling(self.profiling and self.profiling.enabled or false)
     local unembeds = self.profiling.unembeds
@@ -153,33 +159,4 @@ function LibProfiling:ProfileFunction(a, b, c)
         end
         return newfunc
     end
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Embed handling
-------------------------------------------------------------------------------------------------------------------------
-
-LibProfiling.embeds = LibProfiling.embeds or {}
-
-local mixins = {
-    'ProfilingProlog', 'ProfilingEpilog', 'EnableProfiling', 'ProfilingEnabled', 'ProfileFunction', 'GetProfilingString'
-}
-
-function LibProfiling:Embed(target)
-    LibProfiling.embeds[target] = true
-    for _,v in pairs(mixins) do
-        target[v] = LibProfiling[v]
-    end
-    return target
-end
-
-function LibProfiling:OnEmbedDisable(target)
-    for _,v in pairs(self.profiling.unembeds) do
-        v()
-    end
-    wipe(self.profiling.unembeds)
-end
-
-for addon in pairs(LibProfiling.embeds) do
-    LibProfiling:Embed(addon)
 end

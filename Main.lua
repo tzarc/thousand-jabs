@@ -1,9 +1,24 @@
 local addonName, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
-local DBG = internal.DBG
-local LTC = LibStub('LibTableCache-1.0')
-local LUC = LibStub('LibUnitCache-1.0')
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local Config = TJ:GetModule('Config')
+local Profiling = TJ:GetModule('Profiling')
+local TableCache = TJ:GetModule('TableCache')
+local UnitCache = TJ:GetModule('UnitCache')
+local UI = TJ:GetModule('UI')
+
+local select = select
+local NewTicker = C_Timer.NewTicker
+local GetSpecialization = GetSpecialization
+local GetSpellBaseCooldown = GetSpellBaseCooldown
+local GetSpellCooldown = GetSpellCooldown
+local GetTime = GetTime
+local UnitChannelInfo = UnitChannelInfo
+local UnitClass = UnitClass
+local UnitSpellHaste = UnitSpellHaste
+
+internal.Safety()
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -21,24 +36,24 @@ local watchdogScreenUpdateExpiry = GetTime()
 ------------------------------------------------------------------------------------------------------------------------
 
 -- The active profile
-Z.currentProfile = nil
+TJ.currentProfile = nil
 
 -- Time combat was last entered
-Z.combatStart = 0
+TJ.combatStart = 0
 
 -- Cast tracking
-Z.lastCastTime = {}
-Z.lastAutoAttack = 0
+TJ.lastCastTime = {}
+TJ.lastAutoAttack = 0
 
 -- Incoming damage tracking
-Z.lastIncomingDamage = 0
-Z.damageTable = {}
+TJ.lastIncomingDamage = 0
+TJ.damageTable = {}
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
-function Z:OnInitialize()
-    TJ:UpgradeConf()
+function TJ:OnInitialize()
+    Config:Upgrade()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -73,26 +88,26 @@ local function UpdateUsageStatistics()
                 internal.currCpuAmount = GetAddOnCPUUsage(addonName)
                 internal.lastStatCheck = now
             end
-            DBG("Usage stats update time: %12.3f ms", internal.statUpdateTime)
+            Debug("Usage stats update time: %12.3f ms", internal.statUpdateTime)
             if internal.lastStatCheckDelta then
                 local dt = internal.lastStatCheckDelta
                 if internal.lastMemAmount and internal.lastMemAmount > 0 then
                     local curr = internal.currMemAmount
                     local prev = internal.lastMemAmount
                     local delta = curr - prev
-                    DBG("           Memory usage: %12.3f kB", curr)
-                    DBG("           Memory delta: %12.3f kB", delta)
-                    DBG("           Memory delta: %12.3f kB/sec (over last %d secs)", delta/dt, statUpdateSpeed)
+                    Debug("           Memory usage: %12.3f kB", curr)
+                    Debug("           Memory delta: %12.3f kB", delta)
+                    Debug("           Memory delta: %12.3f kB/sec (over last %d secs)", delta/dt, statUpdateSpeed)
                     internal.dataobj.text = internal.fmt("Thousand Jabs: Memory: %dkB/sec", delta/dt)
                 end
                 if internal.lastCpuAmount and internal.lastCpuAmount > 0 then
                     local curr = internal.currCpuAmount
                     local prev = internal.lastCpuAmount
                     local delta = curr - prev
-                    DBG("              CPU usage: %12.3f ms", curr)
-                    DBG("              CPU delta: %12.3f ms", delta)
-                    DBG("              CPU delta: %12.3f ms/sec (over last %d secs)", delta/dt, statUpdateSpeed)
-                    DBG("              CPU usage: %10.1f%%", 100*(delta/dt)/1000.0)
+                    Debug("              CPU usage: %12.3f ms", curr)
+                    Debug("              CPU delta: %12.3f ms", delta)
+                    Debug("              CPU delta: %12.3f ms/sec (over last %d secs)", delta/dt, statUpdateSpeed)
+                    Debug("              CPU usage: %10.1f%%", 100*(delta/dt)/1000.0)
                     internal.dataobj.text = internal.dataobj.text .. internal.fmt(", CPU: %.1f%% (%.3fms)", 100*(delta/dt)/1000.0, delta/dt)
                 end
             end
@@ -106,20 +121,18 @@ end
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:QueueUpdate()
+function TJ:QueueUpdate()
     local now = GetTime()
 
     if not screenUpdateTimer then
         watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
-        screenUpdateTimer = C_Timer.NewTicker(0.01, function() Z:PerformUpdate() end)
+        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdate() end)
     end
 
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
 end
 
-function Z:PerformUpdate()
-    local UI = self:GetModule('UI')
-
+function TJ:PerformUpdate()
     -- Drop out early if we're not needed yet
     local now = GetTime()
     if watchdogScreenUpdateExpiry > now then
@@ -136,14 +149,14 @@ function Z:PerformUpdate()
     UI:UpdateAlpha()
 
     -- Clear out any errors for the last screen update
-    internal.DBGR()
+    internal.DebugReset()
 
     -- Update stats
     UpdateUsageStatistics()
 
     -- Cache current player/target information if requested
-    LUC:UpdateUnitCache('player')
-    LUC:UpdateUnitCache('target')
+    UnitCache:UpdateUnitCache('player')
+    UnitCache:UpdateUnitCache('target')
 
     if self.currentProfile then
         self:ExecuteAllActionProfiles()
@@ -167,21 +180,19 @@ function Z:PerformUpdate()
     self:UpdateLog()
 end
 
-Z:ProfileFunction('PerformUpdate')
+Profiling:ProfileFunction('PerformUpdate')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Profile activation/deactivation
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:GetActiveProfile()
+function TJ:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    local isDisabled = internal.GetConf("class", classID, "spec", specID, "disabled") and true or false
+    local isDisabled = Config:Get("class", classID, "spec", specID, "disabled") and true or false
     return (not isDisabled) and self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
 end
 
-function Z:ActivateProfile()
-    local UI = self:GetModule('UI')
-
+function TJ:ActivateProfile()
     -- Set up a base GCD, this will change during combat
     self.currentGCD = 1
 
@@ -204,24 +215,22 @@ function Z:ActivateProfile()
         UI:UpdateAlpha()
 
         -- Register event listeners
-        Z:RegisterEvent('PLAYER_LEVEL_UP')
-        Z:RegisterEvent('PLAYER_REGEN_ENABLED')
-        Z:RegisterEvent('PLAYER_REGEN_DISABLED')
-        Z:RegisterEvent('PLAYER_TARGET_CHANGED')
-        Z:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-        Z:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-        Z:RegisterEvent('PLAYER_TALENT_UPDATE')
-        Z:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
-        Z:RegisterEvent('UNIT_POWER')
-        Z:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
+        TJ:RegisterEvent('PLAYER_LEVEL_UP')
+        TJ:RegisterEvent('PLAYER_REGEN_ENABLED')
+        TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
+        TJ:RegisterEvent('PLAYER_TARGET_CHANGED')
+        TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+        TJ:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+        TJ:RegisterEvent('PLAYER_TALENT_UPDATE')
+        TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
+        TJ:RegisterEvent('UNIT_POWER')
+        TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
     end
 end
 
-Z:ProfileFunction('ActivateProfile')
+Profiling:ProfileFunction('ActivateProfile')
 
-function Z:DeactivateProfile()
-    local UI = self:GetModule('UI')
-
+function TJ:DeactivateProfile()
     -- Clear the update timer
     if screenUpdateTimer then screenUpdateTimer:Cancel() end
     screenUpdateTimer = nil
@@ -235,17 +244,17 @@ function Z:DeactivateProfile()
     if self.aoe_state then self.aoe_state = nil end
 
     -- Remove event listeners
-    Z:UnregisterEvent('UNIT_POWER_FREQUENT')
-    Z:UnregisterEvent('UNIT_POWER')
-    Z:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
-    Z:UnregisterEvent('PLAYER_TALENT_UPDATE')
-    Z:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-    Z:UnregisterEvent('PLAYER_ENTERING_WORLD')
-    Z:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-    Z:UnregisterEvent('PLAYER_TARGET_CHANGED')
-    Z:UnregisterEvent('PLAYER_REGEN_DISABLED')
-    Z:UnregisterEvent('PLAYER_REGEN_ENABLED')
-    Z:UnregisterEvent('PLAYER_LEVEL_UP')
+    TJ:UnregisterEvent('UNIT_POWER_FREQUENT')
+    TJ:UnregisterEvent('UNIT_POWER')
+    TJ:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
+    TJ:UnregisterEvent('PLAYER_TALENT_UPDATE')
+    TJ:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+    TJ:UnregisterEvent('PLAYER_ENTERING_WORLD')
+    TJ:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+    TJ:UnregisterEvent('PLAYER_TARGET_CHANGED')
+    TJ:UnregisterEvent('PLAYER_REGEN_DISABLED')
+    TJ:UnregisterEvent('PLAYER_REGEN_ENABLED')
+    TJ:UnregisterEvent('PLAYER_LEVEL_UP')
 
     -- Deactivate the current profile
     if self.currentProfile then
@@ -254,17 +263,15 @@ function Z:DeactivateProfile()
     end
 end
 
-Z:ProfileFunction('DeactivateProfile')
+Profiling:ProfileFunction('DeactivateProfile')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- APL Execution
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:ExecuteAllActionProfiles()
-    local UI = self:GetModule('UI')
-
-    DBG("")
-    DBG("Single Target")
+function TJ:ExecuteAllActionProfiles()
+    Debug("")
+    Debug("Single Target")
     -- Calculate the single-target profiles
     self.st_state:Reset()
     local action = self.st_state:PredictNextAction() or "wait"
@@ -276,9 +283,9 @@ function Z:ExecuteAllActionProfiles()
     action = self.st_state:PredictActionFollowing(action) or "wait"
     UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
 
-    if internal.GetConf('showCleave') then
-        DBG("")
-        DBG("Cleave")
+    if Config:Get('showCleave') then
+        Debug("")
+        Debug("Cleave")
         self.cleave_state:Reset()
         action = self.cleave_state:PredictNextAction() or "wait"
         UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
@@ -286,9 +293,9 @@ function Z:ExecuteAllActionProfiles()
         UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
     end
 
-    if internal.GetConf('showAoE') then
-        DBG("")
-        DBG("AoE")
+    if Config:Get('showAoE') then
+        Debug("")
+        Debug("AoE")
         self.aoe_state:Reset()
         action = self.aoe_state:PredictNextAction() or "wait"
         UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
@@ -297,15 +304,13 @@ function Z:ExecuteAllActionProfiles()
     end
 end
 
-Z:ProfileFunction('ExecuteAllActionProfiles')
+Profiling:ProfileFunction('ExecuteAllActionProfiles')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon enable/disable handlers
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:OnEnable()
-    local UI = self:GetModule('UI')
-
+function TJ:OnEnable()
     -- Add event listeners
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED')
     self:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -318,7 +323,7 @@ function Z:OnEnable()
 
     -- Handle movement if enabled
     UI:SetScript("OnMouseDown", function(self, button)
-        if Z.movable and button == "LeftButton" and not self.isMoving then
+        if UI.movable and button == "LeftButton" and not self.isMoving then
             self:StartMoving()
             self.isMoving = true
         end
@@ -328,9 +333,9 @@ function Z:OnEnable()
             self:StopMovingOrSizing()
             self.isMoving = false
             local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-            internal.SetConf(tgtPoint, "position", "tgtPoint")
-            internal.SetConf(offsetX, "position", "offsetX")
-            internal.SetConf(offsetY, "position", "offsetY")
+            Config:Set(tgtPoint, "position", "tgtPoint")
+            Config:Set(offsetX, "position", "offsetX")
+            Config:Set(offsetY, "position", "offsetY")
         end
     end)
     UI:SetScript("OnHide", function(self)
@@ -338,19 +343,19 @@ function Z:OnEnable()
             self:StopMovingOrSizing()
             self.isMoving = false
             local _, _, tgtPoint, offsetX, offsetY = self:GetPoint()
-            internal.SetConf(tgtPoint, "position", "tgtPoint")
-            internal.SetConf(offsetX, "position", "offsetX")
-            internal.SetConf(offsetY, "position", "offsetY")
+            Config:Set(tgtPoint, "position", "tgtPoint")
+            Config:Set(offsetX, "position", "offsetX")
+            Config:Set(offsetY, "position", "offsetY")
         end
     end)
 
     -- Show the debug log if we've enabled debugging
-    if internal.GetConf("do_debug") then
+    if Config:Get("do_debug") then
         self:ShowLoggingFrame()
     end
 end
 
-function Z:OnDisable()
+function TJ:OnDisable()
     -- Disable the debug log
     self:HideLoggingFrame()
 
@@ -367,7 +372,7 @@ end
 -- GCD detection, incoming damage tracking
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:TryDetectUpdateGlobalCooldown(lastCastSpellID)
+function TJ:TryDetectUpdateGlobalCooldown(lastCastSpellID)
     -- Work out the current GCD
     local spellCD = GetSpellBaseCooldown(lastCastSpellID or 0)
     if spellCD and spellCD == 0 then
@@ -380,8 +385,8 @@ function Z:TryDetectUpdateGlobalCooldown(lastCastSpellID)
     end
 end
 
-function Z:GetIncomingDamage(timestamp, secs)
-    local toDelete = LTC:Acquire()
+function TJ:GetIncomingDamage(timestamp, secs)
+    local toDelete = TableCache:Acquire()
     local now = GetTime()
     local value = 0
     for entrytime, damage in pairs(self.damageTable) do
@@ -396,6 +401,6 @@ function Z:GetIncomingDamage(timestamp, secs)
 
     -- Perform deletes
     for i=1, #toDelete do self.damageTable[toDelete[i]] = nil end
-    LTC:Release(toDelete)
+    TableCache:Release(toDelete)
     return value
 end

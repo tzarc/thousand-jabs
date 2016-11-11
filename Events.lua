@@ -1,6 +1,15 @@
-local _, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
+local addonName, internal = ...;
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+
+local rawget = rawget
+local GetTime = GetTime
+local UnitExists = UnitExists
+local UnitGUID = UnitGUID
+local UnitHealth = UnitHealth
+
+internal.Safety()
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -12,7 +21,7 @@ local playerGUID, targetGUID = nil, nil
 -- Events
 ------------------------------------------------------------------------------------------------------------------------
 
-function Z:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
+function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     -- Notify the profile
     if self.currentProfile then
         local handler = rawget(self.currentProfile, eventName)
@@ -23,7 +32,7 @@ function Z:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
-function Z:PLAYER_ENTERING_WORLD(eventName)
+function TJ:PLAYER_ENTERING_WORLD(eventName)
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
     -- Deactivate the current profile
@@ -34,7 +43,7 @@ function Z:PLAYER_ENTERING_WORLD(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:PLAYER_LEVEL_UP(eventName)
+function TJ:PLAYER_LEVEL_UP(eventName)
     -- Deactivate the current profile
     self:DeactivateProfile()
     -- Activate the new profile if present
@@ -43,7 +52,7 @@ function Z:PLAYER_LEVEL_UP(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:SPELLS_CHANGED(eventName)
+function TJ:SPELLS_CHANGED(eventName)
     -- Deactivate the current profile
     self:DeactivateProfile()
     -- Activate the new profile if present
@@ -52,14 +61,14 @@ function Z:SPELLS_CHANGED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:UNIT_POWER(eventName, unitID, powerType)
+function TJ:UNIT_POWER(eventName, unitID, powerType)
     if unitID == 'player' then
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, powerType)
     end
 end
 
-function Z:PLAYER_SPECIALIZATION_CHANGED(eventName, unitID)
+function TJ:PLAYER_SPECIALIZATION_CHANGED(eventName, unitID)
     if unitID == 'player' then
         -- Deactivate the current profile
         self:DeactivateProfile()
@@ -70,7 +79,7 @@ function Z:PLAYER_SPECIALIZATION_CHANGED(eventName, unitID)
     end
 end
 
-function Z:PLAYER_TALENT_UPDATE(eventName)
+function TJ:PLAYER_TALENT_UPDATE(eventName)
     -- Deactivate the current profile
     self:DeactivateProfile()
     -- Activate the new profile if present
@@ -79,7 +88,7 @@ function Z:PLAYER_TALENT_UPDATE(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
+function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
     if unitID == 'player' then
         -- Keep track of the last cast made
         self.lastCastTime[spellID] = GetTime()
@@ -90,7 +99,7 @@ function Z:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spel
     end
 end
 
-function Z:PLAYER_REGEN_ENABLED(eventName)
+function TJ:PLAYER_REGEN_ENABLED(eventName)
     -- Reset the last autoattack
     self.lastAutoAttack = 0
     -- Reset combat
@@ -99,7 +108,7 @@ function Z:PLAYER_REGEN_ENABLED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:PLAYER_REGEN_DISABLED(eventName)
+function TJ:PLAYER_REGEN_DISABLED(eventName)
     -- Reset the last autoattack
     self.lastAutoAttack = GetTime()
     -- Start combat
@@ -108,14 +117,14 @@ function Z:PLAYER_REGEN_DISABLED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:PLAYER_TARGET_CHANGED(eventName)
+function TJ:PLAYER_TARGET_CHANGED(eventName)
     -- Save the target GUID
     targetGUID = UnitExists('target') and UnitGUID('target') or nil
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function Z:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
     --[[ Not working?
     -- Check if the player has received any damage, and update the last incoming damage time
     if destGUID == playerGUID then

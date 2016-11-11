@@ -129,16 +129,6 @@ def KeywordModifier(keyword, thisSpell):
     while re.search("""^\(\(([^\(\)]+)\)\)$""", keyword):
         keyword = re.sub("""^\(\((?P<inner>[^\(\)]+)\)\)$""", "(\g<inner>)", keyword)
 
-    # Final keyword substitutions
-    keyword = re.sub('spell_stack', 'aura_stack', keyword)
-    keyword = re.sub('spell_ticking', 'aura_up', keyword)
-    keyword = re.sub('spell_up', 'aura_up', keyword)
-    keyword = re.sub('spell_react', 'aura_up', keyword)
-    keyword = re.sub('spell_down', 'aura_down', keyword)
-    keyword = re.sub('spell_remains', 'aura_remains', keyword)
-    keyword = re.sub('talent_enabled', 'talent_selected', keyword)
-    keyword = re.sub('artifact_enabled', 'artifact_selected', keyword)
-
     # Copy out all the keywords we found, so they can be referenced later
     r = re.findall('([a-zA-Z][a-zA-Z0-9\._]*)', keyword)
     for kw in r:

@@ -1,9 +1,21 @@
-local _, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
-local DBG = internal.DBG
-local LUC = LibStub('LibUnitCache-1.0')
-local floor = math.floor
+local addonName, internal = ...;
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local UnitCache = TJ:GetModule('UnitCache')
+
+local mfloor = math.floor
+local pairs = pairs
+local CheckInteractDistance = CheckInteractDistance
+local GetTime = GetTime
+local IsItemInRange = IsItemInRange
+local UnitAttackSpeed = UnitAttackSpeed
+local UnitExists = UnitExists
+local UnitHealth = UnitHealth
+local UnitHealthMax = UnitHealthMax
+local UnitPower = UnitPower
+
+internal.Safety()
 
 local range_checks = {
     { range = 80, items = { 35278 } },
@@ -23,7 +35,7 @@ local range_checks = {
     { range =  5, items = { 37727 } },
 }
 
-internal.range_to_unit = function(unitID)
+function internal.range_to_unit(unitID)
     local minrange = 9999
     for _,v in pairs(range_checks) do
         if v.items then
@@ -65,7 +77,7 @@ internal.baseEnvironment = {
         return (env.combatStart > 0) and (env.currentTime - env.combatStart) or 0
     end,
     time_since_incoming_damage = function(env, _)
-        return (Z.lastIncomingDamage > 0) and (env.currentTime - Z.lastIncomingDamage) or 0
+        return (TJ.lastIncomingDamage > 0) and (env.currentTime - TJ.lastIncomingDamage) or 0
     end,
 }
 
@@ -101,7 +113,7 @@ internal.commonData = {
     target = {
         exists = function(self,state) return UnitExists('target'), true end,
         is_casting = function(self,state) return false end,
-        time_to_die = function(self,state) return LUC:UnitTimeToDie('target') or 99999 end
+        time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end
     },
     player = {
         is_casting = function(self,state) return false end,
@@ -204,9 +216,9 @@ internal.resources = {
         gained = 0,
         gained_from_autoattacks = function(spell,env)
             local swingspeed = UnitAttackSpeed('player')
-            if Z.lastAutoAttack < GetTime() - swingspeed then Z.lastAutoAttack = GetTime() end
-            local predicted = floor((env.currentTime - Z.lastAutoAttack) / swingspeed)
-            --DBG("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, Z.lastAutoAttack, (env.currentTime - Z.lastAutoAttack))
+            if TJ.lastAutoAttack < GetTime() - swingspeed then TJ.lastAutoAttack = GetTime() end
+            local predicted = mfloor((env.currentTime - TJ.lastAutoAttack) / swingspeed)
+            --Debug("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, TJ.lastAutoAttack, (env.currentTime - TJ.lastAutoAttack))
             predicted = (predicted > 0) and predicted or 0
             return predicted * 25
         end,

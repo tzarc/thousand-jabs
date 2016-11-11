@@ -1,6 +1,5 @@
-local _, internal = ...;
-local Z = internal.Z
-local LUC = LibStub('LibUnitCache-1.0')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local Config = TJ:GetModule('Config')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Vengeance profile definition
@@ -67,13 +66,13 @@ local vengeance_base_overrides = {
         -- Why do these use a different spellID?!
         actual_cast_spellid = 189111,
         actual_last_cast = function(spell, env)
-            return env.last_cast_times[spell.actual_cast_spellid] or 0
+            return env.lastCastTimes[spell.actual_cast_spellid] or 0
         end,
         actual_time_since_last_cast = function(spell, env)
             return env.currentTime - spell.actual_last_cast
         end,
         PerformCast = function(spell, env)
-            env.last_cast_times[spell.actual_cast_spellid] = env.currentTime
+            env.lastCastTimes[spell.actual_cast_spellid] = env.currentTime
         end,
     },
     shear = {
@@ -112,7 +111,7 @@ local vengeance_base_overrides = {
         AuraApplyLength = 6,
     },
     fiery_demise = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("fiery_demise_selected") end,
+        artifact_selected = function(spell,env) return Config:GetSpec("fiery_demise_selected") and true or false end,
     },
 }
 
@@ -183,7 +182,7 @@ local vengeance_hooks = {
     hooks = {
         OnPredictActionAtOffset = function(env)
         --[[
-        internal.DBG({
+        internal.Debug({
         fel_devastation_spell_can_cast = env.fel_devastation.spell_can_cast,
         fel_devastation_blacklisted = env.fel_devastation.blacklisted,
         fel_devastation_in_spellbook = env.fel_devastation.in_spellbook,
@@ -200,7 +199,7 @@ local vengeance_hooks = {
     }
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
     spec_id = 2,
@@ -352,10 +351,10 @@ local havoc_base_overrides = {
         end,
     },
     demon_speed = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("demon_speed_selected") end,
+        artifact_selected = function(spell,env) return Config:GetSpec("demon_speed_selected") end,
     },
     anguish_of_the_deceiver = {
-        artifact_selected = function(spell,env) return internal.GetSpecConf("anguish_of_the_deceiver_selected") end,
+        artifact_selected = function(spell,env) return Config:GetSpec("anguish_of_the_deceiver_selected") end,
     },
 }
 
@@ -372,7 +371,7 @@ local havoc_hooks = {
         end,
         OnPredictActionAtOffset = function(env)
         --[[
-        internal.DBG({
+        internal.Debug({
         prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
         range = env.movement.distance,
         melee_in_range = env.melee.in_range,
@@ -381,7 +380,7 @@ local havoc_hooks = {
         fel_rush_spell_charges = env.fel_rush.spell_charges,
         fel_rush_spell_charges_fractional = env.fel_rush.spell_charges_fractional,
         })
-        internal.DBG({
+        internal.Debug({
         throw_glaive_cooldown_remains = env.throw_glaive.cooldown_remains,
         throw_glaive_spell_charges = env.throw_glaive.spell_charges,
         throw_glaive_spell_charges_fractional = env.throw_glaive.spell_charges_fractional,
@@ -391,7 +390,7 @@ local havoc_hooks = {
     }
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Havoc',
     class_id = 12,
     spec_id = 1,

@@ -1,7 +1,28 @@
 local addonName, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
+local TJ = internal.TJ
+local Debug = internal.Debug
 local fmt = internal.fmt
+
+local BOOKTYPE_SPELL = BOOKTYPE_SPELL
+local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
+local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
+local real_G = _G
+local mfloor = math.floor
+local pairs = pairs
+local tinsert = table.insert
+local tonumber = tonumber
+local CreateFrame = CreateFrame
+local GetActiveSpecGroup = GetActiveSpecGroup
+local GetNumSpellTabs = GetNumSpellTabs
+local GetSpellBookItemInfo = GetSpellBookItemInfo
+local GetSpellBookItemName = GetSpellBookItemName
+local GetSpellInfo = GetSpellInfo
+local GetSpellTabInfo = GetSpellTabInfo
+local GetTalentInfo = GetTalentInfo
+local IsPassiveSpell = IsPassiveSpell
+local IsTalentSpell = IsTalentSpell
+
+internal.Safety()
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Spellbook iteration
@@ -86,7 +107,7 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local definedAbilities = {}
-function Z:DetectAbilitiesFromSpellBook()
+function TJ:DetectAbilitiesFromSpellBook()
     local abilities = {}
 
     -- Helper to work out the 'simulationcraft-ified' name for the spell
@@ -121,7 +142,7 @@ function Z:DetectAbilitiesFromSpellBook()
     return abilities
 end
 
-function Z:ExportAbilitiesFromSpellBook()
+function TJ:ExportAbilitiesFromSpellBook()
     -- Build the string
     local export = ''
     local addline = function(...)
@@ -179,7 +200,7 @@ local ttsr1 = tts:CreateFontString('$parentTextRight1', nil, "GameTooltipText")
 tts:AddFontStrings(ttsl1, ttsr1)
 tts:SetOwner(UIParent, "ANCHOR_NONE")
 
-function Z:GetTooltipEntries(link)
+function TJ:GetTooltipEntries(link)
     tts:ClearLines()
     tts:SetHyperlink(link)
     local tooltipName = tts:GetName()
@@ -190,15 +211,15 @@ function Z:GetTooltipEntries(link)
             local xt = x:GetText()
             if xt ~= "" then
                 local e = { t = xt or "", c = {x:GetTextColor()} }
-                e.cb = { math.floor(e.c[1]*256), math.floor(e.c[2]*256), math.floor(e.c[3]*256) }
+                e.cb = { mfloor(e.c[1]*256), mfloor(e.c[2]*256), mfloor(e.c[3]*256) }
                 entries[1+#entries] = e
             end
         end
     end
 
     for i = 1, tts:NumLines() do
-        checkadd(_G[tooltipName..'TextLeft'..i])
-        checkadd(_G[tooltipName..'TextRight'..i])
+        checkadd(real_G[tooltipName..'TextLeft'..i])
+        checkadd(real_G[tooltipName..'TextRight'..i])
     end
 
     return entries
@@ -214,8 +235,8 @@ local PowerPatterns = {}
 for _,v in pairs(PowerTypes) do
     for _,s in pairs(PowerSuffixes) do
         local b = v:upper() .. s
-        if _G[b] then
-            local t = _G[b]
+        if real_G[b] then
+            local t = real_G[b]
             t = t:gsub('%%s', '([.,%%d]+)')
 
             local placeholder = '____PLACEHOLDER____'
@@ -240,8 +261,8 @@ local CooldownPatterns = {}
 local RechargePatterns = {}
 for _,v in pairs(DurationChecks) do
     local b = 'SPELL_RECAST_TIME_' .. v:upper()
-    if _G[b] then
-        local t = _G[b]
+    if real_G[b] then
+        local t = real_G[b]
         t = t:gsub('%%.3g', '([.,%%d]+)')
 
         local placeholder = '____PLACEHOLDER____'
@@ -258,8 +279,8 @@ for _,v in pairs(DurationChecks) do
         end
     end
     b = 'SPELL_RECAST_TIME_CHARGES_' .. v:upper()
-    if _G[b] then
-        local t = _G[b]
+    if real_G[b] then
+        local t = real_G[b]
         t = t:gsub('%%.3g', '([.,%%d]+)')
 
         local placeholder = '____PLACEHOLDER____'
@@ -277,15 +298,15 @@ for _,v in pairs(DurationChecks) do
     end
 end
 
-function Z:GetSpellCost(spellID)
+function TJ:GetSpellCost(spellID)
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(PowerPatterns) do
-            local a, b, c = strmatch(e.t, v[2])
+            local a, b, c = e.t:match(v[2])
             -- strip non-digit and convert to number
-            if a then a = gsub(a, '%D', '') + 0 end
-            if b then b = gsub(b, '%D', '') + 0 end
-            if c then c = gsub(c, '%D', '') + 0 end
+            if a then a = a:gsub('%D', '') + 0 end
+            if b then b = b:gsub('%D', '') + 0 end
+            if c then c = c:gsub('%D', '') + 0 end
             if a then
                 return v[1], a, b, c
             end
@@ -295,13 +316,13 @@ end
 
 local function split(str, delim)
     local t = {}
-    local function helper(s) table.insert(t, s) return "" end
+    local function helper(s) tinsert(t, s) return "" end
     helper((str:gsub("(.-)"..delim, helper)))
     return t
 end
 
 local function extract_number(str)
-    local str = gsub(str, '[^,%.%d]', '')
+    local str = str:gsub('[^,%.%d]', '')
     local reconv = { ['.'] = '%.', [','] = ',', [' '] = '%s' }
     local vals = split(str, '['..reconv[DECIMAL_SEPERATOR]..']')
     vals[1] = vals[1]:gsub('['..reconv[LARGE_NUMBER_SEPERATOR]..']', '')
@@ -309,11 +330,11 @@ local function extract_number(str)
     return tonumber(vals[1]) + tonumber(vals[2])
 end
 
-function Z:GetSpellCooldown(spellID)
+function TJ:GetSpellCooldown(spellID)
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(CooldownPatterns) do
-            local r = strmatch(e.t, v[2])
+            local r = e.t:match(v[2])
             if r then
                 return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
             end
@@ -322,11 +343,11 @@ function Z:GetSpellCooldown(spellID)
     return 0
 end
 
-function Z:GetSpellRechargeTime(spellID)
+function TJ:GetSpellRechargeTime(spellID)
     local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(RechargePatterns) do
-            local r = strmatch(e.t, v[2])
+            local r = e.t:match(v[2])
             if r then
                 return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
             end
@@ -336,10 +357,10 @@ function Z:GetSpellRechargeTime(spellID)
 end
 
 -- /dump tj:ScanTooltip('spell:188501', function(t) print(t) end, nil, { 255, 210, 0 })
-function Z:ScanTooltip(link, callback, pattern, colour)
+function TJ:ScanTooltip(link, callback, pattern, colour)
     local entries = self:GetTooltipEntries(link)
     local function patternmatch(str, pattern)
-        return pattern and type(pattern) == 'string' and strmatch(str, pattern) and true or false
+        return pattern and type(pattern) == 'string' and str:match(pattern) and true or false
     end
     local function colourmatch(c1, c2)
         return c2 and type(c2) == 'table' and #c2 == 3 and c1[1] == c2[1] and c1[2] == c2[2] and c1[3] == c2[3] and true or false

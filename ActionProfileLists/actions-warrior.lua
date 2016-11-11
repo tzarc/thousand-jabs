@@ -1249,5 +1249,3 @@ internal.actions['legion-dev::warrior::protection'] = {
         },
     },
 }
-
-

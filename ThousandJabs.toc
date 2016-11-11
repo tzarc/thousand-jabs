@@ -21,9 +21,12 @@ Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 Libs\LibSerpentDump.lua
-Libs\LibTableCache-1.0.lua
-Libs\LibProfiling-1.0.lua
-Libs\LibUnitCache-1.0.lua
+
+Core.lua
+
+Module-Profiling.lua
+Module-TableCache.lua
+Module-UnitCache.lua
 
 Translations.lua
 
@@ -31,8 +34,9 @@ Base.lua
 Main.lua
 SpellData.lua
 Events.lua
-UI.lua
 Config.lua
+
+Module-UI.lua
 
 Profile-APLParser.lua
 Profile-Base.lua

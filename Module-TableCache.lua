@@ -1,12 +1,18 @@
-local MAJOR, MINOR = "LibTableCache-1.0", 39
-local LibTableCache, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
+local addonName, internal = ...;
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local TableCache = TJ:GetModule('TableCache')
 
-------------------------------------------------------------------------------------------------------------------------
--- Table cache
-------------------------------------------------------------------------------------------------------------------------
+local pairs = pairs
+local setmetatable = setmetatable
+local type = type
+local wipe = wipe
 
-local function ensureTableCacheExists(lib)
-    lib.TableCache = lib.TableCache or {
+internal.Safety()
+
+local function ensureTableCacheExists(m)
+    m.TableCache = m.TableCache or {
         TotalAllocated = 0,
         TotalAcquired = 0,
         TotalReleased = 0,
@@ -14,23 +20,7 @@ local function ensureTableCacheExists(lib)
         InUseTables = {},
         TablesToRelease = {}
     }
-    return lib.TableCache
-end
-
-function LibTableCache:Acquire()
-    local tc = ensureTableCacheExists(self)
-    for k,v in pairs(tc.FreeTables) do
-        tc.FreeTables[k] = nil
-        tc.InUseTables[k] = k
-        tc.TotalAcquired = tc.TotalAcquired + 1
-        return k
-    end
-
-    local t = {}
-    tc.InUseTables[t] = t
-    tc.TotalAcquired = tc.TotalAcquired + 1
-    tc.TotalAllocated = tc.TotalAllocated + 1
-    return t
+    return m.TableCache
 end
 
 local function recursiveFindChildTables(tc, t)
@@ -46,7 +36,23 @@ local function recursiveFindChildTables(tc, t)
     end
 end
 
-function LibTableCache:Release(tbl)
+function TableCache:Acquire()
+    local tc = ensureTableCacheExists(self)
+    for k,v in pairs(tc.FreeTables) do
+        tc.FreeTables[k] = nil
+        tc.InUseTables[k] = k
+        tc.TotalAcquired = tc.TotalAcquired + 1
+        return k
+    end
+
+    local t = {}
+    tc.InUseTables[t] = t
+    tc.TotalAcquired = tc.TotalAcquired + 1
+    tc.TotalAllocated = tc.TotalAllocated + 1
+    return t
+end
+
+function TableCache:Release(tbl)
     local tc = ensureTableCacheExists(self)
     if type(tbl) ~= 'table' then return end
     if tc.FreeTables[tbl] then return end
@@ -63,4 +69,9 @@ function LibTableCache:Release(tbl)
     end
 
     wipe(tc.TablesToRelease)
+end
+
+function TableCache:GetMetrics()
+    local tc = ensureTableCacheExists(self)
+    return tc.TotalAllocated, tc.TotalAcquired, tc.TotalReleased
 end

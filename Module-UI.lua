@@ -1,11 +1,20 @@
 local addonName, internal = ...;
-
-local Z = internal.Z
-local LibStub = LibStub
-local UI = LibStub('AceAddon-3.0'):GetAddon(addonName):NewModule('UI')
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local Config = TJ:GetModule('Config')
+local UI = TJ:GetModule('UI')
 local LDB = LibStub("LibDataBroker-1.1")
 
-internal.WrapGlobalAccess()
+local real_G = _G
+local mceil = math.ceil
+local mpow = math.pow
+local CreateFrame = CreateFrame
+local InCombatLockdown = InCombatLockdown
+
+local LibStub = LibStub
+
+internal.Safety()
 
 UI.SINGLE_TARGET = 1
 UI.CLEAVE = 2
@@ -33,7 +42,7 @@ local function CreateContainer(isVertical, parent, frameName)
     end
 
     frame.ReapplyLayout = function(self)
-        local padding = internal.GetConf("geometry", "padding")
+        local padding = Config:Get("geometry", "padding")
         frame:ClearAllPoints()
         local totalWidth = 0
         local totalHeight = 0
@@ -87,6 +96,49 @@ local function CreateContainer(isVertical, parent, frameName)
     return frame
 end
 
+local function ApplyDefaultTheming(button)
+    -- Set the button size
+    button:Resize()
+
+    -- Create the texture
+    local icon = button.icon or button:CreateTexture(button:GetName()..'Overlay', 'OVERLAY')
+    if not icon:GetTexture() then
+        icon:SetTexture('Interface\\Icons\\spell_holy_borrowedtime')
+    end
+    icon:ClearAllPoints()
+    icon:SetAllPoints()
+    button.icon = icon
+
+    local floatingBG = real_G[button:GetName()..'FloatingBG']
+    if floatingBG then floatingBG:Hide() end
+end
+
+local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
+    -- Create the background frame for this icon
+    local button = CreateFrame('Button', name, parent)
+    button.sizeType = sizeType
+    button.sizeIndex = sizeIndex
+    function button:Resize()
+        local size = mceil(-0.001 + Config:Get("geometry", self.sizeType) * mpow(Config:Get("geometry", "sizeDecrease"), self.sizeIndex - 1))
+        self:SetSize(size, size)
+    end
+
+    ApplyDefaultTheming(button)
+    button:EnableMouse(false)
+    button:Show()
+
+    local MSQ = LibStub('Masque', true)
+    if MSQ then
+        local group = MSQ:Group(addonName, 'Actions')
+        group:AddButton(button, {Icon = button.icon})
+        if group.db.disabled then
+            ApplyDefaultTheming(button)
+        end
+    end
+
+    return button
+end
+
 function UI:OnInitialize()
     -- LDB object
     if LDB then
@@ -97,7 +149,7 @@ function UI:OnInitialize()
             type  = "data source",
             OnClick = function(_, button)
                 if button == "LeftButton" then
-                    Z:OpenConfigDialog()
+                    Config:OpenDialog()
                 elseif button == "RightButton" then
                     if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
                         if internal.updateBrokerText then
@@ -110,7 +162,7 @@ function UI:OnInitialize()
                             internal.statUpdateTime = nil
                         end
                     else
-                        Z:OpenConfigDialog()
+                        Config:OpenDialog()
                     end
                 end
             end,
@@ -123,7 +175,7 @@ function UI:OnInitialize()
         MSQ:Register(addonName, function(_, group, skinID, gloss, backdrop, colours, isDisabled)
             if isDisabled then
                 for btn in pairs(MSQ:Group(addonName, group).Buttons) do
-                    UI:ApplyDefaultTheming(btn)
+                    ApplyDefaultTheming(btn)
                 end
             end
             UI:ReapplyLayout(true)
@@ -177,10 +229,31 @@ end
 
 function UI:UpdateAlpha()
     local inCombat = InCombatLockdown()
-    actionFrames.backdrop:SetAlpha(inCombat and internal.GetConf("inCombatAlpha") or internal.GetConf("outOfCombatAlpha"))
+    actionFrames.backdrop:SetAlpha(inCombat and Config:Get("inCombatAlpha") or Config:Get("outOfCombatAlpha"))
+end
+
+function UI:ToggleMovement()
+    if self.movable then
+        self.movable = false
+        TJ:Print('Frame movement disabled.')
+    else
+        self.movable = true
+        TJ:Print('Frame movement enabled.')
+    end
+    self:SetMovable(self.movable)
+    self:EnableMouse(self.movable)
+end
+
+function UI:ResetPosition()
+    TJ:Print('Resetting position.')
+    Config:Set(nil, "position")
+    self:ReapplyLayout()
+    self:SetMovable(self.movable)
+    self:EnableMouse(self.movable)
 end
 
 function UI:ReapplyLayout(skipMasque)
+    -- Resize buttons
     for i=1,4 do
         local btn = actionFrames.actions[UI.SINGLE_TARGET][i]
         if btn then btn:ClearAllPoints(); btn:Resize(); end
@@ -188,30 +261,33 @@ function UI:ReapplyLayout(skipMasque)
     for i=1,2 do
         local btn = actionFrames.actions[UI.CLEAVE][i]
         if btn then btn:ClearAllPoints(); btn:Resize(); end
-    end
-    for i=1,2 do
-        local btn = actionFrames.actions[UI.AOE][i]
+        btn = actionFrames.actions[UI.AOE][i]
         if btn then btn:ClearAllPoints(); btn:Resize(); end
     end
 
+    -- Reapply the layout for the ST container
     actionFrames.containers[UI.SINGLE_TARGET]:ReapplyLayout()
 
-    if internal.GetConf('showCleave') then
+    -- Reapply the layout for the cleave container
+    if Config:Get('showCleave') then
         actionFrames.containers[UI.CLEAVE]:Show()
         actionFrames.containers[UI.CLEAVE]:ReapplyLayout()
     else
         actionFrames.containers[UI.CLEAVE]:Hide()
     end
 
-    if internal.GetConf('showAoE') then
+    -- Reapply the layout for the AoE container
+    if Config:Get('showAoE') then
         actionFrames.containers[UI.AOE]:Show()
         actionFrames.containers[UI.AOE]:ReapplyLayout()
     else
         actionFrames.containers[UI.AOE]:Hide()
     end
 
+    -- Reapply the layout for the base container
     actionFrames.baseFrame:ReapplyLayout()
 
+    -- Reskin any buttons if Masque is present
     if not skipMasque then
         -- Reapply masque skin if appropriate
         local MSQ = LibStub("Masque", true)
@@ -220,14 +296,16 @@ function UI:ReapplyLayout(skipMasque)
         end
     end
 
+    -- Restore the base frame geometry
     actionFrames.baseFrame:SetPoint("CENTER", actionFrames.backdrop, "CENTER")
-    actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * internal.GetConf("geometry", "padding")))
-    actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * internal.GetConf("geometry", "padding")))
+    actionFrames.backdrop:SetWidth(actionFrames.baseFrame:GetWidth() + (2 * Config:Get("geometry", "padding")))
+    actionFrames.backdrop:SetHeight(actionFrames.baseFrame:GetHeight() + (2 * Config:Get("geometry", "padding")))
 
+    -- Restore the positioning of the base frame
     actionFrames.backdrop:ClearAllPoints()
-    actionFrames.backdrop:SetPoint(internal.GetConf("position", "tgtPoint"), internal.GetConf("position", "offsetX"), internal.GetConf("position", "offsetY"))
-    actionFrames.backdrop:SetScale(internal.GetConf("geometry", "scale"))
-    actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
+    actionFrames.backdrop:SetPoint(Config:Get("position", "tgtPoint"), Config:Get("position", "offsetX"), Config:Get("position", "offsetY"))
+    actionFrames.backdrop:SetScale(Config:Get("geometry", "scale"))
+    actionFrames.backdrop:SetBackdropColor(0, 0, 0, Config:Get("backgroundOpacity"))
 end
 
 function UI:CreateFrames()
@@ -235,7 +313,7 @@ function UI:CreateFrames()
 
     -- Create the backdrop
     actionFrames.backdrop = CreateFrame('Frame', addonName.."Backdrop", UIParent)
-    actionFrames.backdrop:SetBackdropColor(0, 0, 0, internal.GetConf("backgroundOpacity"))
+    actionFrames.backdrop:SetBackdropColor(0, 0, 0, Config:Get("backgroundOpacity"))
     actionFrames.backdrop:SetPoint('CENTER', UIParent)
     actionFrames.backdrop:Show()
     actionFrames.backdrop:SetBackdrop({
@@ -251,86 +329,46 @@ function UI:CreateFrames()
     -- Create the base frame
     actionFrames.baseFrame = CreateContainer(orientation, actionFrames.backdrop, addonName)
 
-    -- Create the icon frames
+    -- Create the icon frame containers
     actionFrames.containers[UI.SINGLE_TARGET] = CreateContainer(orientation, actionFrames.baseFrame)
     actionFrames.containers[UI.CLEAVE] = CreateContainer(not orientation, actionFrames.baseFrame)
     actionFrames.containers[UI.AOE] = CreateContainer(not orientation, actionFrames.baseFrame)
 
+    -- Add each of the elements to the base container
     actionFrames.baseFrame:AddElement(actionFrames.containers[UI.AOE])
     actionFrames.baseFrame:AddElement(actionFrames.containers[UI.CLEAVE])
     actionFrames.baseFrame:AddElement(actionFrames.containers[UI.SINGLE_TARGET])
 
+    -- Create the cooldown frame beforehand
     actionFrames.cooldown = CreateFrame('Cooldown', ('%s_ST1Cooldown'):format(addonName), actionFrames.containers[UI.SINGLE_TARGET], 'CooldownFrameTemplate')
 
+    -- Create the ST icons
     for i=1,4 do
         local parent = actionFrames.containers[UI.SINGLE_TARGET]
-        local button = self:CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, "singleTargetSize", i)
+        local button = CreateSingleIconFrame(('%s_ST%d'):format(addonName, i), parent, "singleTargetSize", i)
         actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
         actionFrames.actions[UI.SINGLE_TARGET][i] = button
     end
 
+    -- Create the cleave icons
     for i=1,2 do
         local parent = actionFrames.containers[UI.CLEAVE]
-        local button = self:CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, "cleaveSize", i)
+        local button = CreateSingleIconFrame(('%s_Cleave%d'):format(addonName, i), parent, "cleaveSize", i)
         actionFrames.containers[UI.CLEAVE]:AddElement(button)
         actionFrames.actions[UI.CLEAVE][i] = button
     end
 
+    -- Create the AoE icons
     for i=1,2 do
         local parent = actionFrames.containers[UI.AOE]
-        local button = self:CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, "aoeSize", i)
+        local button = CreateSingleIconFrame(('%s_AoE%d'):format(addonName, i), parent, "aoeSize", i)
         actionFrames.containers[UI.AOE]:AddElement(button)
         actionFrames.actions[UI.AOE][i] = button
     end
 
+    -- Attach the cooldown frame to the first ST icon
     actionFrames.cooldown:SetAllPoints(actionFrames.actions[UI.SINGLE_TARGET][1])
 
     self:ReapplyLayout()
-
     actionFrames.backdrop:Hide()
-end
-
-function UI:CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
-    -- Create the background frame for this icon
-    local btn = CreateFrame('Button', name, parent)
-    btn.sizeType = sizeType
-    btn.sizeIndex = sizeIndex
-    function btn:Resize()
-        local size = math.ceil(-0.001 + internal.GetConf("geometry", self.sizeType) * math.pow(internal.GetConf("geometry", "sizeDecrease"), self.sizeIndex - 1))
-        self:SetSize(size, size)
-    end
-
-    UI:ApplyDefaultTheming(btn)
-    btn:EnableMouse(false)
-    btn:Show()
-
-    local MSQ = LibStub('Masque', true)
-    if MSQ then
-        local group = MSQ:Group(addonName, 'Actions')
-        group:AddButton(btn, {Icon = btn.icon})
-        if group.db.disabled then
-            self:ApplyDefaultTheming(btn)
-        end
-    end
-
-    return btn
-end
-
-function UI:ApplyDefaultTheming(button)
-    -- Set the button size
-    button:Resize()
-
-    -- Create the texture
-    local icon = button.icon or button:CreateTexture(button:GetName()..'Overlay', 'OVERLAY')
-    if not icon:GetTexture() then
-        icon:SetTexture('Interface\\Icons\\spell_holy_borrowedtime')
-    end
-    icon:ClearAllPoints()
-    icon:SetAllPoints()
-    button.icon = icon
-
-    local floatingBG = _G[button:GetName()..'FloatingBG']
-    if floatingBG then
-        floatingBG:Hide()
-    end
 end

@@ -1,7 +1,18 @@
 local addonName, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
-local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs")
+local TJ = internal.TJ
+local Debug = internal.Debug
+local fmt = internal.fmt
+local Config = TJ:GetModule('Config')
+local UI = TJ:GetModule('UI')
+local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
+
+local select = select
+local type = type
+
+local AC = LibStub("AceConfig-3.0")
+local ACD = LibStub("AceConfigDialog-3.0")
+
+internal.Safety()
 
 local defaultConf = {
     showCleave = true,
@@ -25,36 +36,27 @@ local defaultConf = {
     do_debug = false,
 }
 
-function TJ:UpgradeConf()
+
+function Config:OpenDialog()
+    ACD:Open(addonName)
+    ACD:SelectGroup(addonName, "general")
+end
+
+function Config:Upgrade()
     -- Added Geometry:
-    if type(TJ:GetConf("scale")) ~= "nil" then
-        TJ:SetConf(TJ:GetConf("scale"), "geometry", "scale")
-        TJ:SetConf(nil, "scale")
-        TJ:SetConf(TJ:GetConf("padding"), "geometry", "padding")
-        TJ:SetConf(nil, "padding")
+    if type(Config:Get("scale")) ~= "nil" then
+        Config:Set(Config:Get("scale"), "geometry", "scale")
+        Config:Set(nil, "scale")
+        Config:Set(Config:Get("padding"), "geometry", "padding")
+        Config:Set(nil, "padding")
     end
 end
 
 local function getconf(tbl, key, ...)
     if select('#', ...) == 0 then return tbl[key] end
     local e = tbl[key]
-    if not e then return nil end
+    if type(e) == "nil" then return nil end
     return getconf(e, ...)
-end
-
-function internal.GetConf(...)
-    ThousandJabsDB = ThousandJabsDB or {}
-    local res = getconf(ThousandJabsDB, ...)
-    if type(res) == "nil" then res = getconf(defaultConf, ...) end
-    return res
-end
-
-function TJ:GetConf(...)
-    return internal.GetConf(...)
-end
-
-function TJ:SetConf(...)
-    internal.SetConf(...)
 end
 
 local function setconf(value, tbl, ...)
@@ -67,30 +69,33 @@ local function setconf(value, tbl, ...)
     p[keys[#keys]] = value
 end
 
-function internal.SetConf(value, ...)
+function Config:Get(...)
+    ThousandJabsDB = ThousandJabsDB or {}
+    local res = getconf(ThousandJabsDB, ...)
+    if type(res) == "nil" then res = getconf(defaultConf, ...) end
+    return res
+end
+
+function Config:Set(value, ...)
     ThousandJabsDB = ThousandJabsDB or {}
     setconf(value, ThousandJabsDB, ...)
 end
 
-function internal.GetSpecConf(e)
+function Config:GetSpec(e)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    return internal.GetConf("class", classID, "spec", specID, "config", e)
+    return Config:Get("class", classID, "spec", specID, "config", e)
 end
 
-function TJ:GetSpecConf(e)
-    return internal.GetSpecConf(e)
-end
-
-function internal.SetSpecConf(value, e)
+function Config:SetSpec(value, e)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    internal.SetConf(value, "class", classID, "spec", specID, "config", e)
+    Config:Set(value, "class", classID, "spec", specID, "config", e)
 end
 
 function internal.trim(s)
     return ((s or ""):gsub("^%s*(.-)%s*$", "%1"))
 end
 
-LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
+AC:RegisterOptionsTable(addonName, function()
     local options = {
         name = "Thousand Jabs",
         handler = Z,
@@ -112,7 +117,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 101,
                         name = L["Toggle Lock"],
                         func = function()
-                            Z:ToggleMovement()
+                            UI:ToggleMovement()
                         end
                     },
                     resetpos = {
@@ -120,7 +125,7 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 102,
                         name = L["Reset Position"],
                         func = function()
-                            Z:ResetPosition()
+                            UI:ResetPosition()
                         end
                     },
                     showCleave = {
@@ -128,11 +133,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 103,
                         name = L["Show Cleave Abilties"],
                         get = function(info)
-                            return internal.GetConf("showCleave") and true or false
+                            return Config:Get("showCleave") and true or false
                         end,
                         set = function(info, val)
-                            internal.SetConf(val and true or false, "showCleave")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val and true or false, "showCleave")
+                            UI:ReapplyLayout()
                         end
                     },
                     showAoE = {
@@ -140,11 +145,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 104,
                         name = L["Show AoE Abilties"],
                         get = function(info)
-                            return internal.GetConf("showAoE") and true or false
+                            return Config:Get("showAoE") and true or false
                         end,
                         set = function(info, val)
-                            internal.SetConf(val and true or false, "showAoE")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val and true or false, "showAoE")
+                            UI:ReapplyLayout()
                         end
                     },
                     backgroundOpacity = {
@@ -155,11 +160,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 1.0,
                         step = 0.05,
                         get = function(info)
-                            return internal.GetConf("backgroundOpacity")
+                            return Config:Get("backgroundOpacity")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "backgroundOpacity")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "backgroundOpacity")
+                            UI:ReapplyLayout()
                         end
                     },
                     outOfCombatHide = {
@@ -167,11 +172,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 106,
                         name = L["Hide out-of-combat"],
                         get = function(info)
-                            return (internal.GetConf("outOfCombatAlpha") == 0) and true or false
+                            return (Config:Get("outOfCombatAlpha") == 0) and true or false
                         end,
                         set = function(info, val)
-                            internal.SetConf(val and 0 or 1, "outOfCombatAlpha")
-                            Z:GetModule('UI'):UpdateAlpha()
+                            Config:Set(val and 0 or 1, "outOfCombatAlpha")
+                            UI:UpdateAlpha()
                         end
                     },
                     fadingHeader = {
@@ -187,11 +192,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 1,
                         step = 0.05,
                         get = function(info)
-                            return internal.GetConf("inCombatAlpha")
+                            return Config:Get("inCombatAlpha")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "inCombatAlpha")
-                            Z:GetModule('UI'):UpdateAlpha()
+                            Config:Set(val, "inCombatAlpha")
+                            UI:UpdateAlpha()
                         end
                     },
                     outOfCombatAlpha = {
@@ -202,11 +207,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 1,
                         step = 0.05,
                         get = function(info)
-                            return internal.GetConf("outOfCombatAlpha")
+                            return Config:Get("outOfCombatAlpha")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "outOfCombatAlpha")
-                            Z:GetModule('UI'):UpdateAlpha()
+                            Config:Set(val, "outOfCombatAlpha")
+                            UI:UpdateAlpha()
                         end
                     },
                     geometryHeader = {
@@ -222,11 +227,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 2.0,
                         step = 0.05,
                         get = function(info)
-                            return internal.GetConf("geometry", "scale")
+                            return Config:Get("geometry", "scale")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "scale")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "scale")
+                            UI:ReapplyLayout()
                         end
                     },
                     singleTargetSize = {
@@ -237,11 +242,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("geometry", "singleTargetSize")
+                            return Config:Get("geometry", "singleTargetSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "singleTargetSize")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "singleTargetSize")
+                            UI:ReapplyLayout()
                         end
                     },
                     cleaveSize = {
@@ -252,11 +257,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("geometry", "cleaveSize")
+                            return Config:Get("geometry", "cleaveSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "cleaveSize")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "cleaveSize")
+                            UI:ReapplyLayout()
                         end
                     },
                     aoeSize = {
@@ -267,11 +272,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 300,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("geometry", "aoeSize")
+                            return Config:Get("geometry", "aoeSize")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "aoeSize")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "aoeSize")
+                            UI:ReapplyLayout()
                         end
                     },
                     nextScale = {
@@ -282,11 +287,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 1.0,
                         step = 0.01,
                         get = function(info)
-                            return internal.GetConf("geometry", "sizeDecrease")
+                            return Config:Get("geometry", "sizeDecrease")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "sizeDecrease")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "sizeDecrease")
+                            UI:ReapplyLayout()
                         end
                     },
                     padding = {
@@ -297,11 +302,11 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         max = 20,
                         step = 1,
                         get = function(info)
-                            return internal.GetConf("geometry", "padding")
+                            return Config:Get("geometry", "padding")
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "geometry", "padding")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(val, "geometry", "padding")
+                            UI:ReapplyLayout()
                         end
                     },
                     resetGeometry = {
@@ -309,8 +314,8 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = 307,
                         name = L["Reset Geometry"],
                         func = function()
-                            internal.SetConf(nil, "geometry")
-                            Z:GetModule('UI'):ReapplyLayout()
+                            Config:Set(nil, "geometry")
+                            UI:ReapplyLayout()
                         end
                     },
                 },
@@ -336,18 +341,18 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     order = 1001,
                     name = L["Disable Specialisation"],
                     get = function(info)
-                        return internal.GetConf("class", classID, "spec", specID, "disabled") and true or false
+                        return Config:Get("class", classID, "spec", specID, "disabled") and true or false
                     end,
                     set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "disabled")
-                        Z:DeactivateProfile()
-                        Z:ActivateProfile()
+                        Config:Set(val and true or false, "class", classID, "spec", specID, "disabled")
+                        TJ:DeactivateProfile()
+                        TJ:ActivateProfile()
                     end
                 },
             },
         }
 
-        local profile = Z.profiles and Z.profiles[classID] and Z.profiles[classID][specID] or nil
+        local profile = TJ.profiles and TJ.profiles[classID] and TJ.profiles[classID][specID] or nil
 
         if profile and profile.configCheckboxes then
             local order = 2000
@@ -365,13 +370,13 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         order = order,
                         name = e,
                         get = function(info)
-                            return internal.GetConf("class", classID, "spec", specID, "config", e) and true or false
+                            return Config:Get("class", classID, "spec", specID, "config", e) and true or false
                         end,
                         set = function(info, val)
-                            internal.SetConf(val and true or false, "class", classID, "spec", specID, "config", e)
-                            Z:DeactivateProfile()
-                            Z:ActivateProfile()
-                            Z:QueueUpdate()
+                            Config:Set(val and true or false, "class", classID, "spec", specID, "config", e)
+                            TJ:DeactivateProfile()
+                            TJ:ActivateProfile()
+                            TJ:QueueUpdate()
                         end
                     }
                 elseif type(v) == "table" and #v == 2 and type(v[1]) == "number" and type(v[2]) == "number" then
@@ -382,13 +387,13 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                         min = v[1],
                         max = v[2],
                         get = function(info)
-                            return internal.GetConf("class", classID, "spec", specID, "config", e)
+                            return Config:Get("class", classID, "spec", specID, "config", e)
                         end,
                         set = function(info, val)
-                            internal.SetConf(val, "class", classID, "spec", specID, "config", e)
-                            Z:DeactivateProfile()
-                            Z:ActivateProfile()
-                            Z:QueueUpdate()
+                            Config:Set(val, "class", classID, "spec", specID, "config", e)
+                            TJ:DeactivateProfile()
+                            TJ:ActivateProfile()
+                            TJ:QueueUpdate()
                         end
                     }
                 end
@@ -420,13 +425,13 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
                     order = order,
                     name = k,
                     get = function(info)
-                        return internal.GetConf("class", classID, "spec", specID, "blacklist", k) and true or false
+                        return Config:Get("class", classID, "spec", specID, "blacklist", k) and true or false
                     end,
                     set = function(info, val)
-                        internal.SetConf(val and true or false, "class", classID, "spec", specID, "blacklist", k)
-                        Z:DeactivateProfile()
-                        Z:ActivateProfile()
-                        Z:QueueUpdate()
+                        Config:Set(val and true or false, "class", classID, "spec", specID, "blacklist", k)
+                        TJ:DeactivateProfile()
+                        TJ:ActivateProfile()
+                        TJ:QueueUpdate()
                     end
                 }
             end
@@ -437,4 +442,4 @@ LibStub("AceConfig-3.0"):RegisterOptionsTable("ThousandJabs", function()
 
     return options
 end)
-LibStub("AceConfigDialog-3.0"):AddToBlizOptions("ThousandJabs", "Thousand Jabs")
+ACD:AddToBlizOptions(addonName, "Thousand Jabs")

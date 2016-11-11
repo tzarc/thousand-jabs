@@ -1,5 +1,5 @@
-local _, internal = ...;
-local Z = internal.Z
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local Config = TJ:GetModule('Config')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Arms profile definition
@@ -149,7 +149,7 @@ local arms_base_overrides = {
     },
 }
 
-Z:RegisterPlayerClass({
+TJ:RegisterPlayerClass({
     name = 'Arms',
     class_id = 1,
     spec_id = 1,

@@ -1,10 +1,26 @@
-local _, internal = ...;
-internal.WrapGlobalAccess()
-local Z = internal.Z
-local tcontains = tContains
+local addonName, internal = ...;
+local TJ = internal.TJ
+local Debug = internal.Debug
 local fmt = internal.fmt
+local Config = TJ:GetModule('Config')
 
-function Z:RegisterPlayerClass(config)
+local mfloor = math.floor
+local pairs = pairs
+local rawget = rawget
+local select = select
+local setmetatable = setmetatable
+local type = type
+local unpack = unpack
+local wipe = wipe
+local GetActiveSpecGroup = GetActiveSpecGroup
+local GetSpellInfo = GetSpellInfo
+local GetSpellLevelLearned = GetSpellLevelLearned
+local GetTalentInfo = GetTalentInfo
+local UnitSpellHaste = UnitSpellHaste
+
+internal.Safety()
+
+function TJ:RegisterPlayerClass(config)
 
     local config = config
     local blacklisted = {}
@@ -28,7 +44,7 @@ function Z:RegisterPlayerClass(config)
 
     function profile:LoadActions()
         if internal.devMode or not profile.parsedActions then
-            local emptyEnvironment = setmetatable({ type = _G.type }, { __index = function() return nil end })
+            local emptyEnvironment = setmetatable({ type = type }, { __index = function() return nil end })
             local counts = {}
             for listName,listTable in pairs(internal.actions[config.action_profile]) do
                 counts[listName] = counts[listName] or {}
@@ -52,7 +68,7 @@ function Z:RegisterPlayerClass(config)
                                 entry.fullconditionfuncsrc = entry.fullconditionfuncsrc:gsub(e[1], e[2])
                             end
                         end
-                        entry.condition_func = Z:LoadFunctionString(fmt("return function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
+                        entry.condition_func = TJ:LoadFunctionString(fmt("function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
                     end
 
                     if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
@@ -62,7 +78,7 @@ function Z:RegisterPlayerClass(config)
                                 entry.fullvaluefuncsrc = entry.fullvaluefuncsrc:gsub(e[1], e[2])
                             end
                         end
-                        entry.value_func = Z:LoadFunctionString(fmt("return function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
+                        entry.value_func = TJ:LoadFunctionString(fmt("function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
                     end
                 end
             end
@@ -85,17 +101,17 @@ function Z:RegisterPlayerClass(config)
     end
 
     function profile:Activate()
-        Z:DevPrint("Activating profile: %s", profile.name)
+        TJ:DevPrint("Activating profile: %s", profile.name)
 
         -- Construct the total actions table, including resources and base actions
-        profile.actions = Z:MergeTables(internal.commonData, resources, unpack(config.actions))
+        profile.actions = TJ:MergeTables(internal.commonData, resources, unpack(config.actions))
         local actions = profile.actions
 
         -- Load the actions table
         self:LoadActions()
 
         -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
-        profile.guessed = Z:DetectAbilitiesFromSpellBook()
+        profile.guessed = TJ:DetectAbilitiesFromSpellBook()
         local guessed = profile.guessed
 
         -- Loop through each of the guessed abilities, and attempt to match up the AbilityID or the TalentIDs
@@ -120,7 +136,7 @@ function Z:RegisterPlayerClass(config)
                 end
                 -- We got a match, merge the tables
                 if match then
-                    actions[k2] = Z:MergeTables(v2, v1)
+                    actions[k2] = TJ:MergeTables(v2, v1)
                     actions[k2].in_spellbook = v1.SpellBookSpellID and true or false
                     actions[k2].AbilityID = v1.SpellBookSpellID or nil
                 end
@@ -131,7 +147,7 @@ function Z:RegisterPlayerClass(config)
         if not actions.hooks then actions.hooks = {} end
 
         -- Show errors if we're missing anything...
-        actions = Z:MissingFieldTable(profile.name, actions)
+        actions = TJ:MissingFieldTable(profile.name, actions)
 
         -- Construct the blacklisted
         wipe(blacklisted)
@@ -180,7 +196,7 @@ function Z:RegisterPlayerClass(config)
 
                 -- Set up function for last cast time
                 v.last_cast = function(spell, env)
-                    return env.last_cast_times[v.AbilityID] or 0
+                    return env.lastCastTimes[v.AbilityID] or 0
                 end
                 v.time_since_last_cast = function(spell, env)
                     return env.currentTime - spell.last_cast
@@ -188,7 +204,7 @@ function Z:RegisterPlayerClass(config)
 
                 -- Set up a function to check to see if an ability is blacklisted
                 v.blacklisted = function(spell, env)
-                    return internal.GetConf("class", config.class_id, "spec", config.spec_id, "blacklist", k) and true or false
+                    return Config:Get("class", config.class_id, "spec", config.spec_id, "blacklist", k) and true or false
                 end
 
                 -- Start constructing the spell_can_cast() and perform_cast() functions
@@ -204,14 +220,14 @@ function Z:RegisterPlayerClass(config)
                         end
                     else
                         v.spell_cast_time = function(spell, env)
-                            local gcd = Z.currentGCD * env.playerHasteMultiplier
+                            local gcd = TJ.currentGCD * env.playerHasteMultiplier
                             return (gcd > 1) and gcd or 1
                         end
                     end
                 end
 
                 -- Get the resource cost
-                local costType, costBase, costPerTime = Z:GetSpellCost(v.AbilityID)
+                local costType, costBase, costPerTime = TJ:GetSpellCost(v.AbilityID)
 
                 -- If this action has an associated cost, add the correct value to the table and update the functions accordingly
                 costType = costType or rawget(v, 'cost_type')
@@ -224,7 +240,7 @@ function Z:RegisterPlayerClass(config)
                 end
 
                 -- Get the cooldown
-                local cooldownSecs, isCooldownAffectedByHaste = Z:GetSpellCooldown(v.AbilityID)
+                local cooldownSecs, isCooldownAffectedByHaste = TJ:GetSpellCooldown(v.AbilityID)
                 local fullCooldownSecs = (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or 0
 
                 -- If this action has an associated cooldown, then insert the value to the table and update the functions accordingly
@@ -249,10 +265,13 @@ function Z:RegisterPlayerClass(config)
                     v.cooldown_ready = function(spell, env)
                         return (spell.cooldown_remains == 0) and true or false
                     end
+                    v.cooldown_up = function(spell, env)
+                        return (spell.cooldown_remains == 0) and true or false
+                    end
                 end
 
                 -- Get the recharge time
-                local rechargeSecs, isRechargeAffectedByHaste = Z:GetSpellRechargeTime(v.AbilityID)
+                local rechargeSecs, isRechargeAffectedByHaste = TJ:GetSpellRechargeTime(v.AbilityID)
                 local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
 
                 -- If this action has an associated recharge time, then insert the value to the table and update the functions accordingly
@@ -268,7 +287,7 @@ function Z:RegisterPlayerClass(config)
                         return spell.RechargeTime
                     end
                     v.spell_charges = function(spell, env)
-                        return math.floor(spell.spell_charges_fractional+0.001)
+                        return mfloor(spell.spell_charges_fractional+0.001)
                     end
                     v.spell_charges_fractional = function(spell, env)
                         local f = (spell.rechargeSampled == spell.rechargeMax)
@@ -306,17 +325,17 @@ function Z:RegisterPlayerClass(config)
 
                 -- Update the perform_cast function if there's a spell-specific function in the supplied table
                 if rawget(v, 'PerformCast') then
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; r = spell.PerformCast'
+                    perform_cast_funcsrc = perform_cast_funcsrc .. '; local r = spell.PerformCast'
                 end
 
                 -- Load the spell_can_cast function
-                spell_can_cast_funcsrc = fmt('return function(spell, env) return ((%s) and true or false) end', spell_can_cast_funcsrc:gsub('^ and ', ''))
-                v.spell_can_cast = Z:LoadFunctionString(spell_can_cast_funcsrc, k..':spell_can_cast')
+                spell_can_cast_funcsrc = fmt('function(spell, env) return ((%s) and true or false) end', spell_can_cast_funcsrc:gsub('^ and ', ''))
+                v.spell_can_cast = TJ:LoadFunctionString(spell_can_cast_funcsrc, k..':spell_can_cast')
                 if internal.devMode then v.spell_can_cast_funcsrc = spell_can_cast_funcsrc end
 
                 -- Load the perform_cast function
-                perform_cast_funcsrc = fmt('return function(spell, env) %s end', perform_cast_funcsrc:gsub('^; ', ''))
-                v.perform_cast = Z:LoadFunctionString(perform_cast_funcsrc, k..':perform_cast')
+                perform_cast_funcsrc = fmt('function(spell, env) %s end', perform_cast_funcsrc:gsub('^; ', ''))
+                v.perform_cast = TJ:LoadFunctionString(perform_cast_funcsrc, k..':perform_cast')
                 if internal.devMode then v.perform_cast_funcsrc = perform_cast_funcsrc end
 
             end
@@ -353,8 +372,4 @@ function Z:RegisterPlayerClass(config)
 
     function profile:Deactivate()
     end
-end
-
-function internal.TJ:RegisterPlayerClass(classInfo)
-    Z:RegisterPlayerClass(classInfo)
 end
