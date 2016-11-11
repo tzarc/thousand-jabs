@@ -4,9 +4,17 @@ local Debug = internal.Debug
 local fmt = internal.fmt
 local UnitCache = TJ:GetModule('UnitCache')
 
+local SPELL_POWER_CHI = SPELL_POWER_CHI
+local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
+local SPELL_POWER_FURY = SPELL_POWER_FURY
+local SPELL_POWER_PAIN = SPELL_POWER_PAIN
+local SPELL_POWER_RAGE = SPELL_POWER_RAGE
+local SPELL_POWER_RUNIC_POWER = SPELL_POWER_RUNIC_POWER
 local mfloor = math.floor
 local pairs = pairs
 local CheckInteractDistance = CheckInteractDistance
+local GetPowerRegen = GetPowerRegen
+local GetRuneCooldown = GetRuneCooldown
 local GetTime = GetTime
 local IsItemInRange = IsItemInRange
 local UnitAttackSpeed = UnitAttackSpeed
@@ -14,6 +22,7 @@ local UnitExists = UnitExists
 local UnitHealth = UnitHealth
 local UnitHealthMax = UnitHealthMax
 local UnitPower = UnitPower
+local UnitPowerMax = UnitPowerMax
 
 internal.Safety()
 

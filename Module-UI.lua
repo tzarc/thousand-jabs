@@ -367,6 +367,7 @@ function UI:CreateFrames()
     end
 
     -- Attach the cooldown frame to the first ST icon
+    actionFrames.cooldown:SetParent(actionFrames.actions[UI.SINGLE_TARGET][1])
     actionFrames.cooldown:SetAllPoints(actionFrames.actions[UI.SINGLE_TARGET][1])
 
     self:ReapplyLayout()
