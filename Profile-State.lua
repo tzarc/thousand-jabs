@@ -127,7 +127,7 @@ local function CreatePrevGcdTable(state, profile)
                 end
             end
 
-            if lastTime + ((self.currentGCD or 1)*1.5) < env.currentTime then return false end -- if we've gone through at least 1.5 gcd's with no ability spent, reset everything
+            if lastTime + ((TJ.currentGCD or 1)*1.5) < env.currentTime then return false end -- if we've gone through at least 1.5 gcd's with no ability spent, reset everything
 
             -- find the matching ability
             local matchingAbility = nil
