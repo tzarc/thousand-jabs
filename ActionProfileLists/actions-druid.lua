@@ -15,7 +15,7 @@ internal.actions = internal.actions or {}
 ---- full_moon.spell_recharge_time
 ---- fury_of_elue.cooldown_remains
 ---- fury_of_elune.talent_selected
----- gcd.max
+---- gcd_max
 ---- half_moon.spell_charges
 ---- half_moon.spell_recharge_time
 ---- incarnation.aura_up
@@ -292,17 +292,17 @@ internal.actions['legion-dev::druid::balance'] = {
         },
         {
             action = 'starsurge',
-            condition = '(buff.the_emerald_dreamcatcher.up&buff.the_emerald_dreamcatcher.remains<gcd.max)|astral_power>=90|((buff.celestial_alignment.up|buff.incarnation.up)&astral_power>=85)',
-            condition_converted = '(((((the_emerald_dreamcatcher.aura_up) and (((the_emerald_dreamcatcher.aura_remains_as_number) < (gcd.max_as_number)))))) or (((((astral_power_as_number) >= (90))) or (((((((celestial_alignment.aura_up) or (incarnation.aura_up)))) and (((astral_power_as_number) >= (85)))))))))',
+            condition = '(buff.the_emerald_dreamcatcher.up&buff.the_emerald_dreamcatcher.remains<gcd_max)|astral_power>=90|((buff.celestial_alignment.up|buff.incarnation.up)&astral_power>=85)',
+            condition_converted = '(((((the_emerald_dreamcatcher.aura_up) and (((the_emerald_dreamcatcher.aura_remains_as_number) < (gcd_max_as_number)))))) or (((((astral_power_as_number) >= (90))) or (((((((celestial_alignment.aura_up) or (incarnation.aura_up)))) and (((astral_power_as_number) >= (85)))))))))',
             condition_keywords = {
                 'astral_power',
                 'celestial_alignment.aura_up',
-                'gcd.max',
+                'gcd_max',
                 'incarnation.aura_up',
                 'the_emerald_dreamcatcher.aura_remains',
                 'the_emerald_dreamcatcher.aura_up',
             },
-            simc_line = 'actions.ed+=/starsurge,if=(buff.the_emerald_dreamcatcher.up&buff.the_emerald_dreamcatcher.remains<gcd.max)|astral_power>=90|((buff.celestial_alignment.up|buff.incarnation.up)&astral_power>=85)',
+            simc_line = 'actions.ed+=/starsurge,if=(buff.the_emerald_dreamcatcher.up&buff.the_emerald_dreamcatcher.remains<gcd_max)|astral_power>=90|((buff.celestial_alignment.up|buff.incarnation.up)&astral_power>=85)',
         },
         {
             action = 'stellar_flare',

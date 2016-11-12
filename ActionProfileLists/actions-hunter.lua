@@ -12,7 +12,7 @@ internal.actions = internal.actions or {}
 ---- dire_beast.pet_active
 ---- focus.curr
 ---- focus.deficit
----- gcd.max
+---- gcd_max
 ---- kill_command.cooldown_remains
 ---- killer_cobra.talent_selected
 ---- spell_targets
@@ -128,15 +128,15 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
         },
         {
             action = 'multi_shot',
-            condition = 'spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)',
-            condition_converted = '((((spell_targets_as_number) > (4))) and ((((((beast_cleave.aura_remains_as_number) < (gcd.max_as_number))) or (beast_cleave.aura_down)))))',
+            condition = 'spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd_max|pet.buff.beast_cleave.down)',
+            condition_converted = '((((spell_targets_as_number) > (4))) and ((((((beast_cleave.aura_remains_as_number) < (gcd_max_as_number))) or (beast_cleave.aura_down)))))',
             condition_keywords = {
                 'beast_cleave.aura_down',
                 'beast_cleave.aura_remains',
-                'gcd.max',
+                'gcd_max',
                 'spell_targets',
             },
-            simc_line = 'actions+=/multi_shot,if=spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)',
+            simc_line = 'actions+=/multi_shot,if=spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd_max|pet.buff.beast_cleave.down)',
         },
         {
             action = 'kill_command',
@@ -146,15 +146,15 @@ internal.actions['legion-dev::hunter::beast_mastery'] = {
         },
         {
             action = 'multi_shot',
-            condition = 'spell_targets.multi_shot>1&(pet.buff.beast_cleave.remains<gcd.max*2|pet.buff.beast_cleave.down)',
-            condition_converted = '((((spell_targets_as_number) > (1))) and ((((((beast_cleave.aura_remains_as_number) < ((gcd.max_as_number * 2)))) or (beast_cleave.aura_down)))))',
+            condition = 'spell_targets.multi_shot>1&(pet.buff.beast_cleave.remains<gcd_max*2|pet.buff.beast_cleave.down)',
+            condition_converted = '((((spell_targets_as_number) > (1))) and ((((((beast_cleave.aura_remains_as_number) < ((gcd_max_as_number * 2)))) or (beast_cleave.aura_down)))))',
             condition_keywords = {
                 'beast_cleave.aura_down',
                 'beast_cleave.aura_remains',
-                'gcd.max',
+                'gcd_max',
                 'spell_targets',
             },
-            simc_line = 'actions+=/multi_shot,if=spell_targets.multi_shot>1&(pet.buff.beast_cleave.remains<gcd.max*2|pet.buff.beast_cleave.down)',
+            simc_line = 'actions+=/multi_shot,if=spell_targets.multi_shot>1&(pet.buff.beast_cleave.remains<gcd_max*2|pet.buff.beast_cleave.down)',
         },
         {
             action = 'chimaera_shot',
@@ -804,7 +804,7 @@ internal.actions['legion-dev::hunter::marksmanship'] = {
 ---- focus.regen
 ---- fury_of_the_eagle.cooldown_remains
 ---- gcd
----- gcd.max
+---- gcd_max
 ---- lacerate.aura_remains
 ---- lacerate.aura_up
 ---- moknathal_tactics.aura_down
@@ -874,14 +874,14 @@ internal.actions['legion-dev::hunter::survival'] = {
         },
         {
             action = 'raptor_strike',
-            condition = 'talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd.max',
-            condition_converted = '((way_of_the_moknathal.talent_selected) and (((moknathal_tactics.aura_remains) and (((moknathal_tactics.aura_remains_as_number) < (gcd.max_as_number))))))',
+            condition = 'talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd_max',
+            condition_converted = '((way_of_the_moknathal.talent_selected) and (((moknathal_tactics.aura_remains) and (((moknathal_tactics.aura_remains_as_number) < (gcd_max_as_number))))))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'moknathal_tactics.aura_remains',
                 'way_of_the_moknathal.talent_selected',
             },
-            simc_line = 'actions+=/raptor_strike,if=talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd.max',
+            simc_line = 'actions+=/raptor_strike,if=talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd_max',
         },
         {
             action = 'dragonsfire_grenade',
@@ -897,25 +897,25 @@ internal.actions['legion-dev::hunter::survival'] = {
         },
         {
             action = 'carve',
-            condition = 'talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)',
-            condition_converted = '((serpent_sting.talent_selected) and (((((active_enemies_as_number) >= (3))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))',
+            condition = 'talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd_max)',
+            condition_converted = '((serpent_sting.talent_selected) and (((((active_enemies_as_number) >= (3))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd_max_as_number)))))))))',
             condition_keywords = {
                 'active_enemies',
-                'gcd.max',
+                'gcd_max',
                 'serpent_sting.aura_remains',
                 'serpent_sting.aura_up',
                 'serpent_sting.talent_selected',
             },
             cycle_targets = '1',
-            simc_line = 'actions+=/carve,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)',
+            simc_line = 'actions+=/carve,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd_max)',
         },
         {
             action = 'raptor_strike',
-            condition = 'talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
-            condition_converted = '((((serpent_sting.talent_selected) and (((((active_enemies_as_number) <= (2))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd.max_as_number)))))))))) or (((way_of_the_moknathal.talent_selected) and (moknathal_tactics.aura_down))))',
+            condition = 'talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd_max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
+            condition_converted = '((((serpent_sting.talent_selected) and (((((active_enemies_as_number) <= (2))) and (((((not (serpent_sting.aura_up))) or (((serpent_sting.aura_remains_as_number) <= (gcd_max_as_number)))))))))) or (((way_of_the_moknathal.talent_selected) and (moknathal_tactics.aura_down))))',
             condition_keywords = {
                 'active_enemies',
-                'gcd.max',
+                'gcd_max',
                 'moknathal_tactics.aura_down',
                 'serpent_sting.aura_remains',
                 'serpent_sting.aura_up',
@@ -923,7 +923,7 @@ internal.actions['legion-dev::hunter::survival'] = {
                 'way_of_the_moknathal.talent_selected',
             },
             cycle_targets = '1',
-            simc_line = 'actions+=/raptor_strike,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
+            simc_line = 'actions+=/raptor_strike,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd_max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down',
         },
         {
             action = 'aspect_of_the_eagle',
@@ -976,15 +976,15 @@ internal.actions['legion-dev::hunter::survival'] = {
         },
         {
             action = 'snake_hunter',
-            condition = 'action.mongoose_bite.charges<=1&buff.mongoose_fury.remains>gcd.max*4|action.mongoose_bite.charges=0&buff.aspect_of_the_eagle.up',
-            condition_converted = '((((((mongoose_bite.spell_charges_as_number) <= (1))) and (((mongoose_fury.aura_remains_as_number) > ((gcd.max_as_number * 4)))))) or (((((mongoose_bite.spell_charges) == (0))) and (aspect_of_the_eagle.aura_up))))',
+            condition = 'action.mongoose_bite.charges<=1&buff.mongoose_fury.remains>gcd_max*4|action.mongoose_bite.charges=0&buff.aspect_of_the_eagle.up',
+            condition_converted = '((((((mongoose_bite.spell_charges_as_number) <= (1))) and (((mongoose_fury.aura_remains_as_number) > ((gcd_max_as_number * 4)))))) or (((((mongoose_bite.spell_charges) == (0))) and (aspect_of_the_eagle.aura_up))))',
             condition_keywords = {
                 'aspect_of_the_eagle.aura_up',
-                'gcd.max',
+                'gcd_max',
                 'mongoose_bite.spell_charges',
                 'mongoose_fury.aura_remains',
             },
-            simc_line = 'actions+=/snake_hunter,if=action.mongoose_bite.charges<=1&buff.mongoose_fury.remains>gcd.max*4|action.mongoose_bite.charges=0&buff.aspect_of_the_eagle.up',
+            simc_line = 'actions+=/snake_hunter,if=action.mongoose_bite.charges<=1&buff.mongoose_fury.remains>gcd_max*4|action.mongoose_bite.charges=0&buff.aspect_of_the_eagle.up',
         },
         {
             action = 'flanking_strike',

@@ -61,6 +61,8 @@ def KeywordModifier(keyword, thisSpell):
         keyword = "spell.THIS_SPELL.max_charges"
     if keyword == "recharge_time":
         keyword = "spell.THIS_SPELL.recharge_time"
+    if keyword == "gcd.max":
+        keyword = "gcd_max"
     if keyword == "gcd.remains":
         keyword = "gcd_remains"
 

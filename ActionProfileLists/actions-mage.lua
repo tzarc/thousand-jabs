@@ -20,7 +20,7 @@ internal.actions = internal.actions or {}
 ---- equipped
 ---- execute_time
 ---- gcd
----- gcd.max
+---- gcd_max
 ---- mana.percent
 ---- mark_of_aluneth.cooldown_remains
 ---- nether_tempest.aura_remains
@@ -428,14 +428,14 @@ internal.actions['legion-dev::mage::arcane'] = {
         },
         {
             action = 'stop_burn_phase',
-            condition = 'prev_gcd.evocation&burn_phase_duration>gcd.max',
-            condition_converted = '((prev_gcd.evocation) and (((burn_phase_duration_as_number) > (gcd.max_as_number))))',
+            condition = 'prev_gcd.evocation&burn_phase_duration>gcd_max',
+            condition_converted = '((prev_gcd.evocation) and (((burn_phase_duration_as_number) > (gcd_max_as_number))))',
             condition_keywords = {
                 'burn_phase_duration',
-                'gcd.max',
+                'gcd_max',
                 'prev_gcd.evocation',
             },
-            simc_line = 'actions+=/stop_burn_phase,if=prev_gcd.evocation&burn_phase_duration>gcd.max',
+            simc_line = 'actions+=/stop_burn_phase,if=prev_gcd.evocation&burn_phase_duration>gcd_max',
         },
         {
             action = 'mark_of_aluneth',

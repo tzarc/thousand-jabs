@@ -196,6 +196,13 @@ local function generic_perform_spend(power, env, action, costType, costAmount)
     power.spent = power.spent + costAmount
 end
 
+local function IsArmsWarrior()
+    local classID, specID = select(3, UnitClass('player')), GetSpecialization()
+    if classID == 1 and specID == 1 then
+        return true
+    end
+end
+
 internal.resources = {
     energy = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_ENERGY) or 0) end,
@@ -224,12 +231,15 @@ internal.resources = {
         spent = 0,
         gained = 0,
         gained_from_autoattacks = function(spell,env)
-            local swingspeed = UnitAttackSpeed('player')
-            if TJ.lastAutoAttack < GetTime() - swingspeed then TJ.lastAutoAttack = GetTime() end
-            local predicted = mfloor((env.currentTime - TJ.lastAutoAttack) / swingspeed)
-            --Debug("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, TJ.lastAutoAttack, (env.currentTime - TJ.lastAutoAttack))
-            predicted = (predicted > 0) and predicted or 0
-            return predicted * 25
+            if IsArmsWarrior() then
+                local swingspeed = UnitAttackSpeed('player')
+                if TJ.lastAutoAttack < GetTime() - swingspeed then TJ.lastAutoAttack = GetTime() end
+                local predicted = mfloor((env.currentTime - TJ.lastAutoAttack) / swingspeed)
+                --Debug("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, TJ.lastAutoAttack, (env.currentTime - TJ.lastAutoAttack))
+                predicted = (predicted > 0) and predicted or 0
+                return predicted * 25
+            end
+            return 0
         end,
         curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent + power.gained end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_RAGE) or 0) end,

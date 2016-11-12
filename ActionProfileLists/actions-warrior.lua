@@ -974,7 +974,7 @@ internal.actions['legion-dev::warrior::fury'] = {
 -- keywords: legion-dev::warrior::protection
 ---- battle_cry.aura_up
 ---- booming_voice.talent_selected
----- gcd.max
+---- gcd_max
 ---- health.max
 ---- heavy_repercussions.talent_selected
 ---- incoming_damage_over_2500
@@ -1178,15 +1178,15 @@ internal.actions['legion-dev::warrior::protection'] = {
         },
         {
             action = 'battle_cry',
-            condition = '(talent.vengeance.enabled&talent.ultimatum.enabled&cooldown.shield_slam.remains<=5-gcd.max-0.5)|!talent.vengeance.enabled',
-            condition_converted = '(((((vengeance.talent_selected) and (((ultimatum.talent_selected) and (((shield_slam.cooldown_remains_as_number) <= ((5 - gcd.max_as_number - 0.5))))))))) or ((not (vengeance.talent_selected))))',
+            condition = '(talent.vengeance.enabled&talent.ultimatum.enabled&cooldown.shield_slam.remains<=5-gcd_max-0.5)|!talent.vengeance.enabled',
+            condition_converted = '(((((vengeance.talent_selected) and (((ultimatum.talent_selected) and (((shield_slam.cooldown_remains_as_number) <= ((5 - gcd_max_as_number - 0.5))))))))) or ((not (vengeance.talent_selected))))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'shield_slam.cooldown_remains',
                 'ultimatum.talent_selected',
                 'vengeance.talent_selected',
             },
-            simc_line = 'actions.prot+=/battle_cry,if=(talent.vengeance.enabled&talent.ultimatum.enabled&cooldown.shield_slam.remains<=5-gcd.max-0.5)|!talent.vengeance.enabled',
+            simc_line = 'actions.prot+=/battle_cry,if=(talent.vengeance.enabled&talent.ultimatum.enabled&cooldown.shield_slam.remains<=5-gcd_max-0.5)|!talent.vengeance.enabled',
         },
         {
             action = 'demoralizing_shout',
@@ -1221,25 +1221,25 @@ internal.actions['legion-dev::warrior::protection'] = {
         },
         {
             action = 'shield_slam',
-            condition = '!(cooldown.shield_block.remains<=gcd.max*2&!buff.shield_block.up&talent.heavy_repercussions.enabled)',
-            condition_converted = '(not ((((((shield_block.cooldown_remains_as_number) <= ((gcd.max_as_number * 2)))) and ((((not (shield_block.aura_up))) and (heavy_repercussions.talent_selected)))))))',
+            condition = '!(cooldown.shield_block.remains<=gcd_max*2&!buff.shield_block.up&talent.heavy_repercussions.enabled)',
+            condition_converted = '(not ((((((shield_block.cooldown_remains_as_number) <= ((gcd_max_as_number * 2)))) and ((((not (shield_block.aura_up))) and (heavy_repercussions.talent_selected)))))))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'heavy_repercussions.talent_selected',
                 'shield_block.aura_up',
                 'shield_block.cooldown_remains',
             },
-            simc_line = 'actions.prot+=/shield_slam,if=!(cooldown.shield_block.remains<=gcd.max*2&!buff.shield_block.up&talent.heavy_repercussions.enabled)',
+            simc_line = 'actions.prot+=/shield_slam,if=!(cooldown.shield_block.remains<=gcd_max*2&!buff.shield_block.up&talent.heavy_repercussions.enabled)',
         },
         {
             action = 'revenge',
-            condition = 'cooldown.shield_slam.remains<=gcd.max*2',
-            condition_converted = '((shield_slam.cooldown_remains_as_number) <= ((gcd.max_as_number * 2)))',
+            condition = 'cooldown.shield_slam.remains<=gcd_max*2',
+            condition_converted = '((shield_slam.cooldown_remains_as_number) <= ((gcd_max_as_number * 2)))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'shield_slam.cooldown_remains',
             },
-            simc_line = 'actions.prot+=/revenge,if=cooldown.shield_slam.remains<=gcd.max*2',
+            simc_line = 'actions.prot+=/revenge,if=cooldown.shield_slam.remains<=gcd_max*2',
         },
         {
             action = 'devastate',

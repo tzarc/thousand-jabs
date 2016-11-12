@@ -223,6 +223,7 @@ local function StateResetPrototype(self)
     env.player_level = UnitLevel('player')
     env.movement.distance = internal.range_to_unit('target')
     env.gcd = TJ.currentGCD * env.playerHasteMultiplier
+    env.gcd_max = TJ.currentGCD * env.playerHasteMultiplier
 
     -- Reset the prev_gcd/equipped tables
     env.prev_gcd = self.prev_gcd
@@ -318,10 +319,8 @@ local function StateExecuteActionProfileListPrototype(self, listname)
     local env = self.env
 
     -- Get the requested action list to execute
-    local actionList = self.profile.parsedActions[listname] or {}
-    if #actionList == 0 then
-        Debug("|cFFFF0000%s (ERROR EXECUTING): Invalid list (zero actions): '%s'|r", tostring(listname))
-        internal.error(internal.fmt("|cFFFF0000%s (ERROR EXECUTING): Invalid list (zero actions): '%s'|r", tostring(listname)))
+    local actionList = self.profile.parsedActions[listname]
+    if not actionList or #actionList == 0 then
         return nil
     end
 

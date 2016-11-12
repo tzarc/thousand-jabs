@@ -8,7 +8,7 @@ internal.actions = internal.actions or {}
 ---- current_insanity_drain
 ---- fortress_of_the_mind.talent_selected
 ---- gcd
----- gcd.max
+---- gcd_max
 ---- insanity.curr
 ---- insanity_drain_stacks.aura_stack
 ---- legacy_of_the_void.talent_selected
@@ -512,33 +512,33 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'shadow_word_death',
-            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
-            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 15))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
+            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+15)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
+            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 15))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'insanity_drain_stacks.aura_stack',
                 'power_infusion.aura_up',
                 'reaper_of_souls.talent_selected',
                 'shadow_word_death.cooldown_charges',
             },
-            simc_line = 'actions.s2m+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
+            simc_line = 'actions.s2m+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+15)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
         },
         {
             action = 'shadow_word_death',
-            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+65)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
-            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 65))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
+            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+65)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
+            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 65))) < (100))) and ((((not (power_infusion.aura_up))) and (((((insanity_drain_stacks.aura_stack_as_number) <= (77))) and (((shadow_word_death.cooldown_charges) == (2))))))))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'insanity_drain_stacks.aura_stack',
                 'power_infusion.aura_up',
                 'reaper_of_souls.talent_selected',
                 'shadow_word_death.cooldown_charges',
             },
-            simc_line = 'actions.s2m+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+65)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
+            simc_line = 'actions.s2m+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+65)<100&!buff.power_infusion.up&buff.insanity_drain_stacks.stack<=77&cooldown.shadow_word_death.charges=2',
         },
         {
             action = 'void_bolt',
@@ -603,27 +603,27 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'shadow_word_death',
-            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100',
-            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 15))) < (100))))))',
+            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+15)<100',
+            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 15))) < (100))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'reaper_of_souls.talent_selected',
             },
-            simc_line = 'actions.s2m+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+15)<100',
+            simc_line = 'actions.s2m+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+15)<100',
         },
         {
             action = 'shadow_word_death',
-            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+65)<100',
-            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 65))) < (100))))))',
+            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+65)<100',
+            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 65))) < (100))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'reaper_of_souls.talent_selected',
             },
-            simc_line = 'actions.s2m+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+65)<100',
+            simc_line = 'actions.s2m+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+65)<100',
         },
         {
             action = 'power_infusion',
@@ -636,26 +636,26 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'wait',
-            condition = 'action.void_bolt.usable_in<gcd.max*0.28',
-            condition_converted = '((void_bolt.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
+            condition = 'action.void_bolt.usable_in<gcd_max*0.28',
+            condition_converted = '((void_bolt.spell_usable_in_as_number) < ((gcd_max_as_number * 0.28)))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'void_bolt.spell_usable_in',
             },
             sec = 'action.void_bolt.usable_in',
-            simc_line = 'actions.s2m+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable_in<gcd.max*0.28',
+            simc_line = 'actions.s2m+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable_in<gcd_max*0.28',
         },
         {
             action = 'dispersion',
-            condition = 'current_insanity_drain*gcd.max>insanity&!buff.power_infusion.up',
-            condition_converted = '(((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and ((not (power_infusion.aura_up))))',
+            condition = 'current_insanity_drain*gcd_max>insanity&!buff.power_infusion.up',
+            condition_converted = '(((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and ((not (power_infusion.aura_up))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'power_infusion.aura_up',
             },
-            simc_line = 'actions.s2m+=/dispersion,if=current_insanity_drain*gcd.max>insanity&!buff.power_infusion.up',
+            simc_line = 'actions.s2m+=/dispersion,if=current_insanity_drain*gcd_max>insanity&!buff.power_infusion.up',
         },
         {
             action = 'mind_blast',
@@ -665,14 +665,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'wait',
-            condition = 'action.mind_blast.usable_in<gcd.max*0.28',
-            condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
+            condition = 'action.mind_blast.usable_in<gcd_max*0.28',
+            condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd_max_as_number * 0.28)))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'mind_blast.spell_usable_in',
             },
             sec = 'action.mind_blast.usable_in',
-            simc_line = 'actions.s2m+=/wait,sec=action.mind_blast.usable_in,if=action.mind_blast.usable_in<gcd.max*0.28',
+            simc_line = 'actions.s2m+=/wait,sec=action.mind_blast.usable_in,if=action.mind_blast.usable_in<gcd_max*0.28',
         },
         {
             action = 'shadow_word_death',
@@ -694,14 +694,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'shadow_word_void',
-            condition = '(insanity-(current_insanity_drain*gcd.max)+75)<100',
-            condition_converted = '((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 75))) < (100))',
+            condition = '(insanity-(current_insanity_drain*gcd_max)+75)<100',
+            condition_converted = '((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 75))) < (100))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
             },
-            simc_line = 'actions.s2m+=/shadow_word_void,if=(insanity-(current_insanity_drain*gcd.max)+75)<100',
+            simc_line = 'actions.s2m+=/shadow_word_void,if=(insanity-(current_insanity_drain*gcd_max)+75)<100',
         },
         {
             action = 'shadow_word_pain',
@@ -773,15 +773,15 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'wait',
-            condition = 'action.void_bolt.usable|action.void_bolt.usable_in<gcd.max*0.8',
-            condition_converted = '((void_bolt.spell_usable) or (((void_bolt.spell_usable_in_as_number) < ((gcd.max_as_number * 0.8)))))',
+            condition = 'action.void_bolt.usable|action.void_bolt.usable_in<gcd_max*0.8',
+            condition_converted = '((void_bolt.spell_usable) or (((void_bolt.spell_usable_in_as_number) < ((gcd_max_as_number * 0.8)))))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'void_bolt.spell_usable',
                 'void_bolt.spell_usable_in',
             },
             sec = 'action.void_bolt.usable_in',
-            simc_line = 'actions.s2m+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable|action.void_bolt.usable_in<gcd.max*0.8',
+            simc_line = 'actions.s2m+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable|action.void_bolt.usable_in<gcd_max*0.8',
         },
         {
             action = 'mind_flay',
@@ -1013,38 +1013,38 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'shadow_word_death',
-            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+10)<100',
-            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 10))) < (100))))))',
+            condition = '!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+10)<100',
+            condition_converted = '(((not (reaper_of_souls.talent_selected))) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 10))) < (100))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'reaper_of_souls.talent_selected',
             },
-            simc_line = 'actions.vf+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+10)<100',
+            simc_line = 'actions.vf+=/shadow_word_death,if=!talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+10)<100',
         },
         {
             action = 'shadow_word_death',
-            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+30)<100',
-            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd.max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 30))) < (100))))))',
+            condition = 'talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+30)<100',
+            condition_converted = '((reaper_of_souls.talent_selected) and ((((((current_insanity_drain_as_number * gcd_max_as_number)) > (insanity.curr_as_number))) and (((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 30))) < (100))))))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
                 'reaper_of_souls.talent_selected',
             },
-            simc_line = 'actions.vf+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+30)<100',
+            simc_line = 'actions.vf+=/shadow_word_death,if=talent.reaper_of_souls.enabled&current_insanity_drain*gcd_max>insanity&(insanity-(current_insanity_drain*gcd_max)+30)<100',
         },
         {
             action = 'wait',
-            condition = 'action.void_bolt.usable_in<gcd.max*0.28',
-            condition_converted = '((void_bolt.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
+            condition = 'action.void_bolt.usable_in<gcd_max*0.28',
+            condition_converted = '((void_bolt.spell_usable_in_as_number) < ((gcd_max_as_number * 0.28)))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'void_bolt.spell_usable_in',
             },
             sec = 'action.void_bolt.usable_in',
-            simc_line = 'actions.vf+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable_in<gcd.max*0.28',
+            simc_line = 'actions.vf+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable_in<gcd_max*0.28',
         },
         {
             action = 'mind_blast',
@@ -1054,14 +1054,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'wait',
-            condition = 'action.mind_blast.usable_in<gcd.max*0.28',
-            condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd.max_as_number * 0.28)))',
+            condition = 'action.mind_blast.usable_in<gcd_max*0.28',
+            condition_converted = '((mind_blast.spell_usable_in_as_number) < ((gcd_max_as_number * 0.28)))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'mind_blast.spell_usable_in',
             },
             sec = 'action.mind_blast.usable_in',
-            simc_line = 'actions.vf+=/wait,sec=action.mind_blast.usable_in,if=action.mind_blast.usable_in<gcd.max*0.28',
+            simc_line = 'actions.vf+=/wait,sec=action.mind_blast.usable_in,if=action.mind_blast.usable_in<gcd_max*0.28',
         },
         {
             action = 'shadow_word_death',
@@ -1083,14 +1083,14 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'shadow_word_void',
-            condition = '(insanity-(current_insanity_drain*gcd.max)+25)<100',
-            condition_converted = '((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd.max_as_number) + 25))) < (100))',
+            condition = '(insanity-(current_insanity_drain*gcd_max)+25)<100',
+            condition_converted = '((((insanity.curr_as_number - (current_insanity_drain_as_number * gcd_max_as_number) + 25))) < (100))',
             condition_keywords = {
                 'current_insanity_drain',
-                'gcd.max',
+                'gcd_max',
                 'insanity.curr',
             },
-            simc_line = 'actions.vf+=/shadow_word_void,if=(insanity-(current_insanity_drain*gcd.max)+25)<100',
+            simc_line = 'actions.vf+=/shadow_word_void,if=(insanity-(current_insanity_drain*gcd_max)+25)<100',
         },
         {
             action = 'shadow_word_pain',
@@ -1162,15 +1162,15 @@ internal.actions['legion-dev::priest::shadow'] = {
         },
         {
             action = 'wait',
-            condition = 'action.void_bolt.usable|action.void_bolt.usable_in<gcd.max*0.8',
-            condition_converted = '((void_bolt.spell_usable) or (((void_bolt.spell_usable_in_as_number) < ((gcd.max_as_number * 0.8)))))',
+            condition = 'action.void_bolt.usable|action.void_bolt.usable_in<gcd_max*0.8',
+            condition_converted = '((void_bolt.spell_usable) or (((void_bolt.spell_usable_in_as_number) < ((gcd_max_as_number * 0.8)))))',
             condition_keywords = {
-                'gcd.max',
+                'gcd_max',
                 'void_bolt.spell_usable',
                 'void_bolt.spell_usable_in',
             },
             sec = 'action.void_bolt.usable_in',
-            simc_line = 'actions.vf+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable|action.void_bolt.usable_in<gcd.max*0.8',
+            simc_line = 'actions.vf+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable|action.void_bolt.usable_in<gcd_max*0.8',
         },
         {
             action = 'mind_flay',
