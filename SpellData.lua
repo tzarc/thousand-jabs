@@ -107,32 +107,36 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local definedAbilities = {}
+local function slug(name) return name:lower():gsub(' ','_'):gsub('[^%a%d_]','') end
+
 function TJ:DetectAbilitiesFromSpellBook()
     local abilities = {}
 
     -- Helper to work out the 'simulationcraft-ified' name for the spell
-    local function slug(name) return name:lower():gsub(' ','_'):gsub('[^%a%d_]','') end
-
     -- Iterate over the spellbook, collecting all the abilities
     for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePlayerSpells() do
-        abilities[slug(spellName)] = {
-            Name = spellName,
-            SpellIDs = { spellID },
-            SpellBookSubtext = spellSubText,
-            SpellBookItem = spellBookItem,
-            IsTalent = spellIsTalent,
-            SpellBookSpellID = spellID,
-            Icon = spellIcon
-        }
+        if spellID and spellName then
+            abilities[slug(spellName)] = {
+                Name = spellName,
+                SpellIDs = { spellID },
+                SpellBookSubtext = spellSubText,
+                SpellBookItem = spellBookItem,
+                IsTalent = spellIsTalent,
+                SpellBookSpellID = spellID,
+                Icon = spellIcon
+            }
+        end
     end
 
     -- Detect talents, update values accordingly
     for tier=1,7 do
         for column=1,3 do
             local talentID, name = GetTalentInfo(tier, column, GetActiveSpecGroup())
-            abilities[slug(name)] = abilities[slug(name)] or {}
-            abilities[slug(name)].TalentIDs = { tier, column }
-            abilities[slug(name)].IsTalent = true
+            if talentID and name then
+                abilities[slug(name)] = abilities[slug(name)] or {}
+                abilities[slug(name)].TalentIDs = { tier, column }
+                abilities[slug(name)].IsTalent = true
+            end
         end
     end
 
