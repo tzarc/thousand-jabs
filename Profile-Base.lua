@@ -32,6 +32,7 @@ function TJ:RegisterPlayerClass(config)
     -- Set up the profile table
     local profile = {
         name = config.name,
+        betaProfile = config.betaProfile and true or false,
         config = config,
         blacklisted = blacklisted,
         configCheckboxes = config.config_checkboxes or {}

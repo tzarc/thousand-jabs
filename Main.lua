@@ -189,7 +189,11 @@ Profiling:ProfileFunction('PerformUpdate')
 function TJ:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
     local isDisabled = Config:Get("class", classID, "spec", specID, "disabled") and true or false
-    return (not isDisabled) and self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
+    local profile = self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
+    local betaAllowed = Config:Get("allowBetaProfiles")
+    local isBetaProfile = profile.betaProfile and true or false
+    profile = ((isBetaProfile and betaAllowed) or (not isBetaProfile)) and profile or nil
+    return (not isDisabled) and profile or nil
 end
 
 function TJ:ActivateProfile()
@@ -226,6 +230,8 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('UNIT_POWER')
         TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
     end
+
+    self:QueueUpdate()
 end
 
 Profiling:ProfileFunction('ActivateProfile')
@@ -261,6 +267,8 @@ function TJ:DeactivateProfile()
         self.currentProfile:Deactivate()
         self.currentProfile = nil
     end
+
+    self:QueueUpdate()
 end
 
 Profiling:ProfileFunction('DeactivateProfile')

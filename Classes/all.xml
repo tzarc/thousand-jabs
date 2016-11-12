@@ -3,5 +3,6 @@
     <Script file="Class-Death_Knight.lua"/>
     <Script file="Class-Demon_Hunter.lua"/>
     <Script file="Class-Monk.lua"/>
+    <Script file="Class-Warlock.lua"/>
     <Script file="Class-Warrior.lua"/>
 </Ui>

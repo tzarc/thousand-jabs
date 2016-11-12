@@ -15,6 +15,7 @@ local ACD = LibStub("AceConfigDialog-3.0")
 internal.Safety()
 
 local defaultConf = {
+    allowBetaProfiles = false,
     showCleave = true,
     showAoE = true,
     inCombatAlpha = 1,
@@ -98,7 +99,7 @@ end
 AC:RegisterOptionsTable(addonName, function()
     local options = {
         name = "Thousand Jabs",
-        handler = Z,
+        handler = TJ,
         type = "group",
         order = 1,
         args = {
@@ -177,6 +178,19 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val and 0 or 1, "outOfCombatAlpha")
                             UI:UpdateAlpha()
+                        end
+                    },
+                    allowBetaProfiles = {
+                        type = "toggle",
+                        order = 107,
+                        name = L["Allow Beta Profiles"],
+                        get = function(info)
+                            return Config:Get("allowBetaProfiles") and true or false
+                        end,
+                        set = function(info, val)
+                            Config:Set(val and true or false, "allowBetaProfiles")
+                            TJ:DeactivateProfile()
+                            TJ:ActivateProfile()
                         end
                     },
                     fadingHeader = {

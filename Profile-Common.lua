@@ -7,9 +7,11 @@ local UnitCache = TJ:GetModule('UnitCache')
 local SPELL_POWER_CHI = SPELL_POWER_CHI
 local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
 local SPELL_POWER_FURY = SPELL_POWER_FURY
+local SPELL_POWER_MANA = SPELL_POWER_MANA
 local SPELL_POWER_PAIN = SPELL_POWER_PAIN
 local SPELL_POWER_RAGE = SPELL_POWER_RAGE
 local SPELL_POWER_RUNIC_POWER = SPELL_POWER_RUNIC_POWER
+local SPELL_POWER_SOUL_SHARDS = SPELL_POWER_SOUL_SHARDS
 local mfloor = math.floor
 local pairs = pairs
 local CheckInteractDistance = CheckInteractDistance
@@ -204,6 +206,28 @@ local function IsArmsWarrior()
 end
 
 internal.resources = {
+    mana = {
+        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_MANA) or 0) end,
+        regen = function(power, env) return GetPowerRegen() end,
+        spent = 0,
+        gained = 0,
+        curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
+        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_MANA) or 0) end,
+        time_to_max = function(power, env) return (power.max - power.curr) / power.regen end,
+        deficit = function(power,env) return power.max - power.curr end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
+    },
+    soul_shards = {
+        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_SOUL_SHARDS) or 0) end,
+        spent = 0,
+        gained = 0,
+        curr = function(power, env) return power.sampled - power.spent + power.gained end,
+        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_SOUL_SHARDS) or 0) end,
+        deficit = function(power,env) return power.max - power.curr end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
+    },
     energy = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_ENERGY) or 0) end,
         regen = function(power, env) return GetPowerRegen() end,
@@ -241,7 +265,7 @@ internal.resources = {
             end
             return 0
         end,
-        curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent + power.gained end,
+        curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent end,
         max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_RAGE) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
