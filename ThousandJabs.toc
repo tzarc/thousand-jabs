@@ -38,7 +38,7 @@ Config.lua
 
 Module-UI.lua
 
-Profile-APLParser.lua
+Simc-Expressions.lua
 Profile-Base.lua
 Profile-Common.lua
 Profile-State.lua

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Weapons/shields so that we can generate simc profiles
 one_hand_sword=2027 # Scimitar
 one_hand_dagger=4565 # Simple Dagger
@@ -72,7 +74,7 @@ create_apl_file() {
     local OUTFILE=$1
     [[ ! -d "$(dirname "${OUTFILE}")" ]] && mkdir -p "$(dirname "${OUTFILE}")"
     echo 'local _, internal = ...' >> ${OUTFILE}
-    echo 'internal.actions = internal.actions or {}' >> ${OUTFILE}
+    echo 'internal.apls = internal.apls or {}' >> ${OUTFILE}
     echo >> ${OUTFILE}
 }
 
@@ -87,10 +89,12 @@ append_action_profile() {
     DATA=$(cat "${simcfile}" | grep -P '^action')
 
     if [[ ! -z "${DATA}" ]] ; then
-        "${BASE_DIR}/parse-apls.sh" "${playerclass}" "${branch}::${playerclass}::${charspec}" "${simcfile}" > "Temp/${branch}-${playerclass}_${charspec}.parsed.txt" 2>"Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt"
-        [[ ! -s "Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt" ]] && rm "Temp/${branch}-error_${playerclass}_${charspec}.parsed.txt"
+        lua "${BASE_DIR}/Simc-Expressions.lua" < "${simcfile}" >"Temp/${branch}-${playerclass}_${charspec}.parsed.txt" 2>"Temp/${branch}-${playerclass}_${charspec}.errors.txt"
+        [[ ! -s "Temp/${branch}-${playerclass}_${charspec}.errors.txt" ]] && rm "Temp/${branch}-${playerclass}_${charspec}.errors.txt"
 
-        cat "Temp/${branch}-${playerclass}_${charspec}.parsed.txt" >> "${OUTFILE}"
+        echo "internal.apls['${branch}::${playerclass}::${charspec}'] = [[" >> "${OUTFILE}"
+        cat "${simcfile}" | grep -P '^action' >> "${OUTFILE}"
+        echo "]]" >> "${OUTFILE}"
         echo >> "${OUTFILE}"
     fi
 }
@@ -113,11 +117,11 @@ append_action_profiles_from_branch() {
     fi
     IFS=$OIFS
 
-    (cd "${BASE_DIR}/simc" && git pull && cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
+    (cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
     local NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}-${playerclass}_${charspec}.simc"
-    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}"
+    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}" >/dev/null 2>&1
 
     append_action_profile ${BRANCH} ${playerclass} ${charspec} "${NEW_SIMC_FILE}"
 }
@@ -144,21 +148,23 @@ for classspec in "${placeholders[@]}" ; do
     append_placeholder_profile "${classspec}"
 done
 
-echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > ActionProfileLists/all.xml
-echo '..\FrameXML\UI.xsd">' >> ActionProfileLists/all.xml
+echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/ActionProfileLists/all.xml"
+echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/ActionProfileLists/all.xml"
 for file in $(gfind ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname 'actions-*.lua' \) | sort) ; do
-    echo "    <Script file=\"$(basename "${file}")\"/>" >> ActionProfileLists/all.xml
+    echo "    <Script file=\"$(basename "${file}")\"/>" >> "${BASE_DIR}/ActionProfileLists/all.xml"
 done
-echo '</Ui>' >> ActionProfileLists/all.xml
+echo '</Ui>' >> "${BASE_DIR}/ActionProfileLists/all.xml"
 
-echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > Classes/all.xml
-echo '..\FrameXML\UI.xsd">' >> Classes/all.xml
+echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/Classes/all.xml"
+echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/Classes/all.xml"
 for file in $(gfind Classes -mindepth 1 -maxdepth 1 \( -iname 'Class-*.lua' \) | sort) ; do
-    echo "    <Script file=\"$(basename "${file}")\"/>" >> Classes/all.xml
+    echo "    <Script file=\"$(basename "${file}")\"/>" >> "${BASE_DIR}/Classes/all.xml"
 done
-echo '</Ui>' >> Classes/all.xml
+echo '</Ui>' >> "${BASE_DIR}/Classes/all.xml"
 
 
-./cleanup.sh
+"${BASE_DIR}/cleanup.sh"
 
-grep -r ERROR "${BASE_DIR}/ActionProfileLists"
+grep -ir ERROR "${BASE_DIR}/ActionProfileLists" || true
+grep -ir ERROR "${BASE_DIR}/Temp" || true
+find "${BASE_DIR}/Temp" -iname '*error*' || true

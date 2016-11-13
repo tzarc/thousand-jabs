@@ -59,9 +59,9 @@ local vengeance_base_overrides = {
     infernal_strike = {
         in_flight = false,
         travel_time = 1,
-        spell_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_duration or 0 end,
+        aura_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.aura_duration or 0 end,
         spell_delay = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_delay or 0 end,
-        aura_remains = function(spell,env) return env.flame_crash.talent_selected and spell.spell_duration - spell.actual_time_since_last_cast or 0 end,
+        aura_remains = function(spell,env) return env.flame_crash.talent_selected and spell.aura_duration - spell.actual_time_since_last_cast or 0 end,
 
         -- Why do these use a different spellID?!
         actual_cast_spellid = 189111,
@@ -111,7 +111,7 @@ local vengeance_base_overrides = {
         AuraApplyLength = 6,
     },
     fiery_demise = {
-        artifact_selected = function(spell,env) return Config:GetSpec("fiery_demise_selected") and true or false end,
+        artifact_enabled = function(spell,env) return Config:GetSpec("fiery_demise_selected") and true or false end,
     },
 }
 
@@ -150,9 +150,9 @@ local vengeance_talent_overrides = {
 local function sigilInitialiser(duration)
     return {
         spell_delay = function(spell, env) return env.quickened_sigils.talent_selected and 1 or 2 end,
-        spell_duration = function(spell, env) return 8 + spell.spell_delay end,
-        placed = function(spell, env) return spell.time_since_last_cast < spell.spell_duration end,
-        aura_remains = function(spell, env) return spell.spell_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
+        aura_duration = function(spell, env) return 8 + spell.spell_delay end,
+        placed = function(spell, env) return spell.time_since_last_cast < spell.aura_duration end,
+        aura_remains = function(spell, env) return spell.aura_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
     }
 end
 
@@ -163,13 +163,13 @@ local vengeance_sigil_overrides = {
                 or env.sigil_of_misery.placed
                 or env.sigil_of_silence.placed
                 or (env.sigil_of_chains.talent_selected and env.sigil_of_chains.placed)
-                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.spell_duration)
+                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     any_flame_sigil = {
         placed = function(spell, env)
             return env.sigil_of_flame.placed
-                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.spell_duration)
+                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     sigil_of_flame = sigilInitialiser(),
@@ -351,10 +351,10 @@ local havoc_base_overrides = {
         end,
     },
     demon_speed = {
-        artifact_selected = function(spell,env) return Config:GetSpec("demon_speed_selected") end,
+        artifact_enabled = function(spell,env) return Config:GetSpec("demon_speed_selected") end,
     },
     anguish_of_the_deceiver = {
-        artifact_selected = function(spell,env) return Config:GetSpec("anguish_of_the_deceiver_selected") end,
+        artifact_enabled = function(spell,env) return Config:GetSpec("anguish_of_the_deceiver_selected") end,
     },
 }
 

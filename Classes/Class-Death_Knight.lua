@@ -222,6 +222,11 @@ local unholy_base_abilities = {
             return lastCast and (env.currentTime < (lastCast + 15)) and true or false
         end,
     },
+    mind_freeze = {
+        CanCast = function(spell, env)
+            return env.target.is_casting
+        end,
+    },
 }
 
 TJ:RegisterPlayerClass({

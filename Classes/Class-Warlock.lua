@@ -66,7 +66,6 @@ local destruction_base_overrides = {
         AuraApplied = 'immolate',
         AuraApplyLength = 18,
         spell_tick_time = 2, --TODO
-        spell_duration = 18, --TODO
     },
     conflagrate = {
         PerformCast = function(spell,env)

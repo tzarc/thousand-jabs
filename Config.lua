@@ -8,6 +8,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 
 local select = select
 local type = type
+local GetSpecialization = GetSpecialization
+local UnitClass = UnitClass
 
 local AC = LibStub("AceConfig-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")

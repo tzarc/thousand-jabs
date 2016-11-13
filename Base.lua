@@ -194,6 +194,10 @@ function TJ:ConsoleCommand(args)
         self:Print('Memory usage: %d kB', GetAddOnMemoryUsage(addonName))
     elseif argv[1] == '_esd' then
         self:ExportAbilitiesFromSpellBook()
+    elseif argv[1] == '_dal' then
+        if self.currentProfile then
+            self:OpenDebugWindow(addonName..' Parsed Actions', LSD(self.currentProfile.parsedActions))
+        end
     else
         self:Print('%s chat commands:', addonName)
         self:Print("     |cFFFF6600/tj cfg|r - Opens the configuration dialog.")
@@ -207,6 +211,7 @@ function TJ:ConsoleCommand(args)
         self:Print('     |cFFFF6600/%s _dbe|r - Export SavedVariables table.', internal.consoleCommand)
         self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', internal.consoleCommand)
         self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', internal.consoleCommand)
+        self:Print('     |cFFFF6600/%s _dal|r - Dumps parsed actions.', internal.consoleCommand)
     end
 end
 

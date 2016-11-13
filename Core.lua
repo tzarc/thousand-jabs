@@ -175,8 +175,8 @@ end
 -- Helpers
 ------------------------------------------------------------------------------------------------------------------------
 
-function internal.fmt(fmt, ...)
-    return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
+function internal.fmt(f, ...)
+    return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '')
 end
 
 function internal.orderedpairs(t, f)

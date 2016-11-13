@@ -30,10 +30,6 @@ do_mem = false
 -- Miscellaneous functions
 ------------------------------------------------------------------------------------------------------------------------
 
-local function formatHelper(fmt, ...)
-    return ((select('#', ...) > 0) and format(fmt, ...) or fmt or '')
-end
-
 local function orderedpairs(t, f)
     local a = TableCache:Acquire()
     for n in pairs(t) do tinsert(a, n) end
@@ -59,7 +55,7 @@ end
 function Profiling:ProfilingProlog(...)
     if not self.profiling.enabled then return end
     local e = TableCache:Acquire()
-    e.func = formatHelper(...)
+    e.func = fmt(...)
     e.start = debugprofilestop()
     if do_mem then UpdateAddOnMemoryUsage() end
     e.mem = do_mem and GetAddOnMemoryUsage(addonName) or 0
@@ -100,8 +96,8 @@ function Profiling:GetProfilingString()
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
             l[1+#l] = do_mem
-                and formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
-                or  formatHelper('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
+                and fmt('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
+                or  fmt('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
         end
     end
     local s = tconcat(l, '\n  ')

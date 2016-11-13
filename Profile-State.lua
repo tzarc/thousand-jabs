@@ -32,6 +32,25 @@ local safeFunctions = {
     tostring = tostring,
 }
 
+local function convertToNumber(n)
+    if type(n) == 'number' then
+        return n
+    elseif type(n) == 'boolean' then
+        return n and 1 or 0
+    end
+    return tonumber(n)
+end
+
+local function convertToBoolean(n)
+    if type(n) == 'boolean' then
+        return n
+    elseif type(n) == 'number' then
+        return n ~= 0 and true or false
+    elseif type(n) == 'string' then
+        return n == 'true' and true or false
+    end
+end
+
 local function CreateStateEnvTable(state, profile)
     -- Set up an environment table for calling the condition functions
     local env_base = {}
@@ -213,6 +232,10 @@ local function StateResetPrototype(self)
         env[k] = v
     end
 
+    -- Number conversion function
+    env._N = convertToNumber
+    env._B = convertToBoolean
+
     -- Set the initial parameters
     env.ptr = false
     env.sampleTime = GetTime()
@@ -329,21 +352,19 @@ local function StateExecuteActionProfileListPrototype(self, listname)
         -- Get the action under consideration
         local action = actionList[i]
         -- Show debug information if requested
-        if action.debug then
+        if action.params.debug then
             if not action.keywords_printer then
                 local entries = action.action == "variable"
                     and {}
                     or { fmt("'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
-                for k,v in pairs(action.condition_keywords or action.value_keywords) do
+                local keywords = action.params.condition_converted and action.params.condition_converted.keywords
+                    or action.params.value_converted and action.params.value_converted.keywords
+                    or {}
+                for k,v in pairs(keywords) do
                     entries[1+#entries] = fmt("'|cFFFFFF99%s=|cFFFF9900' .. (type(%s) == 'number' and ('%%.2f'):format(%s) or tostring(%s))", v, v, v, v)
                 end
                 local funcsrc = fmt("function() return %s end", tconcat(entries, " .. '|r, ' .. "))
-                if self.profile.config.conditional_substitutions then
-                    for _,e in pairs(self.profile.config.conditional_substitutions) do
-                        funcsrc = funcsrc:gsub(e[1], e[2])
-                    end
-                end
-                action.keywords_printer = TJ:LoadFunctionString(funcsrc, action.key)
+                action.keywords_printer = TJ:LoadFunctionString(funcsrc:gsub('THIS_SPELL', action.action), action.key)
             end
             setfenv(action.keywords_printer, env)
             Debug("%s|r", action.keywords_printer())
@@ -359,8 +380,8 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                 internal.error(internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.fullvaluefuncsrc))
             else
                 -- Update the value
-                env.variable[action.name] = ret
-                Debug("|cFFFF99FF%s ==> |cFFDD00FF%s = %s|cFFFF99FF: %s|r", action.key, action.name, tostring(ret), action.fullvaluefuncsrc)
+                env.variable[action.params.name] = ret
+                Debug("|cFFFF99FF%s ==> |cFFDD00FF%s = %s|cFFFF99FF: %s|r", action.key, action.params.name, tostring(ret), action.fullvaluefuncsrc)
             end
             -- Validate that it isn't blacklisted, and there's a valid check function
         elseif tcontains(self.profile.blacklisted, action.action) then
@@ -380,8 +401,8 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                 -- If the condition succeeded....
                 if action.action == 'call_action_list' or action.action == 'run_action_list' then
                     -- ...we're running another action list, so run that recursively
-                    Debug("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.name, action.fullconditionfuncsrc)
-                    local action = self:ExecuteActionProfileList(action.name)
+                    Debug("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.params.name, action.fullconditionfuncsrc)
+                    local action = self:ExecuteActionProfileList(action.params.name)
                     if action then
                         return action
                     end

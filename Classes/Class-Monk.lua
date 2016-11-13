@@ -207,10 +207,10 @@ local windwalker_talent_overrides = {
 
 local windwalker_artifact_overrides = {
     gale_burst = {
-        artifact_selected = function(spell,env) return Config:GetSpec("gale_burst_selected") end,
+        artifact_enabled = function(spell,env) return Config:GetSpec("gale_burst_selected") end,
     },
     strike_of_the_windlord = {
-        artifact_selected = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
+        artifact_enabled = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
     },
 }
 

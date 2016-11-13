@@ -4,11 +4,14 @@ local Debug = internal.Debug
 local fmt = internal.fmt
 local Config = TJ:GetModule('Config')
 
+local LSD = LibStub('LibSerpentDump')
+
 local mfloor = math.floor
 local pairs = pairs
 local rawget = rawget
 local select = select
 local setmetatable = setmetatable
+local tonumber = tonumber
 local type = type
 local unpack = unpack
 local wipe = wipe
@@ -19,6 +22,87 @@ local GetTalentInfo = GetTalentInfo
 local UnitSpellHaste = UnitSpellHaste
 
 internal.Safety()
+
+local function expressionPrimaryModifier(keyword, profileSubstitutions)
+    if keyword:match('^([%d%.]+)$') then return keyword end
+
+    local before = keyword
+
+    -- Casting checks
+    if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
+    if keyword == "debuff.casting.down" then keyword = "(not target.is_casting)" end
+    if keyword == "target.debuff.casting.up" then keyword = "target.is_casting" end
+    if keyword == "target.debuff.casting.down" then keyword = "(not target.is_casting)" end
+    if keyword == "buff.casting.up" then keyword = "player.is_casting" end
+    if keyword == "buff.casting.down" then keyword = "(not player.is_casting)" end
+
+    -- Single-word conversions
+    if keyword == "time" then keyword = "time_since_combat_start" end
+    if keyword == "cooldown" then keyword = "cooldown.THIS_SPELL.remains" end
+    if keyword == "cooldown_react" then keyword = "cooldown.THIS_SPELL.react" end
+    if keyword == "duration" then keyword = "aura.THIS_SPELL.duration" end
+    if keyword == "ticking" then keyword = "aura.THIS_SPELL.ticking" end
+    if keyword == "delay" then keyword = "spell.THIS_SPELL.delay" end
+    if keyword == "remains" then keyword = "aura.THIS_SPELL.remains" end
+    if keyword == "cast_time" then keyword = "spell.THIS_SPELL.cast_time" end
+    if keyword == "tick_time" then keyword = "spell.THIS_SPELL.tick_time" end
+    if keyword == "charges" then keyword = "spell.THIS_SPELL.charges" end
+    if keyword == "charges_fractional" then keyword = "spell.THIS_SPELL.charges_fractional" end
+    if keyword == "max_charges" then keyword = "spell.THIS_SPELL.max_charges" end
+    if keyword == "recharge_time" then keyword = "spell.THIS_SPELL.recharge_time" end
+    if keyword == "gcd.max" then keyword = "gcd_max" end
+    if keyword == "gcd.remains" then keyword = "gcd_remains" end
+    if keyword == "level" then keyword = "level.curr" end
+    if keyword == "mana" then keyword = "mana.curr" end
+    if keyword == "energy" then keyword = "energy.curr" end
+    if keyword == "rage" then keyword = "rage.curr" end
+    if keyword == "chi" then keyword = "chi.curr" end
+    if keyword == "pain" then keyword = "pain.curr" end
+    if keyword == "fury" then keyword = "fury.curr" end
+    if keyword == "rune" then keyword = "rune.curr" end
+    if keyword == "runic_power" then keyword = "runic_power.curr" end
+    if keyword == "soul_fragments" then keyword = "soul_fragments.curr" end
+    keyword = keyword:gsub("^soul_shard", "soul_shards")
+    keyword = keyword:gsub("^soul_shardss", "soul_shards")
+    if keyword == "soul_shards" then keyword = "soul_shards.curr" end
+
+    -- Aura consolidation
+    keyword = keyword:gsub("^target%.dot%.", "aura.")
+    keyword = keyword:gsub("^target%.buff%.", "aura.")
+    keyword = keyword:gsub("^target%.debuff%.", "aura.")
+    keyword = keyword:gsub("^dot%.", "aura.")
+    keyword = keyword:gsub("^debuff%.", "aura.")
+    keyword = keyword:gsub("^buff%.", "aura." )
+
+    -- Convert spell_targets.????? to just spell_targets
+    keyword = keyword:gsub('^spell_targets%..*', 'spell_targets')
+
+    -- Convert (action.blah.zzz) => (spell.blah.zzz)
+    keyword = keyword:gsub('^action%.(.*)', 'spell.%1')
+
+    -- Equipped items
+    keyword = keyword:gsub('^equipped%.(%d+)', 'equipped[%1]')
+    keyword = keyword:gsub('^equipped%.([%a_]+)', 'equipped["%1"]')
+
+    -- Incoming damage
+    keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return fmt('incoming_damage_over_%d', tonumber(a)*1000) end)
+    keyword = keyword:gsub('^incoming_damage_([%d]+)ms', function(a) return fmt('incoming_damage_over_%d', tonumber(a)) end)
+
+    -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
+    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a,b,c) return fmt("%s.%s_%s", b, a, c:gsub("%.","_")) end)
+
+    -- Percentage consolidation
+    keyword = keyword:gsub("_pct$", "_percent")
+
+    -- Handle any profile-specific substitutions
+    if profileSubstitutions then
+        for _,e in pairs(profileSubstitutions) do
+            keyword = keyword:gsub(e[1], e[2])
+        end
+    end
+
+    return keyword
+end
 
 function TJ:RegisterPlayerClass(config)
 
@@ -45,42 +129,59 @@ function TJ:RegisterPlayerClass(config)
 
     function profile:LoadActions()
         if internal.devMode or not profile.parsedActions then
-            local emptyEnvironment = setmetatable({ type = type }, { __index = function() return nil end })
+            local converted = {}
+            -- Parse the action profile
+            local function primaryModifier(str)
+                if converted[str] then return converted[str] end
+                local res = expressionPrimaryModifier(str, config.conditional_substitutions)
+                converted[str] = res
+                return res
+            end
+
+            internal.actions = internal.actions or {}
+            internal.actions[config.action_profile] = internal.actions[config.action_profile] or internal.ExpressionParser(internal.apls[config.action_profile], primaryModifier)
+
+            -- Create the condition functions for each action
             local counts = {}
             for listName,listTable in pairs(internal.actions[config.action_profile]) do
                 counts[listName] = counts[listName] or {}
+                -- Loop through each entry in each named action list
                 for _,entry in pairs(listTable) do
                     counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
                     entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
-                        and fmt("%s:%s[%s]", listName, entry.action, entry.name)
+                        and fmt("%s:%s[%s]", listName, entry.action, entry.params.name)
                         or fmt("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
 
+                    -- Create a default prcondition, based on whether the spell is castable
                     entry.precondition = (entry.action == "run_action_list" or entry.action == "call_action_list")
                         and "true"
                         or fmt("%s.spell_can_cast", entry.action)
-                    if type(entry.sync) ~= "nil" then
-                        entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.sync, entry.sync, entry.sync)
+                    if type(entry.params.sync) ~= "nil" then
+                        entry.precondition = fmt("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.params.sync, entry.params.sync, entry.params.sync)
                     end
 
-                    if type(entry.condition_func) == "nil" and type(entry.condition_converted) ~= "nil" then
-                        entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, entry.condition_converted)
-                        if config.conditional_substitutions then
-                            for _,e in pairs(config.conditional_substitutions) do
-                                entry.fullconditionfuncsrc = entry.fullconditionfuncsrc:gsub(e[1], e[2])
-                            end
+                    -- Create the condition function
+                    if type(entry.condition_func) == "nil" then
+                        if type(entry.params.condition_converted) ~= "nil" or type(entry.params.target_if_converted) ~= "nil" then
+                            local cond = entry.params.condition_converted or entry.params.target_if_converted
+                            entry.fullconditionfuncsrc = fmt("((%s) and (%s))", entry.precondition, cond.expression:gsub('THIS_SPELL', entry.action))
+                        else
+                            entry.fullconditionfuncsrc = entry.precondition
                         end
                         entry.condition_func = TJ:LoadFunctionString(fmt("function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), fmt("cond:%s", entry.key))
                     end
 
-                    if type(entry.value_func) == "nil" and type(entry.value_converted) ~= "nil" then
-                        entry.fullvaluefuncsrc = entry.value_converted
-                        if config.conditional_substitutions then
-                            for _,e in pairs(config.conditional_substitutions) do
-                                entry.fullvaluefuncsrc = entry.fullvaluefuncsrc:gsub(e[1], e[2])
-                            end
-                        end
+                    -- Create the variable result function
+                    if type(entry.value_func) == "nil" and type(entry.params.value_converted) ~= "nil" then
+                        entry.fullvaluefuncsrc = entry.params.value_converted.expression
                         entry.value_func = TJ:LoadFunctionString(fmt("function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
                     end
+                end
+            end
+
+            if internal.devMode then
+                for before,after in internal.orderedpairs(converted) do
+                    TJ:PrintOnce("%s => %s", before, after)
                 end
             end
 
@@ -170,6 +271,7 @@ function TJ:RegisterPlayerClass(config)
             -- Add the 'talent_selected' entry if there are talent IDs present
             if type(v) == 'table' and rawget(v, 'TalentIDs') then
                 v.talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetActiveSpecGroup())) and true or false end
+                v.talent_enabled = v.talent_selected
             end
 
             -- If there's no ability ID, then we can't cast it.
@@ -269,6 +371,9 @@ function TJ:RegisterPlayerClass(config)
                     v.cooldown_up = function(spell, env)
                         return (spell.cooldown_remains == 0) and true or false
                     end
+                    v.cooldown_react = function(spell, env)
+                        return (spell.cooldown_remains == 0) and true or false
+                    end
                 end
 
                 -- Get the recharge time
@@ -359,6 +464,7 @@ function TJ:RegisterPlayerClass(config)
                     local remains = spell.expirationTime - env.currentTime
                     return (remains <= 0) and true or false -- hmmmmmmm, APLs like to do arithmetic here
                 end
+                v.aura_ticking = v.aura_up
             end
 
         end
