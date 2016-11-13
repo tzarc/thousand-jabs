@@ -117,6 +117,7 @@ append_action_profiles_from_branch() {
     fi
     IFS=$OIFS
 
+    [[ -z "${PULLED_ONCE}" ]] && git pull && PULLED_ONCE=1
     (cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"

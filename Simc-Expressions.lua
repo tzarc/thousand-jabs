@@ -40,6 +40,7 @@ end
 local simcExpressionLexer
 do
     local operators = {
+        { 'ceil(', 'ceil' },
         { 'floor(', 'floor' },
         { '(', 'lparen' },
         { ')', 'rparen' },
@@ -53,11 +54,13 @@ do
         { '<', 'lt' },
         { '==', 'equal' },
         { '=', 'equal' },
+        { '!=', 'notequal' },
         { '!', 'not' },
         { '+', 'plus' },
         { '-', 'minus' },
         { '*', 'multiply' },
         { '%', 'divide' },
+        { '@', 'abs' },
     }
 
     local function appendToken(tbl, op, str)
@@ -141,6 +144,7 @@ do
     local precedences = {
         ['lparen'] = 1000,
         ['rparen'] = 1000,
+        ['ceil'] = 999,
         ['floor'] = 999,
         ['primary'] = 1,
     }
@@ -149,11 +153,11 @@ do
         ['primary'] = createPrimaryExpression,
         ['lparen'] = createParenthesesExpression,
         ['rparen'] = nil, -- terminates the lparen ParseExpression() call
+        ['ceil'] = createInvokeExpression,
         ['floor'] = createInvokeExpression,
     }
 
-    local infixParsers = {
-        }
+    local infixParsers = {}
 
     local function simcExpressionParser__parseExpression(parser, untilPrecedence)
         local token = parser:NextToken()
@@ -251,8 +255,10 @@ do
         return parser.result
     end
 
+    definePrefixExpression("plus", 91)
     definePrefixExpression("minus", 91)
-    definePrefixExpression("not", 90)
+    definePrefixExpression("abs", 91)
+    definePrefixExpression("not", 91)
 
     defineLeftAssocExpression("multiply", 80)
     defineLeftAssocExpression("divide", 80)
@@ -260,6 +266,7 @@ do
     defineLeftAssocExpression("minus", 70)
 
     defineRightAssocExpression("equal", 30)
+    defineRightAssocExpression("notequal", 30)
     defineRightAssocExpression("gte", 30)
     defineRightAssocExpression("gt", 30)
     defineRightAssocExpression("lte", 30)
@@ -276,6 +283,8 @@ end
 local simcExpressionRenderer
 do
     local equivalentLuaOperators = {
+        ['abs'] = 'math.abs',
+        ['ceil'] = 'math.ceil',
         ['floor'] = 'math.floor',
         ['and'] = 'and',
         ['or'] = 'or',
@@ -285,6 +294,7 @@ do
         ['lte'] = '<=',
         ['lt'] = '<',
         ['equal'] = '==',
+        ['notequal'] = '~=',
         ['plus'] = '+',
         ['minus'] = '-',
         ['multiply'] = '*',
@@ -295,13 +305,28 @@ do
         'gte', 'gt', 'lte', 'lt', 'plus', 'minus', 'multiply', 'divide'
     }
 
+    local convertPrefixArgToBoolean = {
+        'not'
+    }
+
+    local convertPrefixArgToFunctionCall = {
+        'abs'
+    }
+
     local numConverter = '_N'
+    local boolConverter = '_B'
 
     local function render(result, primaryModifier)
         if result.token == "primary" then
             return (primaryModifier and primaryModifier(result.value) or result.value)
         elseif result.token == "prefix" then
-            return fmt("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+            if tContains(convertPrefixArgToFunctionCall, result.operator) then
+                return fmt("%s(%s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+            elseif tContains(convertPrefixArgToBoolean, result.operator) then
+                return fmt("(%s %s(%s))", equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
+            else
+                return fmt("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+            end
         elseif result.token == "invoke" then
             return fmt("%s(%s)", equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
         elseif result.token == "infix" then
@@ -396,33 +421,37 @@ else
 
     local lines = {}
     for line in io.lines() do
-        lines[1+#lines] = line
-    end
-    result = simcAplParser(lines, function(str)
-        str = str:gsub('%.in$', '["in"]') -- 'in' is a lua keyword, so we change it to array indexing
-        str = str:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors (i.e.  something.1) we change to array indexing
-        return str
-    end)
-
-    -- Validate that each of the conditions is compilable
-    for list, actions in pairs(result) do
-        for _, action in pairs(actions) do
-            if action.params.condition_converted then
-                local loadFunc = fmt("function() return (%s) and true or false end", action.params.condition_converted.condition)
-                local retFunc = LoadFunctionString(loadFunc)
-                local success, retVal = pcall(retFunc)
-            end
-            if action.params.value_converted then
-                local loadFunc = fmt("function() return (%s) and true or false end", action.params.value_converted.condition)
-                local retFunc = LoadFunctionString(loadFunc)
-                local success, retVal = pcall(retFunc)
-            end
+        if line:len() > 0 then
+            lines[1+#lines] = line
         end
     end
 
-    --[[
-    result = simcExpressionParser('equipped.shadow_satyrs_walk*(10+floor(target.distance*0.5))')
-    --]]
+    local result
+    if #lines > 0 then
+        result = simcAplParser(lines, function(str)
+            str = str:gsub('%.in$', '["in"]') -- 'in' is a lua keyword, so we change it to array indexing
+            str = str:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors (i.e.  something.1) we change to array indexing
+            return str
+        end)
+
+        -- Validate that each of the conditions is compilable
+        for list, actions in pairs(result) do
+            for _, action in pairs(actions) do
+                if action.params.condition_converted then
+                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.condition_converted.condition)
+                    local retFunc = LoadFunctionString(loadFunc)
+                    local success, retVal = pcall(retFunc)
+                end
+                if action.params.value_converted then
+                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.value_converted.condition)
+                    local retFunc = LoadFunctionString(loadFunc)
+                    local success, retVal = pcall(retFunc)
+                end
+            end
+        end
+    else
+        result = simcAplParser({'actions=blah,if=-@5|@-5|-+5|!5|6!=5'})
+    end
 
     Debug(LSD(result))
 
