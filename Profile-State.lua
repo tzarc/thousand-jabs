@@ -27,10 +27,6 @@ local UnitSpellHaste = UnitSpellHaste
 internal.Safety()
 
 local safeTableEntries = { 'type', 'tostring', 'hooks', 'can_spend', 'perform_spend', 'OnStateInit', 'OnPredictActionAtOffset' }
-local safeFunctions = {
-    type = type,
-    tostring = tostring,
-}
 
 local function convertToNumber(n)
     if type(n) == 'number' then
@@ -51,6 +47,13 @@ local function convertToBoolean(n)
     end
 end
 
+local stateResetDefaults = {
+    type = type,
+    tostring = tostring,
+    N = convertToNumber,
+    B = convertToBoolean,
+}
+
 local function CreateStateEnvTable(state, profile)
     -- Set up an environment table for calling the condition functions
     local env_base = {}
@@ -64,13 +67,6 @@ local function CreateStateEnvTable(state, profile)
         __env_base = env_base,
         __index = function(tbl, idx)
             local env_base = getmetatable(tbl).__env_base
-            -- Handle conversions to number
-            local asnumbersuffix = "_as_number"
-            if idx:match(asnumbersuffix) then
-                idx = idx:gsub(asnumbersuffix,"")
-                local v = tbl[idx]
-                return type(v) == 'number' and v or (v and 1 or 0)
-            end
             -- Handle incoming damage queries
             local dmgprefix = "incoming_damage_over_"
             if idx:match(dmgprefix) then
@@ -105,13 +101,6 @@ local function CreateStateEnvTable(state, profile)
                     -- Allow raw access to the safe entries, without throwing faults
                     if tcontains(safeTableEntries, idx) then
                         return rawget(action, idx)
-                    end
-                    -- Handle conversions to number
-                    local asnumbersuffix = "_as_number"
-                    if idx:match(asnumbersuffix) then
-                        idx = idx:gsub(asnumbersuffix,"")
-                        local v = tbl[idx]
-                        return type(v) == 'number' and v or (v and 1 or 0)
                     end
                     -- Forward to the profile table
                     local e = action[idx]
@@ -227,14 +216,10 @@ local function StateResetPrototype(self)
         end
     end
 
-    -- Safe functions
-    for k,v in pairs(safeFunctions) do
+    -- Reset the defaults for the state
+    for k,v in pairs(stateResetDefaults) do
         env[k] = v
     end
-
-    -- Number conversion function
-    env._N = convertToNumber
-    env._B = convertToBoolean
 
     -- Set the initial parameters
     env.ptr = false
@@ -354,9 +339,9 @@ local function StateExecuteActionProfileListPrototype(self, listname)
         -- Show debug information if requested
         if action.params.debug then
             if not action.keywords_printer then
-                local entries = action.action == "variable"
-                    and {}
-                    or { fmt("'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
+                local entries = (action.action == "variable" or action.action == "call_action_list" or action.action == "run_action_list")
+                    and { }
+                    or { fmt("\n'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
                 local keywords = action.params.condition_converted and action.params.condition_converted.keywords
                     or action.params.value_converted and action.params.value_converted.keywords
                     or {}
@@ -367,7 +352,7 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                 action.keywords_printer = TJ:LoadFunctionString(funcsrc:gsub('THIS_SPELL', action.action), action.key)
             end
             setfenv(action.keywords_printer, env)
-            Debug("%s|r", action.keywords_printer())
+            Debug("\n%s|r", action.keywords_printer())
         end
 
         if action.action == "variable" then
@@ -412,6 +397,10 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                     return action.action
                 end
             end
+        end
+
+        if action.params.debug then
+            Debug("")
         end
     end
 end

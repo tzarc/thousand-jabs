@@ -305,16 +305,16 @@ do
         'gte', 'gt', 'lte', 'lt', 'plus', 'minus', 'multiply', 'divide'
     }
 
-    local convertPrefixArgToBoolean = {
-        'not'
+    local convertBoolean = {
+        'not', 'and', 'or'
     }
 
     local convertPrefixArgToFunctionCall = {
         'abs'
     }
 
-    local numConverter = '_N'
-    local boolConverter = '_B'
+    local numConverter = 'N'
+    local boolConverter = 'B'
 
     local function render(result, primaryModifier)
         if result.token == "primary" then
@@ -322,7 +322,7 @@ do
         elseif result.token == "prefix" then
             if tContains(convertPrefixArgToFunctionCall, result.operator) then
                 return fmt("%s(%s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
-            elseif tContains(convertPrefixArgToBoolean, result.operator) then
+            elseif tContains(convertBoolean, result.operator) then
                 return fmt("(%s %s(%s))", equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
             else
                 return fmt("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
@@ -335,6 +335,9 @@ do
             if tContains(convertNumbers, result.operator) then
                 if lhs:match("[^%d%.]") then lhs = fmt('%s(%s)', numConverter, lhs) end
                 if rhs:match("[^%d%.]") then rhs = fmt('%s(%s)', numConverter, rhs) end
+            elseif tContains(convertBoolean, result.operator) then
+                if lhs:match("[^%d%.]") then lhs = fmt('%s(%s)', boolConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = fmt('%s(%s)', boolConverter, rhs) end
             end
             return fmt("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
         end

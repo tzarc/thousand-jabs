@@ -115,6 +115,7 @@ function TJ:RegisterPlayerClass(config)
 
     -- Set up the profile table
     local profile = {
+        actionProfile = internal.apls[config.action_profile],
         name = config.name,
         betaProfile = config.betaProfile and true or false,
         config = config,
@@ -128,7 +129,7 @@ function TJ:RegisterPlayerClass(config)
     self.profiles[config.class_id][config.spec_id] = profile
 
     function profile:LoadActions()
-        if internal.devMode or not profile.parsedActions then
+        if internal.devMode or not self.parsedActions then
             local converted = {}
             -- Parse the action profile
             local function primaryModifier(str)
@@ -138,12 +139,11 @@ function TJ:RegisterPlayerClass(config)
                 return res
             end
 
-            internal.actions = internal.actions or {}
-            internal.actions[config.action_profile] = internal.actions[config.action_profile] or internal.ExpressionParser(internal.apls[config.action_profile], primaryModifier)
+            self.parsedActions = self.parsedActions or internal.ExpressionParser(self.actionProfile, primaryModifier)
 
             -- Create the condition functions for each action
             local counts = {}
-            for listName,listTable in pairs(internal.actions[config.action_profile]) do
+            for listName,listTable in pairs(self.parsedActions) do
                 counts[listName] = counts[listName] or {}
                 -- Loop through each entry in each named action list
                 for _,entry in pairs(listTable) do
@@ -184,8 +184,6 @@ function TJ:RegisterPlayerClass(config)
                     TJ:PrintOnce("%s => %s", before, after)
                 end
             end
-
-            profile.parsedActions = internal.actions[config.action_profile]
         end
     end
 
@@ -478,5 +476,23 @@ function TJ:RegisterPlayerClass(config)
     end
 
     function profile:Deactivate()
+    end
+end
+
+function TJ:OverrideActionProfile(classID, specID, aplString)
+    local profile = self.profiles and self.profiles[classID] and self.profiles[classID][specID]
+    if profile then
+        local isActive = false
+        if self.currentProfile and self.currentProfile == profile then
+            isActive = true
+            self:DeactivateProfile()
+        end
+
+        profile.actionProfile = aplString
+        profile.parsedActions = nil
+
+        if isActive then
+            self:ActivateProfile()
+        end
     end
 end
