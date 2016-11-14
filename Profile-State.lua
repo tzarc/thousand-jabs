@@ -233,6 +233,16 @@ local function StateResetPrototype(self)
     env.gcd = TJ.currentGCD * env.playerHasteMultiplier
     env.gcd_max = TJ.currentGCD * env.playerHasteMultiplier
 
+    -- Determine if player/target are casting things
+    local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
+    local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
+    local tName = (UnitCastingInfo("target") or UnitChannelInfo("target"))
+    local tInterruptible = (tName and not (select(9,UnitCastingInfo("target")) or select(8,UnitChannelInfo("target")))) and true or false
+    env.player.is_casting = pName and true or false
+    env.player.is_interruptible = pInterruptible
+    env.target.is_casting = tName and true or false
+    env.target.is_interruptible = tInterruptible
+
     -- Reset the prev_gcd/equipped tables
     env.prev_gcd = self.prev_gcd
     env.equipped = self.equipped
@@ -312,8 +322,8 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
     end
 
     Debug("")
-    Debug("Offset: %.3f", predictionOffset)
-    Debug("Range: <= %d yd", env.movement.distance)
+    Debug("|cFFFFCC99Offset: %.3f|r", predictionOffset)
+    Debug("|cFFFFFFFFRange: <= %d yd|r", env.movement.distance)
 
     -- Call the current profile's state initialisation function
     local func = env.hooks.OnPredictActionAtOffset

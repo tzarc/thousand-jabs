@@ -49,6 +49,26 @@ local vengeance_abilities_exported = {
 }
 
 local vengeance_base_overrides = {
+    consume_magic = {
+        CanCast = function(spell, env)
+            return env.target.is_interruptible and true or false
+        end,
+        PerformCast = function(spell, env)
+            env.pain.gained = env.pain.gained + 50
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end
+    },
+    demon_spikes = {
+        AuraID = 203819,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'demon_spikes',
+        AuraApplyLength = 6,
+        spell_cast_time = 0.01, -- off GCD!
+    },
     fiery_brand = {
         AuraID = { 204021, 204022, 207744, 207771 },
         AuraMine = true,
@@ -56,12 +76,20 @@ local vengeance_base_overrides = {
         AuraApplied = 'fiery_brand',
         AuraApplyLength = 10,
     },
+    immolation_aura = {
+        AuraID = 178740,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'immolation_aura',
+        AuraApplyLength = 6,
+    },
     infernal_strike = {
         in_flight = false,
         travel_time = 1,
         aura_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.aura_duration or 0 end,
         spell_delay = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_delay or 0 end,
         aura_remains = function(spell,env) return env.flame_crash.talent_selected and spell.aura_duration - spell.actual_time_since_last_cast or 0 end,
+        spell_cast_time = 0.01, -- off GCD!
 
         -- Why do these use a different spellID?!
         actual_cast_spellid = 189111,
@@ -75,43 +103,32 @@ local vengeance_base_overrides = {
             env.lastCastTimes[spell.actual_cast_spellid] = env.currentTime
         end,
     },
+    metamorphosis = {
+        AuraID = 187827,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'metamorphosis',
+        AuraApplyLength = 15,
+    },
     shear = {
         PerformCast = function(spell, env)
             env.pain.gained = env.pain.gained + 10
         end
     },
-    demon_spikes = {
-        AuraID = 203819,
-        AuraMine = true,
-        AuraUnit = 'player',
-        AuraApplied = 'demon_spikes',
-        AuraApplyLength = 6,
-        spell_cast_time = 0.01, -- off GCD!
-    },
-    metamorphosis = {
-        AuraID = 187827,
-        AuraMine = true,
-        AuraUnit = 'player',
-        AuraApplied = 'demon_spikes',
-        AuraApplyLength = 15,
-    },
     soul_cleave = {
         cost_type = 'pain',
-        pain_cost = 50, -- cost is 30-60, err on the side of caution
-
+        pain_cost = function(spell, env)
+            local cost = env.pain.curr
+            if cost < 30 then cost = 30 end
+            if cost > 60 then cost = 60 end
+            return cost
+        end,
+        CanCast = function(spell, env)
+            return env.pain.curr > 30
+        end,
         PerformCast = function(spell, env)
             env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
         end,
-    },
-    immolation_aura = {
-        AuraID = 178740,
-        AuraMine = true,
-        AuraUnit = 'player',
-        AuraApplied = 'immolation_aura',
-        AuraApplyLength = 6,
-    },
-    fiery_demise = {
-        artifact_enabled = function(spell,env) return Config:GetSpec("fiery_demise_selected") and true or false end,
     },
 }
 
@@ -147,6 +164,14 @@ local vengeance_talent_overrides = {
     }
 }
 
+local vengeance_artifact_overrides = {
+    fiery_demise = {
+        artifact_enabled = function(spell,env)
+            return Config:GetSpec("fiery_demise_selected") and true or false
+        end,
+    },
+}
+
 local function sigilInitialiser(duration)
     return {
         spell_delay = function(spell, env) return env.quickened_sigils.talent_selected and 1 or 2 end,
@@ -178,27 +203,6 @@ local vengeance_sigil_overrides = {
     sigil_of_chains = sigilInitialiser(),
 }
 
-local vengeance_hooks = {
-    hooks = {
-        OnPredictActionAtOffset = function(env)
-        --[[
-        internal.Debug({
-        fel_devastation_spell_can_cast = env.fel_devastation.spell_can_cast,
-        fel_devastation_blacklisted = env.fel_devastation.blacklisted,
-        fel_devastation_in_spellbook = env.fel_devastation.in_spellbook,
-        fel_devastation_pain_cost = env.fel_devastation.pain_cost,
-        fel_devastation_cooldown_remains = env.fel_devastation.cooldown_remains,
-        fel_devastation_can_spend = env.pain.can_spend(env.pain, env, 'fel_devastation', 'pain', env.fel_devastation.pain_cost),
-        incoming_damage_over_5000 = env.incoming_damage_over_5000,
-        health_max_as_number = env.health.max_as_number,
-        health_max_as_number_10perc = env.health.max_as_number * 0.10,
-        conditional = (env.incoming_damage_over_5000 > env.health.max_as_number * 0.10) and true or false
-        })
-        -- ]]
-        end
-    }
-}
-
 TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
@@ -209,8 +213,8 @@ TJ:RegisterPlayerClass({
         vengeance_abilities_exported,
         vengeance_base_overrides,
         vengeance_talent_overrides,
+        vengeance_artifact_overrides,
         vengeance_sigil_overrides,
-        vengeance_hooks,
     },
     blacklisted = {},
     config_checkboxes = {

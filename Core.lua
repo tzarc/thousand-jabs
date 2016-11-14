@@ -202,7 +202,7 @@ end
 
 function internal.Debug(...)
     if Config:Get("do_debug") then
-        if #debugLines == 0 then debugLines[1] = internal.fmt("%s Debug log (|cFF00FFFFhide with /%s _dbg|r):", addonName, internal.consoleCommand) end
+        if #debugLines == 0 then debugLines[1] = internal.fmt("|cFFFFFFFF%s Debug log|r (|cFF00FFFFhide with /%s _dbg|r):", addonName, internal.consoleCommand) end
         local a = ...
         if type(a) == 'table' and select('#', ...) == 1 then
             for k,v in internal.orderedpairs(a) do
@@ -250,6 +250,7 @@ function TJ:ShowLoggingFrame()
         self.log_frame.text:SetJustifyV("TOP")
         self.log_frame.text:SetPoint("TOPLEFT", 8, -8)
         self.log_frame.text:SetPoint("BOTTOMRIGHT", -8, 8)
+        self.log_frame.text:SetTextColor(0.7, 0.7, 0.7, 1.0)
     end
 
     self.log_frame:Show()

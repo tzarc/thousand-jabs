@@ -123,11 +123,13 @@ internal.commonData = {
     },
     target = {
         exists = function(self,state) return UnitExists('target'), true end,
-        is_casting = function(self,state) return false end,
-        time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end
+        time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end,
+        is_casting = false,
+        is_interruptible = false,
     },
     player = {
-        is_casting = function(self,state) return false end,
+        is_casting = false,
+        is_interruptible = false,
     },
     variable = {
     },

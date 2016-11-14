@@ -279,7 +279,7 @@ Profiling:ProfileFunction('DeactivateProfile')
 
 function TJ:ExecuteAllActionProfiles()
     Debug("")
-    Debug("Single Target")
+    Debug("|cFFFFFFFFSingle Target|r")
     -- Calculate the single-target profiles
     self.st_state:Reset()
     local action = self.st_state:PredictNextAction() or "wait"
@@ -293,7 +293,7 @@ function TJ:ExecuteAllActionProfiles()
 
     if Config:Get('showCleave') then
         Debug("")
-        Debug("Cleave")
+        Debug("|cFFFFFFFFCleave|r")
         self.cleave_state:Reset()
         action = self.cleave_state:PredictNextAction() or "wait"
         UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
@@ -303,7 +303,7 @@ function TJ:ExecuteAllActionProfiles()
 
     if Config:Get('showAoE') then
         Debug("")
-        Debug("AoE")
+        Debug("|cFFFFFFFFAoE|r")
         self.aoe_state:Reset()
         action = self.aoe_state:PredictNextAction() or "wait"
         UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
