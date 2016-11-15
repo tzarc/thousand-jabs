@@ -83,6 +83,7 @@ local blood_base_abilities = {
 }
 
 TJ:RegisterPlayerClass({
+    betaProfile = true,
     name = 'Blood',
     class_id = 6,
     spec_id = 1,

@@ -3,30 +3,30 @@ internal.apls = internal.apls or {}
 
 internal.apls['legion-dev::hunter::beast_mastery'] = [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=fishbrul_special
+actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=prolonged_power,if=active_enemies>2
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion,name=prolonged_power
 actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/volley,toggle=on
 actions=auto_shot
 actions+=/arcane_torrent,if=focus.deficit>=30
 actions+=/blood_fury
 actions+=/berserking
-actions+=/potion,name=deadly_grace
+actions+=/potion,name=prolonged_power,if=buff.bestial_wrath.remains|!cooldown.beastial_wrath.remains
 actions+=/a_murder_of_crows
 actions+=/stampede,if=buff.bloodlust.up|buff.bestial_wrath.up|cooldown.bestial_wrath.remains<=2|target.time_to_die<=14
-actions+=/dire_beast,if=cooldown.bestial_wrath.remains>2
-actions+=/dire_frenzy,if=cooldown.bestial_wrath.remains>2
-actions+=/aspect_of_the_wild,if=buff.bestial_wrath.up
-actions+=/barrage,if=spell_targets.barrage>1|(spell_targets.barrage=1&focus>90)
-actions+=/titans_thunder,if=cooldown.dire_beast.remains>=3|buff.bestial_wrath.up&pet.dire_beast.active
+actions+=/dire_beast,if=cooldown.bestial_wrath.remains>3
+actions+=/dire_frenzy,if=cooldown.bestial_wrath.remains>6|target.time_to_die<9
+actions+=/aspect_of_the_wild,if=buff.bestial_wrath.up|target.time_to_die<12
+actions+=/barrage,if=spell_targets.barrage>1
+actions+=/titans_thunder,if=talent.dire_frenzy.enabled|cooldown.dire_beast.remains>=3|buff.bestial_wrath.up&pet.dire_beast.active
 actions+=/bestial_wrath
-actions+=/multi_shot,if=spell_targets.multi_shot>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)
+actions+=/multi_shot,if=spell_targets>4&(pet.buff.beast_cleave.remains<gcd.max|pet.buff.beast_cleave.down)
 actions+=/kill_command
-actions+=/multi_shot,if=spell_targets.multi_shot>1&(pet.buff.beast_cleave.remains<gcd.max*2|pet.buff.beast_cleave.down)
+actions+=/multi_shot,if=spell_targets>1&(pet.buff.beast_cleave.remains<gcd.max*2|pet.buff.beast_cleave.down)
 actions+=/chimaera_shot,if=focus<90
-actions+=/cobra_shot,if=talent.killer_cobra.enabled&(cooldown.bestial_wrath.remains>=4&(buff.bestial_wrath.up&cooldown.kill_command.remains>=2)|focus>119)|!talent.killer_cobra.enabled&focus>90
+actions+=/cobra_shot,if=cooldown.kill_command.remains>focus.time_to_max&cooldown.bestial_wrath.remains>focus.time_to_max|(buff.bestial_wrath.up&focus.regen*cooldown.kill_command.remains>30)|target.time_to_die<cooldown.kill_command.remains
 ]]
 
 internal.apls['legion-dev::hunter::marksmanship'] = [[
@@ -133,19 +133,19 @@ actions+=/arcane_torrent,if=focus.deficit>=30
 actions+=/blood_fury
 actions+=/berserking
 actions+=/potion,name=old_war,if=buff.aspect_of_the_eagle.remains
+actions+=/fury_of_the_eagle,if=(buff.mongoose_fury.up&buff.mongoose_fury.remains<=gcd)|target.time_to_die<=execute_time
+actions+=/raptor_strike,if=talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd.max
+actions+=/a_murder_of_crows
 actions+=/steel_trap
 actions+=/explosive_trap
-actions+=/raptor_strike,if=talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.remains&buff.moknathal_tactics.remains<gcd.max
 actions+=/dragonsfire_grenade
 actions+=/caltrops
 actions+=/carve,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies>=3&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)
 actions+=/raptor_strike,cycle_targets=1,if=talent.serpent_sting.enabled&active_enemies<=2&(!dot.serpent_sting.ticking|dot.serpent_sting.remains<=gcd.max)|talent.way_of_the_moknathal.enabled&buff.moknathal_tactics.down
 actions+=/aspect_of_the_eagle
-actions+=/fury_of_the_eagle,if=(buff.mongoose_fury.up&buff.mongoose_fury.remains<=gcd)|target.time_to_die<=execute_time
+actions+=/snake_hunter,if=action.mongoose_bite.charges<=0&buff.mongoose_fury.remains
 actions+=/mongoose_bite,if=buff.aspect_of_the_eagle.up&(charges>=2|charges>=1&cooldown.mongoose_bite.remains<=2)|(buff.mongoose_fury.up|cooldown.fury_of_the_eagle.remains<5|charges=3)
-actions+=/a_murder_of_crows
 actions+=/lacerate,if=dot.lacerate.ticking&dot.lacerate.remains<=3|target.time_to_die>=5
-actions+=/snake_hunter,if=action.mongoose_bite.charges<=1&buff.mongoose_fury.remains>gcd.max*4|action.mongoose_bite.charges=0&buff.aspect_of_the_eagle.up
 actions+=/flanking_strike,if=talent.way_of_the_moknathal.enabled&(buff.moknathal_tactics.remains>=3)|!talent.way_of_the_moknathal.enabled
 actions+=/butchery,if=spell_targets.butchery>=2
 actions+=/carve,if=spell_targets.carve>=4

@@ -85,6 +85,9 @@ local brewmaster_base_overrides = {
     },
     expel_harm = {
         ChargesUseSpellCount = true,
+        PerformCast = function(spell, env)
+            spell.rechargeSpent = spell.rechargeSpent + spell.spell_charges
+        end,
     },
     purifying_brew = {
         PerformCast = function(spell,env)
