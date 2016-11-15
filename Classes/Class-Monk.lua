@@ -53,16 +53,74 @@ local brewmaster_abilities_exported = {
 }
 
 local brewmaster_base_overrides = {
+    tiger_palm = {
+        PerformCast = function(spell, env)
+            if env.eye_of_the_tiger.talent_selected then
+                env.eye_of_the_tiger.expirationTime = env.currentTime + 8
+            end
+        end
+    },
     keg_smash = {
         AuraID = 121253,
-        AuraMine = true,
         AuraUnit = 'target',
+        AuraMine = true,
         AuraApplied = 'keg_smash',
         AuraApplyLength = 15,
     },
     blackout_strike = {
         AuraApplied = 'blackout_combo',
         AuraApplyLength = 14,
+    },
+    ironskin_brew = {
+        AuraID = 215479,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'ironskin_brew',
+        AuraApplyLength = 6,
+
+        PerformCast = function(spell,env)
+            -- Need to also decrement the number of charges for Purifying Brew
+            env.purifying_brew.rechargeSpent = env.purifying_brew.rechargeSpent+1
+        end,
+    },
+    expel_harm = {
+        ChargesUseSpellCount = true,
+    },
+    purifying_brew = {
+        PerformCast = function(spell,env)
+            -- Need to also decrement the number of charges for Ironskin Brew
+            env.ironskin_brew.rechargeSpent = env.ironskin_brew.rechargeSpent+1
+
+            -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
+            if env.stagger_heavy.aura_up then
+                env.stagger_moderate.expirationTime = env.stagger_heavy.expirationTime
+                env.stagger_heavy.expirationTime = 0
+            elseif env.stagger_moderate.aura_up then
+                env.stagger_light.expirationTime = env.stagger_moderate.expirationTime
+                env.stagger_moderate.expirationTime = 0
+            end
+        end,
+    },
+    stagger = {
+        any = function(spell, env) return spell.light or spell.moderate or spell.heavy or false end,
+        light = function(spell, env) return (env.stagger_light.aura_remains > 0) and true or false end,
+        moderate = function(spell, env) return (env.stagger_moderate.aura_remains > 0) and true or false end,
+        heavy = function(spell, env) return (env.stagger_heavy.aura_remains > 0) and true or false end,
+    },
+    stagger_light = {
+        AuraID = 124275,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_moderate = {
+        AuraID = 124274,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_heavy = {
+        AuraID = 124273,
+        AuraUnit = 'player',
+        AuraMine = true,
     },
 }
 
@@ -72,9 +130,15 @@ local brewmaster_talent_overrides = {
         AuraMine = true,
         AuraUnit = 'player',
     },
+    eye_of_the_tiger = {
+        AuraID = 196608,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 
 TJ:RegisterPlayerClass({
+    betaProfile = true,
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,

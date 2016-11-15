@@ -93,6 +93,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
 
     -- Percentage consolidation
     keyword = keyword:gsub("_pct$", "_percent")
+    keyword = keyword:gsub("%.pct$", ".percent")
 
     -- Handle any profile-specific substitutions
     if profileSubstitutions then
@@ -378,6 +379,13 @@ function TJ:RegisterPlayerClass(config)
                 local rechargeSecs, isRechargeAffectedByHaste = TJ:GetSpellRechargeTime(v.AbilityID)
                 local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
 
+                -- Check if this has charges that use GetSpellCount()
+                local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount')
+                if usesSpellCountForCharges then
+                    rechargeSecs = 999
+                    fullRechargeSecs = 999
+                end
+
                 -- If this action has an associated recharge time, then insert the value to the table and update the functions accordingly
                 if fullRechargeSecs and fullRechargeSecs > 0 then
                     if not rawget(v, 'RechargeTime') then
@@ -393,12 +401,18 @@ function TJ:RegisterPlayerClass(config)
                     v.spell_charges = function(spell, env)
                         return mfloor(spell.spell_charges_fractional+0.001)
                     end
-                    v.spell_charges_fractional = function(spell, env)
-                        local f = (spell.rechargeSampled == spell.rechargeMax)
-                            and spell.rechargeMax - spell.rechargeSpent
-                            or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
-                        if f >= spell.rechargeMax then f = spell.rechargeMax end
-                        return f
+                    if usesSpellCountForCharges then
+                        v.spell_charges_fractional = function(spell, env)
+                            return spell.rechargeSampled - spell.rechargeSpent
+                        end
+                    else
+                        v.spell_charges_fractional = function(spell, env)
+                            local f = (spell.rechargeSampled == spell.rechargeMax)
+                                and spell.rechargeMax - spell.rechargeSpent
+                                or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
+                            if f >= spell.rechargeMax then f = spell.rechargeMax end
+                            return f
+                        end
                     end
                     v.cooldown_charges_fractional = function(spell, env)
                         return spell.spell_charges_fractional

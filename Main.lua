@@ -8,6 +8,7 @@ local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 
+local pairs = pairs
 local select = select
 local NewTicker = C_Timer.NewTicker
 local GetSpecialization = GetSpecialization

@@ -9,15 +9,18 @@ local getmetatable = getmetatable
 local pairs = pairs
 local pcall = pcall
 local rawget = rawget
+local select = select
 local setfenv = setfenv
 local setmetatable = setmetatable
 local tconcat = table.concat
 local tcontains = tContains
+local tonumber = tonumber
 local tostring = tostring
 local type = type
 local wipe = wipe
 local GetSpellCharges = GetSpellCharges
 local GetSpellCooldown = GetSpellCooldown
+local GetSpellCount = GetSpellCount
 local GetTime = GetTime
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
@@ -211,6 +214,18 @@ local function StateResetPrototype(self)
                 v.spell_max_charges = maxCharges or 0
                 v.rechargeNext = (charges == maxCharges) and 99999999999999 or (start + duration)
             end
+
+            -- Add data if we're using GetSpellCount to get the number of charges for this ability
+            if rawget(entry, 'ChargesUseSpellCount') then
+                local charges = GetSpellCount(entry.AbilityID)
+                v.rechargeSampled = charges or 0
+                v.rechargeMax = 999
+                v.rechargeStartTime = 0
+                v.rechargeDuration = 0
+                v.rechargeSpent = 0
+                v.spell_max_charges = 999
+                v.rechargeNext = 99999999999999
+            end
         else
             env[k] = nil
         end
@@ -232,6 +247,7 @@ local function StateResetPrototype(self)
     env.movement.distance = internal.range_to_unit('target')
     env.gcd = TJ.currentGCD * env.playerHasteMultiplier
     env.gcd_max = TJ.currentGCD * env.playerHasteMultiplier
+    env.in_combat = (TJ.combatStart ~= 0) and true or false
 
     -- Determine if player/target are casting things
     local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
