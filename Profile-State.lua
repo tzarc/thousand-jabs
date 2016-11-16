@@ -329,7 +329,7 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
         local action = self.profile:FindActionForSpellID(performPostCastSpellID)
         if action then
             Debug("Handling cast of %s", action)
-            local act = self.profile.actions[action]
+            local act = env[action]
             -- Pretend we just casted the supplied action, update the last cast time for this ability
             self.lastCastTimes[act.AbilityID] = env.currentTime
             -- Perform the cast of the supplied action

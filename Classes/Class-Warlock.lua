@@ -63,16 +63,33 @@ local destruction_base_overrides = {
         AuraID = { 157736, },
         AuraUnit = 'target',
         AuraMine = true,
-        AuraApplied = 'immolate',
         AuraApplyLength = 18,
         spell_tick_time = 2, --TODO
+        aura_duration = function(spell, env) return spell.aura_remains and spell.AuraApplyLength or 0 end,
+        PerformCast = function(spell, env)
+            -- We need to handle Pandemic manually
+            if spell.aura_remains == 0 then
+                spell.expirationTime = env.currentTime + 18
+            else
+                spell.expirationTime = spell.expirationTime + 18
+            end
+            if (spell.expirationTime - env.currentTime) > 24 then
+                spell.expirationTime = env.currentTime + 24
+            end
+        end,
     },
     conflagrate = {
         PerformCast = function(spell,env)
+            env.soul_shards.gained = env.soul_shards.gained + 1
             if env.backdraft.talent_selected then
                 env.backdraft.expirationTime = env.currentTime + 5
             end
-            env.soul_shards.gained = env.soul_shards.gained + 1
+            if env.roaring_blaze.talent_selected then
+                local target = UnitGUID('target')
+                if env.roaring_blaze.roaringBlazeStacks[target] then
+                    env.roaring_blaze.roaringBlazeStacks[target] = env.roaring_blaze.roaringBlazeStacks[target] + 1
+                end
+            end
         end,
     },
     backdraft = {
@@ -96,17 +113,86 @@ local destruction_base_overrides = {
     },
     service_pet = {
         SpellIDs = { 111859, 111895, 111896, 111897 },
+        Icon = function(spell, env) return select(3, GetSpellInfo(108501)) end,
     },
     havoc = {
-        AuraID = { 80240 },
-        AuraUnit = 'target',
-        AuraMine = true,
-        AuraApplied = 'havoc',
-        AuraApplyLength = 20,
+        expirationTime = 0,
+        aura_remains = function(spell, env)
+            local remains = spell.expirationTime - env.currentTime
+            return (remains > 0) and remains or 0
+        end,
+        PerformCast = function(spell, env)
+            spell.expirationTime = env.currentTime + (env.wreak_havoc.talent_enabled and 20 or 8)
+        end,
     },
 }
 
--- [[
+local destruction_talent_overrides = {
+    roaring_blaze = {
+        aura_remains = function(spell, env)
+            return (spell.aura_stack > 0)
+                and env.immolate.aura_remains
+                or 0
+        end,
+        aura_stack = function(spell,env)
+            local target = UnitGUID('target')
+            local stacks = env.roaring_blaze.roaringBlazeStacks[target]
+            return env.immolate.aura_remains
+                and stacks
+                or 0
+        end,
+    },
+}
+
+local havocTarget = {
+    timeApplied = 0,
+    targetGUID = "",
+}
+local roaringBlazeStacks = {}
+
+local destruction_events = {
+    COMBAT_LOG_EVENT_UNFILTERED = function(profile, eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+        if combatEvent == "UNIT_DIED" then
+            -- Check if the current havoc target died, if so, wipe out the data tracking it
+            if havocTarget.targetGUID == destGUID then
+                havocTarget.targetGUID = ""
+                havocTarget.timeApplied = 0
+            end
+
+            -- Wipe out any data tracking Immolate targets w.r.t. Roaring Blaze
+            roaringBlazeStacks[destGUID] = nil
+        elseif sourceGUID == UnitGUID('player') and combatEvent == "SPELL_AURA_APPLIED" and arg12 == 80240 then -- Havoc applied by player
+            havocTarget.targetGUID = destGUID
+            havocTarget.timeApplied = GetTime()
+        elseif sourceGUID == UnitGUID('player') and arg12 == 157736 then -- Immolate/Roaring Blaze stack handling
+            if combatEvent == "SPELL_AURA_APPLIED" or combatEvent == "SPELL_AURA_REFRESH" then
+                roaringBlazeStacks[destGUID] = 0
+        elseif combatEvent == "SPELL_AURA_REMOVED" then
+            roaringBlazeStacks[destGUID] = nil
+        end
+        elseif sourceGUID == UnitGUID('player') and combatEvent == "SPELL_CAST_SUCCESS" and arg12 == 17962 then -- We casted conflag on a unit
+            if roaringBlazeStacks[destGUID] then
+                roaringBlazeStacks[destGUID] = roaringBlazeStacks[destGUID] + 1
+        end
+        end
+    end,
+}
+
+local destruction_hooks = {
+    hooks = {
+        OnStateInit = function(env)
+            local havocLength = env.wreak_havoc.talent_enabled and 20 or 8
+            env.havoc.expirationTime = (havocTarget.timeApplied > 0)
+                and env.currentTime - (GetTime()-havocTarget.timeApplied) + havocLength
+                or 0
+
+            env.roaring_blaze.roaringBlazeStacks = {}
+            for k,v in pairs(roaringBlazeStacks) do
+                env.roaring_blaze.roaringBlazeStacks[k] = roaringBlazeStacks[k]
+            end
+        end,
+    },
+}
 
 TJ:RegisterPlayerClass({
     betaProfile = true,
@@ -115,9 +201,12 @@ TJ:RegisterPlayerClass({
     spec_id = 3,
     action_profile = 'legion-dev::warlock::destruction',
     resources = { 'mana', 'soul_shards' },
+    events = destruction_events,
     actions = {
         destruction_abilities_exported,
         destruction_base_overrides,
+        destruction_talent_overrides,
+        destruction_hooks,
     },
     blacklisted = {},
     config_checkboxes = {
@@ -129,5 +218,3 @@ TJ:RegisterPlayerClass({
         { "soul_shardss", "soul_shards" },
     }
 })
-
--- ]]

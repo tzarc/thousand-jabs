@@ -156,9 +156,14 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideC
                 self:QueueUpdate()
             end
         end
+    end
 
-        -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+    -- Notify the profile
+    if self.currentProfile then
+        local handler = rawget(self.currentProfile, eventName)
+        if handler then
+            handler(self.currentProfile, eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+        end
     end
 
     if sourceGUID == playerGUID and combatEvent == 'SWING_DAMAGE' then

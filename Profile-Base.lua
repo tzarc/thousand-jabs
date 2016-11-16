@@ -129,6 +129,13 @@ function TJ:RegisterPlayerClass(config)
     self.profiles[config.class_id] = self.profiles[config.class_id] or {}
     self.profiles[config.class_id][config.spec_id] = profile
 
+    -- Set up any event handlers specified by the profile
+    if config.events then
+        for k,v in pairs(config.events) do
+            profile[k] = v
+        end
+    end
+
     function profile:LoadActions()
         if internal.devMode or not self.parsedActions then
             local converted = {}
@@ -140,6 +147,7 @@ function TJ:RegisterPlayerClass(config)
                 return res
             end
 
+            -- Update the parsed actions
             self.parsedActions = self.parsedActions or internal.ExpressionParser(self.actionProfile, primaryModifier)
 
             -- Create the condition functions for each action

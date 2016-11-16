@@ -194,9 +194,9 @@ function TJ:ConsoleCommand(args)
         self:Print('Memory usage: %d kB', GetAddOnMemoryUsage(addonName))
     elseif argv[1] == '_esd' then
         self:ExportAbilitiesFromSpellBook()
-    elseif argv[1] == '_dal' then
+    elseif argv[1] == '_dcp' then
         if self.currentProfile then
-            self:OpenDebugWindow(addonName..' Parsed Actions', LSD(self.currentProfile.parsedActions))
+            self:OpenDebugWindow(addonName..' Current profile', LSD(self.currentProfile))
         end
     else
         self:Print('%s chat commands:', addonName)
@@ -207,11 +207,6 @@ function TJ:ConsoleCommand(args)
         self:Print("     |cFFFF6600/tj blacklist <action>|r - Enables blacklisting of actions using slash commands / macros.")
         self:Print('%s debugging:', addonName)
         self:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', internal.consoleCommand)
-        self:Print('     |cFFFF6600/%s _dtc|r - Dumps table cache information.', internal.consoleCommand)
-        self:Print('     |cFFFF6600/%s _dbe|r - Export SavedVariables table.', internal.consoleCommand)
-        self:Print('     |cFFFF6600/%s _duc|r - Dumps unit cache table.', internal.consoleCommand)
-        self:Print('     |cFFFF6600/%s _mem|r - Dumps addon memory usage.', internal.consoleCommand)
-        self:Print('     |cFFFF6600/%s _dal|r - Dumps parsed actions.', internal.consoleCommand)
     end
 end
 
