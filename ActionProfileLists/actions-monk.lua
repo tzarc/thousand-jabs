@@ -1,6 +1,43 @@
 local _, internal = ...
 internal.apls = internal.apls or {}
 
+internal.apls['custom::monk::brewmaster'] = [[
+actions=auto_attack
+actions+=/variable,name=heal_threshold,value=health.pct<80
+actions+=/purifying_brew,if=stagger.heavy
+actions+=/ironskin_brew,if=charges>1&buff.ironskin_brew.down&incoming_damage_1s>0
+actions+=/chi_wave,if=talent.chi_wave.enabled&variable.heal_threshold
+actions+=/call_action_list,name=ooc,if=!in_combat
+actions+=/call_action_list,name=oh_shit,if=incoming_damage_5s>=health.max*0.65|health.pct<35
+actions+=/call_action_list,name=st,if=active_enemies<3
+actions+=/call_action_list,name=aoe,if=active_enemies>=3
+actions.ooc+=/purifying_brew,if=stagger.any
+actions.ooc+=/expel_harm,if=variable.heal_threshold
+actions.ooc+=/effuse,if=variable.heal_threshold
+actions.oh_shit=fortifying_brew
+actions.oh_shit+=/ironskin_brew,if=buff.ironskin_brew.down
+actions.oh_shit+=/purifying_brew,if=stagger.heavy|stagger.moderate
+actions.oh_shit+=/healing_elixir,if=talent.healing_elixir.enabled
+actions.oh_shit+=/expel_harm
+actions.oh_shit+=/black_ox_brew,if=spell.ironskin_brew.charges=0
+actions.st=keg_smash
+actions.st+=/tiger_palm,if=energy>65
+actions.st+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
+actions.st+=/blackout_strike
+actions.st+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
+actions.st+=/breath_of_fire,if=debuff.keg_smash.up
+actions.st+=/chi_burst,if=talent.chi_burst.enabled
+actions.st+=/expel_harm,if=charges=3&variable.heal_threshold
+actions.aoe=keg_smash
+actions.aoe+=/chi_burst,if=talent.chi_burst.enabled
+actions.aoe+=/breath_of_fire,if=debuff.keg_smash.up
+actions.aoe+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
+actions.aoe+=/tiger_palm,if=energy>65
+actions.aoe+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
+actions.aoe+=/blackout_strike
+actions.aoe+=/expel_harm,if=charges=3&variable.heal_threshold
+]]
+
 internal.apls['legion-dev::monk::brewmaster'] = [[
 actions.precombat=flask,type=greater_draenic_agility_flask
 actions.precombat+=/food,type=sleeper_sushi
@@ -72,42 +109,5 @@ actions.st+=/blackout_kick,cycle_targets=1,if=(chi>1|buff.bok_proc.up)&!prev_gcd
 actions.st+=/chi_wave,if=energy.time_to_max>=2.25
 actions.st+=/chi_burst,if=energy.time_to_max>=2.25
 actions.st+=/tiger_palm,cycle_targets=1,if=!prev_gcd.tiger_palm
-]]
-
-internal.apls['placeholder::monk::brewmaster'] = [[
-actions=auto_attack
-actions+=/variable,name=heal_threshold,value=health.pct<80
-actions+=/purifying_brew,if=stagger.heavy
-actions+=/ironskin_brew,if=charges>1&buff.ironskin_brew.down&incoming_damage_1s>0
-actions+=/chi_wave,if=talent.chi_wave.enabled&variable.heal_threshold
-actions+=/call_action_list,name=ooc,if=!in_combat
-actions+=/call_action_list,name=oh_shit,if=incoming_damage_5s>=health.max*0.65|health.pct<35
-actions+=/call_action_list,name=st,if=active_enemies<3
-actions+=/call_action_list,name=aoe,if=active_enemies>=3
-actions.ooc+=/purifying_brew,if=stagger.any
-actions.ooc+=/expel_harm,if=variable.heal_threshold
-actions.ooc+=/effuse,if=variable.heal_threshold
-actions.oh_shit=fortifying_brew
-actions.oh_shit+=/ironskin_brew,if=buff.ironskin_brew.down
-actions.oh_shit+=/purifying_brew,if=stagger.heavy|stagger.moderate
-actions.oh_shit+=/healing_elixir,if=talent.healing_elixir.enabled
-actions.oh_shit+=/expel_harm
-actions.oh_shit+=/black_ox_brew,if=spell.ironskin_brew.charges=0
-actions.st=keg_smash
-actions.st+=/tiger_palm,if=energy>65
-actions.st+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
-actions.st+=/blackout_strike
-actions.st+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
-actions.st+=/breath_of_fire,if=debuff.keg_smash.up
-actions.st+=/chi_burst,if=talent.chi_burst.enabled
-actions.st+=/expel_harm,if=charges=3&variable.heal_threshold
-actions.aoe=keg_smash
-actions.aoe+=/chi_burst,if=talent.chi_burst.enabled
-actions.aoe+=/breath_of_fire,if=debuff.keg_smash.up
-actions.aoe+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled
-actions.aoe+=/tiger_palm,if=energy>65
-actions.aoe+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
-actions.aoe+=/blackout_strike
-actions.aoe+=/expel_harm,if=charges=3&variable.heal_threshold
 ]]
 

@@ -2,6 +2,9 @@
 
 set -e
 
+unset DO_PTR
+#DO_PTR=1
+
 # Weapons/shields so that we can generate simc profiles
 one_hand_sword=2027 # Scimitar
 one_hand_dagger=4565 # Simple Dagger
@@ -55,8 +58,8 @@ allspecs=(
 "playerclass=warrior charspec=protection mainhand=128288 offhand=128289 artifact=11:0:0:0:0:91:1"
 )
 
-# Generate some placeholder APLs because simc doesn't have functional profiles
-placeholders=(
+# Generate some custom APLs because simc doesn't have functional profiles
+customprofiles=(
 "playerclass=deathknight charspec=blood"
 "playerclass=monk charspec=brewmaster"
 )
@@ -121,20 +124,28 @@ append_action_profiles_from_branch() {
     (cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
-    local NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}-${playerclass}_${charspec}.simc"
-    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}" >/dev/null 2>&1
 
+    local NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}-${playerclass}_${charspec}.simc"
+    "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} default_actions=1 level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}" >/dev/null 2>"${NEW_SIMC_FILE}.errors"
+    [[ ! -s "${NEW_SIMC_FILE}.errors" ]] && rm -f "${NEW_SIMC_FILE}.errors"
     append_action_profile ${BRANCH} ${playerclass} ${charspec} "${NEW_SIMC_FILE}"
+
+    if [[ ! -z ${DO_PTR} ]] ; then
+        NEW_SIMC_FILE="${BASE_DIR}/Temp/${BRANCH}_ptr-${playerclass}_${charspec}.simc"
+        "${BASE_DIR}/simc/engine/simc" ${playerclass}=${playerclass}_${charspec} ptr=1 default_actions=1 level=110 spec=${charspec} ${mh} ${oh} ${af} "save=${NEW_SIMC_FILE}" >/dev/null 2>"${NEW_SIMC_FILE}.errors"
+        [[ ! -s "${NEW_SIMC_FILE}.errors" ]] && rm -f "${NEW_SIMC_FILE}.errors"
+        append_action_profile ${BRANCH}_ptr ${playerclass} ${charspec} "${NEW_SIMC_FILE}"
+    fi
 }
 
-append_placeholder_profile() {
+append_custom_profile() {
     local -a classspec
     IFS=' ' read -r -a classspec <<< "$1"
     for arg in "${classspec[@]}" ; do echo ${arg} ; eval local ${arg} ; done
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
-    local SIMC_FILE="${BASE_DIR}/Placeholders/${playerclass}_${charspec}.simc"
-    append_action_profile placeholder ${playerclass} ${charspec} "${SIMC_FILE}"
+    local SIMC_FILE="${BASE_DIR}/CustomProfiles/${playerclass}_${charspec}.simc"
+    append_action_profile custom ${playerclass} ${charspec} "${SIMC_FILE}"
 }
 
 [[ -d "${BASE_DIR}/Temp" ]] && find "${BASE_DIR}/Temp" -type f -delete
@@ -142,11 +153,11 @@ append_placeholder_profile() {
 [[ -d "${BASE_DIR}/ActionProfileLists" ]] && find "${BASE_DIR}/ActionProfileLists" -type f -delete
 [[ ! -d "${BASE_DIR}/ActionProfileLists" ]] && mkdir -p "${BASE_DIR}/ActionProfileLists"
 
+for classspec in "${customprofiles[@]}" ; do
+    append_custom_profile "${classspec}"
+done
 for classspec in "${allspecs[@]}" ; do
     append_action_profiles_from_branch legion-dev "${classspec}"
-done
-for classspec in "${placeholders[@]}" ; do
-    append_placeholder_profile "${classspec}"
 done
 
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/ActionProfileLists/all.xml"
