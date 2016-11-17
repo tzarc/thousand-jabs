@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z $1 ]] ; then
-    LATEST_TAG=$(git tag | grep -P '[0-9]{5}\.[0-9]{3}' | sort | tail -n1)
+    LATEST_TAG=$(git describe --exact-match --abbrev=0)
     TAG_HI=$(echo $LATEST_TAG | cut -d'.' -f1)
     TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g')
     TAG_LO=$(($TAG_LO + 1))
