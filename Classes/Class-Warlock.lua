@@ -130,11 +130,13 @@ local destruction_base_overrides = {
 local destruction_talent_overrides = {
     roaring_blaze = {
         aura_remains = function(spell, env)
+            if not env.roaring_blaze.talent_enabled then return 0 end
             return (spell.aura_stack > 0)
                 and env.immolate.aura_remains
                 or 0
         end,
         aura_stack = function(spell,env)
+            if not env.roaring_blaze.talent_enabled then return 0 end
             local target = UnitGUID('target')
             local stacks = env.roaring_blaze.roaringBlazeStacks[target]
             return env.immolate.aura_remains

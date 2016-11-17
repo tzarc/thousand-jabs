@@ -229,7 +229,13 @@ end
 
 function UI:UpdateAlpha()
     local inCombat = InCombatLockdown()
-    actionFrames.backdrop:SetAlpha(inCombat and Config:Get("inCombatAlpha") or Config:Get("outOfCombatAlpha"))
+    local alpha = inCombat and Config:Get("inCombatAlpha") or Config:Get("outOfCombatAlpha")
+    if alpha > 0 then
+        actionFrames.backdrop:SetAlpha(alpha)
+        actionFrames.backdrop:Show()
+    else
+        actionFrames.backdrop:Hide()
+    end
 end
 
 function UI:ToggleMovement()
