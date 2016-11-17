@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [[ -z $1 ]] ; then
-    LATEST_TAG=$(git describe --exact-match --abbrev=0)
+    LATEST_TAG=$(git describe --exact-match --abbrev=0 | sed -e 's#-alpha.*##g')
     TAG_HI=$(echo $LATEST_TAG | cut -d'.' -f1)
-    TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g')
+    TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g' -e 's#-alpha.*##g')
     TAG_LO=$(($TAG_LO + 1))
     NEW_TAG="$(printf "%d.%03d" ${TAG_HI} ${TAG_LO})"
 else
@@ -16,6 +16,4 @@ git diff
 echo "--------------------"
 echo "git commit -am \"Commit for ${NEW_TAG}.\""
 echo "git tag -a \"${NEW_TAG}\" -m \"Tagging ${NEW_TAG}.\""
-echo "git push origin master tag \"${NEW_TAG}\""
 echo "git push origin --tags"
-echo "git push origin"
