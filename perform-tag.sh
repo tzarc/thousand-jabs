@@ -16,5 +16,6 @@ git diff
 echo "--------------------"
 echo "git commit -am \"Commit for ${NEW_TAG}.\""
 echo "git tag -a \"${NEW_TAG}\" -m \"Tagging ${NEW_TAG}.\""
-echo "git push curseforge master tag \"${NEW_TAG}\""
-echo "git push github --tags"
+echo "git push origin master tag \"${NEW_TAG}\""
+echo "git push origin --tags"
+echo "git push origin"
