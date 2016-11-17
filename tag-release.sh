@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z $1 ]] ; then
-    LATEST_TAG=$(git describe --exact-match --abbrev=0 | sed -e 's#-alpha.*##g')
+    LATEST_TAG=$(git describe --abbrev=0 | sed -e 's#-alpha.*##g')
     TAG_HI=$(echo $LATEST_TAG | cut -d'.' -f1)
     TAG_LO=$(echo $LATEST_TAG | cut -d'.' -f2 | sed -e 's#^0*##g' -e 's#-alpha.*##g')
     TAG_LO=$(($TAG_LO + 1))
