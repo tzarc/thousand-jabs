@@ -441,12 +441,12 @@ else
         for list, actions in pairs(result) do
             for _, action in pairs(actions) do
                 if action.params.condition_converted then
-                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.condition_converted.condition)
+                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.condition_converted.expression)
                     local retFunc = LoadFunctionString(loadFunc)
                     local success, retVal = pcall(retFunc)
                 end
                 if action.params.value_converted then
-                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.value_converted.condition)
+                    local loadFunc = fmt("function() return (%s) and true or false end", action.params.value_converted.expression)
                     local retFunc = LoadFunctionString(loadFunc)
                     local success, retVal = pcall(retFunc)
                 end

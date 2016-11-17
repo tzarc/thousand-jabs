@@ -104,6 +104,10 @@ function TJ:PLAYER_REGEN_ENABLED(eventName)
     self.lastAutoAttack = 0
     -- Reset combat
     self.combatStart = 0
+    -- Wipe out all the cast times
+    for k,v in pairs(self.lastCastTime) do
+        self.lastCastTime[k] = nil
+    end
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end

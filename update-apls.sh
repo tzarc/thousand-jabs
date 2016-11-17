@@ -121,7 +121,7 @@ append_action_profiles_from_branch() {
     IFS=$OIFS
 
     [[ -z "${PULLED_ONCE}" ]] && (cd "${BASE_DIR}/simc/engine" && git pull) && PULLED_ONCE=1
-    (cd "${BASE_DIR}/simc/engine" && make -j15 OS=UNIX)
+    (cd "${BASE_DIR}/simc/engine" && make -j$(cat /proc/cpuinfo | grep processor | wc -l) OS=UNIX)
 
     [[ ! -d "${BASE_DIR}/Temp" ]] && mkdir -p "${BASE_DIR}/Temp"
 
@@ -162,14 +162,14 @@ done
 
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/ActionProfileLists/all.xml"
 echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/ActionProfileLists/all.xml"
-for file in $(gfind ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname 'actions-*.lua' \) | sort) ; do
+for file in $(find ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname 'actions-*.lua' \) | sort) ; do
     echo "    <Script file=\"$(basename "${file}")\"/>" >> "${BASE_DIR}/ActionProfileLists/all.xml"
 done
 echo '</Ui>' >> "${BASE_DIR}/ActionProfileLists/all.xml"
 
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/Classes/all.xml"
 echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/Classes/all.xml"
-for file in $(gfind Classes -mindepth 1 -maxdepth 1 \( -iname 'Class-*.lua' \) | sort) ; do
+for file in $(find Classes -mindepth 1 -maxdepth 1 \( -iname 'Class-*.lua' \) | sort) ; do
     echo "    <Script file=\"$(basename "${file}")\"/>" >> "${BASE_DIR}/Classes/all.xml"
 done
 echo '</Ui>' >> "${BASE_DIR}/Classes/all.xml"

@@ -87,7 +87,7 @@ TJ:RegisterPlayerClass({
     name = 'Blood',
     class_id = 6,
     spec_id = 1,
-    action_profile = 'placeholder::deathknight::blood',
+    action_profile = 'custom::deathknight::blood',
     resources = { 'rune', 'runic_power' },
     actions = {
         blood_abilities_exported,

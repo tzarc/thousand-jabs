@@ -9,7 +9,7 @@ if [[ -z $1 ]] ; then
     NEXT_TAG=$(printf "%d.%03d" ${TAG_HI} ${TAG_LO})
     echo NEXT_TAG=${NEXT_TAG}
 
-    LATEST_ALPHA=$(git tag 2>&1 | grep -P "${NEXT_TAG}" | grep -vP "^${NEXT_TAG}$")
+    LATEST_ALPHA=$(git tag 2>&1 | grep -P "${NEXT_TAG}" | grep -vP "^${NEXT_TAG}$" | tail -n1)
     [[ -z ${LATEST_ALPHA} ]] && LATEST_ALPHA=${NEXT_TAG}-alpha.000
     echo LATEST_ALPHA=$LATEST_ALPHA
 

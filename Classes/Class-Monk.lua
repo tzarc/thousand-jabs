@@ -145,7 +145,7 @@ TJ:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,
-    action_profile = 'placeholder::monk::brewmaster',
+    action_profile = 'custom::monk::brewmaster',
     resources = { 'energy', 'energy_per_time' },
     actions = {
         brewmaster_abilities_exported,
