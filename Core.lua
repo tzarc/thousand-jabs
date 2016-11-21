@@ -304,7 +304,7 @@ end
 function TJ:GenerateDebuggingInformation()
     local totalAllocated, totalAcquired, totalReleased = TableCache:GetMetrics()
     local export = {
-        ['!tj_version'] = GetAddOnMetadata(addonName, "X-Curse-Packaged-Version"),
+        ['!tj_version'] = GetAddOnMetadata(addonName, "Version"),
         ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
         base = {
             playerLevel = UnitLevel('player'),
@@ -337,7 +337,7 @@ function TJ:GenerateDebuggingInformation()
     if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
         export.frame.position[2] = export.frame.position[2]:GetName()
     end
-    return internal.fmt(addonName .. " Diagnostic Information:\n<<code lua>>\n%s\n<</code>>", LSD(export))
+    return internal.fmt(addonName .. " Diagnostic Information:\n%s", LSD(export))
 end
 
 function TJ:ExportDebuggingInformation()

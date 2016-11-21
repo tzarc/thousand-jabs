@@ -5,7 +5,7 @@
 ## X-License: UNLICENSE
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
-## Version: 70100.045
+## Version: @project-version@
 
 ## SavedVariables: ThousandJabsDB
 
