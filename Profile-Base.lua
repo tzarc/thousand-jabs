@@ -7,6 +7,8 @@ local Config = TJ:GetModule('Config')
 local LSD = LibStub('LibSerpentDump')
 
 local mfloor = math.floor
+local mmax = math.max
+local mmin = math.min
 local pairs = pairs
 local rawget = rawget
 local select = select
@@ -36,6 +38,10 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword == "buff.casting.up" then keyword = "player.is_casting" end
     if keyword == "buff.casting.down" then keyword = "(not player.is_casting)" end
 
+    -- GCD values
+    if keyword == "gcd.max" then keyword = "gcd_max" end
+    if keyword == "gcd.remains" then keyword = "gcd_remains" end
+
     -- Single-word conversions
     if keyword == "time" then keyword = "time_since_combat_start" end
     if keyword == "cooldown" then keyword = "cooldown.THIS_SPELL.remains" end
@@ -50,8 +56,6 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword == "charges_fractional" then keyword = "spell.THIS_SPELL.charges_fractional" end
     if keyword == "max_charges" then keyword = "spell.THIS_SPELL.max_charges" end
     if keyword == "recharge_time" then keyword = "spell.THIS_SPELL.recharge_time" end
-    if keyword == "gcd.max" then keyword = "gcd_max" end
-    if keyword == "gcd.remains" then keyword = "gcd_remains" end
     if keyword == "level" then keyword = "level.curr" end
     if keyword == "mana" then keyword = "mana.curr" end
     if keyword == "energy" then keyword = "energy.curr" end
@@ -103,6 +107,113 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     end
 
     return keyword
+end
+
+local function addActionTalentFields(action)
+    -- Add the 'talent_enabled' entry if there are talent IDs present
+    if type(action) == 'table' then
+        if rawget(action, 'TalentIDs') then
+            action.talent_enabled = function(spell, env)
+                return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetActiveSpecGroup())) and true or false
+            end
+        else
+            action.talent_enabled = false
+        end
+    end
+end
+
+local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffectedByHaste)
+    if type(action) == 'table' then
+        action.FullCooldownSecs = fullCooldownSecs
+        if fullCooldownSecs and fullCooldownSecs > 0 then
+            if isCooldownAffectedByHaste then
+                action.CooldownTime = function(spell,env) return env.playerHasteMultiplier * fullCooldownSecs end
+            else
+                action.CooldownTime = fullCooldownSecs
+            end
+
+            action.spell_recharge_time = function(spell, env) return spell.CooldownTime end
+
+            action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
+            action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
+
+            action.cooldown_remains = function(spell, env)
+                local remains = spell.cooldownStart + spell.cooldownDuration - env.currentTime
+                return mmax(0, remains)
+            end
+            action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
+            action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
+            action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
+            action.spell_charges = function(spell, env) return spell.cooldown_ready and 1 or 0 end
+        end
+    end
+end
+
+local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
+    if type(action) == 'table' then
+        action.FullRechargeSecs = fullRechargeSecs
+        if fullRechargeSecs and fullRechargeSecs > 0 then
+            if isRechargeAffectedByHaste then
+                action.RechargeTime = function(spell,env) return env.playerHasteMultiplier * fullRechargeSecs end
+            else
+                action.RechargeTime = fullRechargeSecs
+            end
+
+            action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.spell_charges > 0)'
+            action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.rechargeSpent = spell.rechargeSpent + 1'
+
+            if usesSpellCountForCharges then
+                action.spell_max_charges = 999
+                action.spell_charges_fractional = function(spell, env)
+                    return spell.rechargeSampled - spell.rechargeSpent
+                end
+            else
+                action.spell_max_charges = function(spell, env) return spell.rechargeMax end
+                action.spell_charges_fractional = function(spell, env)
+                    local f = (spell.rechargeSampled == spell.rechargeMax)
+                        and spell.rechargeMax - spell.rechargeSpent
+                        or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
+                    return mmin(f, spell.rechargeMax)
+                end
+            end
+
+            action.spell_charges = function(spell, env) return mfloor(spell.spell_charges_fractional+0.001) end
+
+            action.spell_recharge_time = function(spell, env)
+                local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
+                return (spell.spell_charges == spell.rechargeMax) and 0 or remains
+            end
+
+            action.cooldown_remains = function(spell,env)
+                return mmax(0, spell.spell_recharge_time)
+            end
+
+            action.cooldown_charges_fractional = function(spell, env) return spell.spell_charges_fractional end
+            action.cooldown_charges = function(spell, env) return spell.spell_charges end
+        end
+    end
+end
+
+local function addActionAuraFields(action)
+    if type(action) == 'table' then
+        if rawget(action, 'AuraID') then
+            action.aura_remains = function(spell, env)
+                return mmax(0, spell.expirationTime - env.currentTime)
+            end
+            action.aura_up = function(spell, env) return (spell.aura_remains > 0) and true or false end
+            action.aura_down = function(spell, env) return (not spell.aura_up) and true or false end
+            action.aura_ticking = function(spell, env) return spell.aura_up and true or false end
+            action.aura_react = function(spell, env) return spell.aura_up and true or false end
+            action.aura_stack = function(spell, env) return spell.auraCount or 0 end
+        else
+            action.aura_react = false
+            action.aura_remains = 0
+            action.aura_up = false
+            action.aura_down = true
+            action.aura_ticking = false
+            action.aura_stack = 0
+        end
+    end
 end
 
 function TJ:RegisterPlayerClass(config)
@@ -275,11 +386,7 @@ function TJ:RegisterPlayerClass(config)
         -- Update each of the actions with any detected/generated data
         for k,v in pairs(actions) do
 
-            -- Add the 'talent_selected' entry if there are talent IDs present
-            if type(v) == 'table' and rawget(v, 'TalentIDs') then
-                v.talent_selected = function(spell, env) return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetActiveSpecGroup())) and true or false end
-                v.talent_enabled = v.talent_selected
-            end
+            addActionTalentFields(v)
 
             -- If there's no ability ID, then we can't cast it.
             if type(v) == 'table' and not rawget(v, 'AbilityID') then
@@ -318,8 +425,8 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Start constructing the spell_can_cast() and perform_cast() functions
-                local spell_can_cast_funcsrc = fmt('(not spell.blacklisted) and (env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
-                local perform_cast_funcsrc = ''
+                v.spell_can_cast_funcsrc = fmt('(not spell.blacklisted) and (env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
+                v.perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD
                 if not rawget(v, 'spell_cast_time') then
@@ -345,147 +452,57 @@ function TJ:RegisterPlayerClass(config)
                     if not rawget(v, costType..'_cost') then
                         v[costType..'_cost'] = costBase
                     end
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. fmt(' and (env.%s.can_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost))', costType, costType, k, costType, costType)
-                    perform_cast_funcsrc = perform_cast_funcsrc .. fmt('; env.%s.perform_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost)', costType, costType, k, costType, costType)
+                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. fmt(' and (env.%s.can_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost))', costType, costType, k, costType, costType)
+                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. fmt('; env.%s.perform_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost)', costType, costType, k, costType, costType)
                 end
 
-                -- Get the cooldown
+                -- Add any fields required for cooldowns
                 local cooldownSecs, isCooldownAffectedByHaste = TJ:GetSpellCooldown(v.AbilityID)
                 local fullCooldownSecs = (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or 0
-
-                -- If this action has an associated cooldown, then insert the value to the table and update the functions accordingly
-                if fullCooldownSecs and fullCooldownSecs > 0 then
-                    if not rawget(v, 'CooldownTime') then
-                        v.CooldownTime = isCooldownAffectedByHaste and (function(spell,env) return env.playerHasteMultiplier * fullCooldownSecs end) or fullCooldownSecs
-                    end
-                    v.spell_recharge_time = function(spell, env)
-                        return spell.CooldownTime
-                    end
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
-
-                    -- Add cooldown-specific functions
-                    v.cooldown_remains = function(spell, env)
-                        local remains = spell.cooldownStart + spell.cooldownDuration - env.currentTime
-                        return (remains > 0) and remains or 0
-                    end
-                    v.spell_charges = function(spell, env)
-                        return (spell.cooldown_remains > 0) and 0 or 1
-                    end
-                    v.cooldown_ready = function(spell, env)
-                        return (spell.cooldown_remains == 0) and true or false
-                    end
-                    v.cooldown_up = function(spell, env)
-                        return (spell.cooldown_remains == 0) and true or false
-                    end
-                    v.cooldown_react = function(spell, env)
-                        return (spell.cooldown_remains == 0) and true or false
-                    end
-                end
+                addActionCooldownFields(v, fullCooldownSecs, isCooldownAffectedByHaste)
 
                 -- Get the recharge time
                 local rechargeSecs, isRechargeAffectedByHaste = TJ:GetSpellRechargeTime(v.AbilityID)
                 local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
-
                 -- Check if this has charges that use GetSpellCount()
-                local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount')
+                local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount') and true or false
                 if usesSpellCountForCharges then
-                    rechargeSecs = 999
                     fullRechargeSecs = 999
+                    isRechargeAffectedByHaste = false
                 end
-
-                -- If this action has an associated recharge time, then insert the value to the table and update the functions accordingly
-                if fullRechargeSecs and fullRechargeSecs > 0 then
-                    if not rawget(v, 'RechargeTime') then
-                        v.RechargeTime = isRechargeAffectedByHaste and (function(spell,env) return env.playerHasteMultiplier * fullRechargeSecs end) or fullRechargeSecs
-                    end
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.spell_charges > 0)'
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; spell.rechargeSpent = spell.rechargeSpent + 1'
-
-                    -- Add recharge-specific functions
-                    v.spell_recharge_time = function(spell, env)
-                        return spell.RechargeTime
-                    end
-                    v.spell_charges = function(spell, env)
-                        return mfloor(spell.spell_charges_fractional+0.001)
-                    end
-                    if usesSpellCountForCharges then
-                        v.spell_charges_fractional = function(spell, env)
-                            return spell.rechargeSampled - spell.rechargeSpent
-                        end
-                    else
-                        v.spell_charges_fractional = function(spell, env)
-                            local f = (spell.rechargeSampled == spell.rechargeMax)
-                                and spell.rechargeMax - spell.rechargeSpent
-                                or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
-                            if f >= spell.rechargeMax then f = spell.rechargeMax end
-                            return f
-                        end
-                    end
-                    v.cooldown_charges_fractional = function(spell, env)
-                        return spell.spell_charges_fractional
-                    end
-                    v.spell_recharge_time = function(spell, env)
-                        local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
-                        return (spell.spell_charges == spell.rechargeMax) and 0 or remains
-                    end
-                    v.cooldown_remains = function(spell,env)
-                        return (spell.spell_charges > 0) and 0 or spell.spell_recharge_time
-                    end
-                end
+                addActionChargesFields(v, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
 
                 -- Update the spell_can_cast function if talents are specified
                 if rawget(v, 'TalentIDs') then
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.talent_selected)'
+                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. ' and (spell.talent_enabled)'
                 end
 
                 -- Update the spell_can_cast function if there's a spell-specific function in the supplied table
                 if rawget(v, 'CanCast') then
-                    spell_can_cast_funcsrc = spell_can_cast_funcsrc .. ' and (spell.CanCast)'
+                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. ' and (spell.CanCast)'
                 end
 
                 -- Update the perform_cast function if an aura is supposed to be applied
                 if rawget(v, 'AuraApplied') then
-                    perform_cast_funcsrc = perform_cast_funcsrc .. fmt('; env.%s.expirationTime = env.currentTime + %d', v.AuraApplied, v.AuraApplyLength)
+                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. fmt('; env.%s.expirationTime = env.currentTime + %d', v.AuraApplied, v.AuraApplyLength)
                 end
 
                 -- Update the perform_cast function if there's a spell-specific function in the supplied table
                 if rawget(v, 'PerformCast') then
-                    perform_cast_funcsrc = perform_cast_funcsrc .. '; local r = spell.PerformCast'
+                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. '; local r = spell.PerformCast'
                 end
 
                 -- Load the spell_can_cast function
-                spell_can_cast_funcsrc = fmt('function(spell, env) return ((%s) and true or false) end', spell_can_cast_funcsrc:gsub('^ and ', ''))
-                v.spell_can_cast = TJ:LoadFunctionString(spell_can_cast_funcsrc, k..':spell_can_cast')
-                if internal.devMode then v.spell_can_cast_funcsrc = spell_can_cast_funcsrc end
+                v.spell_can_cast_funcsrc = fmt('function(spell, env) return ((%s) and true or false) end', v.spell_can_cast_funcsrc:gsub('^ and ', ''))
+                v.spell_can_cast = TJ:LoadFunctionString(v.spell_can_cast_funcsrc, k..':spell_can_cast')
 
                 -- Load the perform_cast function
-                perform_cast_funcsrc = fmt('function(spell, env) %s end', perform_cast_funcsrc:gsub('^; ', ''))
-                v.perform_cast = TJ:LoadFunctionString(perform_cast_funcsrc, k..':perform_cast')
-                if internal.devMode then v.perform_cast_funcsrc = perform_cast_funcsrc end
-
+                v.perform_cast_funcsrc = fmt('function(spell, env) %s end', v.perform_cast_funcsrc:gsub('^; ', ''))
+                v.perform_cast = TJ:LoadFunctionString(v.perform_cast_funcsrc, k..':perform_cast')
             end
 
             -- Add aura-specific functions
-            if type(v) == 'table' and rawget(v, 'AuraID') then
-                v.aura_react = function(spell, env)
-                    local remains = spell.expirationTime - env.currentTime
-                    return (remains > 0) and true or false
-                end
-                v.aura_remains = function(spell, env)
-                    local remains = spell.expirationTime - env.currentTime
-                    return (remains > 0) and remains or 0
-                end
-                v.aura_up = function(spell, env)
-                    local remains = spell.expirationTime - env.currentTime
-                    return (remains > 0) and true or false -- hmmmmmmm, APLs like to do arithmetic here
-                end
-                v.aura_down = function(spell, env)
-                    local remains = spell.expirationTime - env.currentTime
-                    return (remains <= 0) and true or false -- hmmmmmmm, APLs like to do arithmetic here
-                end
-                v.aura_ticking = v.aura_up
-            end
+            addActionAuraFields(v)
 
         end
 

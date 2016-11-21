@@ -26,6 +26,7 @@ actions.oh_shit+=/expel_harm
 actions.oh_shit+=/black_ox_brew,if=spell.ironskin_brew.charges=0
 
 actions.st=keg_smash
+actions.st+=/exploding_keg
 actions.st+=/tiger_palm,if=energy>65
 actions.st+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
 actions.st+=/blackout_strike
@@ -35,6 +36,7 @@ actions.st+=/chi_burst,if=talent.chi_burst.enabled
 actions.st+=/expel_harm,if=charges=3&variable.heal_threshold
 
 actions.aoe=keg_smash
+actions.aoe+=/exploding_keg
 actions.aoe+=/chi_burst,if=talent.chi_burst.enabled
 actions.aoe+=/breath_of_fire,if=debuff.keg_smash.up
 actions.aoe+=/rushing_jade_wind,if=talent.rushing_jade_wind.enabled

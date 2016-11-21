@@ -86,9 +86,9 @@ local vengeance_base_overrides = {
     infernal_strike = {
         in_flight = false,
         travel_time = 1,
-        aura_duration = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.aura_duration or 0 end,
-        spell_delay = function(spell,env) return env.flame_crash.talent_selected and env.sigil_of_flame.spell_delay or 0 end,
-        aura_remains = function(spell,env) return env.flame_crash.talent_selected and spell.aura_duration - spell.actual_time_since_last_cast or 0 end,
+        aura_duration = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.aura_duration or 0 end,
+        spell_delay = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.spell_delay or 0 end,
+        aura_remains = function(spell,env) return env.flame_crash.talent_enabled and spell.aura_duration - spell.actual_time_since_last_cast or 0 end,
         spell_cast_time = 0.01, -- off GCD!
 
         -- Why do these use a different spellID?!
@@ -174,7 +174,7 @@ local vengeance_artifact_overrides = {
 
 local function sigilInitialiser(duration)
     return {
-        spell_delay = function(spell, env) return env.quickened_sigils.talent_selected and 1 or 2 end,
+        spell_delay = function(spell, env) return env.quickened_sigils.talent_enabled and 1 or 2 end,
         aura_duration = function(spell, env) return 8 + spell.spell_delay end,
         placed = function(spell, env) return spell.time_since_last_cast < spell.aura_duration end,
         aura_remains = function(spell, env) return spell.aura_duration - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
@@ -187,14 +187,14 @@ local vengeance_sigil_overrides = {
             return env.sigil_of_flame.placed
                 or env.sigil_of_misery.placed
                 or env.sigil_of_silence.placed
-                or (env.sigil_of_chains.talent_selected and env.sigil_of_chains.placed)
-                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.sigil_of_chains.talent_enabled and env.sigil_of_chains.placed)
+                or (env.flame_crash.talent_enabled and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     any_flame_sigil = {
         placed = function(spell, env)
             return env.sigil_of_flame.placed
-                or (env.flame_crash.talent_selected and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.flame_crash.talent_enabled and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     sigil_of_flame = sigilInitialiser(),

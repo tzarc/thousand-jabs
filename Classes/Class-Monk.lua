@@ -55,7 +55,7 @@ local brewmaster_abilities_exported = {
 local brewmaster_base_overrides = {
     tiger_palm = {
         PerformCast = function(spell, env)
-            if env.eye_of_the_tiger.talent_selected then
+            if env.eye_of_the_tiger.talent_enabled then
                 env.eye_of_the_tiger.expirationTime = env.currentTime + 8
             end
         end
@@ -242,7 +242,7 @@ local windwalker_base_overrides = {
 
         CanCast = function(spell, env)
             --DevTools_Dump{storm_earth_and_fire=env.storm_earth_and_fire}
-            return (not env.serenity.talent_selected) and (not spell.aura_react)
+            return (not env.serenity.talent_enabled) and (not spell.aura_react)
         end,
     },
     bok_proc = {

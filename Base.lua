@@ -11,6 +11,8 @@ local LSD = LibStub('LibSerpentDump')
 
 local assert = assert
 local debugprofilestop = debugprofilestop
+local debugstack = debugstack
+local error = error
 local loadstring = loadstring
 local pairs = pairs
 local pcall = pcall

@@ -6,6 +6,8 @@ local Profiling = TJ:GetModule('Profiling')
 local UnitCache = TJ:GetModule('UnitCache')
 
 local getmetatable = getmetatable
+local mmax = math.max
+local mmin = math.min
 local pairs = pairs
 local pcall = pcall
 local rawget = rawget
@@ -193,14 +195,12 @@ local function StateResetPrototype(self)
             if rawget(entry, 'AuraID') then
                 local aura = UnitCache:GetAura(entry.AuraUnit, entry.AuraID, entry.AuraMine)
                 v.expirationTime = aura and aura.expires or 0
-                v.aura_stack = aura and aura.count or 0
+                v.auraCount = aura and aura.count or 0
             end
 
             -- Add data if we're checking cooldowns for this entry
             if rawget(entry, 'CooldownTime') then
                 v.cooldownStart, v.cooldownDuration = GetSpellCooldown(entry.AbilityID)
-                local remaining = v.cooldownStart + v.cooldownDuration - GetTime()
-                remaining = remaining > 0 and remaining or 0
             end
 
             -- Add data if we're checking charges for this entry
@@ -211,8 +211,6 @@ local function StateResetPrototype(self)
                 v.rechargeStartTime = start or 0
                 v.rechargeDuration = duration or 0
                 v.rechargeSpent = 0
-                v.spell_max_charges = maxCharges or 0
-                v.rechargeNext = (charges == maxCharges) and 99999999999999 or (start + duration)
             end
 
             -- Add data if we're using GetSpellCount to get the number of charges for this ability
@@ -223,8 +221,6 @@ local function StateResetPrototype(self)
                 v.rechargeStartTime = 0
                 v.rechargeDuration = 0
                 v.rechargeSpent = 0
-                v.spell_max_charges = 999
-                v.rechargeNext = 99999999999999
             end
         else
             env[k] = nil
@@ -293,11 +289,7 @@ local function StatePredictNextActionPrototype(self)
         duration = (cend - cstart) * 0.001
     end
     -- Find the sampling offset
-    local predictionOffset = (start and duration) and (start + duration - GetTime()) or 0
-    if predictionOffset < 0 then
-        predictionOffset = 0
-    end
-
+    local predictionOffset = mmax(0, (start and duration) and (start + duration - GetTime()) or 0)
     -- Predict at the specific offset
     return self:PredictActionAtOffset(predictionOffset, performPostCastAction and spellCastID or nil)
 end

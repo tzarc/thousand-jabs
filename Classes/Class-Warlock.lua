@@ -81,10 +81,10 @@ local destruction_base_overrides = {
     conflagrate = {
         PerformCast = function(spell,env)
             env.soul_shards.gained = env.soul_shards.gained + 1
-            if env.backdraft.talent_selected then
+            if env.backdraft.talent_enabled then
                 env.backdraft.expirationTime = env.currentTime + 5
             end
-            if env.roaring_blaze.talent_selected then
+            if env.roaring_blaze.talent_enabled then
                 local target = UnitGUID('target')
                 if env.roaring_blaze.roaringBlazeStacks[target] then
                     env.roaring_blaze.roaringBlazeStacks[target] = env.roaring_blaze.roaringBlazeStacks[target] + 1
