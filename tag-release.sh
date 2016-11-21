@@ -13,9 +13,6 @@ else
     echo NEXT_TAG=${NEXT_TAG}
 fi
 
-# Update the Version: tag in the toc
-sed -i "s#Version: \([v0-9\.]\+\)#Version: ${NEXT_TAG}#" ThousandJabs.toc
-git diff
 echo "--------------------"
 echo "git commit -am \"Commit for ${NEXT_TAG}.\""
 echo "git tag -a \"${NEXT_TAG}\" -m \"Tagging ${NEXT_TAG}.\""
