@@ -146,20 +146,21 @@ function TJ:PerformUpdate()
     nextScreenUpdateExpiry = nil
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
-    -- Set up frame fading
-    UI:UpdateAlpha()
-
     -- Clear out any errors for the last screen update
     internal.DebugReset()
 
     -- Update stats
     UpdateUsageStatistics()
 
-    -- Cache current player/target information if requested
-    UnitCache:UpdateUnitCache('player')
-    UnitCache:UpdateUnitCache('target')
-
     if self.currentProfile then
+        -- Set up frame fading
+        UI:UpdateAlpha()
+
+        -- Cache current player/target information if requested
+        UnitCache:UpdateUnitCache('player')
+        UnitCache:UpdateUnitCache('target')
+
+        -- Perform the prediction...
         self:ExecuteAllActionProfiles()
 
         -- Attempt to work out the cooldown frame, based off the GCD
@@ -193,8 +194,11 @@ function TJ:GetActiveProfile()
     local profile = self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
     local betaAllowed = Config:Get("allowBetaProfiles")
     local isBetaProfile = profile.betaProfile and true or false
-    profile = ((isBetaProfile and betaAllowed) or (not isBetaProfile)) and profile or nil
-    return (not isDisabled) and profile or nil
+    if (isBetaProfile and betaAllowed) then
+        return profile
+    elseif (not isBetaProfile) then
+        return profile
+    end
 end
 
 function TJ:ActivateProfile()
@@ -230,6 +234,9 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('UNIT_POWER')
         TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
+    else
+        UI:Hide()
+        UI:EnableMouse(false)
     end
 
     self:QueueUpdate()

@@ -129,6 +129,7 @@ AC:RegisterOptionsTable(addonName, function()
                         name = L["Reset Position"],
                         func = function()
                             UI:ResetPosition()
+                            UI:UpdateAlpha()
                         end
                     },
                     showCleave = {
@@ -141,6 +142,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val and true or false, "showCleave")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     showAoE = {
@@ -153,6 +155,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val and true or false, "showAoE")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     backgroundOpacity = {
@@ -168,6 +171,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "backgroundOpacity")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     outOfCombatHide = {
@@ -193,6 +197,7 @@ AC:RegisterOptionsTable(addonName, function()
                             Config:Set(val and true or false, "allowBetaProfiles")
                             TJ:DeactivateProfile()
                             TJ:ActivateProfile()
+                            UI:UpdateAlpha()
                         end
                     },
                     fadingHeader = {
@@ -248,6 +253,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "scale")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     singleTargetSize = {
@@ -263,6 +269,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "singleTargetSize")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     cleaveSize = {
@@ -278,6 +285,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "cleaveSize")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     aoeSize = {
@@ -293,6 +301,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "aoeSize")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     nextScale = {
@@ -308,6 +317,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "sizeDecrease")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     padding = {
@@ -323,6 +333,7 @@ AC:RegisterOptionsTable(addonName, function()
                         set = function(info, val)
                             Config:Set(val, "geometry", "padding")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                     resetGeometry = {
@@ -332,6 +343,7 @@ AC:RegisterOptionsTable(addonName, function()
                         func = function()
                             Config:Set(nil, "geometry")
                             UI:ReapplyLayout()
+                            UI:UpdateAlpha()
                         end
                     },
                 },
@@ -363,6 +375,7 @@ AC:RegisterOptionsTable(addonName, function()
                         Config:Set(val and true or false, "class", classID, "spec", specID, "disabled")
                         TJ:DeactivateProfile()
                         TJ:ActivateProfile()
+                        UI:UpdateAlpha()
                     end
                 },
             },
@@ -393,6 +406,7 @@ AC:RegisterOptionsTable(addonName, function()
                             TJ:DeactivateProfile()
                             TJ:ActivateProfile()
                             TJ:QueueUpdate()
+                            UI:UpdateAlpha()
                         end
                     }
                 elseif type(v) == "table" and #v == 2 and type(v[1]) == "number" and type(v[2]) == "number" then
@@ -410,6 +424,7 @@ AC:RegisterOptionsTable(addonName, function()
                             TJ:DeactivateProfile()
                             TJ:ActivateProfile()
                             TJ:QueueUpdate()
+                            UI:UpdateAlpha()
                         end
                     }
                 end
@@ -448,6 +463,7 @@ AC:RegisterOptionsTable(addonName, function()
                         TJ:DeactivateProfile()
                         TJ:ActivateProfile()
                         TJ:QueueUpdate()
+                        UI:UpdateAlpha()
                     end
                 }
             end
