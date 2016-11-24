@@ -92,6 +92,14 @@ local destruction_base_overrides = {
             end
         end,
     },
+    life_tap = {
+        CanCast = function(spell, env)
+            return (env.health.percent > 10) and true or false
+        end,
+        PerformCast = function(spell, env)
+            env.mana.gained = env.mana.gained + (env.mana.max * 0.3)
+        end,
+    },
     backdraft = {
         AuraID = { 117828, },
         AuraUnit = 'player',
@@ -118,8 +126,7 @@ local destruction_base_overrides = {
     havoc = {
         expirationTime = 0,
         aura_remains = function(spell, env)
-            local remains = spell.expirationTime - env.currentTime
-            return (remains > 0) and remains or 0
+            return math.max(0, spell.expirationTime - env.currentTime)
         end,
         PerformCast = function(spell, env)
             spell.expirationTime = env.currentTime + (env.wreak_havoc.talent_enabled and 20 or 8)
@@ -185,7 +192,7 @@ local destruction_hooks = {
         OnStateInit = function(env)
             local havocLength = env.wreak_havoc.talent_enabled and 20 or 8
             env.havoc.expirationTime = (havocTarget.timeApplied > 0)
-                and env.currentTime - (GetTime()-havocTarget.timeApplied) + havocLength
+                and havocTarget.timeApplied + havocLength
                 or 0
 
             env.roaring_blaze.roaringBlazeStacks = {}
