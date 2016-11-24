@@ -190,6 +190,7 @@ local function StateResetPrototype(self)
 
             -- Get the equivalent profile entry for this table
             local entry = self.profile.actions[k]
+            local abilityID = rawget(entry, 'AbilityID')
 
             -- Add data if we're checking auras for this entry
             if rawget(entry, 'AuraID') then
@@ -200,12 +201,19 @@ local function StateResetPrototype(self)
 
             -- Add data if we're checking cooldowns for this entry
             if rawget(entry, 'CooldownTime') then
-                v.cooldownStart, v.cooldownDuration = GetSpellCooldown(entry.AbilityID)
+                if abilityID then
+                    v.cooldownStart, v.cooldownDuration = GetSpellCooldown(abilityID)
+                else
+                    v.cooldownStart, v.cooldownDuration = env.CurrentTime, v.CooldownTime
+                end
             end
 
             -- Add data if we're checking charges for this entry
             if rawget(entry, 'RechargeTime') then
-                local charges, maxCharges, start, duration = GetSpellCharges(entry.AbilityID)
+                local charges, maxCharges, start, duration
+                if abilityID then
+                    charges, maxCharges, start, duration = GetSpellCharges(abilityID)
+                end
                 v.rechargeSampled = charges or 0
                 v.rechargeMax = maxCharges or 0
                 v.rechargeStartTime = start or 0
@@ -215,7 +223,10 @@ local function StateResetPrototype(self)
 
             -- Add data if we're using GetSpellCount to get the number of charges for this ability
             if rawget(entry, 'ChargesUseSpellCount') then
-                local charges = GetSpellCount(entry.AbilityID)
+                local charges
+                if abilityID then
+                    charges = GetSpellCount(abilityID)
+                end
                 v.rechargeSampled = charges or 0
                 v.rechargeMax = 999
                 v.rechargeStartTime = 0
