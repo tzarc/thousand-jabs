@@ -9,20 +9,29 @@ local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
 local real_G = _G
 local mfloor = math.floor
 local pairs = pairs
+local select = select
+local tconcat = table.concat
+local tcontains = tContains
 local tinsert = table.insert
 local tonumber = tonumber
 local CreateFrame = CreateFrame
 local GetActiveSpecGroup = GetActiveSpecGroup
 local GetFlyoutInfo = GetFlyoutInfo
 local GetFlyoutSlotInfo = GetFlyoutSlotInfo
+local GetMaxTalentTier = GetMaxTalentTier
 local GetNumSpellTabs = GetNumSpellTabs
+local GetSpecialization = GetSpecialization
+local GetSpecializationInfo = GetSpecializationInfo
 local GetSpellBookItemInfo = GetSpellBookItemInfo
 local GetSpellBookItemName = GetSpellBookItemName
 local GetSpellInfo = GetSpellInfo
 local GetSpellTabInfo = GetSpellTabInfo
 local GetTalentInfo = GetTalentInfo
+local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
 local IsPassiveSpell = IsPassiveSpell
 local IsTalentSpell = IsTalentSpell
+local LearnTalent = LearnTalent
+local C_ArtifactUI = C_ArtifactUI
 
 internal.Safety()
 
@@ -108,8 +117,16 @@ end
 -- Retrieve all abilities from the spellbook
 ------------------------------------------------------------------------------------------------------------------------
 
+local lastExportedSpecialisation = nil
 local definedAbilities = {}
 local function slug(name) return name:lower():gsub(' ','_'):gsub('[^%a%d_]','') end
+local blacklistedExportedAbilities = {
+    'arcane_torrent',
+    'auto_attack',
+    'honorable_medallion',
+    'mobile_banking',
+    'quaking_palm'
+}
 
 function TJ:DetectAbilitiesFromSpellBook()
     local abilities = {}
@@ -121,6 +138,7 @@ function TJ:DetectAbilitiesFromSpellBook()
             abilities[slug(spellName)] = {
                 Name = spellName,
                 SpellIDs = { spellID },
+                KeyedSpellIDs = { [spellID] = true },
                 SpellBookSubtext = spellSubText,
                 SpellBookItem = spellBookItem,
                 IsTalent = spellIsTalent,
@@ -148,7 +166,79 @@ function TJ:DetectAbilitiesFromSpellBook()
     return abilities
 end
 
-function TJ:ExportAbilitiesFromSpellBook()
+local function GeneratePermutations(entries, count)
+    if count <= 1 then
+        local ret = {}
+        for k,v in pairs(entries) do
+            ret[1+#ret] = { v }
+        end
+        return ret
+    else
+        local ret = {}
+        local children = GeneratePermutations(entries, count-1)
+        for _,child in pairs(children) do
+            for _,entry in pairs(entries) do
+                local thisEntry = {}
+                for _,e in pairs(child) do
+                    thisEntry[1+#thisEntry] = e
+                end
+                thisEntry[1+#thisEntry] = entry
+                ret[1+#ret] = thisEntry
+            end
+        end
+        return ret
+    end
+end
+
+function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
+    -- Get the currently-active talents
+    local specID = GetSpecialization()
+    local talents = {}
+    for k=1,GetMaxTalentTier() do
+        talents[k] = select(10, GetTalentInfoBySpecialization(specID, k, 1)) and 1
+            or select(10, GetTalentInfoBySpecialization(specID, k, 2)) and 2
+            or select(10, GetTalentInfoBySpecialization(specID, k, 3)) and 3
+    end
+
+    -- Clear out the defined abilities if we're exporting a different specialisation
+    if lastExportedSpecialisation ~= specID then
+        definedAbilities = {}
+        lastExportedSpecialisation = specID
+    end
+
+    -- Swap all talents to generate all spell information
+    if runAllPossibleCombinations then
+        local allPermutations = GeneratePermutations({1,2,3}, GetMaxTalentTier())
+        for perm=1,#allPermutations do
+            self:EnqueueCommand(function()
+                for i=1,GetMaxTalentTier() do
+                    LearnTalent(GetTalentInfoBySpecialization(specID, i, allPermutations[perm][i]))
+                end
+            end)
+            self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
+        end
+    else
+        for row=1,GetMaxTalentTier() do
+            for column=1,3 do
+                if column ~= talents[row] then
+                    self:EnqueueCommand(function() LearnTalent(GetTalentInfoBySpecialization(specID, row, column)) end)
+                    self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
+                end
+            end
+        end
+    end
+
+    -- Restore original talents
+    for row=1,GetMaxTalentTier() do
+        self:EnqueueCommand(function() LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row])) end)
+        self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
+    end
+
+    -- Show the spell export window
+    self:EnqueueCommand(function() TJ:ShowSpellExportWindow() end)
+end
+
+function TJ:ShowSpellExportWindow()
     -- Build the string
     local export = ''
     local addline = function(...)
@@ -159,17 +249,19 @@ function TJ:ExportAbilitiesFromSpellBook()
     addline("-- exported with /tj _esd")
     addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
     for k,v in internal.orderedpairs(definedAbilities) do
-        local line = fmt('    %s = { ', k)
-        if v.SpellIDs then
-            local ids = {}
-            for _,id in internal.orderedpairs(v.SpellIDs) do
-                ids[1+#ids] = id
+        if not tcontains(blacklistedExportedAbilities, k) then
+            local line = fmt('    %s = { ', k)
+            if v.KeyedSpellIDs then
+                local ids = {}
+                for id in internal.orderedpairs(v.KeyedSpellIDs) do
+                    ids[1+#ids] = id
+                end
+                line = line .. fmt('SpellIDs = { %s }, ', tconcat(ids, ", "))
             end
-            line = line .. fmt('SpellIDs = { %s }, ', table.concat(ids, ", "))
+            if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
+            line = line .. '},'
+            addline(line)
         end
-        if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
-        line = line .. '},'
-        addline(line)
     end
     addline("}")
     addline("")
@@ -191,9 +283,6 @@ function TJ:ExportAbilitiesFromSpellBook()
 
     -- Display the exported data
     self:OpenDebugWindow(addonName .. ' Actions Data Export', export)
-
-    -- Reset the table, so we can change spec
-    definedAbilities = {}
 end
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -27,7 +27,7 @@ internal.Safety()
 
 -- Timer update
 local screenUpdateTimer = nil
-local queuedScreenUpdateTime = 0.2   -- seconds
+local queuedScreenUpdateTime = internal.devMode and 0.05 or 0.2  -- seconds (high-speed in dev mode, hopefully trigger issues)
 local watchdogScreenUpdateTime = 0.75 -- seconds
 local nextScreenUpdateExpiry = GetTime()
 local watchdogScreenUpdateExpiry = GetTime()
@@ -119,6 +119,28 @@ local function UpdateUsageStatistics()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Command queue
+------------------------------------------------------------------------------------------------------------------------
+
+local commandQueue = { first = 0, last = -1 }
+function TJ:EnqueueCommand(commandToExec)
+    local last = commandQueue.last + 1
+    commandQueue.last = last
+    commandQueue[last] = commandToExec
+    self:QueueUpdate()
+end
+function TJ:RunQueuedCommands()
+    local first = commandQueue.first
+    if first <= commandQueue.last then
+        local commandToExec = commandQueue[first]
+        commandQueue[first] = nil
+        commandQueue.first = commandQueue.first + 1
+        commandToExec()
+        self:QueueUpdate()
+    end
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -180,6 +202,9 @@ function TJ:PerformUpdate()
 
     -- Perform a debugging screen update as well
     self:UpdateLog()
+
+    -- Run any commands in the queue
+    self:RunQueuedCommands()
 end
 
 Profiling:ProfileFunction('PerformUpdate')

@@ -137,12 +137,10 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
             action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
 
-            action.cooldown_remains = function(spell, env)
-                local remains = spell.cooldownStart + spell.cooldownDuration - env.currentTime
-                return mmax(0, remains)
-            end
+            action.cooldown_remains = function(spell, env) return mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
             action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
             action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
+            action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
             action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
             action.spell_charges = function(spell, env) return spell.cooldown_ready and 1 or 0 end
         end
@@ -181,13 +179,14 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
 
             action.spell_recharge_time = function(spell, env)
                 local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
-                return (spell.spell_charges == spell.rechargeMax) and 0 or remains
+                return (spell.spell_charges > 0) and 0 or remains
             end
 
-            action.cooldown_remains = function(spell,env)
-                return mmax(0, spell.spell_recharge_time)
-            end
-
+            action.cooldown_remains = function(spell,env) return mmax(0, spell.spell_recharge_time) end
+            action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
+            action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
+            action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
+            action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
             action.cooldown_charges_fractional = function(spell, env) return spell.spell_charges_fractional end
             action.cooldown_charges = function(spell, env) return spell.spell_charges end
         end
@@ -289,12 +288,6 @@ function TJ:RegisterPlayerClass(config)
                         entry.fullvaluefuncsrc = entry.params.value_converted.expression
                         entry.value_func = TJ:LoadFunctionString(fmt("function() return (%s) end", entry.fullvaluefuncsrc), fmt("var:%s", entry.key))
                     end
-                end
-            end
-
-            if internal.devMode then
-                for before,after in internal.orderedpairs(converted) do
-                    TJ:PrintOnce("%s => %s", before, after)
                 end
             end
         end
