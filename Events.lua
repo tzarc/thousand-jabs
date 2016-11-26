@@ -3,6 +3,7 @@ local TJ = internal.TJ
 local Debug = internal.Debug
 local fmt = internal.fmt
 
+local pairs = pairs
 local rawget = rawget
 local GetTime = GetTime
 local UnitExists = UnitExists

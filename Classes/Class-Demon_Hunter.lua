@@ -329,6 +329,11 @@ local havoc_base_overrides = {
         AuraUnit = 'target',
         AuraMine = true,
     },
+    felblade = {
+        CanCast = function(spell,env)
+            return env.movement.distance <= 15
+        end,
+    },
     momentum = {
         AuraID = 208628,
         AuraUnit = 'player',
