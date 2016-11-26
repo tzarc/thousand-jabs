@@ -122,20 +122,19 @@ end
 -- Command queue
 ------------------------------------------------------------------------------------------------------------------------
 
-local commandQueue = { first = 0, last = -1 }
-function TJ:EnqueueCommand(commandToExec)
-    local last = commandQueue.last + 1
-    commandQueue.last = last
-    commandQueue[last] = commandToExec
+local commandQueue = {}
+function TJ:ExecuteFuncAsCoroutine(funcToExec)
+    local th = coroutine.create(funcToExec)
+    commandQueue[th] = true
     self:QueueUpdate()
 end
-function TJ:RunQueuedCommands()
-    local first = commandQueue.first
-    if first <= commandQueue.last then
-        local commandToExec = commandQueue[first]
-        commandQueue[first] = nil
-        commandQueue.first = commandQueue.first + 1
-        commandToExec()
+function TJ:RunFuncCoroutines()
+    for th in pairs(commandQueue) do
+        if coroutine.status(th) == "dead" then
+            commandQueue[th] = nil
+        else
+            coroutine.resume(th)
+        end
         self:QueueUpdate()
     end
 end
@@ -204,7 +203,7 @@ function TJ:PerformUpdate()
     self:UpdateLog()
 
     -- Run any commands in the queue
-    self:RunQueuedCommands()
+    self:RunFuncCoroutines()
 end
 
 Profiling:ProfileFunction('PerformUpdate')

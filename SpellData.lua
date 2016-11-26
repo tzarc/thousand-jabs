@@ -125,7 +125,18 @@ local blacklistedExportedAbilities = {
     'auto_attack',
     'honorable_medallion',
     'mobile_banking',
-    'quaking_palm'
+    'path_of_the_black_ox',
+    'path_of_the_jade_serpent',
+    'path_of_the_mogu_king',
+    'path_of_the_necromancer',
+    'path_of_the_scarlet_blade',
+    'path_of_the_scarlet_mitre',
+    'path_of_the_setting_sun',
+    'path_of_the_shadopan',
+    'path_of_the_stout_brew',
+    'quaking_palm',
+    'zen_pilgrimage',
+    'zen_pilgrimage_return',
 }
 
 function TJ:DetectAbilitiesFromSpellBook()
@@ -206,36 +217,55 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         lastExportedSpecialisation = specID
     end
 
-    -- Swap all talents to generate all spell information
-    if runAllPossibleCombinations then
-        local allPermutations = GeneratePermutations({1,2,3}, GetMaxTalentTier())
-        for perm=1,#allPermutations do
-            self:EnqueueCommand(function()
+    self:ExecuteFuncAsCoroutine(function()
+        local canceled = false
+        -- Swap all talents to generate all spell information
+        if runAllPossibleCombinations then
+            local allPermutations = GeneratePermutations({1,2,3}, GetMaxTalentTier())
+            for perm=1,#allPermutations do
                 for i=1,GetMaxTalentTier() do
                     LearnTalent(GetTalentInfoBySpecialization(specID, i, allPermutations[perm][i]))
                 end
-            end)
-            self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
-        end
-    else
-        for row=1,GetMaxTalentTier() do
-            for column=1,3 do
-                if column ~= talents[row] then
-                    self:EnqueueCommand(function() LearnTalent(GetTalentInfoBySpecialization(specID, row, column)) end)
-                    self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
+                coroutine.yield()
+                TJ:DetectAbilitiesFromSpellBook()
+                coroutine.yield()
+
+                if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
+                    canceled = true
+                    break
+                end
+            end
+        else
+            for row=1,GetMaxTalentTier() do
+                for column=1,3 do
+                    if column ~= talents[row] then
+                        LearnTalent(GetTalentInfoBySpecialization(specID, row, column))
+                        coroutine.yield()
+                        TJ:DetectAbilitiesFromSpellBook()
+                        coroutine.yield()
+                    end
+                end
+
+                if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
+                    canceled = true
+                    break
                 end
             end
         end
-    end
 
-    -- Restore original talents
-    for row=1,GetMaxTalentTier() do
-        self:EnqueueCommand(function() LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row])) end)
-        self:EnqueueCommand(function() TJ:DetectAbilitiesFromSpellBook() end)
-    end
+        -- Restore original talents
+        for row=1,GetMaxTalentTier() do
+            LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row]))
+            coroutine.yield()
+            TJ:DetectAbilitiesFromSpellBook()
+            coroutine.yield()
+        end
 
-    -- Show the spell export window
-    self:EnqueueCommand(function() TJ:ShowSpellExportWindow() end)
+        -- Show the spell export window
+        if not canceled then
+            TJ:ShowSpellExportWindow()
+        end
+    end)
 end
 
 function TJ:ShowSpellExportWindow()

@@ -36,7 +36,6 @@ local brewmaster_abilities_exported = {
     paralysis = { SpellIDs = { 115078 }, },
     provoke = { SpellIDs = { 115546 }, },
     purifying_brew = { SpellIDs = { 119582 }, },
-    quaking_palm = { SpellIDs = { 107079 }, },
     resuscitate = { SpellIDs = { 115178 }, },
     ring_of_peace = { SpellIDs = { 116844 }, TalentIDs = { 4, 1 }, },
     roll = { SpellIDs = { 109132 }, },
@@ -49,7 +48,6 @@ local brewmaster_abilities_exported = {
     transcendence = { SpellIDs = { 101643 }, },
     transcendence_transfer = { SpellIDs = { 119996 }, },
     zen_meditation = { SpellIDs = { 115176 }, },
-    zen_pilgrimage = { SpellIDs = { 126892 }, },
 }
 
 local brewmaster_base_overrides = {
