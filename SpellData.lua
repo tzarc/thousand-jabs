@@ -226,6 +226,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                 for i=1,GetMaxTalentTier() do
                     LearnTalent(GetTalentInfoBySpecialization(specID, i, allPermutations[perm][i]))
                 end
+                TJ:DetectAbilitiesFromSpellBook()
                 coroutine.yield()
                 TJ:DetectAbilitiesFromSpellBook()
                 coroutine.yield()
@@ -240,6 +241,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                 for column=1,3 do
                     if column ~= talents[row] then
                         LearnTalent(GetTalentInfoBySpecialization(specID, row, column))
+                        TJ:DetectAbilitiesFromSpellBook()
                         coroutine.yield()
                         TJ:DetectAbilitiesFromSpellBook()
                         coroutine.yield()
@@ -256,6 +258,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         -- Restore original talents
         for row=1,GetMaxTalentTier() do
             LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row]))
+            TJ:DetectAbilitiesFromSpellBook()
             coroutine.yield()
             TJ:DetectAbilitiesFromSpellBook()
             coroutine.yield()
