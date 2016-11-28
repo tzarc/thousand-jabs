@@ -70,9 +70,8 @@ actions.s2m+=/vampiric_touch,if=!ticking&(active_enemies<4|talent.sanlayn.enable
 actions.s2m+=/shadow_word_pain,if=!ticking&target.time_to_die>10&(active_enemies<5&(talent.auspicious_spirits.enabled|talent.shadowy_insight.enabled)),cycle_targets=1
 actions.s2m+=/vampiric_touch,if=!ticking&target.time_to_die>10&(active_enemies<4|talent.sanlayn.enabled|(talent.auspicious_spirits.enabled&artifact.unleash_the_shadows.rank)),cycle_targets=1
 actions.s2m+=/shadow_word_pain,if=!ticking&target.time_to_die>10&(active_enemies<5&artifact.sphere_of_insanity.rank),cycle_targets=1
-actions.s2m+=/wait,sec=action.void_bolt.usable_in,if=action.void_bolt.usable|action.void_bolt.usable_in<gcd.max*0.8
-actions.s2m+=/mind_flay,line_cd=10,if=!talent.mind_spike.enabled&active_enemies>=2&active_enemies<4,chain=1,interrupt_immediate=1,interrupt_if=action.void_bolt.usable
-actions.s2m+=/mind_sear,if=active_enemies>=2,interrupt=1
+actions.s2m+=/mind_flay,line_cd=10,if=!talent.mind_spike.enabled&active_enemies>=2&active_enemies<4,chain=1,interrupt_immediate=1,interrupt_if=((current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+75)<100&cooldown.shadow_word_death.charges>=1)|action.void_bolt.usable)&ticks>=2
+actions.s2m+=/mind_sear,if=active_enemies>=2,interrupt=1,interrupt_immediate=1,interrupt_if=((current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+75)<100&cooldown.shadow_word_death.charges>=1)|action.void_bolt.usable)&ticks>=2
 actions.s2m+=/mind_flay,if=!talent.mind_spike.enabled,chain=1,interrupt_immediate=1,interrupt_if=((current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+75)<100&cooldown.shadow_word_death.charges>=1)|action.void_bolt.usable)&ticks>=2
 actions.s2m+=/mind_spike,if=talent.mind_spike.enabled
 actions.vf=surrender_to_madness,if=talent.surrender_to_madness.enabled&insanity>=25&(cooldown.void_bolt.up|cooldown.void_torrent.up|cooldown.shadow_word_death.up|buff.shadowy_insight.up)&target.time_to_die<=variable.s2mcheck-(buff.insanity_drain_stacks.stack)
