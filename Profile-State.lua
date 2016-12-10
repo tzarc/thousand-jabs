@@ -365,67 +365,69 @@ local function StateExecuteActionProfileListPrototype(self, listname)
     for i=1,#actionList do
         -- Get the action under consideration
         local action = actionList[i]
-        -- Show debug information if requested
-        if action.params.debug then
-            if not action.keywords_printer then
-                local entries = (action.action == "variable" or action.action == "call_action_list" or action.action == "run_action_list")
-                    and { }
-                    or { fmt("\n'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
-                local keywords = action.params.condition_converted and action.params.condition_converted.keywords
-                    or action.params.value_converted and action.params.value_converted.keywords
-                    or {}
-                for k,v in pairs(keywords) do
-                    entries[1+#entries] = fmt("'|cFFFFFF99%s=|cFFFF9900' .. (type(%s) == 'number' and ('%%.2f'):format(%s) or tostring(%s))", v, v, v, v)
-                end
-                local funcsrc = fmt("function() return %s end", tconcat(entries, " .. '|r, ' .. "))
-                action.keywords_printer = TJ:LoadFunctionString(funcsrc:gsub('THIS_SPELL', action.action), action.key)
-            end
-            setfenv(action.keywords_printer, env)
-            Debug("\n%s|r", action.keywords_printer())
-        end
-
-        if action.action == "variable" then
-            -- Execute the variable value function with the current state
-            setfenv(action.value_func, env)
-            local status, ret = pcall(action.value_func)
-            -- If we got a failure, then print out in the debugging and console
-            if not status then
-                Debug("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullvaluefuncsrc)
-                internal.error(internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.fullvaluefuncsrc))
-            else
-                -- Update the value
-                env.variable[action.params.name] = ret
-                Debug("|cFFFF99FF%s ==> |cFFDD00FF%s = %s|cFFFF99FF: %s|r", action.key, action.params.name, tostring(ret), action.fullvaluefuncsrc)
-            end
-            -- Validate that it isn't blacklisted, and there's a valid check function
-        elseif tcontains(self.profile.blacklisted, action.action) then
-        -- Debug("|cFFCC9999%s (blacklisted): %s|r", action.key, action.condition)
-        elseif action.condition_func then -- We have a valid check function
-            -- Execute the check function with the current state
-            setfenv(action.condition_func, env)
-            local status, ret = pcall(action.condition_func)
-            -- If we got a failure, then print out in the debugging and console
-            if not status then
-                Debug("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullconditionfuncsrc)
-                internal.error(internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.fullconditionfuncsrc))
-            elseif ret == false then
-                -- Ran correctly, but the condition failed...
-                Debug("|r%s: %s", action.key, action.fullconditionfuncsrc)
-            elseif ret == true then
-                -- If the condition succeeded....
-                if action.action == 'call_action_list' or action.action == 'run_action_list' then
-                    -- ...we're running another action list, so run that recursively
-                    Debug("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.params.name, action.fullconditionfuncsrc)
-                    local action = self:ExecuteActionProfileList(action.params.name)
-                    if action then
-                        return action
+        if not tcontains(self.profile.blacklisted, action.action) then
+            -- Show debug information if requested
+            if action.params.debug then
+                if not action.keywords_printer then
+                    local entries = (action.action == "variable" or action.action == "call_action_list" or action.action == "run_action_list")
+                        and { }
+                        or { fmt("\n'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
+                    local keywords = action.params.condition_converted and action.params.condition_converted.keywords
+                        or action.params.value_converted and action.params.value_converted.keywords
+                        or {}
+                    for k,v in pairs(keywords) do
+                        entries[1+#entries] = fmt("'|cFFFFFF99%s=|cFFFF9900' .. (type(%s) == 'number' and ('%%.2f'):format(%s) or tostring(%s))", v, v, v, v)
                     end
+                    local funcsrc = fmt("function() return %s end", tconcat(entries, " .. '|r, ' .. "))
+                    action.keywords_printer = TJ:LoadFunctionString(funcsrc:gsub('THIS_SPELL', action.action), action.key)
+                end
+                setfenv(action.keywords_printer, env)
+                Debug("\n%s|r", action.keywords_printer())
+            end
+
+            if action.action == "variable" then
+                -- Execute the variable value function with the current state
+                setfenv(action.value_func, env)
+                local status, ret = pcall(action.value_func)
+                -- If we got a failure, then print out in the debugging and console
+                if not status then
+                    Debug("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullvaluefuncsrc)
+                    internal.error(internal.fmt("Error executing variable function:\n------\n%s\n------\n%s\n------", ret, action.fullvaluefuncsrc))
                 else
-                    -- We have an ability, so send it back
-                    Debug("|cFF99FF99%s ==> '|cFF00FF00%s|cFF99FF99': %s|r", action.key, action.action, action.fullconditionfuncsrc)
-                    return action.action
+                    -- Update the value
+                    env.variable[action.params.name] = ret
+                    Debug("|cFFFF99FF%s ==> |cFFDD00FF%s = %s|cFFFF99FF: %s|r", action.key, action.params.name, tostring(ret), action.fullvaluefuncsrc)
+                end
+                -- Validate that it isn't blacklisted, and there's a valid check function
+            elseif action.condition_func then -- We have a valid check function
+                -- Execute the check function with the current state
+                setfenv(action.condition_func, env)
+                local status, ret = pcall(action.condition_func)
+                -- If we got a failure, then print out in the debugging and console
+                if not status then
+                    Debug("|cFFFF0000%s (ERROR EXECUTING): %s|r", action.key, action.fullconditionfuncsrc)
+                    internal.error(internal.fmt("Error executing condition function:\n------\n%s\n------\n%s\n------", ret, action.fullconditionfuncsrc))
+                elseif ret == false then
+                    -- Ran correctly, but the condition failed...
+                    Debug("|r%s: %s", action.key, action.fullconditionfuncsrc)
+                elseif ret == true then
+                    -- If the condition succeeded....
+                    if action.action == 'call_action_list' or action.action == 'run_action_list' then
+                        -- ...we're running another action list, so run that recursively
+                        Debug("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.params.name, action.fullconditionfuncsrc)
+                        local action = self:ExecuteActionProfileList(action.params.name)
+                        if action then
+                            return action
+                        end
+                    else
+                        -- We have an ability, so send it back
+                        Debug("|cFF99FF99%s ==> '|cFF00FF00%s|cFF99FF99': %s|r", action.key, action.action, action.fullconditionfuncsrc)
+                        return action.action
+                    end
                 end
             end
+        else
+        -- Debug("|cFFCC9999%s (blacklisted): %s|r", action.key, action.fullconditionfuncsrc)
         end
 
         if action.params.debug then

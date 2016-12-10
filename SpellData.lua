@@ -29,6 +29,9 @@ local GetSpellTabInfo = GetSpellTabInfo
 local GetTalentInfo = GetTalentInfo
 local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
 local IsPassiveSpell = IsPassiveSpell
+local IsRightAltKeyDown = IsRightAltKeyDown
+local IsRightControlKeyDown = IsRightControlKeyDown
+local IsRightShiftKeyDown = IsRightShiftKeyDown
 local IsTalentSpell = IsTalentSpell
 local LearnTalent = LearnTalent
 local C_ArtifactUI = C_ArtifactUI
@@ -165,7 +168,7 @@ function TJ:DetectAbilitiesFromSpellBook()
             local talentID, name = GetTalentInfo(tier, column, GetActiveSpecGroup())
             if talentID and name then
                 abilities[slug(name)] = abilities[slug(name)] or {}
-                abilities[slug(name)].TalentIDs = { tier, column }
+                abilities[slug(name)].TalentID = talentID
                 abilities[slug(name)].IsTalent = true
             end
         end
@@ -291,7 +294,7 @@ function TJ:ShowSpellExportWindow()
                 end
                 line = line .. fmt('SpellIDs = { %s }, ', tconcat(ids, ", "))
             end
-            if v.TalentIDs then line = line .. fmt('TalentIDs = { %d, %d }, ', v.TalentIDs[1], v.TalentIDs[2]) end
+            if v.TalentID then line = line .. fmt('TalentID = %d, ', v.TalentID) end
             line = line .. '},'
             addline(line)
         end

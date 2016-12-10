@@ -20,7 +20,7 @@ local wipe = wipe
 local GetActiveSpecGroup = GetActiveSpecGroup
 local GetSpellInfo = GetSpellInfo
 local GetSpellLevelLearned = GetSpellLevelLearned
-local GetTalentInfo = GetTalentInfo
+local GetTalentInfoByID = GetTalentInfoByID
 local UnitSpellHaste = UnitSpellHaste
 
 internal.Safety()
@@ -112,12 +112,10 @@ end
 local function addActionTalentFields(action)
     -- Add the 'talent_enabled' entry if there are talent IDs present
     if type(action) == 'table' then
-        if rawget(action, 'TalentIDs') then
+        if rawget(action, 'TalentID') then
             action.talent_enabled = function(spell, env)
-                return select(4, GetTalentInfo(spell.TalentIDs[1], spell.TalentIDs[2], GetActiveSpecGroup())) and true or false
+                return select(10, GetTalentInfoByID(spell.TalentID)) and true or false
             end
-        else
-            action.talent_enabled = false
         end
     end
 end
@@ -205,6 +203,34 @@ local function addActionAuraFields(action)
             action.aura_react = function(spell, env) return spell.aura_up and true or false end
             action.aura_stack = function(spell, env) return spell.auraCount or 0 end
         end
+    end
+end
+
+local function addMissingFields(action)
+    if type(action) == 'table' then
+        if not rawget(action, 'talent_enabled') then action.talent_enabled = false end
+
+        if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
+
+        if not rawget(action, 'cooldown_remains') then action.cooldown_remains = 99999 end
+        if not rawget(action, 'cooldown_ready') then action.cooldown_ready = false end
+        if not rawget(action, 'cooldown_up') then action.cooldown_up = false end
+        if not rawget(action, 'cooldown_down') then action.cooldown_down = false end
+        if not rawget(action, 'cooldown_react') then action.cooldown_react = false end
+        if not rawget(action, 'cooldown_charges') then action.cooldown_charges = 0 end
+        if not rawget(action, 'cooldown_charges_fractional') then action.cooldown_charges_fractional = 0 end
+
+        if not rawget(action, 'spell_charges') then action.spell_charges = 0 end
+        if not rawget(action, 'spell_charges_fractional') then action.spell_charges_fractional = 0 end
+        if not rawget(action, 'spell_max_charges') then action.spell_max_charges = 0 end
+        if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 0 end
+
+        if not rawget(action, 'aura_remains') then action.aura_remains = 0 end
+        if not rawget(action, 'aura_up') then action.aura_up = false end
+        if not rawget(action, 'aura_down') then action.aura_down = true end
+        if not rawget(action, 'aura_ticking') then action.aura_ticking = false end
+        if not rawget(action, 'aura_react') then action.aura_react = false end
+        if not rawget(action, 'aura_stack') then action.aura_stack = 0 end
     end
 end
 
@@ -320,7 +346,7 @@ function TJ:RegisterPlayerClass(config)
         profile.guessed = TJ:DetectAbilitiesFromSpellBook()
         local guessed = profile.guessed
 
-        -- Loop through each of the guessed abilities, and attempt to match up the AbilityID or the TalentIDs
+        -- Loop through each of the guessed abilities, and attempt to match up the AbilityID or the TalentID
         for k1,v1 in pairs(guessed) do
             for k2,v2 in pairs(actions) do
                 local match = false
@@ -336,8 +362,8 @@ function TJ:RegisterPlayerClass(config)
                     end
                 end
                 -- Match against talents
-                a1, a2 = v1.TalentIDs, rawget(v2, 'TalentIDs')
-                if a1 and a2 and a1[1] == a2[1] and a1[2] == a2[2] then
+                a1, a2 = v1.TalentID, rawget(v2, 'TalentID')
+                if type(a1) == 'number' and type(a2) == 'number' and a1 == a2 then
                     match = true
                 end
                 -- We got a match, merge the tables
@@ -459,7 +485,7 @@ function TJ:RegisterPlayerClass(config)
                 addActionChargesFields(v, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
 
                 -- Update the spell_can_cast function if talents are specified
-                if rawget(v, 'TalentIDs') then
+                if rawget(v, 'TalentID') then
                     v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. ' and (spell.talent_enabled)'
                 end
 
@@ -489,6 +515,9 @@ function TJ:RegisterPlayerClass(config)
 
             -- Add aura-specific functions
             addActionAuraFields(v)
+
+            -- Deal with anything missing
+            addMissingFields(v)
 
         end
 

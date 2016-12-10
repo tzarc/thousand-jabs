@@ -8,6 +8,9 @@ local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 
+local co_create = coroutine.create
+local co_status = coroutine.status
+local co_resume = coroutine.resume
 local pairs = pairs
 local select = select
 local NewTicker = C_Timer.NewTicker
@@ -124,16 +127,16 @@ end
 
 local commandQueue = {}
 function TJ:ExecuteFuncAsCoroutine(funcToExec)
-    local th = coroutine.create(funcToExec)
+    local th = co_create(funcToExec)
     commandQueue[th] = true
     self:QueueUpdate()
 end
 function TJ:RunFuncCoroutines()
     for th in pairs(commandQueue) do
-        if coroutine.status(th) == "dead" then
+        if co_status(th) == "dead" then
             commandQueue[th] = nil
         else
-            coroutine.resume(th)
+            co_resume(th)
         end
         self:QueueUpdate()
     end
