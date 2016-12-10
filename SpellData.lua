@@ -6,6 +6,7 @@ local fmt = internal.fmt
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
 local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
+local co_yield = coroutine.yield
 local real_G = _G
 local mfloor = math.floor
 local pairs = pairs
@@ -16,6 +17,7 @@ local tinsert = table.insert
 local tonumber = tonumber
 local CreateFrame = CreateFrame
 local GetActiveSpecGroup = GetActiveSpecGroup
+local GetBuildInfo = GetBuildInfo
 local GetFlyoutInfo = GetFlyoutInfo
 local GetFlyoutSlotInfo = GetFlyoutSlotInfo
 local GetMaxTalentTier = GetMaxTalentTier
@@ -138,6 +140,7 @@ local blacklistedExportedAbilities = {
     'path_of_the_shadopan',
     'path_of_the_stout_brew',
     'quaking_palm',
+    'revive_battle_pets',
     'zen_pilgrimage',
     'zen_pilgrimage_return',
 }
@@ -230,9 +233,9 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                     LearnTalent(GetTalentInfoBySpecialization(specID, i, allPermutations[perm][i]))
                 end
                 TJ:DetectAbilitiesFromSpellBook()
-                coroutine.yield()
+                co_yield()
                 TJ:DetectAbilitiesFromSpellBook()
-                coroutine.yield()
+                co_yield()
 
                 if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
                     canceled = true
@@ -245,9 +248,9 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                     if column ~= talents[row] then
                         LearnTalent(GetTalentInfoBySpecialization(specID, row, column))
                         TJ:DetectAbilitiesFromSpellBook()
-                        coroutine.yield()
+                        co_yield()
                         TJ:DetectAbilitiesFromSpellBook()
-                        coroutine.yield()
+                        co_yield()
                     end
                 end
 
@@ -262,9 +265,9 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         for row=1,GetMaxTalentTier() do
             LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row]))
             TJ:DetectAbilitiesFromSpellBook()
-            coroutine.yield()
+            co_yield()
             TJ:DetectAbilitiesFromSpellBook()
-            coroutine.yield()
+            co_yield()
         end
 
         -- Show the spell export window
@@ -281,12 +284,16 @@ function TJ:ShowSpellExportWindow()
         export = fmt("%s\n%s", export, fmt(...))
     end
 
+    local gameVersion = GetBuildInfo()
+
     -- Ability IDs
     addline("-- exported with /tj _esd")
-    addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
+    addline("local %s_abilities_exported = {}", select(2, GetSpecializationInfo(GetSpecialization())):lower())
+    addline("if TJ:MatchesBuild('%s', '%s') then", gameVersion, gameVersion)
+    addline("    %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
     for k,v in internal.orderedpairs(definedAbilities) do
         if not tcontains(blacklistedExportedAbilities, k) then
-            local line = fmt('    %s = { ', k)
+            local line = fmt('        %s = { ', k)
             if v.KeyedSpellIDs then
                 local ids = {}
                 for id in internal.orderedpairs(v.KeyedSpellIDs) do
@@ -299,22 +306,8 @@ function TJ:ShowSpellExportWindow()
             addline(line)
         end
     end
-    addline("}")
-    addline("")
-
-    -- Artifact traits
-    -- /run for p=1,1500 do local spellId,_,_,maxRank,_,x,y,_,isStart,isGoldMedal,isFinal = C_ArtifactUI.GetPowerInfo(p); if (spellId ~= nil) then print(p, GetSpellInfo(spellId), maxRank, x, y, isStart, isGoldMedal, isFinal) end end
-    addline("local artifact_traits_list = {")
-    for traitId=1,1500 do
-        local traitData = { C_ArtifactUI.GetPowerInfo(traitId) }
-        local spellId = traitData[1]
-        local isAbility = traitData[8]
-        if spellId ~= nil and isAbility then
-            local name = GetSpellInfo(spellId)
-            addline("    { %d, %d, \"%s\" },", traitId, spellId, name or '')
-        end
-    end
-    addline("}")
+    addline("    }")
+    addline("end")
     addline("")
 
     -- Display the exported data

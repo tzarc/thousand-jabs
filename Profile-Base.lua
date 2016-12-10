@@ -524,7 +524,9 @@ function TJ:RegisterPlayerClass(config)
         -- Update the mapping from the detected actions from spellbook to match what simc APLs expect
         if config.simc_mapping then
             for k,v in pairs(config.simc_mapping) do
-                actions[k] = actions[v]
+                if rawget(actions, v) then
+                    actions[k] = actions[v]
+                end
             end
         end
     end

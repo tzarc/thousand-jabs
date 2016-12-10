@@ -244,7 +244,7 @@ local function StateResetPrototype(self)
     end
 
     -- Set the initial parameters
-    env.ptr = false
+    env.ptr = TJ:MatchesBuild('7.1.5')
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
