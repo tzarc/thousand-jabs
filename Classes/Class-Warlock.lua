@@ -286,8 +286,8 @@ TJ:RegisterPlayerClass({
     },
     blacklisted = {},
     config_checkboxes = {
-        lord_of_flames_selected = true,
-        conflagration_of_chaos_selected = true,
+        lord_of_flames_selected = false,
+        conflagration_of_chaos_selected = false,
     },
     conditional_substitutions = {
         { "soul_shard", "soul_shards" },

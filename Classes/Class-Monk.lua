@@ -409,8 +409,8 @@ TJ:RegisterPlayerClass({
         'spear_hand_strike',
     },
     config_checkboxes = {
-        gale_burst_selected = true,
-        strike_of_the_windlord_selected = true,
+        gale_burst_selected = false,
+        strike_of_the_windlord_selected = false,
     },
     simc_mapping = { -- simc_name = "equivalent_parsed_ingame_table_name"
         invoke_xuen = "invoke_xuen_the_white_tiger",

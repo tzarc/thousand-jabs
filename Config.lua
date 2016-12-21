@@ -399,7 +399,9 @@ AC:RegisterOptionsTable(addonName, function()
                         order = order,
                         name = e,
                         get = function(info)
-                            return Config:Get("class", classID, "spec", specID, "config", e) and true or false
+                            local r = Config:Get("class", classID, "spec", specID, "config", e)
+                            if type(r) == "nil" then return v end
+                            return r and true or false
                         end,
                         set = function(info, val)
                             Config:Set(val and true or false, "class", classID, "spec", specID, "config", e)

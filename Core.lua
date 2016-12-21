@@ -196,6 +196,45 @@ function internal.orderedpairs(t, f)
     return iter
 end
 
+local function scope_exit(self, f)
+    local e = TableCache:Acquire()
+    e.type = "exit"
+    e.func = f
+    self[1+#self] = e
+end
+
+local function scope_success(self, f)
+    local e = TableCache:Acquire()
+    e.type = "success"
+    e.func = f
+    self[1+#self] = e
+end
+
+local function scope_fail(self, f)
+    local e = TableCache:Acquire()
+    e.type = "fail"
+    e.func = f
+    self[1+#self] = e
+end
+
+local function scope_finalise(scope, success, ...)
+    for i = #scope,1,-1 do
+        if (scope[i].type == "exit") or (scope[i].type == "success" and success) or (scope[i].type == "fail" and not success) then
+            pcall(scope[i].func)
+        end
+    end
+    TableCache:Release(scope)
+    return success, ...
+end
+
+function internal.scoped(f, ...)
+    local scope = TableCache:Acquire()
+    scope.exit = scope_exit
+    scope.success = scope_success
+    scope.fail = scope_fail
+    return scope_finalise(scope, pcall(f, scope, ...))
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Debugging
 ------------------------------------------------------------------------------------------------------------------------

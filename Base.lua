@@ -4,6 +4,7 @@ local Debug = internal.Debug
 local fmt = internal.fmt
 local Config = TJ:GetModule('Config')
 local Profiling = TJ:GetModule('Profiling')
+local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 

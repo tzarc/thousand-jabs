@@ -266,7 +266,7 @@ TJ:RegisterPlayerClass({
     },
     blacklisted = {},
     config_checkboxes = {
-        fiery_demise_selected = true,
+        fiery_demise_selected = false,
     },
     conditional_substitutions = {
         { "in_flight", "infernal_strike.in_flight" },
@@ -394,6 +394,9 @@ local havoc_base_overrides = {
         AuraApplied = 'momentum',
         AuraApplyLength = 10,
         PerformCast = function(spell,env)
+            if env.fel_mastery.talent_enabled then
+                env.fury.gained = env.fury.gained + 25
+            end
             env.movement.distance = 5 -- melee
         end,
     },
@@ -409,7 +412,7 @@ local havoc_base_overrides = {
             env.fury.gained = env.fury.gained + 8 -- 40fury/5sec
             env.momentum.expirationTime = env.currentTime + 3
             env.prepared.expirationTime = env.currentTime + 5
-            env.movement.distance = 20 -- not melee
+            env.movement.distance = Config:GetSpec("ignore_fr_vr_range") and 5 or 20
         end,
     },
     metamorphosis = {
@@ -426,8 +429,13 @@ local havoc_base_overrides = {
         AuraMine = true,
     },
     felblade = {
+        fury_gain = 30,
         CanCast = function(spell,env)
             return env.movement.distance <= 15
+        end,
+        PerformCast = function(spell,env)
+            env.movement.distance = 5 -- melee
+            env.fury.gained = env.fury.gained + spell.fury_gain
         end,
     },
     momentum = {
@@ -468,7 +476,7 @@ local havoc_hooks = {
         OnStateInit = function(env)
             -- we need to override the range after resetting the state, otherwise we get 'wait' and other inconsistencies
             if env.prev_gcd.vengeful_retreat then
-                env.movement.distance = 20
+                env.movement.distance = Config:GetSpec("ignore_fr_vr_range") and 5 or 20
             end
             if env.prev_gcd.fel_rush then
                 env.movement.distance = 5
@@ -511,8 +519,9 @@ TJ:RegisterPlayerClass({
         'pick_up_fragment',
     },
     config_checkboxes = {
-        demon_speed_selected = true,
-        anguish_of_the_deceiver_selected = true,
+        demon_speed_selected = false,
+        anguish_of_the_deceiver_selected = false,
+        ignore_fr_vr_range = false,
     },
     conditional_substitutions = {
         { " death_sweep_worth_using ", " death_sweep.worth_using " },
