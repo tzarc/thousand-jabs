@@ -3,6 +3,8 @@ local TJ = internal.TJ
 local Debug = internal.Debug
 local fmt = internal.fmt
 
+local LSD = LibStub("LibSerpentDump")
+
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
 local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
@@ -10,11 +12,13 @@ local co_yield = coroutine.yield
 local real_G = _G
 local mfloor = math.floor
 local pairs = pairs
+local pcall = pcall
 local select = select
 local tconcat = table.concat
 local tcontains = tContains
 local tinsert = table.insert
 local tonumber = tonumber
+local type = type
 local CreateFrame = CreateFrame
 local GetActiveSpecGroup = GetActiveSpecGroup
 local GetBuildInfo = GetBuildInfo
@@ -24,6 +28,7 @@ local GetMaxTalentTier = GetMaxTalentTier
 local GetNumSpellTabs = GetNumSpellTabs
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
+local GetSpellBaseCooldown = GetSpellBaseCooldown
 local GetSpellBookItemInfo = GetSpellBookItemInfo
 local GetSpellBookItemName = GetSpellBookItemName
 local GetSpellInfo = GetSpellInfo
@@ -331,10 +336,16 @@ function TJ:GetTooltipEntries(link)
     local entries = {}
 
     local function checkadd(x)
-        if x then
-            local xt = x:GetText()
+        local frm = real_G[tooltipName..x]
+        local errfun = function(e)
+            internal.error(fmt('Could not retrieve info from frame "%s", %s', tooltipName..x, e), fmt('Could not retrieve info from frame "%s", %s', tooltipName..x, e))
+        end
+        if type(frm) == 'nil' then
+            errfun('Frame was nil')
+        else
+            local xt = frm:GetText()
             if xt ~= "" then
-                local e = { t = xt or "", c = {x:GetTextColor()} }
+                local e = { t = xt or "", c = {frm:GetTextColor()} }
                 e.cb = { mfloor(e.c[1]*256), mfloor(e.c[2]*256), mfloor(e.c[3]*256) }
                 entries[1+#entries] = e
             end
@@ -342,8 +353,8 @@ function TJ:GetTooltipEntries(link)
     end
 
     for i = 1, tts:NumLines() do
-        checkadd(real_G[tooltipName..'TextLeft'..i])
-        checkadd(real_G[tooltipName..'TextRight'..i])
+        checkadd('TextLeft'..i)
+        checkadd('TextRight'..i)
     end
 
     return entries
@@ -454,30 +465,25 @@ local function extract_number(str)
     return tonumber(vals[1]) + tonumber(vals[2])
 end
 
-function TJ:GetSpellCooldown(spellID)
-    local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
+local function get_spell_cooldown_or_recharge(spellID, patterns)
+    local entries = TJ:GetTooltipEntries(fmt('spell:%d', spellID))
     for _,e in pairs(entries) do
-        for k,v in pairs(CooldownPatterns) do
+        for k,v in pairs(patterns) do
             local r = e.t:match(v[2])
             if r then
-                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
+                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb), { result = r, matchtext = e.t, tooltip = entries, pattern = v }
             end
         end
     end
     return 0
 end
 
+function TJ:GetSpellCooldown(spellID)
+    return get_spell_cooldown_or_recharge(spellID, CooldownPatterns)
+end
+
 function TJ:GetSpellRechargeTime(spellID)
-    local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
-    for _,e in pairs(entries) do
-        for k,v in pairs(RechargePatterns) do
-            local r = e.t:match(v[2])
-            if r then
-                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb)
-            end
-        end
-    end
-    return 0
+    return get_spell_cooldown_or_recharge(spellID, RechargePatterns)
 end
 
 -- /dump tj:ScanTooltip('spell:188501', function(t) print(t) end, nil, { 255, 210, 0 })

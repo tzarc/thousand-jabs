@@ -66,6 +66,7 @@ local GetSpecializationInfo = GetSpecializationInfo
 local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
 local InCombatLockdown = InCombatLockdown
 local UnitClass = UnitClass
+local UnitEffectiveLevel = UnitEffectiveLevel
 local UnitLevel = UnitLevel
 
 local debugLines = {}
@@ -347,6 +348,7 @@ function TJ:GenerateDebuggingInformation()
         ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
         base = {
             playerLevel = UnitLevel('player'),
+            playerEffectiveLevel = UnitEffectiveLevel('player'),
             classInfo = tconcat({ UnitClass('player') }, ' | '),
             specInfo = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
             talentInfo = tierSelections(),
@@ -376,13 +378,14 @@ function TJ:GenerateDebuggingInformation()
     if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
         export.frame.position[2] = export.frame.position[2]:GetName()
     end
-    return internal.fmt(addonName .. " Diagnostic Information:\n%s", LSD(export))
+    return export
 end
 
 function TJ:ExportDebuggingInformation()
     if InCombatLockdown() then
         self:Print("In combat, cannot open debug information window.")
     else
-        self:OpenDebugWindow(addonName .. ' Diagnostic Information', TJ:GenerateDebuggingInformation())
+        local export = TJ:GenerateDebuggingInformation()
+        self:OpenDebugWindow(addonName .. ' Diagnostic Information', internal.fmt(addonName .. " Diagnostic Information:\n%s", LSD(export)))
     end
 end

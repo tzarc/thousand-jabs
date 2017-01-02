@@ -21,7 +21,10 @@ local GetActiveSpecGroup = GetActiveSpecGroup
 local GetSpellInfo = GetSpellInfo
 local GetSpellLevelLearned = GetSpellLevelLearned
 local GetTalentInfoByID = GetTalentInfoByID
+local IsSpellInRange = IsSpellInRange
+local UnitLevel = UnitLevel
 local UnitSpellHaste = UnitSpellHaste
+local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 
 internal.Safety()
 
@@ -123,6 +126,7 @@ end
 local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffectedByHaste)
     if type(action) == 'table' then
         action.FullCooldownSecs = fullCooldownSecs
+        action.IsCooldownAffectedByHaste = isCooldownAffectedByHaste
         if fullCooldownSecs and fullCooldownSecs > 0 then
             if isCooldownAffectedByHaste then
                 action.CooldownTime = function(spell,env) return env.playerHasteMultiplier * fullCooldownSecs end
@@ -148,6 +152,8 @@ end
 local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
     if type(action) == 'table' then
         action.FullRechargeSecs = fullRechargeSecs
+        action.IsRechargeAffectedByHaste = isRechargeAffectedByHaste
+        action.UsesSpellCountForCharges = usesSpellCountForCharges
         if fullRechargeSecs and fullRechargeSecs > 0 then
             if isRechargeAffectedByHaste then
                 action.RechargeTime = function(spell,env) return env.playerHasteMultiplier * fullRechargeSecs end
@@ -208,6 +214,9 @@ end
 
 local function addMissingFields(action)
     if type(action) == 'table' then
+        if not rawget(action, 'last_cast') then action.time_since_last_cast = 0 end
+        if not rawget(action, 'time_since_last_cast') then action.time_since_last_cast = 99999 end
+
         if not rawget(action, 'talent_enabled') then action.talent_enabled = false end
 
         if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
@@ -469,12 +478,14 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Add any fields required for cooldowns
-                local cooldownSecs, isCooldownAffectedByHaste = TJ:GetSpellCooldown(v.AbilityID)
+                local cooldownSecs, isCooldownAffectedByHaste, matched = TJ:GetSpellCooldown(v.AbilityID)
+                v.cooldown_tt_secs, v.cooldown_tt_match = type(cooldownSecs) ~= 'nil' and cooldownSecs or 'nil', matched
                 local fullCooldownSecs = (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or 0
                 addActionCooldownFields(v, fullCooldownSecs, isCooldownAffectedByHaste)
 
                 -- Get the recharge time
-                local rechargeSecs, isRechargeAffectedByHaste = TJ:GetSpellRechargeTime(v.AbilityID)
+                local rechargeSecs, isRechargeAffectedByHaste, matched = TJ:GetSpellRechargeTime(v.AbilityID)
+                v.recharge_tt_secs, v.recharge_tt_match = type(rechargeSecs) ~= 'nil' and rechargeSecs or 'nil', matched
                 local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
                 -- Check if this has charges that use GetSpellCount()
                 local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount') and true or false

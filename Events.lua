@@ -33,7 +33,7 @@ function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
-function TJ:PLAYER_ENTERING_WORLD(eventName)
+function TJ:ZONE_CHANGED(eventName)
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
     -- Deactivate the current profile

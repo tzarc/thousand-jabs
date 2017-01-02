@@ -8,6 +8,8 @@ local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 
+local LSD = LibStub('LibSerpentDump')
+
 local co_create = coroutine.create
 local co_status = coroutine.status
 local co_resume = coroutine.resume
@@ -290,7 +292,6 @@ function TJ:DeactivateProfile()
     TJ:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
     TJ:UnregisterEvent('PLAYER_TALENT_UPDATE')
     TJ:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-    TJ:UnregisterEvent('PLAYER_ENTERING_WORLD')
     TJ:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
     TJ:UnregisterEvent('PLAYER_TARGET_CHANGED')
     TJ:UnregisterEvent('PLAYER_REGEN_DISABLED')
@@ -317,6 +318,13 @@ function TJ:ExecuteAllActionProfiles()
     Debug("|cFFFFFFFFSingle Target|r")
     -- Calculate the single-target profiles
     self.st_state:Reset()
+    if self.needExportCurrentProfile then
+        self.needExportCurrentProfile = nil
+        local dbg = self:GenerateDebuggingInformation()
+        local actionsTable = self.st_state:ExportActionsTable()
+        self:OpenDebugWindow(addonName..' Current profile', LSD({dbg=dbg, actions=actionsTable}))
+    end
+
     local action = self.st_state:PredictNextAction() or "wait"
     UI:SetActionTexture(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon)
     action = self.st_state:PredictActionFollowing(action) or "wait"
@@ -356,7 +364,10 @@ Profiling:ProfileFunction('ExecuteAllActionProfiles')
 function TJ:OnEnable()
     -- Add event listeners
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED')
-    self:RegisterEvent('PLAYER_ENTERING_WORLD')
+    self:RegisterEvent('ZONE_CHANGED')
+    self:RegisterEvent('ZONE_CHANGED_INDOORS', 'ZONE_CHANGED')
+    self:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'ZONE_CHANGED')
+    self:RegisterEvent('PLAYER_ENTERING_WORLD', 'ZONE_CHANGED')
     self:RegisterEvent('SPELLS_CHANGED')
 
     -- Create the UI
@@ -408,6 +419,9 @@ function TJ:OnDisable()
     -- Remove event listeners
     self:UnregisterEvent('SPELLS_CHANGED')
     self:UnregisterEvent('PLAYER_ENTERING_WORLD')
+    self:UnregisterEvent('ZONE_CHANGED_NEW_AREA')
+    self:UnregisterEvent('ZONE_CHANGED_INDOORS')
+    self:UnregisterEvent('ZONE_CHANGED')
     self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED')
 end
 

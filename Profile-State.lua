@@ -436,6 +436,31 @@ local function StateExecuteActionProfileListPrototype(self, listname)
     end
 end
 
+-- Export the actions table
+local function exportVisitor(env, ctx, t)
+    local out = {}
+    for k,v in pairs(t) do
+        local key = ctx and ctx:len() > 0 and fmt("%s.%s", ctx, k) or k
+        if type(v) == "table" then
+            out[k] = exportVisitor(env, key, v)
+        elseif type(v) == "function" then
+            local funcsrc = fmt("function() return %s end", key)
+            local func = TJ:LoadFunctionString(funcsrc, key)
+            setfenv(func, env)
+            local ok, ret = pcall(func)
+            out[k] = (not ok) and { error = ret } or ret
+        else
+            out[k] = v
+        end
+    end
+    return out
+end
+local function StateExportActionsTablePrototype(self)
+    local env = self.env
+    local output = exportVisitor(env, nil, self.profile.actions)
+    return output
+end
+
 function TJ:CreateNewState(numTargets)
 
     local profile = TJ:GetActiveProfile()
@@ -473,6 +498,10 @@ function TJ:CreateNewState(numTargets)
     -- Execute an action profile list and get the resulting action
     state.ExecuteActionProfileList = StateExecuteActionProfileListPrototype
     Profiling:ProfileFunction(state, 'ExecuteActionProfileList', 'state:ExecuteActionProfileList')
+
+    -- Export the actions table
+    state.ExportActionsTable = StateExportActionsTablePrototype
+    Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
 
     -- Reset the state by default, populating with initial data
     state:Reset()

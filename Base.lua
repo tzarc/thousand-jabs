@@ -185,6 +185,9 @@ function TJ:ConsoleCommand(args)
             self:Print('Blacklist |cFFFF6600%s|r=|cFFFFCC00%s|r', argv[2], tostring(newvalue))
             self:QueueUpdate()
         end
+    elseif argv[1] == '_rp' then
+        self:DeactivateProfile()
+        self:ActivateProfile()
     elseif argv[1] == "_dbg" then
         if Config:Get("do_debug") then
             Config:Set(false, "do_debug")
@@ -212,7 +215,7 @@ function TJ:ConsoleCommand(args)
         self:ExportAbilitiesFromSpellBook()
     elseif argv[1] == '_dcp' then
         if self.currentProfile then
-            self:OpenDebugWindow(addonName..' Current profile', LSD(self.currentProfile))
+            self.needExportCurrentProfile = true
         end
     else
         self:Print('%s chat commands:', addonName)
