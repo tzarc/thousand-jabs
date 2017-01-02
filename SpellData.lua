@@ -330,6 +330,7 @@ tts:AddFontStrings(ttsl1, ttsr1)
 tts:SetOwner(UIParent, "ANCHOR_NONE")
 
 function TJ:GetTooltipEntries(link)
+    tts:SetOwner(UIParent, "ANCHOR_NONE")
     tts:ClearLines()
     tts:SetHyperlink(link)
     local tooltipName = tts:GetName()
@@ -434,7 +435,7 @@ for _,v in pairs(DurationChecks) do
 end
 
 function TJ:GetSpellCost(spellID)
-    local entries = self:GetTooltipEntries(fmt('spell:%d', spellID))
+    local entries = self:GetTooltipEntries(fmt('|cff71d5ff|Hspell:%d|h[spell%d]|h|r', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(PowerPatterns) do
             local a, b, c = e.t:match(v[2])
