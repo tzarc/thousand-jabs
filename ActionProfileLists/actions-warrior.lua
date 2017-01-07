@@ -154,7 +154,6 @@ actions.prot+=/shield_block,if=!buff.neltharions_fury.up&(cooldown.shield_slam.r
 actions.prot+=/shield_slam,if=!(cooldown.shield_block.remains<=gcd.max*2&!buff.shield_block.up&talent.heavy_repercussions.enabled)
 actions.prot+=/revenge,if=cooldown.shield_slam.remains<=gcd.max*1.5|spell_targets.revenge>=2
 actions.prot+=/ignore_pain,if=(rage>=60&!talent.vengeance.enabled)|(buff.vengeance_ignore_pain.up&rage>=39)|(talent.vengeance.enabled&!buff.ultimatum.up&!buff.vengeance_ignore_pain.up&!buff.vengeance_focused_rage.up&rage<30)
-actions.prot+=/focused_rage,if=(buff.vengeance_focused_rage.up&!buff.vengeance_ignore_pain.up&rage>=59)|(buff.ultimatum.up&!buff.vengeance_ignore_pain.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_focused_rage.up&rage>=69)|(rage>=100)
 actions.prot+=/thunder_clap,if=spell_targets.thunder_clap>=4
 actions.prot+=/devastate
 ]]
