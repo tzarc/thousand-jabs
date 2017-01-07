@@ -90,8 +90,9 @@ function TJ:PLAYER_TALENT_UPDATE(eventName)
 end
 
 function TJ:PLAYER_REGEN_ENABLED(eventName)
-    -- Reset the last autoattack
-    self.lastAutoAttack = 0
+    -- Reset the last autoattacks
+    self.lastMainhandAttack = 0
+    self.lastOffhandAttack = 0
     -- Reset combat
     self.combatStart = 0
     -- Wipe out all the cast times when combat ends
@@ -104,7 +105,8 @@ end
 
 function TJ:PLAYER_REGEN_DISABLED(eventName)
     -- Reset the last autoattack
-    self.lastAutoAttack = GetTime()
+    self.lastMainhandAttack = GetTime()
+    self.lastOffhandAttack = GetTime()
     -- Start combat
     self.combatStart = GetTime()
     -- Notify the profile
@@ -118,7 +120,9 @@ function TJ:PLAYER_TARGET_CHANGED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
+    local combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = ...
+
     --[[ Not working?
     -- Check if the player has received any damage, and update the last incoming damage time
     if destGUID == playerGUID then
@@ -161,11 +165,20 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideC
     if self.currentProfile then
         local handler = rawget(self.currentProfile, eventName)
         if handler then
-            handler(self.currentProfile, eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+            handler(self.currentProfile, eventName, timeStamp, ...)
         end
     end
 
-    if sourceGUID == playerGUID and combatEvent == 'SWING_DAMAGE' then
+    if sourceGUID == playerGUID and combatEvent:sub(1,5) == 'SWING' then
+        local wasOffhand = arg21 and true or false
+        if combatEvent == 'SWING_MISSED' then wasOffhand = true end
+
+        if wasOffhand then
+            self.lastOffhandAttack = GetTime()
+        else
+            self.lastMainhandAttack = GetTime()
+        end
+
         -- We succeeded in an auto-attack, save the timestamp
         self.lastAutoAttack = GetTime()
     end

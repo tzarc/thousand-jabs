@@ -211,6 +211,13 @@ local function IsArmsWarrior()
     end
 end
 
+local function IsHavoc()
+    local classID, specID = select(3, UnitClass('player')), GetSpecialization()
+    if classID == 12 and specID == 1 then
+        return true
+    end
+end
+
 internal.resources = {
     mana = {
         sampled = function(power, env) return (UnitPower('player', SPELL_POWER_MANA) or 0) end,
@@ -262,10 +269,10 @@ internal.resources = {
         gained = 0,
         gained_from_autoattacks = function(spell,env)
             if IsArmsWarrior() then
+                local now = GetTime()
                 local swingspeed = UnitAttackSpeed('player')
-                if TJ.lastAutoAttack < GetTime() - swingspeed then TJ.lastAutoAttack = GetTime() end
-                local predicted = mfloor((env.currentTime - TJ.lastAutoAttack) / swingspeed)
-                --Debug("Current time: %.3f, last auto-attack: %.3f, time difference: %.3f", env.currentTime, TJ.lastAutoAttack, (env.currentTime - TJ.lastAutoAttack))
+                if TJ.lastMainhandAttack < now - swingspeed then TJ.lastMainhandAttack = now end
+                local predicted = mfloor((env.currentTime - TJ.lastMainhandAttack) / swingspeed)
                 predicted = (predicted > 0) and predicted or 0
                 return predicted * 25
             end
@@ -289,9 +296,25 @@ internal.resources = {
     },
     fury = {
         sampled = function(power,env) return (UnitPower('player', SPELL_POWER_FURY) or 0) end,
-        gained = 0,
         spent = 0,
-        curr = function(power,env) return power.sampled - power.spent + power.gained end,
+        gained = 0,
+        gained_from_autoattacks = function(spell,env)
+            if IsHavoc() and env.demon_blades.talent_enabled then
+                local now = GetTime()
+                local mh_speed, oh_speed = UnitAttackSpeed('player')
+                if TJ.lastMainhandAttack < now - mh_speed then TJ.lastMainhandAttack = now end
+                if TJ.lastOffhandAttack < now - oh_speed then TJ.lastOffhandAttack = now end
+                local mh_swings = mfloor((env.currentTime - TJ.lastMainhandAttack) / mh_speed)
+                local oh_swings = mfloor((env.currentTime - TJ.lastOffhandAttack) / oh_speed)
+                local fury_per_swing = 13 -- Lowball this, range is 12-20 or something
+                if env.equipped[137038] then -- Anger of the Half-Giants, adds 1-14
+                    fury_per_swing = fury_per_swing + 6 -- Another estimation
+                end
+                return (mh_swings + oh_swings) * fury_per_swing
+            end
+            return 0
+        end,
+        curr = function(power,env) return power.sampled - power.spent + power.gained + power.gained_from_autoattacks end,
         max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_FURY) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,

@@ -372,13 +372,26 @@ end
 
 local havoc_base_overrides = {
     demons_bite = {
-        fury_gain = 23, -- 20-30, err on the side of caution
+        fury_gain = 23, -- 20-30, err on the side of caution, needs to be modified by AotHG (see demon_blades below)
         CanCast = function(spell,env)
             return env.melee.in_range
         end,
         PerformCast = function(spell, env)
             env.fury.gained = env.fury.gained + spell.fury_gain
+            if env.equipped[137038] then -- Anger of the Half-Giants, adds 1-20
+                env.fury.gained = env.fury.gained + 9 -- Lower estimation
+            end
         end,
+    },
+    demon_blades = {
+    -- Base: http://www.wowhead.com/spell=203555/demon-blades
+    -- ... 75% chance to trigger fury gain + damage
+    -- Effect: http://www.wowhead.com/spell=203796/demon-blades
+    -- ... Generates 12-20 fury
+    -- ... Modifies AotHG (below) by -6 (see simc dump, allspells.txt, id=208827)
+    -- Modifier: http://www.wowhead.com/item=137038/anger-of-the-half-giants
+    -- ... Generates additional 1-20 fury (actually 1-14, for demon blades, modifier above)
+    -- ... Simc data dump:
     },
     annihilation = {
         CanCast = function(spell,env)

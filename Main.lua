@@ -50,7 +50,8 @@ TJ.combatStart = 0
 
 -- Cast tracking
 TJ.lastCastTime = {}
-TJ.lastAutoAttack = 0
+TJ.lastMainhandAttack = 0
+TJ.lastOffhandAttack = 0
 
 -- Incoming damage tracking
 TJ.lastIncomingDamage = 0
