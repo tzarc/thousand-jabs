@@ -516,24 +516,6 @@ local havoc_hooks = {
                 env.movement.distance = 5
             end
         end,
-        OnPredictActionAtOffset = function(env)
-        --[[
-        internal.Debug({
-        prev_gcd_vengeful_retreat = env.prev_gcd.vengeful_retreat,
-        range = env.movement.distance,
-        melee_in_range = env.melee.in_range,
-        out_of_range_aura_up = env.out_of_range.aura_up,
-        fel_rush_cooldown_remains = env.fel_rush.cooldown_remains,
-        fel_rush_spell_charges = env.fel_rush.spell_charges,
-        fel_rush_spell_charges_fractional = env.fel_rush.spell_charges_fractional,
-        })
-        internal.Debug({
-        throw_glaive_cooldown_remains = env.throw_glaive.cooldown_remains,
-        throw_glaive_spell_charges = env.throw_glaive.spell_charges,
-        throw_glaive_spell_charges_fractional = env.throw_glaive.spell_charges_fractional,
-        })
-        -- ]]
-        end,
     }
 }
 

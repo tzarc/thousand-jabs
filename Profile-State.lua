@@ -175,12 +175,14 @@ end
 
 
 -- Helper for cleaning a state
-local function StateResetPrototype(self)
+local function StateResetPrototype(self, targetCount)
     local env = self.env
     env.prev_gcd = nil
     env.equipped = nil
     env.lastCastTimes = nil
     env.abilitiesUsed = nil
+
+    self.numTargets = targetCount or self.numTargets
 
     -- Deep copy over the last cast times for the state so that we're not writing to the global state instead
     wipe(self.lastCastTimes)

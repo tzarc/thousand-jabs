@@ -59,6 +59,9 @@ TJ.lastOffhandAttack = 0
 TJ.lastIncomingDamage = 0
 TJ.damageTable = {}
 
+-- Target tracking
+TJ.seenTargets = {}
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
@@ -186,6 +189,11 @@ function TJ:PerformUpdate()
     for k,v in pairs(self.lastCastTime) do
         if v + expiryTime < now then
             self.lastCastTime[k] = nil
+        end
+    end
+    for k,v in pairs(self.seenTargets) do
+        if v + expiryTime < now then
+            self.seenTargets[k] = nil
         end
     end
 
@@ -332,10 +340,20 @@ Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 function TJ:ExecuteAllActionProfiles()
     local ok, err = pcall(function()
+        -- Work out how many targets we're dealing with
+        local targetCount = 0
+        if Config:Get('displayMode') == 'automatic' then
+            for k,v in pairs(self.seenTargets) do
+                targetCount = targetCount + 1
+            end
+        else
+            targetCount = 1
+        end
+
         -- Reset the single-target state
         Debug("")
         Debug("|cFFFFFFFFSingle Target|r")
-        self.st_state:Reset()
+        self.st_state:Reset(targetCount)
 
         -- Export the current profile state just after reset, if requested
         if self.needExportCurrentProfile then
@@ -355,24 +373,26 @@ function TJ:ExecuteAllActionProfiles()
         action = self.st_state:PredictActionFollowing(action) or "wait"
         UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
 
-        if Config:Get('showCleave') then
-            Debug("")
-            Debug("|cFFFFFFFFCleave|r")
-            self.cleave_state:Reset()
-            action = self.cleave_state:PredictNextAction() or "wait"
-            UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
-            action = self.cleave_state:PredictActionFollowing(action) or "wait"
-            UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
-        end
+        if Config:Get('displayMode') ~= 'automatic' then
+            if Config:Get('showCleave') then
+                Debug("")
+                Debug("|cFFFFFFFFCleave|r")
+                self.cleave_state:Reset()
+                action = self.cleave_state:PredictNextAction() or "wait"
+                UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
+                action = self.cleave_state:PredictActionFollowing(action) or "wait"
+                UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
+            end
 
-        if Config:Get('showAoE') then
-            Debug("")
-            Debug("|cFFFFFFFFAoE|r")
-            self.aoe_state:Reset()
-            action = self.aoe_state:PredictNextAction() or "wait"
-            UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
-            action = self.aoe_state:PredictActionFollowing(action) or "wait"
-            UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+            if Config:Get('showAoE') then
+                Debug("")
+                Debug("|cFFFFFFFFAoE|r")
+                self.aoe_state:Reset()
+                action = self.aoe_state:PredictNextAction() or "wait"
+                UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
+                action = self.aoe_state:PredictActionFollowing(action) or "wait"
+                UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+            end
         end
     end)
 

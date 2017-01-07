@@ -275,7 +275,7 @@ function UI:ReapplyLayout(skipMasque)
     actionFrames.containers[UI.SINGLE_TARGET]:ReapplyLayout()
 
     -- Reapply the layout for the cleave container
-    if Config:Get('showCleave') then
+    if Config:Get('showCleave') and Config:Get('displayMode') ~= 'automatic' then
         actionFrames.containers[UI.CLEAVE]:Show()
         actionFrames.containers[UI.CLEAVE]:ReapplyLayout()
     else
@@ -283,7 +283,7 @@ function UI:ReapplyLayout(skipMasque)
     end
 
     -- Reapply the layout for the AoE container
-    if Config:Get('showAoE') then
+    if Config:Get('showAoE') and Config:Get('displayMode') ~= 'automatic' then
         actionFrames.containers[UI.AOE]:Show()
         actionFrames.containers[UI.AOE]:ReapplyLayout()
     else

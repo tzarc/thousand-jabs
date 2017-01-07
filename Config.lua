@@ -18,6 +18,7 @@ internal.Safety()
 
 local defaultConf = {
     allowBetaProfiles = false,
+    displayMode = "separate",
     showCleave = true,
     showAoE = true,
     inCombatAlpha = 1,
@@ -132,51 +133,9 @@ AC:RegisterOptionsTable(addonName, function()
                             UI:UpdateAlpha()
                         end
                     },
-                    showCleave = {
-                        type = "toggle",
-                        order = 103,
-                        name = L["Show Cleave Abilties"],
-                        get = function(info)
-                            return Config:Get("showCleave") and true or false
-                        end,
-                        set = function(info, val)
-                            Config:Set(val and true or false, "showCleave")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
-                    showAoE = {
-                        type = "toggle",
-                        order = 104,
-                        name = L["Show AoE Abilties"],
-                        get = function(info)
-                            return Config:Get("showAoE") and true or false
-                        end,
-                        set = function(info, val)
-                            Config:Set(val and true or false, "showAoE")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
-                    backgroundOpacity = {
-                        type = "range",
-                        order = 105,
-                        name = L["Background Opacity"],
-                        min = 0.0,
-                        max = 1.0,
-                        step = 0.05,
-                        get = function(info)
-                            return Config:Get("backgroundOpacity")
-                        end,
-                        set = function(info, val)
-                            Config:Set(val, "backgroundOpacity")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
                     outOfCombatHide = {
                         type = "toggle",
-                        order = 106,
+                        order = 103,
                         name = L["Hide out-of-combat"],
                         get = function(info)
                             return (Config:Get("outOfCombatAlpha") == 0) and true or false
@@ -188,7 +147,7 @@ AC:RegisterOptionsTable(addonName, function()
                     },
                     allowBetaProfiles = {
                         type = "toggle",
-                        order = 107,
+                        order = 104,
                         name = L["Allow Beta Profiles"],
                         get = function(info)
                             return Config:Get("allowBetaProfiles") and true or false
@@ -200,14 +159,66 @@ AC:RegisterOptionsTable(addonName, function()
                             UI:UpdateAlpha()
                         end
                     },
+                    displayModeHeader = {
+                        type = "header",
+                        name = L["Display Mode"],
+                        order = 200,
+                    },
+                    displayMode = {
+                        type = "select",
+                        name = L["Display Mode"],
+                        order = 201,
+                        values = {
+                            ["separate"] = L["Separate Columns"],
+                            ["automatic"] = L["Automatic Target Counting"]
+                        },
+                        get = function(info)
+                            return Config:Get("displayMode")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "displayMode")
+                            TJ:DeactivateProfile()
+                            TJ:ActivateProfile()
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
+                    showCleave = {
+                        type = "toggle",
+                        order = 203,
+                        name = L["Show Cleave Abilties"],
+                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                        get = function(info)
+                            return Config:Get("showCleave") and true or false
+                        end,
+                        set = function(info, val)
+                            Config:Set(val and true or false, "showCleave")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
+                    showAoE = {
+                        type = "toggle",
+                        order = 204,
+                        name = L["Show AoE Abilties"],
+                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                        get = function(info)
+                            return Config:Get("showAoE") and true or false
+                        end,
+                        set = function(info, val)
+                            Config:Set(val and true or false, "showAoE")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
                     fadingHeader = {
                         type = "header",
                         name = L["Fading"],
-                        order = 200,
+                        order = 600,
                     },
                     inCombatAlpha = {
                         type = "range",
-                        order = 201,
+                        order = 601,
                         name = L["In-combat alpha"],
                         min = 0,
                         max = 1,
@@ -222,7 +233,7 @@ AC:RegisterOptionsTable(addonName, function()
                     },
                     outOfCombatAlpha = {
                         type = "range",
-                        order = 202,
+                        order = 602,
                         name = L["Out-of-combat alpha"],
                         min = 0,
                         max = 1,
@@ -235,14 +246,30 @@ AC:RegisterOptionsTable(addonName, function()
                             UI:UpdateAlpha()
                         end
                     },
+                    backgroundOpacity = {
+                        type = "range",
+                        order = 603,
+                        name = L["Background Opacity"],
+                        min = 0.0,
+                        max = 1.0,
+                        step = 0.05,
+                        get = function(info)
+                            return Config:Get("backgroundOpacity")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "backgroundOpacity")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
                     geometryHeader = {
                         type = "header",
                         name = L["Geometry"],
-                        order = 300,
+                        order = 800,
                     },
                     scale = {
                         type = "range",
-                        order = 301,
+                        order = 801,
                         name = L["Window Scale"],
                         min = 0.5,
                         max = 2.0,
@@ -256,57 +283,9 @@ AC:RegisterOptionsTable(addonName, function()
                             UI:UpdateAlpha()
                         end
                     },
-                    singleTargetSize = {
-                        type = "range",
-                        order = 302,
-                        name = L["Single-target Size"],
-                        min = 20,
-                        max = 300,
-                        step = 1,
-                        get = function(info)
-                            return Config:Get("geometry", "singleTargetSize")
-                        end,
-                        set = function(info, val)
-                            Config:Set(val, "geometry", "singleTargetSize")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
-                    cleaveSize = {
-                        type = "range",
-                        order = 303,
-                        name = L["Cleave Size"],
-                        min = 20,
-                        max = 300,
-                        step = 1,
-                        get = function(info)
-                            return Config:Get("geometry", "cleaveSize")
-                        end,
-                        set = function(info, val)
-                            Config:Set(val, "geometry", "cleaveSize")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
-                    aoeSize = {
-                        type = "range",
-                        order = 304,
-                        name = L["AoE Size"],
-                        min = 20,
-                        max = 300,
-                        step = 1,
-                        get = function(info)
-                            return Config:Get("geometry", "aoeSize")
-                        end,
-                        set = function(info, val)
-                            Config:Set(val, "geometry", "aoeSize")
-                            UI:ReapplyLayout()
-                            UI:UpdateAlpha()
-                        end
-                    },
                     nextScale = {
                         type = "range",
-                        order = 305,
+                        order = 802,
                         name = L["Next Ability Scale"],
                         min = 0.1,
                         max = 1.0,
@@ -322,7 +301,7 @@ AC:RegisterOptionsTable(addonName, function()
                     },
                     padding = {
                         type = "range",
-                        order = 306,
+                        order = 803,
                         name = L["Padding"],
                         min = 0,
                         max = 20,
@@ -336,9 +315,59 @@ AC:RegisterOptionsTable(addonName, function()
                             UI:UpdateAlpha()
                         end
                     },
+                    singleTargetSize = {
+                        type = "range",
+                        order = 804,
+                        name = L["Single-target Size"],
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return Config:Get("geometry", "singleTargetSize")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "geometry", "singleTargetSize")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
+                    cleaveSize = {
+                        type = "range",
+                        order = 805,
+                        name = L["Cleave Size"],
+                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return Config:Get("geometry", "cleaveSize")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "geometry", "cleaveSize")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
+                    aoeSize = {
+                        type = "range",
+                        order = 806,
+                        name = L["AoE Size"],
+                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                        min = 20,
+                        max = 300,
+                        step = 1,
+                        get = function(info)
+                            return Config:Get("geometry", "aoeSize")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "geometry", "aoeSize")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
                     resetGeometry = {
                         type = "execute",
-                        order = 307,
+                        order = 807,
                         name = L["Reset Geometry"],
                         func = function()
                             Config:Set(nil, "geometry")
