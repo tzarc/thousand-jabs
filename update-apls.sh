@@ -160,9 +160,12 @@ for classspec in "${allspecs[@]}" ; do
     append_action_profiles_from_branch legion-dev "${classspec}"
 done
 
+# Work out all the equipped items
+"${BASE_DIR}/update-equipped.sh"
+
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/ActionProfileLists/all.xml"
 echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/ActionProfileLists/all.xml"
-for file in $(find ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname 'actions-*.lua' \) | sort) ; do
+for file in $(find ActionProfileLists -mindepth 1 -maxdepth 1 \( -iname '*.lua' \) | sort) ; do
     echo "    <Script file=\"$(basename "${file}")\"/>" >> "${BASE_DIR}/ActionProfileLists/all.xml"
 done
 echo '</Ui>' >> "${BASE_DIR}/ActionProfileLists/all.xml"

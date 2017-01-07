@@ -120,6 +120,7 @@ local fake_G = setmetatable({}, {
         if not found then
             entry.stacks[1+#entry.stacks] = thisstack
             tsort(entry.stacks)
+            internal.error(thisstack)
         end
         if internal.devMode and val ~= nil then return val end
         return nil
@@ -142,6 +143,7 @@ local fake_G = setmetatable({}, {
         if not found then
             entry.stacks[1+#entry.stacks] = thisstack
             tsort(entry.stacks)
+            internal.error(thisstack)
         end
         return val
     end,

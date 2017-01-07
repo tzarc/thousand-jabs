@@ -12,4 +12,5 @@
     <Script file="actions-shaman.lua"/>
     <Script file="actions-warlock.lua"/>
     <Script file="actions-warrior.lua"/>
+    <Script file="equipped.lua"/>
 </Ui>

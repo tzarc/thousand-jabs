@@ -20,6 +20,7 @@ local tonumber = tonumber
 local tostring = tostring
 local type = type
 local wipe = wipe
+local GetInventoryItemID = GetInventoryItemID
 local GetSpellCharges = GetSpellCharges
 local GetSpellCooldown = GetSpellCooldown
 local GetSpellCount = GetSpellCount
@@ -161,8 +162,22 @@ end
 
 local function CreateEquippedTable(state, profile)
     local equipped = setmetatable({}, {
+        __state = state,
+        __env = state.env,
+        __profile = profile,
         __index = function(tbl,idx)
-            return false -- TODO
+            local ae = getmetatable(tbl).__state.actually_equipped
+            if type(idx) == "number" then
+                return ae[idx] and true or false
+            elseif type(idx) == "string" then
+                local l = internal.equipped_mapping[idx]
+                if l then
+                    for i=1,#l do
+                        if ae[l[i]] then return true end
+                    end
+                end
+            end
+            return false
         end,
     })
     return equipped
@@ -180,6 +195,16 @@ local function StateResetPrototype(self)
     wipe(self.lastCastTimes)
     for k,v in pairs(TJ.lastCastTime) do
         self.lastCastTimes[k] = v
+    end
+
+    -- Work out which items are actually equipped
+    self.actually_equipped = rawget(self, 'actually_equipped') or {}
+    wipe(self.actually_equipped)
+    for i=1,30 do
+        local ok, itemid = pcall(GetInventoryItemID, 'player', i)
+        if ok and itemid then
+            self.actually_equipped[itemid] = true
+        end
     end
 
     -- Clear out the environment and reset to initial values
