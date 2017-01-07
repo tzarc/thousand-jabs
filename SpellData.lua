@@ -12,7 +12,6 @@ local co_yield = coroutine.yield
 local real_G = _G
 local mfloor = math.floor
 local pairs = pairs
-local pcall = pcall
 local select = select
 local tconcat = table.concat
 local tcontains = tContains

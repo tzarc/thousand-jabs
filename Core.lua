@@ -61,6 +61,7 @@ local GetAddOnMetadata = GetAddOnMetadata
 local GetBuildInfo = GetBuildInfo
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventorySlotInfo = GetInventorySlotInfo
+local GetLocale = GetLocale
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
 local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
@@ -245,9 +246,7 @@ function internal.Debug(...)
         if #debugLines == 0 then debugLines[1] = internal.fmt("|cFFFFFFFF%s Debug log|r (|cFF00FFFFhide with /%s _dbg|r):", addonName, internal.consoleCommand) end
         local a = ...
         if type(a) == 'table' and select('#', ...) == 1 then
-            for k,v in internal.orderedpairs(a) do
-                debugLines[1+#debugLines] = internal.fmt(" - %s = %s", tostring(k), tostring(v))
-            end
+            debugLines[1+#debugLines] = internal.fmt('|cFFFFFF99%s|r', LSD(a))
         else
             debugLines[1+#debugLines] = internal.fmt(...)
         end
@@ -335,8 +334,8 @@ local inventorySlots = { "AmmoSlot", "BackSlot", "ChestSlot", "FeetSlot", "Finge
 local function equippedItems()
     local slotlinks = {}
     for _,slot in pairs(inventorySlots) do
-        local _,inventoryID = pcall(GetInventorySlotInfo, slot)
-        if inventoryID then slotlinks[slot] = (GetInventoryItemLink("player", inventoryID) or ''):gsub('|','||') end
+        local ok, inventoryID = pcall(GetInventorySlotInfo, slot)
+        if ok and inventoryID then slotlinks[slot] = (GetInventoryItemLink("player", inventoryID) or ''):gsub('|','||') end
     end
     return slotlinks
 end
@@ -346,6 +345,7 @@ function TJ:GenerateDebuggingInformation()
     local export = {
         ['!tj_version'] = GetAddOnMetadata(addonName, "Version"),
         ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
+        ['!wow_locale'] = GetLocale(),
         base = {
             playerLevel = UnitLevel('player'),
             playerEffectiveLevel = UnitEffectiveLevel('player'),

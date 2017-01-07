@@ -140,7 +140,7 @@ local function CreatePrevGcdTable(state, profile)
                 end
             end
 
-            if lastTime + ((TJ.currentGCD or 1)*1.5) < env.currentTime then return false end -- if we've gone through at least 1.5 gcd's with no ability spent, reset everything
+            if lastTime + ((TJ.currentGCD or 1)*5) < env.currentTime then return false end -- if we've gone through at least 5 gcd's with no ability spent, reset everything
 
             -- find the matching ability
             local matchingAbility = nil
@@ -310,8 +310,10 @@ local function StatePredictActionFollowingPrototype(self, action)
     local env = self.env
     local act = env[action]
     if act then
-        -- Pretend we just casted the supplied action, update the last cast time for this ability
-        self.lastCastTimes[act.AbilityID] = env.currentTime
+        if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
+            -- Pretend we just casted the supplied action, update the last cast time for this ability
+            self.lastCastTimes[act.AbilityID] = env.currentTime
+        end
         -- Perform the cast of the supplied action
         self.profile.actions[action].perform_cast(act, env)
         -- Work out the new prediction offset given its cast time
@@ -333,8 +335,10 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
         if action then
             Debug("Handling cast of %s", action)
             local act = env[action]
-            -- Pretend we just casted the supplied action, update the last cast time for this ability
-            self.lastCastTimes[act.AbilityID] = env.currentTime
+            if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
+                -- Pretend we just casted the supplied action, update the last cast time for this ability
+                self.lastCastTimes[act.AbilityID] = env.currentTime
+            end
             -- Perform the cast of the supplied action
             self.profile.actions[action].perform_cast(act, env)
         end

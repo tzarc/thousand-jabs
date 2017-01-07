@@ -89,23 +89,12 @@ function TJ:PLAYER_TALENT_UPDATE(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
-    if unitID == 'player' then
-        -- Keep track of the last cast made
-        self.lastCastTime[spellID] = GetTime()
-        -- Update the GCD amount if possible
-        self:TryDetectUpdateGlobalCooldown(spellID)
-        -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
-    end
-end
-
 function TJ:PLAYER_REGEN_ENABLED(eventName)
     -- Reset the last autoattack
     self.lastAutoAttack = 0
     -- Reset combat
     self.combatStart = 0
-    -- Wipe out all the cast times
+    -- Wipe out all the cast times when combat ends
     for k,v in pairs(self.lastCastTime) do
         self.lastCastTime[k] = nil
     end
@@ -153,10 +142,15 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideC
     self.lastHP = currHP
 
     -- We only want to know if it's a spell, and it concerns either the player or the current target
-    if (destGUID == playerGUID or destGUID == targetGUID) and combatEvent:find('SPELL_') == 1 then
+    if (sourceGUID == playerGUID or sourceGUID == targetGUID or destGUID == playerGUID or destGUID == targetGUID) and combatEvent:find('SPELL_') == 1 then
         -- Check if we've had a successful spellcast
         if combatEvent == 'SPELL_CAST_SUCCESS' then
             if sourceGUID == playerGUID then
+                local spellID = arg12
+                -- Keep track of the last cast made
+                self.lastCastTime[spellID] = GetTime()
+                -- Update the GCD amount if possible
+                self:TryDetectUpdateGlobalCooldown(spellID)
                 -- Queue a screen update
                 self:QueueUpdate()
             end

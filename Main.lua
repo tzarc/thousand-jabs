@@ -14,6 +14,7 @@ local co_create = coroutine.create
 local co_status = coroutine.status
 local co_resume = coroutine.resume
 local pairs = pairs
+local pcall = pcall
 local select = select
 local NewTicker = C_Timer.NewTicker
 local GetSpecialization = GetSpecialization
@@ -211,7 +212,7 @@ function TJ:PerformUpdate()
     self:RunFuncCoroutines()
 end
 
-Profiling:ProfileFunction('PerformUpdate')
+Profiling:ProfileFunction(TJ, 'PerformUpdate')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Profile activation/deactivation
@@ -258,7 +259,6 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
         TJ:RegisterEvent('PLAYER_TARGET_CHANGED')
         TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-        TJ:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
         TJ:RegisterEvent('PLAYER_TALENT_UPDATE')
         TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('UNIT_POWER')
@@ -271,7 +271,7 @@ function TJ:ActivateProfile()
     self:QueueUpdate()
 end
 
-Profiling:ProfileFunction('ActivateProfile')
+Profiling:ProfileFunction(TJ, 'ActivateProfile')
 
 function TJ:DeactivateProfile()
     -- Clear the update timer
@@ -291,7 +291,6 @@ function TJ:DeactivateProfile()
     TJ:UnregisterEvent('UNIT_POWER')
     TJ:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
     TJ:UnregisterEvent('PLAYER_TALENT_UPDATE')
-    TJ:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
     TJ:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
     TJ:UnregisterEvent('PLAYER_TARGET_CHANGED')
     TJ:UnregisterEvent('PLAYER_REGEN_DISABLED')
@@ -307,55 +306,64 @@ function TJ:DeactivateProfile()
     self:QueueUpdate()
 end
 
-Profiling:ProfileFunction('DeactivateProfile')
+Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- APL Execution
 ------------------------------------------------------------------------------------------------------------------------
 
 function TJ:ExecuteAllActionProfiles()
-    Debug("")
-    Debug("|cFFFFFFFFSingle Target|r")
-    -- Calculate the single-target profiles
-    self.st_state:Reset()
-    if self.needExportCurrentProfile then
-        self.needExportCurrentProfile = nil
-        local dbg = self:GenerateDebuggingInformation()
-        local actionsTable = self.st_state:ExportActionsTable()
-        self:OpenDebugWindow(addonName..' Current profile', LSD({dbg=dbg, actions=actionsTable}))
-    end
-
-    local action = self.st_state:PredictNextAction() or "wait"
-    UI:SetActionTexture(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon)
-    action = self.st_state:PredictActionFollowing(action) or "wait"
-    UI:SetActionTexture(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon)
-    action = self.st_state:PredictActionFollowing(action) or "wait"
-    UI:SetActionTexture(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon)
-    action = self.st_state:PredictActionFollowing(action) or "wait"
-    UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
-
-    if Config:Get('showCleave') then
+    local ok, err = pcall(function()
+        -- Reset the single-target state
         Debug("")
-        Debug("|cFFFFFFFFCleave|r")
-        self.cleave_state:Reset()
-        action = self.cleave_state:PredictNextAction() or "wait"
-        UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
-        action = self.cleave_state:PredictActionFollowing(action) or "wait"
-        UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
-    end
+        Debug("|cFFFFFFFFSingle Target|r")
+        self.st_state:Reset()
 
-    if Config:Get('showAoE') then
-        Debug("")
-        Debug("|cFFFFFFFFAoE|r")
-        self.aoe_state:Reset()
-        action = self.aoe_state:PredictNextAction() or "wait"
-        UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
-        action = self.aoe_state:PredictActionFollowing(action) or "wait"
-        UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+        -- Export the current profile state just after reset, if requested
+        if self.needExportCurrentProfile then
+            self.needExportCurrentProfile = nil
+            local dbg = self:GenerateDebuggingInformation()
+            local actionsTable = self.st_state:ExportActionsTable()
+            self:OpenDebugWindow(addonName..' Current profile', LSD({dbg=dbg, actions=actionsTable}))
+        end
+
+        -- Calculate the single-target profiles
+        local action = self.st_state:PredictNextAction() or "wait"
+        UI:SetActionTexture(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon)
+        action = self.st_state:PredictActionFollowing(action) or "wait"
+        UI:SetActionTexture(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon)
+        action = self.st_state:PredictActionFollowing(action) or "wait"
+        UI:SetActionTexture(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon)
+        action = self.st_state:PredictActionFollowing(action) or "wait"
+        UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
+
+        if Config:Get('showCleave') then
+            Debug("")
+            Debug("|cFFFFFFFFCleave|r")
+            self.cleave_state:Reset()
+            action = self.cleave_state:PredictNextAction() or "wait"
+            UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
+            action = self.cleave_state:PredictActionFollowing(action) or "wait"
+            UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
+        end
+
+        if Config:Get('showAoE') then
+            Debug("")
+            Debug("|cFFFFFFFFAoE|r")
+            self.aoe_state:Reset()
+            action = self.aoe_state:PredictNextAction() or "wait"
+            UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
+            action = self.aoe_state:PredictActionFollowing(action) or "wait"
+            UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+        end
+    end)
+
+    if not ok then
+        internal.error(fmt("Error executing action profiles:\n%s", tostring(err)))
     end
 end
 
-Profiling:ProfileFunction('ExecuteAllActionProfiles')
+Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon enable/disable handlers
