@@ -333,6 +333,16 @@ local unholy_base_abilities = {
             return env.target.is_casting
         end,
     },
+    clawing_shadows = {
+        PerformCast = function(spell,env)
+            if env.festering_wound.aura_stack > 0 then
+                env.festering_wound.aura_stack = env.festering_wound.aura_stack - 1
+            end
+            if env.festering_wound.aura_stack == 0 then
+                env.festering_wound.expirationTime = 0
+            end
+        end,
+    },
 }
 
 TJ:RegisterPlayerClass({

@@ -33,6 +33,9 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
 
     local before = keyword
 
+    -- Any trailing digit selectors (i.e.  something.1) we change to array indexing
+    keyword = keyword:gsub('([^%d])%.([%d]+)', '%1[%2]')
+
     -- Casting checks
     if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
     if keyword == "debuff.casting.down" then keyword = "(not target.is_casting)" end
@@ -434,7 +437,14 @@ function TJ:RegisterPlayerClass(config)
 
                 -- Set up function for last cast time
                 v.last_cast = function(spell, env)
-                    return env.lastCastTimes[v.AbilityID] or 0
+                    local latest = 0
+                    if rawget(v, 'SpellIDs') then
+                        for _,spellID in pairs(v.SpellIDs) do
+                            local cast = env.lastCastTimes[spellID]
+                            if cast and cast > latest then latest = cast end
+                        end
+                    end
+                    return latest
                 end
                 v.time_since_last_cast = function(spell, env)
                     return env.currentTime - spell.last_cast

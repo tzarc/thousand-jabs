@@ -306,10 +306,7 @@ internal.resources = {
                 if TJ.lastOffhandAttack < now - oh_speed then TJ.lastOffhandAttack = now end
                 local mh_swings = mfloor((env.currentTime - TJ.lastMainhandAttack) / mh_speed)
                 local oh_swings = mfloor((env.currentTime - TJ.lastOffhandAttack) / oh_speed)
-                local fury_per_swing = 13 -- Lowball this, range is 12-20 or something
-                if env.equipped[137038] then -- Anger of the Half-Giants, adds 1-14
-                    fury_per_swing = fury_per_swing + 6 -- Another estimation
-                end
+                local fury_per_swing = env.demon_blades.base_estimate + env.demon_blades.aothg_estimate
                 return (mh_swings + oh_swings) * fury_per_swing
             end
             return 0

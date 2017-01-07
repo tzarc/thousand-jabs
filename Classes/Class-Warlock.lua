@@ -40,6 +40,9 @@ if TJ:MatchesBuild('7.1.0', '7.1.4') then
         incinerate = { SpellIDs = { 29722 }, },
         life_tap = { SpellIDs = { 1454 }, },
         mana_tap = { SpellIDs = { 196104 }, TalentID = 22088, },
+
+        empowered_life_tap = { SpellIDs = { 196104 }, TalentID = 22088, }, -- APLs have this as they're set up for 7.1.5 already
+
         meteor_strike = { SpellIDs = { 171152 }, },
         mortal_coil = { SpellIDs = { 6789 }, TalentID = 19285, },
         rain_of_fire = { SpellIDs = { 5740 }, },

@@ -1,6 +1,9 @@
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Config = TJ:GetModule('Config')
 
+local mmax = math.max
+local mfloor = math.floor
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Vengeance profile definition
 ------------------------------------------------------------------------------------------------------------------------
@@ -107,7 +110,8 @@ local vengeance_base_overrides = {
                 env.target.is_casting = false
                 env.target.is_interruptible = false
             end
-        end
+        end,
+        spell_cast_time = 0.01, -- off GCD!
     },
     demon_spikes = {
         AuraID = 203819,
@@ -123,6 +127,7 @@ local vengeance_base_overrides = {
         AuraUnit = 'target',
         AuraApplied = 'fiery_brand',
         AuraApplyLength = 10,
+        spell_cast_time = 0.01, -- off GCD!
     },
     immolation_aura = {
         AuraID = 178740,
@@ -136,20 +141,10 @@ local vengeance_base_overrides = {
         travel_time = 1,
         aura_duration = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.aura_duration or 0 end,
         spell_delay = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.spell_delay or 0 end,
-        aura_remains = function(spell,env) return env.flame_crash.talent_enabled and spell.aura_duration - spell.actual_time_since_last_cast or 0 end,
+        aura_remains = function(spell,env) return env.flame_crash.talent_enabled and mmax(0, spell.aura_duration - spell.time_since_last_cast or 0) end,
         spell_cast_time = 0.01, -- off GCD!
 
-        -- Why do these use a different spellID?!
-        actual_cast_spellid = 189111,
-        actual_last_cast = function(spell, env)
-            return env.lastCastTimes[spell.actual_cast_spellid] or 0
-        end,
-        actual_time_since_last_cast = function(spell, env)
-            return env.currentTime - spell.actual_last_cast
-        end,
-        PerformCast = function(spell, env)
-            env.lastCastTimes[spell.actual_cast_spellid] = env.currentTime
-        end,
+        SpellIDs = { 189110, 189111 }, -- Why does this use a different spellID?!
     },
     metamorphosis = {
         AuraID = 187827,
@@ -236,13 +231,13 @@ local vengeance_sigil_overrides = {
                 or env.sigil_of_misery.placed
                 or env.sigil_of_silence.placed
                 or (env.sigil_of_chains.talent_enabled and env.sigil_of_chains.placed)
-                or (env.flame_crash.talent_enabled and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.flame_crash.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     any_flame_sigil = {
         placed = function(spell, env)
             return env.sigil_of_flame.placed
-                or (env.flame_crash.talent_enabled and env.infernal_strike.actual_time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.flame_crash.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     sigil_of_flame = sigilInitialiser(),
@@ -377,21 +372,47 @@ local havoc_base_overrides = {
             return env.melee.in_range
         end,
         PerformCast = function(spell, env)
-            env.fury.gained = env.fury.gained + spell.fury_gain
-            if env.equipped[137038] then -- Anger of the Half-Giants, adds 1-20
-                env.fury.gained = env.fury.gained + 9 -- Lower estimation
+            env.fury.gained = env.fury.gained + spell.fury_gain + spell.aothg_estimate
+        end,
+
+        -- Handle "Anger of the Half-Giants":
+        aothg_min = 1,
+        aothg_max = 20,
+        aothg_estimate = function(spell,env)
+            if env.equipped[137038] then
+                return mfloor(spell.aothg_min + (((spell.aothg_max-spell.aothg_min)/2)))
             end
+            return 0
         end,
     },
     demon_blades = {
-    -- Base: http://www.wowhead.com/spell=203555/demon-blades
-    -- ... 75% chance to trigger fury gain + damage
-    -- Effect: http://www.wowhead.com/spell=203796/demon-blades
-    -- ... Generates 12-20 fury
-    -- ... Modifies AotHG (below) by -6 (see simc dump, allspells.txt, id=208827)
-    -- Modifier: http://www.wowhead.com/item=137038/anger-of-the-half-giants
-    -- ... Generates additional 1-20 fury (actually 1-14, for demon blades, modifier above)
-    -- ... Simc data dump:
+        -- Base: http://www.wowhead.com/spell=203555/demon-blades
+        -- ... 75% chance to trigger fury gain + damage
+        chance = 0.75,
+
+        -- Effect: http://www.wowhead.com/spell=203796/demon-blades
+        -- ... Generates approx 12-20 fury
+        base_min = 12,
+        base_max = 20,
+        base_estimate = function(spell,env)
+            if spell.talent_enabled then
+                return mfloor(spell.base_min + (((spell.base_max-spell.base_min)/2)*env.demon_blades.chance))
+            end
+            return 0
+        end,
+
+        -- "Anger of the Half-Giants" Modifier: http://www.wowhead.com/item=137038/anger-of-the-half-giants
+        -- ... Generates additional 1-20 fury (i.e. actually 1-12, see below)
+        -- ... Upper range value modified by Demon Blades by -8 (see simc dump, allspells.txt, id=208827)
+        -- ... PTR modifier seems to be -6
+        aothg_min = 1,
+        aothg_max = function(spell, env) return env.ptr and 14 or 12 end,
+        aothg_estimate = function(spell,env)
+            if env.equipped[137038] then
+                return mfloor(spell.aothg_min + (((spell.aothg_max-spell.aothg_min)/2)*env.demon_blades.chance))
+            end
+            return 0
+        end,
     },
     annihilation = {
         CanCast = function(spell,env)

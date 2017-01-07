@@ -16,6 +16,7 @@ local co_resume = coroutine.resume
 local pairs = pairs
 local pcall = pcall
 local select = select
+local tostring = tostring
 local NewTicker = C_Timer.NewTicker
 local GetSpecialization = GetSpecialization
 local GetSpellBaseCooldown = GetSpellBaseCooldown
@@ -49,6 +50,7 @@ TJ.currentProfile = nil
 TJ.combatStart = 0
 
 -- Cast tracking
+TJ.abilitiesUsed = {}
 TJ.lastCastTime = {}
 TJ.lastMainhandAttack = 0
 TJ.lastOffhandAttack = 0
@@ -174,6 +176,19 @@ function TJ:PerformUpdate()
     nextScreenUpdateExpiry = nil
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
+    -- Purge any old cast times
+    local expiryTime = 10 * (self.currentGCD or 1)
+    for k,v in pairs(self.abilitiesUsed) do
+        if k + expiryTime < now then
+            self.abilitiesUsed[k] = nil
+        end
+    end
+    for k,v in pairs(self.lastCastTime) do
+        if v + expiryTime < now then
+            self.lastCastTime[k] = nil
+        end
+    end
+
     -- Clear out any errors for the last screen update
     internal.DebugReset()
 
@@ -260,6 +275,7 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
         TJ:RegisterEvent('PLAYER_TARGET_CHANGED')
         TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+        TJ:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
         TJ:RegisterEvent('PLAYER_TALENT_UPDATE')
         TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('UNIT_POWER')
@@ -292,6 +308,7 @@ function TJ:DeactivateProfile()
     TJ:UnregisterEvent('UNIT_POWER')
     TJ:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
     TJ:UnregisterEvent('PLAYER_TALENT_UPDATE')
+    TJ:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
     TJ:UnregisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
     TJ:UnregisterEvent('PLAYER_TARGET_CHANGED')
     TJ:UnregisterEvent('PLAYER_REGEN_DISABLED')

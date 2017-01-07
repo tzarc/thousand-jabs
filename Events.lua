@@ -5,6 +5,7 @@ local fmt = internal.fmt
 
 local pairs = pairs
 local rawget = rawget
+local wipe = wipe
 local GetTime = GetTime
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
@@ -89,16 +90,31 @@ function TJ:PLAYER_TALENT_UPDATE(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
+function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
+    if unitID == 'player' then
+        local now = GetTime()
+        -- Keep track of the last cast made
+        self.lastCastTime[spellID] = now
+        local ability = self.currentProfile:FindActionForSpellID(spellID)
+        if ability then
+            self.abilitiesUsed[now] = ability
+        end
+        -- Update the GCD amount if possible
+        self:TryDetectUpdateGlobalCooldown(spellID)
+        -- Notify the profile
+        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
+    end
+end
+
 function TJ:PLAYER_REGEN_ENABLED(eventName)
     -- Reset the last autoattacks
     self.lastMainhandAttack = 0
     self.lastOffhandAttack = 0
     -- Reset combat
     self.combatStart = 0
-    -- Wipe out all the cast times when combat ends
-    for k,v in pairs(self.lastCastTime) do
-        self.lastCastTime[k] = nil
-    end
+    -- Reset last casts
+    wipe(self.lastCastTime)
+    wipe(self.abilitiesUsed)
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
@@ -123,17 +139,6 @@ end
 function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
     local combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = ...
 
-    --[[ Not working?
-    -- Check if the player has received any damage, and update the last incoming damage time
-    if destGUID == playerGUID then
-    if arg15 and type(arg15) == 'number' and arg15 > 0 and combatEvent:find("_DAMAGE") then
-    local timestamp = GetTime()
-    self.lastIncomingDamage = timestamp
-    self.damageTable[timestamp] = (self.damageTable[timestamp] or 0) + arg15
-    end
-    end
-    -- ]]
-
     -- Any HP drops are treated as damage taken
     local currHP = UnitHealth('player')
     self.lastHP = self.lastHP or currHP
@@ -151,8 +156,13 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
         if combatEvent == 'SPELL_CAST_SUCCESS' then
             if sourceGUID == playerGUID then
                 local spellID = arg12
+                local now = GetTime()
                 -- Keep track of the last cast made
                 self.lastCastTime[spellID] = GetTime()
+                local ability = self.currentProfile:FindActionForSpellID(spellID)
+                if ability then
+                    self.abilitiesUsed[now] = ability
+                end
                 -- Update the GCD amount if possible
                 self:TryDetectUpdateGlobalCooldown(spellID)
                 -- Queue a screen update

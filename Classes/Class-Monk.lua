@@ -305,6 +305,12 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local windwalker_base_overrides = {
+    spear_hand_strike = {
+        spell_cast_time = 0.01, -- off GCD!
+    },
+    touch_of_karma = {
+        spell_cast_time = 0.01, -- off GCD!
+    },
     tiger_palm = {
         PerformCast = function(spell, env)
             env.chi.gained = env.chi.gained + 2
@@ -327,7 +333,8 @@ local windwalker_base_overrides = {
         PerformCast = function(spell, env)
             env.chi.gained = env.chi.gained + (env.chi.max - env.chi.curr)
             env.energy.gained = env.energy.gained + (env.energy.max - env.energy.curr)
-        end
+        end,
+        spell_cast_time = 0.01, -- off GCD!
     },
     storm_earth_and_fire = {
         AuraID = 137639,
@@ -340,6 +347,8 @@ local windwalker_base_overrides = {
             --DevTools_Dump{storm_earth_and_fire=env.storm_earth_and_fire}
             return (not env.serenity.talent_enabled) and (not spell.aura_react)
         end,
+
+        spell_cast_time = 0.01, -- off GCD!
     },
     bok_proc = {
         AuraID = 116768,
@@ -355,6 +364,7 @@ local windwalker_talent_overrides = {
         AuraUnit = 'player',
         AuraApplied = 'serenity',
         AuraApplyLength = 8,
+        spell_cast_time = 0.01, -- off GCD!
     },
     whirling_dragon_punch = {
         CanCast = function(spell, env)
@@ -365,6 +375,9 @@ local windwalker_talent_overrides = {
         AuraID = 129914,
         AuraMine = true,
         AuraUnit = 'player',
+    },
+    healing_elixir = {
+        spell_cast_time = 0.01, -- off GCD!
     },
 }
 

@@ -3,6 +3,7 @@ local TJ = internal.TJ
 local Debug = internal.Debug
 local fmt = internal.fmt
 local Profiling = TJ:GetModule('Profiling')
+local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 
 local getmetatable = getmetatable
@@ -125,38 +126,27 @@ local function CreateStateEnvTable(state, profile)
     return env
 end
 
-local function CreatePrevGcdTable(state, profile)
-    local prev_gcd = setmetatable({}, {
-        __env = state.env,
-        __profile = profile,
-        __index = function(tbl,idx)
-            local env = getmetatable(tbl).__env
-            local profile = getmetatable(tbl).__profile
-            -- find the last cast ability
-            local lastTime, lastAbility = 0, nil
-            for k,v in pairs(env.lastCastTimes) do
-                if v > lastTime then
-                    lastAbility = k
-                    lastTime = v
-                end
-            end
-
-            if lastTime + ((TJ.currentGCD or 1)*5) < env.currentTime then return false end -- if we've gone through at least 5 gcd's with no ability spent, reset everything
-
-            -- find the matching ability
-            local matchingAbility = nil
-            for k,v in pairs(profile.actions) do
-                local abilityID = rawget(v, 'AbilityID')
-                if abilityID and abilityID == lastAbility then
-                    matchingAbility = k
-                    break
-                end
-            end
-
-            -- Signal if it was the last cast ability
-            return idx == matchingAbility and true or false
+local function PrevGcdTableIndexerPrototype(tbl, idx)
+    local gcdcount = getmetatable(tbl).__gcd
+    local env = getmetatable(tbl).__env
+    local profile = getmetatable(tbl).__profile
+    local abilityQueue = TableCache:Acquire()
+    for k,v in internal.orderedpairs(env.abilitiesUsed, function(a,b) return b < a end) do
+        local t = rawget(env, v)
+        if t and (t.spell_cast_time or TJ.currentGCD) > 0.2 then
+            abilityQueue[1+#abilityQueue] = v
         end
-    })
+    end
+    local prev_gcd_ability = abilityQueue[gcdcount] or nil
+    TableCache:Release(abilityQueue)
+    return prev_gcd_ability and prev_gcd_ability == idx and true or false
+end
+
+local function CreatePrevGcdTable(state, profile)
+    local prev_gcd = {}
+    for i=1,10 do
+        prev_gcd[i] = setmetatable({}, { __gcd = i, __env = state.env, __profile = profile, __index = PrevGcdTableIndexerPrototype, })
+    end
     return prev_gcd
 end
 
@@ -190,11 +180,16 @@ local function StateResetPrototype(self)
     env.prev_gcd = nil
     env.equipped = nil
     env.lastCastTimes = nil
+    env.abilitiesUsed = nil
 
     -- Deep copy over the last cast times for the state so that we're not writing to the global state instead
     wipe(self.lastCastTimes)
     for k,v in pairs(TJ.lastCastTime) do
         self.lastCastTimes[k] = v
+    end
+    wipe(self.abilitiesUsed)
+    for k,v in pairs(TJ.abilitiesUsed) do
+        self.abilitiesUsed[k] = v
     end
 
     -- Work out which items are actually equipped
@@ -277,8 +272,8 @@ local function StateResetPrototype(self)
     env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
     env.player_level = UnitLevel('player')
     env.movement.distance = internal.range_to_unit('target')
-    env.gcd = TJ.currentGCD * env.playerHasteMultiplier
-    env.gcd_max = TJ.currentGCD * env.playerHasteMultiplier
+    env.gcd = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
+    env.gcd_max = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
     env.in_combat = (TJ.combatStart ~= 0) and true or false
 
     -- Determine if player/target are casting things
@@ -295,6 +290,7 @@ local function StateResetPrototype(self)
     env.prev_gcd = self.prev_gcd
     env.equipped = self.equipped
     env.lastCastTimes = self.lastCastTimes
+    env.abilitiesUsed = self.abilitiesUsed
 
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit
@@ -338,6 +334,7 @@ local function StatePredictActionFollowingPrototype(self, action)
         if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
             -- Pretend we just casted the supplied action, update the last cast time for this ability
             self.lastCastTimes[act.AbilityID] = env.currentTime
+            self.abilitiesUsed[env.currentTime] = action
         end
         -- Perform the cast of the supplied action
         self.profile.actions[action].perform_cast(act, env)
@@ -363,6 +360,7 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
             if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
                 -- Pretend we just casted the supplied action, update the last cast time for this ability
                 self.lastCastTimes[act.AbilityID] = env.currentTime
+                self.abilitiesUsed[env.currentTime] = action
             end
             -- Perform the cast of the supplied action
             self.profile.actions[action].perform_cast(act, env)
@@ -503,6 +501,7 @@ function TJ:CreateNewState(numTargets)
     -- Keep track of the profile, last cast times
     state.profile = profile
     state.lastCastTimes = {}
+    state.abilitiesUsed = {}
 
     -- Set up proxy tables
     state.env = CreateStateEnvTable(state, profile)
