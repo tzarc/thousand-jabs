@@ -16,7 +16,7 @@ OIFS=$IFS
 IFS=$'\n'
 for item in ${equipped_items} ; do
     echo -n "internal.equipped_mapping.${item} = { " >> ${OUTPUT_FILE}
-    url="http://www.wowhead.com/items/name:$(echo ${item} | sed -e 's#_#+#g')/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9"
+    url="http://ptr.wowhead.com/items/name:$(echo ${item} | sed -e 's#_#+#g')/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9"
     echo "Item: ${item} - ${url}"
     output=$(wget -O- "${url}" 2>&1)
 

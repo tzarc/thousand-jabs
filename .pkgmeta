@@ -21,3 +21,4 @@ ignore:
     - tag-release.sh
     - tag-alpha.sh
     - update-apls.sh
+    - update-equipped.sh
