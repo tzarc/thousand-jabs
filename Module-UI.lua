@@ -106,11 +106,18 @@ local function ApplyDefaultTheming(button)
         icon:SetTexture('Interface\\Icons\\spell_holy_borrowedtime')
     end
     icon:ClearAllPoints()
-    icon:SetAllPoints()
+    icon:SetAllPoints(button)
     button.icon = icon
+
+    button.overlayText:ClearAllPoints()
+    button.overlayText:SetAllPoints(button)
+    button.overlayText:SetJustifyV("BOTTOM")
+    button.overlayText:SetJustifyH("CENTER")
 
     local floatingBG = real_G[button:GetName()..'FloatingBG']
     if floatingBG then floatingBG:Hide() end
+    local border = real_G[button:GetName()..'Border']
+    if border then border:Hide() end
 end
 
 local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
@@ -123,6 +130,10 @@ local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
         self:SetSize(size, size)
     end
 
+    button.overlayText = button:CreateFontString(name..'Name', "OVERLAY", "GameFontHighlightSmall")
+    button.overlayText:SetParent(button)
+    button.overlayText:SetText('')
+
     ApplyDefaultTheming(button)
     button:EnableMouse(false)
     button:Show()
@@ -130,7 +141,7 @@ local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
     local MSQ = LibStub('Masque', true)
     if MSQ then
         local group = MSQ:Group(addonName, 'Actions')
-        group:AddButton(button, {Icon = button.icon})
+        group:AddButton(button, {Icon = button.icon, Name=button.overlayText})
         if group.db.disabled then
             ApplyDefaultTheming(button)
         end
@@ -185,12 +196,13 @@ function UI:OnInitialize()
     end
 end
 
-function UI:SetActionTexture(actionType, actionIndex, texture)
+function UI:SetAction(actionType, actionIndex, texture, overlayText)
     local actions = actionFrames.actions[actionType]
     if actions then
         local button = actions[actionIndex]
         if button then
             button.icon:SetTexture(texture)
+            button.overlayText:SetText(overlayText or '')
         end
     end
 end
