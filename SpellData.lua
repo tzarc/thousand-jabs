@@ -5,6 +5,7 @@ local fmt = internal.fmt
 
 local LSD = LibStub("LibSerpentDump")
 
+local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
 local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
@@ -48,7 +49,7 @@ internal.Safety()
 -- Spellbook iteration
 ------------------------------------------------------------------------------------------------------------------------
 
-local IteratePlayerSpells
+local IteratePlayerSpells, IteratePetSpells
 do
     -- Forward declarations
     local iterateFlyout, iterateSlots, iterateTabs
@@ -69,10 +70,10 @@ do
     iterateSlots = function (state)
         while state.slotIdx <= state.numSlots do
             local spellBookItem = state.slotOffset + state.slotIdx
-            local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellBookItem, BOOKTYPE_SPELL)
-            local _, spellSubtext = GetSpellBookItemName(spellBookItem, BOOKTYPE_SPELL)
-            local spellType, spellBookSpellId = GetSpellBookItemInfo(spellBookItem, BOOKTYPE_SPELL)
-            local isTalent = IsTalentSpell(spellBookItem, BOOKTYPE_SPELL)
+            local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellBookItem, state.booktype)
+            local _, spellSubtext = GetSpellBookItemName(spellBookItem, state.booktype)
+            local spellType, spellBookSpellId = GetSpellBookItemInfo(spellBookItem, state.booktype)
+            local isTalent = IsTalentSpell(spellBookItem, state.booktype)
             if spellType == "SPELL" and not IsPassiveSpell(spellID) then
                 state.slotIdx = state.slotIdx + 1
                 return spellID, spellName, spellSubtext, spellBookItem, isTalent, icon, castTime
@@ -116,6 +117,16 @@ do
     IteratePlayerSpells = function()
         local state = {}
         state.tabIdx = 1
+        state.booktype = BOOKTYPE_SPELL
+        state.numOfTabs = GetNumSpellTabs()
+        state.currentIterator = iterateTabs
+        return dispatch, state
+    end
+
+    IteratePetSpells = function()
+        local state = {}
+        state.tabIdx = 1
+        state.booktype = BOOKTYPE_PET
         state.numOfTabs = GetNumSpellTabs()
         state.currentIterator = iterateTabs
         return dispatch, state
@@ -143,6 +154,21 @@ local blacklistedExportedAbilities = {
     'path_of_the_setting_sun',
     'path_of_the_shadopan',
     'path_of_the_stout_brew',
+    'portal_dalaran__northrend',
+    'portal_orgrimmar',
+    'portal_shattrath',
+    'portal_silvermoon',
+    'portal_stonard',
+    'portal_thunder_bluff',
+    'portal_undercity',
+    'shoot',
+    'teleport_dalaran__northrend',
+    'teleport_orgrimmar',
+    'teleport_shattrath',
+    'teleport_silvermoon',
+    'teleport_stonard',
+    'teleport_thunder_bluff',
+    'teleport_undercity',
     'quaking_palm',
     'revive_battle_pets',
     'zen_pilgrimage',
@@ -164,7 +190,24 @@ function TJ:DetectAbilitiesFromSpellBook()
                 SpellBookItem = spellBookItem,
                 IsTalent = spellIsTalent,
                 SpellBookSpellID = spellID,
-                Icon = spellIcon
+                Icon = spellIcon,
+                SpellBookCaster = 'player'
+            }
+        end
+    end
+
+    for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePetSpells() do
+        if spellID and spellName then
+            abilities[slug(spellName)] = {
+                Name = spellName,
+                SpellIDs = { spellID },
+                KeyedSpellIDs = { [spellID] = true },
+                SpellBookSubtext = spellSubText,
+                SpellBookItem = spellBookItem,
+                IsTalent = spellIsTalent,
+                SpellBookSpellID = spellID,
+                Icon = spellIcon,
+                SpellBookCaster = 'pet'
             }
         end
     end

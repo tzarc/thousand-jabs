@@ -247,7 +247,7 @@ function TJ:GetActiveProfile()
     local isDisabled = Config:Get("class", classID, "spec", specID, "disabled") and true or false
     local profile = self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
     local betaAllowed = Config:Get("allowBetaProfiles")
-    local isBetaProfile = profile.betaProfile and true or false
+    local isBetaProfile = profile and profile.betaProfile and true or false
     if (isBetaProfile and betaAllowed) then
         return profile
     elseif (not isBetaProfile) then
@@ -360,18 +360,22 @@ function TJ:ExecuteAllActionProfiles()
             self.needExportCurrentProfile = nil
             local dbg = self:GenerateDebuggingInformation()
             local actionsTable = self.st_state:ExportActionsTable()
-            self:OpenDebugWindow(addonName..' Current profile', LSD({dbg=dbg, actions=actionsTable}))
+            self:OpenDebugWindow(addonName..' Current profile', 'zzzz='..LSD({
+                ['!dbg'] = dbg,
+                ['actions'] = actionsTable,
+                ['parsed'] = self.currentProfile.parsedActions,
+            }))
         end
 
         -- Calculate the single-target profiles
         local action = self.st_state:PredictNextAction() or "wait"
-        UI:SetActionTexture(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon)
+        UI:SetAction(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon, self.st_state.env[action].Name)
         action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetActionTexture(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon)
+        UI:SetAction(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon, self.st_state.env[action].Name)
         action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetActionTexture(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon)
+        UI:SetAction(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon, self.st_state.env[action].Name)
         action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetActionTexture(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon)
+        UI:SetAction(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon, self.st_state.env[action].Name)
 
         if Config:Get('displayMode') ~= 'automatic' then
             if Config:Get('showCleave') then
@@ -379,9 +383,9 @@ function TJ:ExecuteAllActionProfiles()
                 Debug("|cFFFFFFFFCleave|r")
                 self.cleave_state:Reset()
                 action = self.cleave_state:PredictNextAction() or "wait"
-                UI:SetActionTexture(UI.CLEAVE, 1, self.cleave_state.env[action].Icon)
+                UI:SetAction(UI.CLEAVE, 1, self.cleave_state.env[action].Icon, self.st_state.env[action].Name)
                 action = self.cleave_state:PredictActionFollowing(action) or "wait"
-                UI:SetActionTexture(UI.CLEAVE, 2, self.cleave_state.env[action].Icon)
+                UI:SetAction(UI.CLEAVE, 2, self.cleave_state.env[action].Icon, self.st_state.env[action].Name)
             end
 
             if Config:Get('showAoE') then
@@ -389,9 +393,9 @@ function TJ:ExecuteAllActionProfiles()
                 Debug("|cFFFFFFFFAoE|r")
                 self.aoe_state:Reset()
                 action = self.aoe_state:PredictNextAction() or "wait"
-                UI:SetActionTexture(UI.AOE, 1, self.aoe_state.env[action].Icon)
+                UI:SetAction(UI.AOE, 1, self.aoe_state.env[action].Icon, self.st_state.env[action].Name)
                 action = self.aoe_state:PredictActionFollowing(action) or "wait"
-                UI:SetActionTexture(UI.AOE, 2, self.aoe_state.env[action].Icon)
+                UI:SetAction(UI.AOE, 2, self.aoe_state.env[action].Icon, self.st_state.env[action].Name)
             end
         end
     end)

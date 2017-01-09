@@ -40,6 +40,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
     if keyword == "debuff.casting.down" then keyword = "(not target.is_casting)" end
     if keyword == "target.debuff.casting.up" then keyword = "target.is_casting" end
+    if keyword == "target.debuff.casting.react" then keyword = "target.is_casting" end
     if keyword == "target.debuff.casting.down" then keyword = "(not target.is_casting)" end
     if keyword == "buff.casting.up" then keyword = "player.is_casting" end
     if keyword == "buff.casting.down" then keyword = "(not player.is_casting)" end
@@ -105,6 +106,9 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub("_pct$", "_percent")
     keyword = keyword:gsub("%.pct$", ".percent")
 
+    -- Fixup time_to_die
+    keyword = keyword:gsub("time_to_die.target_remains", "target.time_to_die")
+
     -- Handle any profile-specific substitutions
     if profileSubstitutions then
         for _,e in pairs(profileSubstitutions) do
@@ -137,6 +141,7 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
                 action.CooldownTime = fullCooldownSecs
             end
 
+            action.spell_cooldown = function(spell, env) return spell.CooldownTime end
             action.spell_recharge_time = function(spell, env) return spell.CooldownTime end
 
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
@@ -203,7 +208,7 @@ end
 local function addActionAuraFields(action)
     if type(action) == 'table' then
         if rawget(action, 'AuraID') then
-            action.aura_remains = function(spell, env)
+            action.aura_remains = rawget(action, 'aura_remains') or function(spell, env)
                 return mmax(0, spell.expirationTime - env.currentTime)
             end
             action.aura_up = function(spell, env) return (spell.aura_remains > 0) and true or false end
@@ -223,6 +228,7 @@ local function addMissingFields(action)
         if not rawget(action, 'talent_enabled') then action.talent_enabled = false end
 
         if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
+        if not rawget(action, 'spell_cooldown') then action.spell_cooldown = 99999 end
 
         if not rawget(action, 'cooldown_remains') then action.cooldown_remains = 99999 end
         if not rawget(action, 'cooldown_ready') then action.cooldown_ready = false end

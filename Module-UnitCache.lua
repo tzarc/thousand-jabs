@@ -17,7 +17,6 @@ local UnitHealth = UnitHealth
 
 internal.Safety()
 
-
 local updateFrame
 local forceUpdate = false
 local purgeTime = 10 -- in seconds
@@ -25,6 +24,8 @@ local nextUpdateTime = 0
 local updateThrottle = 2.5 -- in seconds
 local playerGUID, targetGUID
 local unitCache = {}
+
+UnitCache.unitCache = unitCache
 
 local function GetAuraValues(unit, idx, filter)
     local _
