@@ -24,6 +24,7 @@ local GetActiveSpecGroup = GetActiveSpecGroup
 local GetBuildInfo = GetBuildInfo
 local GetFlyoutInfo = GetFlyoutInfo
 local GetFlyoutSlotInfo = GetFlyoutSlotInfo
+local GetLocale = GetLocale
 local GetMaxTalentTier = GetMaxTalentTier
 local GetNumSpellTabs = GetNumSpellTabs
 local GetSpecialization = GetSpecialization
@@ -139,7 +140,10 @@ end
 
 local lastExportedSpecialisation = nil
 local definedAbilities = {}
-local function slug(name) return name:lower():gsub(' ','_'):gsub('[^%a%d_]','') end
+local function slug(name)
+    if GetLocale() ~= "enUS" then return name end -- Slug names are only relevant for en-US, other locales are internally matched by spellID anyway
+    return name:lower():gsub(' ','_'):gsub('[^%a%d_]','')
+end
 local blacklistedExportedAbilities = {
     'arcane_torrent',
     'auto_attack',
@@ -488,7 +492,7 @@ local function extract_number(str)
     local str = str:gsub('[^,%.%d]', '')
     local reconv = { ['.'] = '%.', [','] = ',', [' '] = '%s' }
     local vals = split(str, '['..reconv[DECIMAL_SEPERATOR]..']')
-    vals[1] = vals[1]:gsub('['..reconv[LARGE_NUMBER_SEPERATOR]..']', '')
+    vals[1] = LARGE_NUMBER_SEPERATOR and LARGE_NUMBER_SEPERATOR:len() > 0 and vals[1]:gsub('['..reconv[LARGE_NUMBER_SEPERATOR]..']', '') or vals[1]
     vals[2] = '0.' .. (vals[2] or '0')
     return tonumber(vals[1]) + tonumber(vals[2])
 end
