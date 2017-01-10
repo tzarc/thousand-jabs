@@ -7,53 +7,6 @@ local Config = TJ:GetModule('Config')
 
 -- exported with /tj _esd
 local arms_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    arms_abilities_exported = {
-        anger_management = { TalentID = 21204, },
-        avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
-        battle_cry = { SpellIDs = { 1719 }, },
-        berserker_rage = { SpellIDs = { 18499 }, },
-        bladestorm = { SpellIDs = { 227847 }, },
-        bounding_stride = { TalentID = 22627, },
-        charge = { SpellIDs = { 100 }, },
-        cleave = { SpellIDs = { 845 }, },
-        colossus_smash = { SpellIDs = { 167105 }, },
-        commanding_shout = { SpellIDs = { 97462 }, },
-        dauntless = { TalentID = 22624, },
-        deadly_calm = { TalentID = 22394, },
-        defensive_stance = { SpellIDs = { 197690 }, TalentID = 22628, },
-        die_by_the_sword = { SpellIDs = { 118038 }, },
-        double_time = { TalentID = 22409, },
-        execute = { SpellIDs = { 163201 }, },
-        fervor_of_battle = { TalentID = 22380, },
-        focused_rage = { SpellIDs = { 207982 }, TalentID = 22800, },
-        hamstring = { SpellIDs = { 1715 }, },
-        heroic_leap = { SpellIDs = { 6544 }, },
-        heroic_throw = { SpellIDs = { 57755 }, },
-        in_for_the_kill = { TalentID = 22383, },
-        intimidating_shout = { SpellIDs = { 5246 }, },
-        mortal_combo = { TalentID = 22393, },
-        mortal_strike = { SpellIDs = { 12294 }, },
-        opportunity_strikes = { TalentID = 22407, },
-        overpower = { SpellIDs = { 7384 }, TalentID = 22360, },
-        pummel = { SpellIDs = { 6552 }, },
-        ravager = { SpellIDs = { 152277 }, TalentID = 21667, },
-        rend = { SpellIDs = { 772 }, TalentID = 22626, },
-        second_wind = { TalentID = 15757, },
-        shockwave = { SpellIDs = { 46968 }, TalentID = 22373, },
-        slam = { SpellIDs = { 1464 }, },
-        storm_bolt = { SpellIDs = { 107570 }, TalentID = 22625, },
-        sweeping_strikes = { TalentID = 22371, },
-        taunt = { SpellIDs = { 355 }, },
-        titanic_might = { TalentID = 22399, },
-        trauma = { TalentID = 22397, },
-        victory_rush = { SpellIDs = { 34428 }, },
-        warbreaker = { SpellIDs = { 209577 }, },
-        whirlwind = { SpellIDs = { 1680 }, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     arms_abilities_exported = {
         anger_management = { TalentID = 21204, },
@@ -217,53 +170,6 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local protection_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    protection_abilities_exported = {
-        anger_management = { TalentID = 21204, },
-        avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
-        battle_cry = { SpellIDs = { 1719 }, },
-        berserker_rage = { SpellIDs = { 18499 }, },
-        best_served_cold = { TalentID = 22392, },
-        booming_voice = { TalentID = 22401, },
-        bounding_stride = { TalentID = 22627, },
-        crackling_thunder = { TalentID = 22488, },
-        demoralizing_shout = { SpellIDs = { 1160 }, },
-        devastate = { SpellIDs = { 20243 }, },
-        focused_rage = { SpellIDs = { 204488 }, },
-        heavy_repercussions = { TalentID = 22406, },
-        heroic_leap = { SpellIDs = { 6544 }, },
-        heroic_throw = { SpellIDs = { 57755 }, },
-        ignore_pain = { SpellIDs = { 190456 }, },
-        impending_victory = { SpellIDs = { 202168 }, TalentID = 19676, },
-        indomitable = { TalentID = 22362, },
-        inspiring_presence = { TalentID = 22629, },
-        intercept = { SpellIDs = { 198304 }, },
-        into_the_fray = { TalentID = 22398, },
-        last_stand = { SpellIDs = { 12975 }, },
-        neltharions_fury = { SpellIDs = { 203524 }, },
-        never_surrender = { TalentID = 22631, },
-        pummel = { SpellIDs = { 6552 }, },
-        ravager = { SpellIDs = { 228920 }, TalentID = 22801, },
-        renewed_fury = { TalentID = 22378, },
-        revenge = { SpellIDs = { 6572 }, },
-        safeguard = { TalentID = 22789, },
-        shield_block = { SpellIDs = { 2565 }, },
-        shield_slam = { SpellIDs = { 23922 }, },
-        shield_wall = { SpellIDs = { 871 }, },
-        shockwave = { SpellIDs = { 46968 }, TalentID = 15760, },
-        spell_reflection = { SpellIDs = { 23920 }, },
-        storm_bolt = { SpellIDs = { 107570 }, TalentID = 15759, },
-        taunt = { SpellIDs = { 355 }, },
-        thunder_clap = { SpellIDs = { 6343 }, },
-        ultimatum = { TalentID = 22489, },
-        vengeance = { TalentID = 22396, },
-        victory_rush = { SpellIDs = { 34428 }, },
-        warbringer = { TalentID = 15774, },
-        warlords_challenge = { TalentID = 22630, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     protection_abilities_exported = {
         anger_management = { TalentID = 21204, },

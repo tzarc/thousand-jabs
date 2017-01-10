@@ -24,6 +24,7 @@ local GetTalentInfoByID = GetTalentInfoByID
 local IsSpellInRange = IsSpellInRange
 local UnitLevel = UnitLevel
 local UnitSpellHaste = UnitSpellHaste
+local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
 
 internal.Safety()
@@ -434,11 +435,13 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Set up a function to check if the ability is in range
-                v.in_range = function(spell,env)
-                    if not v.in_spellbook then return false end
-                    local r = IsSpellInRange(spell.SpellBookItem, BOOKTYPE_SPELL, 'target')
-                    r = (not r or r ~= 1) and true or false
-                    return (not r)
+                if rawget(v, 'SpellBookItem') then
+                    v.in_range = function(spell,env)
+                        if not v.in_spellbook then return false end
+                        local r = IsSpellInRange(spell.SpellBookItem, spell.SpellBookCaster == "pet" and BOOKTYPE_PET or BOOKTYPE_SPELL, 'target')
+                        r = (not r or r ~= 1) and true or false
+                        return (not r)
+                    end
                 end
 
                 -- Set up function for last cast time

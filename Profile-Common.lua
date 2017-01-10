@@ -140,6 +140,7 @@ internal.commonData = {
     },
     adds = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
+        raid_event_up = function(self,state) return self.raid_event_exists end,
         raid_event_in = 180,
     },
 
@@ -371,3 +372,4 @@ internal.resources = {
 
 -- Set up the per-time resources to match the base resources
 internal.resources.energy_per_time = internal.resources.energy
+internal.resources.mana_per_time_no_base = internal.resources.mana

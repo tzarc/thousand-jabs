@@ -26,6 +26,7 @@ actions+=/blood_fury
 actions+=/arcane_torrent
 actions+=/soul_harvest
 actions+=/potion,name=deadly_grace,if=buff.soul_harvest.remains|trinket.proc.any.react|target.time_to_die<=45
+actions+=/mortal_coil,if=equipped.132452
 actions+=/corruption,if=remains<=tick_time+gcd
 actions+=/corruption,cycle_targets=1,if=(talent.absolute_corruption.enabled|!talent.malefic_grasp.enabled|!talent.soul_effigy.enabled)&remains<=tick_time+gcd
 actions+=/siphon_life,if=remains<=tick_time+gcd

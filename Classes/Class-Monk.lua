@@ -7,53 +7,6 @@ local Config = TJ:GetModule('Config')
 
 -- exported with /tj _esd
 local brewmaster_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    brewmaster_abilities_exported = {
-        black_ox_brew = { SpellIDs = { 115399 }, TalentID = 22097, },
-        blackout_combo = { TalentID = 22104, },
-        blackout_strike = { SpellIDs = { 205523 }, },
-        breath_of_fire = { SpellIDs = { 115181 }, },
-        celerity = { TalentID = 19302, },
-        chi_burst = { SpellIDs = { 123986 }, TalentID = 19823, },
-        chi_torpedo = { SpellIDs = { 115008 }, TalentID = 19304, },
-        chi_wave = { SpellIDs = { 115098 }, TalentID = 20185, },
-        crackling_jade_lightning = { SpellIDs = { 117952 }, },
-        dampen_harm = { SpellIDs = { 122278 }, TalentID = 20175, },
-        detox = { SpellIDs = { 218164 }, },
-        diffuse_magic = { SpellIDs = { 122783 }, TalentID = 20173, },
-        effuse = { SpellIDs = { 116694 }, },
-        elusive_dance = { TalentID = 22106, },
-        expel_harm = { SpellIDs = { 115072 }, },
-        exploding_keg = { SpellIDs = { 214326 }, },
-        eye_of_the_tiger = { TalentID = 22091, },
-        fortifying_brew = { SpellIDs = { 115203 }, },
-        gift_of_the_mists = { TalentID = 22096, },
-        healing_elixir = { SpellIDs = { 122281 }, TalentID = 20174, },
-        high_tolerance = { TalentID = 22108, },
-        invoke_niuzao_the_black_ox = { SpellIDs = { 132578 }, TalentID = 22101, },
-        ironskin_brew = { SpellIDs = { 115308 }, },
-        keg_smash = { SpellIDs = { 121253 }, },
-        leg_sweep = { SpellIDs = { 119381 }, TalentID = 19995, },
-        light_brewing = { TalentID = 22098, },
-        paralysis = { SpellIDs = { 115078 }, },
-        provoke = { SpellIDs = { 115546 }, },
-        purifying_brew = { SpellIDs = { 119582 }, },
-        resuscitate = { SpellIDs = { 115178 }, },
-        ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19993, },
-        roll = { SpellIDs = { 109132 }, },
-        rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 19819, },
-        spear_hand_strike = { SpellIDs = { 116705 }, },
-        special_delivery = { TalentID = 22102, },
-        summon_black_ox_statue = { SpellIDs = { 115315 }, TalentID = 19994, },
-        tiger_palm = { SpellIDs = { 100780 }, },
-        tigers_lust = { SpellIDs = { 116841 }, TalentID = 19818, },
-        transcendence = { SpellIDs = { 101643 }, },
-        transcendence_transfer = { SpellIDs = { 119996 }, },
-        zen_meditation = { SpellIDs = { 115176 }, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     brewmaster_abilities_exported = {
         black_ox_brew = { SpellIDs = { 115399 }, TalentID = 22097, },
@@ -209,54 +162,6 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local windwalker_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    windwalker_abilities_exported = {
-        ascension = { TalentID = 19771, },
-        blackout_kick = { SpellIDs = { 100784 }, },
-        celerity = { TalentID = 19302, },
-        chi_burst = { SpellIDs = { 123986 }, TalentID = 19823, },
-        chi_orbit = { TalentID = 22107, },
-        chi_torpedo = { SpellIDs = { 115008 }, TalentID = 19304, },
-        chi_wave = { SpellIDs = { 115098 }, TalentID = 20185, },
-        crackling_jade_lightning = { SpellIDs = { 117952 }, },
-        dampen_harm = { SpellIDs = { 122278 }, TalentID = 20175, },
-        detox = { SpellIDs = { 218164 }, },
-        diffuse_magic = { SpellIDs = { 122783 }, TalentID = 20173, },
-        disable = { SpellIDs = { 116095 }, },
-        dizzying_kicks = { TalentID = 22100, },
-        effuse = { SpellIDs = { 116694 }, },
-        energizing_elixir = { SpellIDs = { 115288 }, TalentID = 22099, },
-        eye_of_the_tiger = { TalentID = 22091, },
-        fists_of_fury = { SpellIDs = { 113656 }, },
-        flying_serpent_kick = { SpellIDs = { 101545 }, },
-        healing_elixir = { SpellIDs = { 122281 }, TalentID = 20174, },
-        hit_combo = { TalentID = 22103, },
-        invoke_xuen_the_white_tiger = { SpellIDs = { 123904 }, TalentID = 20184, },
-        leg_sweep = { SpellIDs = { 119381 }, TalentID = 19995, },
-        paralysis = { SpellIDs = { 115078 }, },
-        power_strikes = { TalentID = 19992, },
-        provoke = { SpellIDs = { 115546 }, },
-        resuscitate = { SpellIDs = { 115178 }, },
-        ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19993, },
-        rising_sun_kick = { SpellIDs = { 107428 }, },
-        roll = { SpellIDs = { 109132 }, },
-        rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 19819, },
-        serenity = { SpellIDs = { 152173 }, TalentID = 21191, },
-        spear_hand_strike = { SpellIDs = { 116705 }, },
-        spinning_crane_kick = { SpellIDs = { 101546 }, },
-        storm_earth_and_fire = { SpellIDs = { 137639 }, },
-        strike_of_the_windlord = { SpellIDs = { 205320 }, },
-        tiger_palm = { SpellIDs = { 100780 }, },
-        tigers_lust = { SpellIDs = { 116841 }, TalentID = 19818, },
-        touch_of_death = { SpellIDs = { 115080 }, },
-        touch_of_karma = { SpellIDs = { 122470 }, },
-        transcendence = { SpellIDs = { 101643 }, },
-        transcendence_transfer = { SpellIDs = { 119996 }, },
-        whirling_dragon_punch = { SpellIDs = { 152175 }, TalentID = 22105, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     windwalker_abilities_exported = {
         ascension = { TalentID = 19771, },
