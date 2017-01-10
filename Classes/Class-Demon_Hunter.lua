@@ -10,51 +10,6 @@ local mfloor = math.floor
 
 -- exported with /tj _esd
 local vengeance_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    vengeance_abilities_exported = {
-        abyssal_strike = { TalentID = 22502, },
-        agonizing_flames = { TalentID = 22503, },
-        blade_turning = { TalentID = 22513, },
-        burning_alive = { TalentID = 22507, },
-        concentrated_sigils = { TalentID = 22546, },
-        consume_magic = { SpellIDs = { 183752 }, },
-        demon_spikes = { SpellIDs = { 203720 }, },
-        empower_wards = { SpellIDs = { 218256 }, },
-        fallout = { TalentID = 22766, },
-        feast_of_souls = { TalentID = 22505, },
-        feed_the_demon = { TalentID = 22508, },
-        fel_devastation = { SpellIDs = { 212084 }, TalentID = 22512, },
-        fel_eruption = { SpellIDs = { 211881 }, TalentID = 22540, },
-        felblade = { SpellIDs = { 232893 }, TalentID = 22324, },
-        fiery_brand = { SpellIDs = { 204021 }, },
-        flame_crash = { TalentID = 22541, },
-        fracture = { SpellIDs = { 209795 }, TalentID = 22509, },
-        glide = { SpellIDs = { 131347 }, },
-        immolation_aura = { SpellIDs = { 178740 }, },
-        imprison = { SpellIDs = { 217832 }, },
-        infernal_strike = { SpellIDs = { 189110 }, },
-        last_resort = { TalentID = 22543, },
-        metamorphosis = { SpellIDs = { 187827 }, },
-        nether_bond = { SpellIDs = { 207810 }, TalentID = 22548, },
-        quickened_sigils = { TalentID = 22511, },
-        razor_spikes = { TalentID = 22504, },
-        shear = { SpellIDs = { 203782 }, },
-        sigil_of_chains = { SpellIDs = { 202138, 207665 }, TalentID = 22510, },
-        sigil_of_flame = { SpellIDs = { 204513, 204596 }, },
-        sigil_of_misery = { SpellIDs = { 202140, 207684 }, },
-        sigil_of_silence = { SpellIDs = { 202137, 207682 }, },
-        soul_barrier = { SpellIDs = { 227225 }, TalentID = 21902, },
-        soul_carver = { SpellIDs = { 207407 }, },
-        soul_cleave = { SpellIDs = { 228477 }, },
-        soul_rending = { TalentID = 22770, },
-        spectral_sight = { SpellIDs = { 188501 }, },
-        spirit_bomb = { SpellIDs = { 218679 }, TalentID = 22768, },
-        throw_glaive = { SpellIDs = { 204157 }, },
-        torment = { SpellIDs = { 185245 }, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     vengeance_abilities_exported = {
         abyssal_strike = { TalentID = 22502, },
@@ -83,6 +38,7 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
         metamorphosis = { SpellIDs = { 187827 }, },
         quickened_sigils = { TalentID = 22511, },
         razor_spikes = { TalentID = 22504, },
+        sever = { SpellIDs = { 235964 }, },
         shear = { SpellIDs = { 203782 }, },
         sigil_of_chains = { SpellIDs = { 202138, 207665 }, TalentID = 22510, },
         sigil_of_flame = { SpellIDs = { 204513, 204596 }, },
@@ -154,6 +110,11 @@ local vengeance_base_overrides = {
         AuraApplyLength = 15,
     },
     shear = {
+        PerformCast = function(spell, env)
+            env.pain.gained = env.pain.gained + 10
+        end
+    },
+    sever = {
         PerformCast = function(spell, env)
             env.pain.gained = env.pain.gained + 10
         end
@@ -276,51 +237,6 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local havoc_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.4') then
-    havoc_abilities_exported = {
-        annihilation = { SpellIDs = { 201427 }, },
-        blade_dance = { SpellIDs = { 188499 }, },
-        blind_fury = { TalentID = 22416, },
-        bloodlet = { TalentID = 21862, },
-        blur = { SpellIDs = { 198589 }, },
-        chaos_blades = { SpellIDs = { 211048 }, TalentID = 21900, },
-        chaos_cleave = { TalentID = 22493, },
-        chaos_nova = { SpellIDs = { 179057 }, },
-        chaos_strike = { SpellIDs = { 162794 }, },
-        consume_magic = { SpellIDs = { 183752 }, },
-        darkness = { SpellIDs = { 196718 }, },
-        death_sweep = { SpellIDs = { 210152 }, },
-        demon_blades = { TalentID = 22765, },
-        demon_reborn = { TalentID = 22767, },
-        demonic = { TalentID = 22547, },
-        demonic_appetite = { TalentID = 22799, },
-        demons_bite = { SpellIDs = { 162243 }, },
-        desperate_instincts = { TalentID = 21864, },
-        eye_beam = { SpellIDs = { 198013 }, },
-        fel_barrage = { SpellIDs = { 211053 }, TalentID = 21901, },
-        fel_eruption = { SpellIDs = { 211881 }, TalentID = 21867, },
-        fel_mastery = { TalentID = 21854, },
-        fel_rush = { SpellIDs = { 195072 }, },
-        felblade = { SpellIDs = { 232893 }, TalentID = 22324, },
-        first_blood = { TalentID = 22494, },
-        fury_of_the_illidari = { SpellIDs = { 201467 }, },
-        glide = { SpellIDs = { 131347 }, },
-        imprison = { SpellIDs = { 217832 }, },
-        master_of_the_glaive = { TalentID = 21869, },
-        metamorphosis = { SpellIDs = { 191427 }, },
-        momentum = { TalentID = 21866, },
-        nemesis = { SpellIDs = { 206491 }, TalentID = 21868, },
-        netherwalk = { SpellIDs = { 196555 }, TalentID = 21863, },
-        prepared = { TalentID = 21857, },
-        soul_rending = { TalentID = 21865, },
-        spectral_sight = { SpellIDs = { 188501 }, },
-        throw_glaive = { SpellIDs = { 185123 }, },
-        unleashed_power = { TalentID = 21870, },
-        vengeful_retreat = { SpellIDs = { 198793 }, },
-    }
-end
-
--- exported with /tj _esd
 if TJ:MatchesBuild('7.1.5', '7.1.5') then
     havoc_abilities_exported = {
         annihilation = { SpellIDs = { 201427 }, },

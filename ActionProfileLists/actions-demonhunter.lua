@@ -28,6 +28,8 @@ actions+=/sigil_of_flame,if=remains-delay<=0.3*duration
 actions+=/fracture,if=pain>=80&soul_fragments<4&incoming_damage_4s<=health.max*0.20
 actions+=/soul_cleave,if=pain>=80
 actions+=/shear
+-- Manually added, as it's not in simulationcraft yet!
+actions+=/sever
 ]]
 
 internal.apls['legion-dev::demonhunter::havoc'] = [[
