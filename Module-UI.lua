@@ -130,7 +130,7 @@ local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
         self:SetSize(size, size)
     end
 
-    button.overlayText = button:CreateFontString(name..'Name', "OVERLAY", "GameFontHighlight")
+    button.overlayText = button:CreateFontString(name..'Name', "OVERLAY", "GameFontHighlightSmall")
     button.overlayText:SetParent(button)
     button.overlayText:SetText('')
 
