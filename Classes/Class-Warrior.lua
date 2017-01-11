@@ -72,14 +72,20 @@ local arms_base_overrides = {
         end,
     },
     execute = {
+        cost_type = 'fury',
+        fury_min = 10,
+        fury_max = 40,
+        fury_cost = function(spell, env)
+            return mmin(spell.fury_max, mmax(spell.fury_min, env.fury.curr))
+        end,
         CanCast = function(spell,env)
             return env.health.target_percent < 20
         end,
     },
     mortal_strike = {
         PerformCast = function(spell,env)
-            if env.health.target_percent < 20 then
-                env.rage.gained = env.rage.gained + 20
+            if env.health.target_percent < 20 and env.in_for_the_kill.talent_enabled then
+                env.rage.gained = env.rage.gained + 30
             end
         end,
     },
@@ -88,7 +94,7 @@ local arms_base_overrides = {
         AuraUnit = 'target',
         AuraMine = true,
         AuraApplied = 'colossus_smash',
-        AuraApplyLength = 15,
+        AuraApplyLength = 8,
     },
     battle_cry = {
         AuraID = 1719,
@@ -228,7 +234,7 @@ local protection_overrides = {
             return (12 <= env.movement.distance and env.movement.distance <= 25) -- tooltip says 8, but in-game range is 12... does tooltip mean range-to-max-melee?
         end,
         PerformCast = function(spell,env)
-            env.rage.gained = env.rage.gained + 10
+            env.rage.gained = env.rage.gained + 15
             env.movement.distance = 5 -- melee
         end,
     },
@@ -253,7 +259,9 @@ local protection_overrides = {
         AuraApplied = 'demoralizing_shout',
         AuraApplyLength = 8,
         PerformCast = function(spell, env)
-            env.rage.gained = env.rage.gained + 50
+            if env.booming_voice.talent_enabled then
+                env.rage.gained = env.rage.gained + 60
+            end
         end,
     },
     heroic_leap = {

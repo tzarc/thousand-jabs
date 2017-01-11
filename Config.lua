@@ -154,8 +154,7 @@ AC:RegisterOptionsTable(addonName, function()
                         end,
                         set = function(info, val)
                             Config:Set(val and true or false, "allowBetaProfiles")
-                            TJ:DeactivateProfile()
-                            TJ:ActivateProfile()
+                            TJ:QueueProfileReload()
                             UI:UpdateAlpha()
                         end
                     },
@@ -177,8 +176,7 @@ AC:RegisterOptionsTable(addonName, function()
                         end,
                         set = function(info, val)
                             Config:Set(val, "displayMode")
-                            TJ:DeactivateProfile()
-                            TJ:ActivateProfile()
+                            TJ:QueueProfileReload()
                             UI:ReapplyLayout()
                             UI:UpdateAlpha()
                         end
@@ -402,8 +400,7 @@ AC:RegisterOptionsTable(addonName, function()
                     end,
                     set = function(info, val)
                         Config:Set(val and true or false, "class", classID, "spec", specID, "disabled")
-                        TJ:DeactivateProfile()
-                        TJ:ActivateProfile()
+                        TJ:QueueProfileReload()
                         UI:UpdateAlpha()
                     end
                 },
@@ -434,9 +431,7 @@ AC:RegisterOptionsTable(addonName, function()
                         end,
                         set = function(info, val)
                             Config:Set(val and true or false, "class", classID, "spec", specID, "config", e)
-                            TJ:DeactivateProfile()
-                            TJ:ActivateProfile()
-                            TJ:QueueUpdate()
+                            TJ:QueueProfileReload()
                             UI:UpdateAlpha()
                         end
                     }
@@ -452,9 +447,7 @@ AC:RegisterOptionsTable(addonName, function()
                         end,
                         set = function(info, val)
                             Config:Set(val, "class", classID, "spec", specID, "config", e)
-                            TJ:DeactivateProfile()
-                            TJ:ActivateProfile()
-                            TJ:QueueUpdate()
+                            TJ:QueueProfileReload()
                             UI:UpdateAlpha()
                         end
                     }
@@ -491,9 +484,7 @@ AC:RegisterOptionsTable(addonName, function()
                     end,
                     set = function(info, val)
                         Config:Set(val and true or false, "class", classID, "spec", specID, "blacklist", k)
-                        TJ:DeactivateProfile()
-                        TJ:ActivateProfile()
-                        TJ:QueueUpdate()
+                        TJ:QueueProfileReload()
                         UI:UpdateAlpha()
                     end
                 }

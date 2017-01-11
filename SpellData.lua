@@ -3,6 +3,8 @@ local TJ = internal.TJ
 local Debug = internal.Debug
 local fmt = internal.fmt
 
+local TableCache = TJ:GetModule('TableCache')
+
 local LSD = LibStub("LibSerpentDump")
 
 local BOOKTYPE_PET = BOOKTYPE_PET
@@ -380,7 +382,7 @@ function TJ:GetTooltipEntries(link)
     tts:ClearLines()
     tts:SetHyperlink(link)
     local tooltipName = tts:GetName()
-    local entries = {}
+    local entries = TableCache:Acquire()
 
     local function checkadd(x)
         local frm = real_G[tooltipName..x]
@@ -392,8 +394,12 @@ function TJ:GetTooltipEntries(link)
         else
             local xt = frm:GetText()
             if xt ~= "" then
-                local e = { t = xt or "", c = {frm:GetTextColor()} }
-                e.cb = { mfloor(e.c[1]*256), mfloor(e.c[2]*256), mfloor(e.c[3]*256) }
+                local e = TableCache:Acquire()
+                e.t = xt or ""
+                e.c = TableCache:Acquire()
+                e.c[1], e.c[2], e.c[3] = frm:GetTextColor()
+                e.cb = TableCache:Acquire()
+                e.cb[1], e.cb[2], e.cb[3] = mfloor(e.c[1]*256), mfloor(e.c[2]*256), mfloor(e.c[3]*256)
                 entries[1+#entries] = e
             end
         end
@@ -436,6 +442,7 @@ for _,v in pairs(PowerTypes) do
         end
     end
 end
+internal.PowerPatterns = PowerPatterns
 
 local DurationChecks = { 'days', 'hours', 'min', 'sec' }
 local DurationMultiplier = { days = 86400, hours = 3600, min = 60, sec = 1 }
@@ -479,6 +486,8 @@ for _,v in pairs(DurationChecks) do
         end
     end
 end
+internal.CooldownPatterns = CooldownPatterns
+internal.RechargePatterns = RechargePatterns
 
 function TJ:GetSpellCost(spellID)
     local entries = self:GetTooltipEntries(fmt('|cff71d5ff|Hspell:%d|h[spell%d]|h|r', spellID))
@@ -490,26 +499,30 @@ function TJ:GetSpellCost(spellID)
             if b then b = b:gsub('%D', '') + 0 end
             if c then c = c:gsub('%D', '') + 0 end
             if a then
-                return v[1], a, b, c
+                TableCache:Release(entries)
+                return v[1], a, b, c --, { result = { a, b, c }, matchtext = e.t, pattern = v }
             end
         end
     end
+    TableCache:Release(entries)
 end
 
 local function split(str, delim)
-    local t = {}
+    local t = TableCache:Acquire()
     local function helper(s) tinsert(t, s) return "" end
     helper((str:gsub("(.-)"..delim, helper)))
     return t
 end
 
+local reconv = { ['.'] = '%.', [','] = ',', [' '] = '%s' }
 local function extract_number(str)
     local str = str:gsub('[^,%.%d]', '')
-    local reconv = { ['.'] = '%.', [','] = ',', [' '] = '%s' }
     local vals = split(str, '['..reconv[DECIMAL_SEPERATOR]..']')
     vals[1] = LARGE_NUMBER_SEPERATOR and LARGE_NUMBER_SEPERATOR:len() > 0 and vals[1]:gsub('['..reconv[LARGE_NUMBER_SEPERATOR]..']', '') or vals[1]
     vals[2] = '0.' .. (vals[2] or '0')
-    return tonumber(vals[1]) + tonumber(vals[2])
+    local out = tonumber(vals[1]) + tonumber(vals[2])
+    TableCache:Release(vals)
+    return out
 end
 
 local function get_spell_cooldown_or_recharge(spellID, patterns)
@@ -518,10 +531,13 @@ local function get_spell_cooldown_or_recharge(spellID, patterns)
         for k,v in pairs(patterns) do
             local r = e.t:match(v[2])
             if r then
-                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb), { result = r, matchtext = e.t, tooltip = entries, pattern = v }
+                local isGreen = IsGreen(e.cb)
+                TableCache:Release(entries)
+                return extract_number(r) * DurationMultiplier[v[1]], isGreen --, { result = r, matchtext = e.t, pattern = v }
             end
         end
     end
+    TableCache:Release(entries)
     return 0
 end
 
@@ -551,4 +567,5 @@ function TJ:ScanTooltip(link, callback, pattern, colour)
             callback(e.t, e.cb)
         end
     end
+    TableCache:Release(entries)
 end

@@ -13,8 +13,8 @@ local LSD = LibStub('LibSerpentDump')
 local co_create = coroutine.create
 local co_status = coroutine.status
 local co_resume = coroutine.resume
+local debugprofilestop = debugprofilestop
 local pairs = pairs
-local pcall = pcall
 local select = select
 local tostring = tostring
 local NewTicker = C_Timer.NewTicker
@@ -25,6 +25,8 @@ local GetTime = GetTime
 local UnitChannelInfo = UnitChannelInfo
 local UnitClass = UnitClass
 local UnitSpellHaste = UnitSpellHaste
+local UpdateAddOnCPUUsage = UpdateAddOnCPUUsage
+local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 
 internal.Safety()
 
@@ -160,10 +162,15 @@ function TJ:QueueUpdate()
 
     if not screenUpdateTimer then
         watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
-        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdate() end)
+        screenUpdateTimer = NewTicker(internal.debugMode and 0.01 or 0.1, function() TJ:PerformUpdate() end)
     end
 
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
+end
+
+function TJ:QueueProfileReload()
+    self.needsProfileReload = true
+    self:QueueUpdate()
 end
 
 function TJ:PerformUpdate()
@@ -202,6 +209,15 @@ function TJ:PerformUpdate()
 
     -- Update stats
     UpdateUsageStatistics()
+
+    if self.needsProfileReload then
+        self.needsProfileReload = nil
+
+        -- Deactivate the current profile
+        self:DeactivateProfile()
+        -- Activate the new profile if present
+        self:ActivateProfile()
+    end
 
     if self.currentProfile then
         -- Set up frame fading
@@ -267,10 +283,8 @@ function TJ:ActivateProfile()
         -- Activate the profile
         self.currentProfile:Activate()
 
-        -- Create new state objects
-        self.st_state = self:CreateNewState(1)
-        self.cleave_state = self:CreateNewState(2)
-        self.aoe_state = self:CreateNewState(3)
+        -- Create new state
+        self.state = self:CreateNewState()
 
         -- Show the frame
         UI:Show()
@@ -278,13 +292,13 @@ function TJ:ActivateProfile()
         UI:UpdateAlpha()
 
         -- Register event listeners
-        TJ:RegisterEvent('PLAYER_LEVEL_UP')
+        TJ:RegisterEvent('PLAYER_LEVEL_UP', 'GENERIC_RELOAD_PROFILE_HANDLER')
         TJ:RegisterEvent('PLAYER_REGEN_ENABLED')
         TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
         TJ:RegisterEvent('PLAYER_TARGET_CHANGED')
         TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
         TJ:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-        TJ:RegisterEvent('PLAYER_TALENT_UPDATE')
+        TJ:RegisterEvent('PLAYER_TALENT_UPDATE', 'GENERIC_RELOAD_PROFILE_HANDLER')
         TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('UNIT_POWER')
         TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
@@ -307,9 +321,7 @@ function TJ:DeactivateProfile()
     UI:Hide()
 
     -- Destroy states
-    if self.st_state then self.st_state = nil end
-    if self.cleave_state then self.cleave_state = nil end
-    if self.aoe_state then self.aoe_state = nil end
+    if self.state then self.state = nil end
 
     -- Remove event listeners
     TJ:UnregisterEvent('UNIT_POWER_FREQUENT')
@@ -335,73 +347,78 @@ end
 Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Queued profile actions
+------------------------------------------------------------------------------------------------------------------------
+
+function TJ:ExportCurrentProfile()
+    if self.currentProfile and self.state then
+        local dbg = self:GenerateDebuggingInformation()
+        local actionsTable = self.state:ExportActionsTable()
+        self:OpenDebugWindow(addonName..' Current profile', 'zzzz='..LSD({
+            ['!dbg'] = dbg,
+            ['actions'] = actionsTable,
+            ['parsed'] = self.currentProfile.parsedActions,
+        }))
+    end
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- APL Execution
 ------------------------------------------------------------------------------------------------------------------------
 
 function TJ:ExecuteAllActionProfiles()
-    local ok, err = pcall(function()
-        -- Work out how many targets we're dealing with
-        local targetCount = 0
-        if Config:Get('displayMode') == 'automatic' then
-            for k,v in pairs(self.seenTargets) do
-                targetCount = targetCount + 1
-            end
-        else
-            targetCount = 1
+    -- Work out how many targets we're dealing with
+    local targetCount = 0
+    if Config:Get('displayMode') == 'automatic' then
+        for k,v in internal.orderedpairs(self.seenTargets) do
+            targetCount = targetCount + 1
+        end
+    else
+        targetCount = 1
+    end
+
+    -- Reset the single-target state
+    Debug("")
+    Debug(Config:Get('displayMode') ~= 'automatic' and "|cFFFFFFFFSingle Target|r" or "|cFFFFFFFFAutomatic Target Counting|r" )
+    self.state:Reset(targetCount)
+
+    -- Export the current profile state just after reset, if requested
+    if self.needExportCurrentProfile then
+        self.needExportCurrentProfile = nil
+        self:DevPrint("Exporting current profile...")
+        self:ExportCurrentProfile()
+    end
+
+    -- Calculate the single-target profiles
+    local action = self.state:PredictNextAction() or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon, self.state.env[action].Name)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon, self.state.env[action].Name)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon, self.state.env[action].Name)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon, self.state.env[action].Name)
+
+    if Config:Get('displayMode') ~= 'automatic' then
+        if Config:Get('showCleave') then
+            Debug("")
+            Debug("|cFFFFFFFFCleave|r")
+            self.state:Reset(2)
+            action = self.state:PredictNextAction() or "wait"
+            UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon, self.state.env[action].Name)
+            action = self.state:PredictActionFollowing(action) or "wait"
+            UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon, self.state.env[action].Name)
         end
 
-        -- Reset the single-target state
-        Debug("")
-        Debug("|cFFFFFFFFSingle Target|r")
-        self.st_state:Reset(targetCount)
-
-        -- Export the current profile state just after reset, if requested
-        if self.needExportCurrentProfile then
-            self.needExportCurrentProfile = nil
-            local dbg = self:GenerateDebuggingInformation()
-            local actionsTable = self.st_state:ExportActionsTable()
-            self:OpenDebugWindow(addonName..' Current profile', 'zzzz='..LSD({
-                ['!dbg'] = dbg,
-                ['actions'] = actionsTable,
-                ['parsed'] = self.currentProfile.parsedActions,
-            }))
+        if Config:Get('showAoE') then
+            Debug("")
+            Debug("|cFFFFFFFFAoE|r")
+            self.state:Reset(3)
+            action = self.state:PredictNextAction() or "wait"
+            UI:SetAction(UI.AOE, 1, self.state.env[action].Icon, self.state.env[action].Name)
+            action = self.state:PredictActionFollowing(action) or "wait"
+            UI:SetAction(UI.AOE, 2, self.state.env[action].Icon, self.state.env[action].Name)
         end
-
-        -- Calculate the single-target profiles
-        local action = self.st_state:PredictNextAction() or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 1, self.st_state.env[action].Icon, self.st_state.env[action].Name)
-        action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 2, self.st_state.env[action].Icon, self.st_state.env[action].Name)
-        action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 3, self.st_state.env[action].Icon, self.st_state.env[action].Name)
-        action = self.st_state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 4, self.st_state.env[action].Icon, self.st_state.env[action].Name)
-
-        if Config:Get('displayMode') ~= 'automatic' then
-            if Config:Get('showCleave') then
-                Debug("")
-                Debug("|cFFFFFFFFCleave|r")
-                self.cleave_state:Reset()
-                action = self.cleave_state:PredictNextAction() or "wait"
-                UI:SetAction(UI.CLEAVE, 1, self.cleave_state.env[action].Icon, self.st_state.env[action].Name)
-                action = self.cleave_state:PredictActionFollowing(action) or "wait"
-                UI:SetAction(UI.CLEAVE, 2, self.cleave_state.env[action].Icon, self.st_state.env[action].Name)
-            end
-
-            if Config:Get('showAoE') then
-                Debug("")
-                Debug("|cFFFFFFFFAoE|r")
-                self.aoe_state:Reset()
-                action = self.aoe_state:PredictNextAction() or "wait"
-                UI:SetAction(UI.AOE, 1, self.aoe_state.env[action].Icon, self.st_state.env[action].Name)
-                action = self.aoe_state:PredictActionFollowing(action) or "wait"
-                UI:SetAction(UI.AOE, 2, self.aoe_state.env[action].Icon, self.st_state.env[action].Name)
-            end
-        end
-    end)
-
-    if not ok then
-        internal.error(fmt("Error executing action profiles:\n%s", tostring(err)))
     end
 end
 
@@ -413,12 +430,13 @@ Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 function TJ:OnEnable()
     -- Add event listeners
-    self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED')
-    self:RegisterEvent('ZONE_CHANGED')
-    self:RegisterEvent('ZONE_CHANGED_INDOORS', 'ZONE_CHANGED')
-    self:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'ZONE_CHANGED')
-    self:RegisterEvent('PLAYER_ENTERING_WORLD', 'ZONE_CHANGED')
-    self:RegisterEvent('SPELLS_CHANGED')
+    self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
+    self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('ZONE_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('ZONE_CHANGED_INDOORS', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('PLAYER_ENTERING_WORLD', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('SPELLS_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
 
     -- Create the UI
     UI:CreateFrames()
@@ -473,6 +491,7 @@ function TJ:OnDisable()
     self:UnregisterEvent('ZONE_CHANGED_INDOORS')
     self:UnregisterEvent('ZONE_CHANGED')
     self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED')
+    self:UnregisterEvent('ACTIONBAR_SLOT_CHANGED')
 end
 
 ------------------------------------------------------------------------------------------------------------------------

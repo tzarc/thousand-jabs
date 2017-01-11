@@ -57,13 +57,16 @@ local tsort = table.sort
 local type = type
 local wipe = wipe
 local CreateFrame = CreateFrame
+local GetActionInfo = GetActionInfo
 local GetAddOnMetadata = GetAddOnMetadata
 local GetBuildInfo = GetBuildInfo
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventorySlotInfo = GetInventorySlotInfo
 local GetLocale = GetLocale
+local GetMacroSpell = GetMacroSpell
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
+local GetSpellInfo = GetSpellInfo
 local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
 local InCombatLockdown = InCombatLockdown
 local UnitClass = UnitClass
@@ -184,7 +187,7 @@ function internal.fmt(f, ...)
 end
 
 function internal.orderedpairs(t, f)
-    local a = {}
+    local a = TableCache:Acquire()
     for n in pairs(t) do tinsert(a, n) end
     tsort(a, f)
     local i = 0
@@ -192,6 +195,7 @@ function internal.orderedpairs(t, f)
         i = i + 1
         local k = a[i]
         if k == nil then
+            TableCache:Release(a)
             return nil
         else
             return k, t[k]
@@ -228,7 +232,8 @@ local function scope_finalise(scope, success, ...)
         end
     end
     TableCache:Release(scope)
-    return success, ...
+    if not success then error(...) end
+    return ...
 end
 
 function internal.scoped(f, ...)
@@ -342,6 +347,21 @@ local function equippedItems()
     return slotlinks
 end
 
+local function bindings()
+    local binds = {}
+    for i=1,120 do
+        local _, spellID
+        local actionType, actionID = GetActionInfo(i)
+        if actionType == "macro" then
+            _, _, spellID = GetMacroSpell(actionID)
+        elseif actionType == "spell" then
+            spellID = actionID
+        end
+        binds[tostring(i)] = spellID and { spellID, spellID and GetSpellInfo(spellID) or '' } or nil
+    end
+    return binds
+end
+
 function TJ:GenerateDebuggingInformation()
     local totalAllocated, totalAcquired, totalReleased = TableCache:GetMetrics()
     local export = {
@@ -355,6 +375,7 @@ function TJ:GenerateDebuggingInformation()
             specInfo = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
             talentInfo = tierSelections(),
         },
+        --bindings = bindings(),
         frame = {
             position = { UI:GetPoint() },
             scale = UI:GetScale(),
@@ -375,6 +396,11 @@ function TJ:GenerateDebuggingInformation()
                 released = totalReleased,
                 used = totalAcquired - totalReleased
             },
+            patterns = {
+                power = internal.PowerPatterns,
+                cooldown = internal.CooldownPatterns,
+                recharge = internal.RechargePatterns,
+            }
         },
     }
     if type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then

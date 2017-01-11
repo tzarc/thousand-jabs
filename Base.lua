@@ -17,6 +17,7 @@ local error = error
 local loadstring = loadstring
 local pairs = pairs
 local pcall = pcall
+local select = select
 local setmetatable = setmetatable
 local tinsert = table.insert
 local tonumber = tonumber
@@ -135,12 +136,11 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 function TJ:MergeTables(...)
-    local t = {...}
     local target = {}
-    for i=1,#t do
-        local idx = #t-i+1
-        if t[idx] then
-            for k,v in pairs(t[idx]) do
+    for i=1,select('#', ...) do
+        local t = select(i, ...)
+        if t then
+            for k,v in pairs(t) do
                 if type(target[k]) == 'table' and type(v) == 'table' then
                     target[k] = self:MergeTables(target[k], v)
                 elseif not target[k] then
@@ -186,8 +186,7 @@ function TJ:ConsoleCommand(args)
             self:QueueUpdate()
         end
     elseif argv[1] == '_rp' then
-        self:DeactivateProfile()
-        self:ActivateProfile()
+        self:QueueProfileReload()
     elseif argv[1] == "_dbg" then
         if Config:Get("do_debug") then
             Config:Set(false, "do_debug")

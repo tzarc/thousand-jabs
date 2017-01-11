@@ -17,6 +17,7 @@ local setfenv = setfenv
 local setmetatable = setmetatable
 local tconcat = table.concat
 local tcontains = tContains
+local tinsert = table.insert
 local tonumber = tonumber
 local tostring = tostring
 local type = type
@@ -25,6 +26,7 @@ local GetInventoryItemID = GetInventoryItemID
 local GetSpellCharges = GetSpellCharges
 local GetSpellCooldown = GetSpellCooldown
 local GetSpellCount = GetSpellCount
+local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
@@ -33,7 +35,15 @@ local UnitSpellHaste = UnitSpellHaste
 
 internal.Safety()
 
-local safeTableEntries = { 'type', 'tostring', 'hooks', 'can_spend', 'perform_spend', 'OnStateInit', 'OnPredictActionAtOffset' }
+local safeTableEntries = {
+    'type',
+    'tostring',
+    'hooks',
+    'can_spend',
+    'perform_spend',
+    'OnStateInit',
+    'OnPredictActionAtOffset'
+}
 
 local function convertToNumber(n)
     if type(n) == 'number' then
@@ -156,7 +166,7 @@ local function CreateEquippedTable(state, profile)
         __env = state.env,
         __profile = profile,
         __index = function(tbl,idx)
-            local ae = getmetatable(tbl).__state.actually_equipped
+            local ae = getmetatable(tbl).__state.actuallyEquipped
             if type(idx) == "number" then
                 return ae[idx] and true or false
             elseif type(idx) == "string" then
@@ -195,12 +205,11 @@ local function StateResetPrototype(self, targetCount)
     end
 
     -- Work out which items are actually equipped
-    self.actually_equipped = rawget(self, 'actually_equipped') or {}
-    wipe(self.actually_equipped)
+    wipe(self.actuallyEquipped)
     for i=1,30 do
         local ok, itemid = pcall(GetInventoryItemID, 'player', i)
         if ok and itemid then
-            self.actually_equipped[itemid] = true
+            self.actuallyEquipped[itemid] = true
         end
     end
 
@@ -266,7 +275,7 @@ local function StateResetPrototype(self, targetCount)
     end
 
     -- Set the initial parameters
-    env.ptr = TJ:MatchesBuild('7.1.5')
+    env.ptr = false -- TJ:MatchesBuild('7.1.5')
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
@@ -482,6 +491,15 @@ local function exportVisitor(env, ctx, t)
             out[k] = v
         end
     end
+
+    if out.AbilityID then
+        out.AbilityTooltipEntries = {}
+        local tooltip = TJ:GetTooltipEntries(fmt('spell:%d', out.AbilityID))
+        for k,v in pairs(tooltip) do
+            tinsert(out.AbilityTooltipEntries, v.t)
+        end
+        TableCache:Release(tooltip)
+    end
     return out
 end
 local function StateExportActionsTablePrototype(self)
@@ -504,6 +522,7 @@ function TJ:CreateNewState(numTargets)
     state.profile = profile
     state.lastCastTimes = {}
     state.abilitiesUsed = {}
+    state.actuallyEquipped = {}
 
     -- Set up proxy tables
     state.env = CreateStateEnvTable(state, profile)
@@ -534,6 +553,6 @@ function TJ:CreateNewState(numTargets)
     Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
 
     -- Reset the state by default, populating with initial data
-    state:Reset()
+    state:Reset(1)
     return state
 end

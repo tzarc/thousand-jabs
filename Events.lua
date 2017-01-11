@@ -5,7 +5,11 @@ local fmt = internal.fmt
 
 local pairs = pairs
 local rawget = rawget
+local tostring = tostring
 local wipe = wipe
+local GetActionInfo = GetActionInfo
+local GetMacroSpell = GetMacroSpell
+local GetSpellInfo = GetSpellInfo
 local GetTime = GetTime
 local UnitExists = UnitExists
 local UnitGUID = UnitGUID
@@ -34,33 +38,29 @@ function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
-function TJ:ZONE_CHANGED(eventName)
+function TJ:ACTIONBAR_SLOT_CHANGED(eventName, slot, ...)
+    self:GENERIC_RELOAD_PROFILE_HANDLER(eventName, slot, ...)
+    --[[
+    if slot ~= 0 then
+    local _, spellID
+    local actionType, actionID = GetActionInfo(slot)
+    if actionType == "macro" then
+    _, _, spellID = GetMacroSpell(actionID)
+    elseif actionType == "spell" then
+    spellID = actionID
+    end
+    self:DevPrint('ActionBar slot %s changed to spell %s: %s', tostring(slot), tostring(spellID), tostring(GetSpellInfo(spellID) or 'unknown'))
+    end
+    ]]
+end
+
+function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
-    -- Deactivate the current profile
-    self:DeactivateProfile()
-    -- Activate the new profile if present
-    self:ActivateProfile()
+    -- Queue up a profile reload
+    self:QueueProfileReload()
     -- Notify the profile
-    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
-end
-
-function TJ:PLAYER_LEVEL_UP(eventName)
-    -- Deactivate the current profile
-    self:DeactivateProfile()
-    -- Activate the new profile if present
-    self:ActivateProfile()
-    -- Notify the profile
-    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
-end
-
-function TJ:SPELLS_CHANGED(eventName)
-    -- Deactivate the current profile
-    self:DeactivateProfile()
-    -- Activate the new profile if present
-    self:ActivateProfile()
-    -- Notify the profile
-    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
+    self:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
 end
 
 function TJ:UNIT_POWER(eventName, unitID, powerType)
@@ -68,26 +68,6 @@ function TJ:UNIT_POWER(eventName, unitID, powerType)
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, powerType)
     end
-end
-
-function TJ:PLAYER_SPECIALIZATION_CHANGED(eventName, unitID)
-    if unitID == 'player' then
-        -- Deactivate the current profile
-        self:DeactivateProfile()
-        -- Activate the new profile if present
-        self:ActivateProfile()
-        -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID)
-    end
-end
-
-function TJ:PLAYER_TALENT_UPDATE(eventName)
-    -- Deactivate the current profile
-    self:DeactivateProfile()
-    -- Activate the new profile if present
-    self:ActivateProfile()
-    -- Notify the profile
-    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
 function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)

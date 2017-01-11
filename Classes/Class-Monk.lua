@@ -284,6 +284,15 @@ local windwalker_talent_overrides = {
     healing_elixir = {
         spell_cast_time = 0.01, -- off GCD!
     },
+    rushing_jade_wind = {
+        AuraApplied = 'mark_of_the_crane',
+        AuraApplyLength = 14,
+    },
+    mark_of_the_crane = { -- from RJW
+        AuraID = 228287,
+        AuraUnit = 'target',
+        AuraMine = true,
+    }
 }
 
 local windwalker_artifact_overrides = {

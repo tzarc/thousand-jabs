@@ -157,13 +157,31 @@ end
 
 local unholy_base_abilities = {
     outbreak = {
-        AuraApplied = 'virulent_plague',
-        AuraApplyLength = 20,
+        AuraID = 196782,
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'outbreak',
+        AuraApplyLength = 6,
+        PerformCast = function(spell, env)
+            env.virulent_plague.expirationTime = env.currentTime + 20
+        end
     },
     death_and_decay = {
         AuraID = 188290,
         AuraUnit = 'player',
         AuraMine = true,
+    },
+    death_coil = {
+        -- This needs to be manually specified - if there's a profile reload while sudden doom is up, then there's no cost associated with it
+        cost_type = 'runic_power',
+        runic_power_cost = function(spell, env)
+            return env.sudden_doom.aura_up and 0 or 35
+        end,
+        PerformCast = function(spell, env)
+            if env.sudden_doom.aura_up then
+                env.sudden_doom.expirationTime = 0
+            end
+        end,
     },
     defile = {
         AuraID = 218100,

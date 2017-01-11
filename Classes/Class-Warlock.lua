@@ -101,11 +101,17 @@ local destruction_base_overrides = {
         end,
     },
     life_tap = {
+        aura_duration = function(spell, env)
+            return env.empowered_life_tap.talent_enabled and 20 or 0
+        end,
         CanCast = function(spell, env)
             return (env.health.percent > 10) and true or false
         end,
         PerformCast = function(spell, env)
             env.mana.gained = env.mana.gained + (env.mana.max * 0.3)
+            if env.empowered_life_tap.talent_enabled then
+                env.empowered_life_tap.expirationTime = env.currentTime + 20
+            end
         end,
     },
     backdraft = {
@@ -159,6 +165,11 @@ local destruction_talent_overrides = {
                 or 0
         end,
     },
+    empowered_life_tap = {
+        AuraID = 235156,
+        AuraUnit = 'player',
+        AuraMine = true
+    }
 }
 
 local havocTarget = {
@@ -178,9 +189,9 @@ local destruction_events = {
 
             -- Wipe out any data tracking Immolate targets w.r.t. Roaring Blaze
             roaringBlazeStacks[destGUID] = nil
-        elseif sourceGUID == UnitGUID('player') and combatEvent == "SPELL_AURA_APPLIED" and arg12 == 80240 then -- Havoc applied by player
+        elseif sourceGUID == UnitGUID('player') and (combatEvent == "SPELL_AURA_APPLIED" or combatEvent == "SPELL_AURA_REFRESH") and arg12 == 80240 then -- Havoc applied by player
             havocTarget.targetGUID = destGUID
-            havocTarget.timeApplied = GetTime()
+            havocTarget.timeApplied = GetTime() - 2 -- subtract 2 seconds as it likes to timeout midway thru Chaos Bolt
         elseif sourceGUID == UnitGUID('player') and arg12 == 157736 then -- Immolate/Roaring Blaze stack handling
             if combatEvent == "SPELL_AURA_APPLIED" or combatEvent == "SPELL_AURA_REFRESH" then
                 roaringBlazeStacks[destGUID] = 0

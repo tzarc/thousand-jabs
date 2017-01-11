@@ -484,7 +484,8 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Get the resource cost
-                local costType, costBase, costPerTime = TJ:GetSpellCost(v.AbilityID)
+                local costType, costBase, costPerTime, cost3, matched = TJ:GetSpellCost(v.AbilityID)
+                v.cost_tt_match = matched
 
                 -- If this action has an associated cost, add the correct value to the table and update the functions accordingly
                 costType = costType or rawget(v, 'cost_type')
