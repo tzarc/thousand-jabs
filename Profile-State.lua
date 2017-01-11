@@ -494,9 +494,11 @@ local function exportVisitor(env, ctx, t)
 
     if out.AbilityID then
         out.AbilityTooltipEntries = {}
-        for k,v in pairs(TJ:GetTooltipEntries(fmt('spell:%d', out.AbilityID))) do
+        local tooltip = TJ:GetTooltipEntries(fmt('spell:%d', out.AbilityID))
+        for k,v in pairs(tooltip) do
             tinsert(out.AbilityTooltipEntries, v.t)
         end
+        TableCache:Release(tooltip)
     end
     return out
 end

@@ -15,7 +15,6 @@ local co_status = coroutine.status
 local co_resume = coroutine.resume
 local debugprofilestop = debugprofilestop
 local pairs = pairs
-local pcall = pcall
 local select = select
 local tostring = tostring
 local NewTicker = C_Timer.NewTicker
@@ -368,64 +367,58 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 function TJ:ExecuteAllActionProfiles()
-    local ok, err = pcall(function()
-        -- Work out how many targets we're dealing with
-        local targetCount = 0
-        if Config:Get('displayMode') == 'automatic' then
-            for k,v in pairs(self.seenTargets) do
-                targetCount = targetCount + 1
-            end
-        else
-            targetCount = 1
+    -- Work out how many targets we're dealing with
+    local targetCount = 0
+    if Config:Get('displayMode') == 'automatic' then
+        for k,v in internal.orderedpairs(self.seenTargets) do
+            targetCount = targetCount + 1
+        end
+    else
+        targetCount = 1
+    end
+
+    -- Reset the single-target state
+    Debug("")
+    Debug(Config:Get('displayMode') ~= 'automatic' and "|cFFFFFFFFSingle Target|r" or "|cFFFFFFFFAutomatic Target Counting|r" )
+    self.state:Reset(targetCount)
+
+    -- Export the current profile state just after reset, if requested
+    if self.needExportCurrentProfile then
+        self.needExportCurrentProfile = nil
+        self:DevPrint("Exporting current profile...")
+        self:ExportCurrentProfile()
+    end
+
+    -- Calculate the single-target profiles
+    local action = self.state:PredictNextAction() or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon)
+    action = self.state:PredictActionFollowing(action) or "wait"
+    UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon)
+
+    if Config:Get('displayMode') ~= 'automatic' then
+        if Config:Get('showCleave') then
+            Debug("")
+            Debug("|cFFFFFFFFCleave|r")
+            self.state:Reset(2)
+            action = self.state:PredictNextAction() or "wait"
+            UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon)
+            action = self.state:PredictActionFollowing(action) or "wait"
+            UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon)
         end
 
-        -- Reset the single-target state
-        Debug("")
-        Debug("|cFFFFFFFFSingle Target|r")
-        self.state:Reset(targetCount)
-
-        -- Export the current profile state just after reset, if requested
-        if self.needExportCurrentProfile then
-            self.needExportCurrentProfile = nil
-            self:DevPrint("Exporting current profile...")
-            self:ExportCurrentProfile()
+        if Config:Get('showAoE') then
+            Debug("")
+            Debug("|cFFFFFFFFAoE|r")
+            self.state:Reset(3)
+            action = self.state:PredictNextAction() or "wait"
+            UI:SetAction(UI.AOE, 1, self.state.env[action].Icon)
+            action = self.state:PredictActionFollowing(action) or "wait"
+            UI:SetAction(UI.AOE, 2, self.state.env[action].Icon)
         end
-
-        -- Calculate the single-target profiles
-        local action = self.state:PredictNextAction() or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon)
-        action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon)
-        action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon)
-        action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon)
-
-        if Config:Get('displayMode') ~= 'automatic' then
-            if Config:Get('showCleave') then
-                Debug("")
-                Debug("|cFFFFFFFFCleave|r")
-                self.state:Reset(2)
-                action = self.state:PredictNextAction() or "wait"
-                UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon)
-                action = self.state:PredictActionFollowing(action) or "wait"
-                UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon)
-            end
-
-            if Config:Get('showAoE') then
-                Debug("")
-                Debug("|cFFFFFFFFAoE|r")
-                self.state:Reset(3)
-                action = self.state:PredictNextAction() or "wait"
-                UI:SetAction(UI.AOE, 1, self.state.env[action].Icon)
-                action = self.state:PredictActionFollowing(action) or "wait"
-                UI:SetAction(UI.AOE, 2, self.state.env[action].Icon)
-            end
-        end
-    end)
-
-    if not ok then
-        internal.error(fmt("Error executing action profiles:\n%s", tostring(err)))
     end
 end
 

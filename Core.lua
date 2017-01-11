@@ -187,7 +187,7 @@ function internal.fmt(f, ...)
 end
 
 function internal.orderedpairs(t, f)
-    local a = {}
+    local a = TableCache:Acquire()
     for n in pairs(t) do tinsert(a, n) end
     tsort(a, f)
     local i = 0
@@ -195,6 +195,7 @@ function internal.orderedpairs(t, f)
         i = i + 1
         local k = a[i]
         if k == nil then
+            TableCache:Release(a)
             return nil
         else
             return k, t[k]
@@ -231,7 +232,8 @@ local function scope_finalise(scope, success, ...)
         end
     end
     TableCache:Release(scope)
-    return success, ...
+    if not success then error(...) end
+    return ...
 end
 
 function internal.scoped(f, ...)
