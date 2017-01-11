@@ -2,6 +2,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Config = TJ:GetModule('Config')
 
 local mmax = math.max
+local mmin = math.min
 local mfloor = math.floor
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -121,14 +122,10 @@ local vengeance_base_overrides = {
     },
     soul_cleave = {
         cost_type = 'pain',
+        pain_min = 30,
+        pain_max = 60,
         pain_cost = function(spell, env)
-            local cost = env.pain.curr
-            if cost < 30 then cost = 30 end
-            if cost > 60 then cost = 60 end
-            return cost
-        end,
-        CanCast = function(spell, env)
-            return env.pain.curr > 30
+            return mmin(spell.pain_max, mmax(spell.pain_min, env.pain.curr))
         end,
         PerformCast = function(spell, env)
             env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
@@ -142,17 +139,9 @@ local vengeance_talent_overrides = {
             env.pain.gained = env.pain.gained + 20
         end,
     },
-    fracture = {
-        CanCast = function(spell, env)
-            return env.soul_fragments.curr >= 2
-        end,
-        PerformCast = function(spell, env)
-            env.soul_fragments.spent = env.soul_fragments.spent + 2
-        end,
-    },
     spirit_bomb = {
         AuraApplied = 'frailty',
-        AuraApplyLength = 15,
+        AuraApplyLength = 20,
 
         CanCast = function(spell, env)
             return env.soul_fragments.curr >= 1
@@ -293,7 +282,7 @@ local havoc_base_overrides = {
 
         -- Handle "Anger of the Half-Giants":
         aothg_min = 1,
-        aothg_max = 20,
+        aothg_max = 14,
         aothg_estimate = function(spell,env)
             if env.equipped[137038] then
                 return mfloor(spell.aothg_min + (((spell.aothg_max-spell.aothg_min)/2)))
@@ -303,8 +292,8 @@ local havoc_base_overrides = {
     },
     demon_blades = {
         -- Base: http://www.wowhead.com/spell=203555/demon-blades
-        -- ... 75% chance to trigger fury gain + damage
-        chance = 0.75,
+        -- ... 60% chance to trigger fury gain + damage
+        chance = 0.60,
 
         -- Effect: http://www.wowhead.com/spell=203796/demon-blades
         -- ... Generates approx 12-20 fury
@@ -318,11 +307,10 @@ local havoc_base_overrides = {
         end,
 
         -- "Anger of the Half-Giants" Modifier: http://www.wowhead.com/item=137038/anger-of-the-half-giants
-        -- ... Generates additional 1-20 fury (i.e. actually 1-12, see below)
-        -- ... Upper range value modified by Demon Blades by -8 (see simc dump, allspells.txt, id=208827)
-        -- ... PTR modifier seems to be -6
+        -- ... Generates additional 1-14 fury (i.e. actually 1-8, see below)
+        -- ... Upper range value modified by Demon Blades by -6 (see simc dump, allspells.txt, id=208827)
         aothg_min = 1,
-        aothg_max = function(spell, env) return env.ptr and 14 or 12 end,
+        aothg_max = 8,
         aothg_estimate = function(spell,env)
             if env.equipped[137038] then
                 return mfloor(spell.aothg_min + (((spell.aothg_max-spell.aothg_min)/2)*env.demon_blades.chance))
@@ -345,6 +333,7 @@ local havoc_base_overrides = {
         AuraApplyLength = 10,
         PerformCast = function(spell,env)
             if env.fel_mastery.talent_enabled then
+                -- Assume the player hits something!
                 env.fury.gained = env.fury.gained + 25
             end
             env.movement.distance = 5 -- melee
@@ -454,9 +443,5 @@ TJ:RegisterPlayerClass({
         demon_speed_selected = false,
         anguish_of_the_deceiver_selected = false,
         ignore_fr_vr_range = false,
-    },
-    conditional_substitutions = {
-        { " death_sweep_worth_using ", " death_sweep.worth_using " },
-        { " blade_dance_worth_using ", " blade_dance.worth_using " },
     },
 })

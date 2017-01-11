@@ -421,6 +421,7 @@ for _,v in pairs(PowerTypes) do
         end
     end
 end
+internal.PowerPatterns = PowerPatterns
 
 local DurationChecks = { 'days', 'hours', 'min', 'sec' }
 local DurationMultiplier = { days = 86400, hours = 3600, min = 60, sec = 1 }
@@ -464,6 +465,8 @@ for _,v in pairs(DurationChecks) do
         end
     end
 end
+internal.CooldownPatterns = CooldownPatterns
+internal.RechargePatterns = RechargePatterns
 
 function TJ:GetSpellCost(spellID)
     local entries = self:GetTooltipEntries(fmt('|cff71d5ff|Hspell:%d|h[spell%d]|h|r', spellID))
@@ -475,7 +478,7 @@ function TJ:GetSpellCost(spellID)
             if b then b = b:gsub('%D', '') + 0 end
             if c then c = c:gsub('%D', '') + 0 end
             if a then
-                return v[1], a, b, c
+                return v[1], a, b, c --, { result = { a, b, c }, matchtext = e.t, pattern = v }
             end
         end
     end
@@ -503,7 +506,7 @@ local function get_spell_cooldown_or_recharge(spellID, patterns)
         for k,v in pairs(patterns) do
             local r = e.t:match(v[2])
             if r then
-                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb), { result = r, matchtext = e.t, tooltip = entries, pattern = v }
+                return extract_number(r) * DurationMultiplier[v[1]], IsGreen(e.cb) --, { result = r, matchtext = e.t, pattern = v }
             end
         end
     end

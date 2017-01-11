@@ -11,6 +11,9 @@ local mceil = math.ceil
 local mpow = math.pow
 local CreateFrame = CreateFrame
 local InCombatLockdown = InCombatLockdown
+local IsRightAltKeyDown = IsRightAltKeyDown
+local IsRightControlKeyDown = IsRightControlKeyDown
+local IsRightShiftKeyDown = IsRightShiftKeyDown
 
 local LibStub = LibStub
 
