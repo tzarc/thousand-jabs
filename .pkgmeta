@@ -1,5 +1,4 @@
 package-as: ThousandJabs
-enable-nolib-creation: no
 
 externals:
     Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
