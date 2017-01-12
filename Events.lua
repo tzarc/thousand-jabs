@@ -38,22 +38,6 @@ function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
-function TJ:ACTIONBAR_SLOT_CHANGED(eventName, slot, ...)
-    self:GENERIC_RELOAD_PROFILE_HANDLER(eventName, slot, ...)
-    --[[
-    if slot ~= 0 then
-    local _, spellID
-    local actionType, actionID = GetActionInfo(slot)
-    if actionType == "macro" then
-    _, _, spellID = GetMacroSpell(actionID)
-    elseif actionType == "spell" then
-    spellID = actionID
-    end
-    self:DevPrint('ActionBar slot %s changed to spell %s: %s', tostring(slot), tostring(spellID), tostring(GetSpellInfo(spellID) or 'unknown'))
-    end
-    ]]
-end
-
 function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
@@ -101,11 +85,12 @@ function TJ:PLAYER_REGEN_ENABLED(eventName)
 end
 
 function TJ:PLAYER_REGEN_DISABLED(eventName)
+    local now = GetTime()
     -- Reset the last autoattack
-    self.lastMainhandAttack = GetTime()
-    self.lastOffhandAttack = GetTime()
+    self.lastMainhandAttack = now
+    self.lastOffhandAttack = now
     -- Start combat
-    self.combatStart = GetTime()
+    self.combatStart = now
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end

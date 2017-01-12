@@ -6,9 +6,13 @@ local Config = TJ:GetModule('Config')
 local UI = TJ:GetModule('UI')
 local L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 
+local pairs = pairs
+local rawget = rawget
 local select = select
 local type = type
+local GetNumSpecializations = GetNumSpecializations
 local GetSpecialization = GetSpecialization
+local GetSpecializationInfo = GetSpecializationInfo
 local UnitClass = UnitClass
 
 local AC = LibStub("AceConfig-3.0")

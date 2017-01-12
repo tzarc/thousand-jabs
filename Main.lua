@@ -435,11 +435,9 @@ Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 function TJ:OnEnable()
     -- Add event listeners
-    self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED_INDOORS', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('PLAYER_ALIVE', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('PLAYER_DEAD', 'GENERIC_RELOAD_PROFILE_HANDLER')
     self:RegisterEvent('PLAYER_ENTERING_WORLD', 'GENERIC_RELOAD_PROFILE_HANDLER')
     self:RegisterEvent('SPELLS_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
 
@@ -496,7 +494,6 @@ function TJ:OnDisable()
     self:UnregisterEvent('ZONE_CHANGED_INDOORS')
     self:UnregisterEvent('ZONE_CHANGED')
     self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED')
-    self:UnregisterEvent('ACTIONBAR_SLOT_CHANGED')
 end
 
 ------------------------------------------------------------------------------------------------------------------------
