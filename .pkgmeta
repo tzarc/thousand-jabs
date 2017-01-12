@@ -1,5 +1,4 @@
 package-as: ThousandJabs
-enable-nolib-creation: no
 
 externals:
     Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
@@ -22,3 +21,4 @@ ignore:
     - tag-alpha.sh
     - update-apls.sh
     - update-equipped.sh
+    - update-set_bonus.sh

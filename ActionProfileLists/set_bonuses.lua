@@ -1,0 +1,3 @@
+local _, internal = ...
+internal.set_bonuses = internal.set_bonuses or {}
+

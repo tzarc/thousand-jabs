@@ -104,6 +104,7 @@ actions.single_asc+=/earth_shock,moving=1
 actions.single_asc+=/flame_shock,moving=1,if=movement.distance>6
 actions.single_if=flame_shock,if=!ticking
 actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up&maelstrom>=86
+actions.single_if+=/frost_shock,if=buff.icefury.up&maelstrom>=86
 actions.single_if+=/earth_shock,if=maelstrom>=92
 actions.single_if+=/stormkeeper,if=raid_event.adds.count<3|raid_event.adds.in>50
 actions.single_if+=/elemental_blast

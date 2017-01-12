@@ -162,6 +162,7 @@ done
 
 # Work out all the equipped items
 "${BASE_DIR}/update-equipped.sh"
+"${BASE_DIR}/update-set_bonus.sh"
 
 echo '<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/' > "${BASE_DIR}/ActionProfileLists/all.xml"
 echo '..\FrameXML\UI.xsd">' >> "${BASE_DIR}/ActionProfileLists/all.xml"

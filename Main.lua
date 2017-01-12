@@ -41,6 +41,10 @@ local watchdogScreenUpdateTime = 0.75 -- seconds
 local nextScreenUpdateExpiry = GetTime()
 local watchdogScreenUpdateExpiry = GetTime()
 
+-- Profile reload frequency
+local lastProfileReload = 0
+local profileReloadThrottle = 2 -- Seconds
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Shared private variables
 ------------------------------------------------------------------------------------------------------------------------
@@ -210,8 +214,9 @@ function TJ:PerformUpdate()
     -- Update stats
     UpdateUsageStatistics()
 
-    if self.needsProfileReload then
+    if self.needsProfileReload and lastProfileReload + profileReloadThrottle < now then
         self.needsProfileReload = nil
+        lastProfileReload = now
 
         -- Deactivate the current profile
         self:DeactivateProfile()
@@ -430,11 +435,9 @@ Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 function TJ:OnEnable()
     -- Add event listeners
-    self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
     self:RegisterEvent('PLAYER_SPECIALIZATION_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED_INDOORS', 'GENERIC_RELOAD_PROFILE_HANDLER')
-    self:RegisterEvent('ZONE_CHANGED_NEW_AREA', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('PLAYER_ALIVE', 'GENERIC_RELOAD_PROFILE_HANDLER')
+    self:RegisterEvent('PLAYER_DEAD', 'GENERIC_RELOAD_PROFILE_HANDLER')
     self:RegisterEvent('PLAYER_ENTERING_WORLD', 'GENERIC_RELOAD_PROFILE_HANDLER')
     self:RegisterEvent('SPELLS_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
 
@@ -491,7 +494,6 @@ function TJ:OnDisable()
     self:UnregisterEvent('ZONE_CHANGED_INDOORS')
     self:UnregisterEvent('ZONE_CHANGED')
     self:UnregisterEvent('PLAYER_SPECIALIZATION_CHANGED')
-    self:UnregisterEvent('ACTIONBAR_SLOT_CHANGED')
 end
 
 ------------------------------------------------------------------------------------------------------------------------
