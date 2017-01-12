@@ -19,6 +19,5 @@ ignore:
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh
-    - update-apls.sh
-    - update-equipped.sh
+    - update-generated-data.pl
     - update-set_bonus.sh

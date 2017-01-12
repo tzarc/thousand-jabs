@@ -22,7 +22,11 @@ for file in $(tjfind -iname '*.lua') ; do
     luaformatter -a -s4 "${file}"
 done
 
-for file in $(tjfind -iname '*.sh' -or -iname '*.py') ; do
+for file in $(tjfind -iname '*.sh' -or -iname '*.pl') ; do
     dos2unix $file >/dev/null 2>&1
     chmod +x $file >/dev/null 2>&1
+done
+
+for file in $(tjfind -iname '*.pl') ; do
+    perltidy -b -pt=0 -l=200 "${file}"
 done

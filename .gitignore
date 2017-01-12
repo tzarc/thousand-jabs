@@ -5,3 +5,5 @@
 /ActionProfileLists/*.parsed.txt
 /Temp
 /set_bonuses.json
+/datacache.sqlitedb
+/update-generated-data.pl.bak
