@@ -39,6 +39,8 @@ function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
 end
 
 function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
+    --self:DevPrint("Queueing a profile reload due to event %q", eventName)
+
     -- Save the player GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
     -- Queue up a profile reload
