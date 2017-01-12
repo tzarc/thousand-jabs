@@ -88,7 +88,9 @@ sub update {
 
 package generator;
 
+use Data::Dumper;
 use File::Basename;
+use JSON;
 
 my $customprofiles = {
     deathknight => ["blood"],
@@ -269,6 +271,60 @@ sub create_equipped_mapping {
     close( $outfile );
 }
 
+sub create_itemset_bonuses {
+    print( "\nGenerating set bonus listing:\n" );
+    my $setbonus_file = "${cfg::script_dir}/ActionProfileLists/itemsets.lua";
+    open( my $outfile, ">", $setbonus_file );
+    print {$outfile} "local _, internal = ...\n";
+    print {$outfile} "internal.itemsets = internal.itemsets or {}\n\n";
+
+    open( my $infile, "<", "${simc::directory}/dbc_extract3/dbc/generator.py" );
+    my $mode = 0;
+    my $text = "";
+    while ( <$infile> ) {
+        chomp $_;
+        next if $_ =~ /^\s*#/;
+        $_ =~ s/#.*//g;
+        $_ =~ s/'/"/g;
+        if ( $mode == 0 && $_ =~ /\s*set_bonus_map/ ) {
+            $mode = 1;
+            $text .= "[\n";
+        }
+        elsif ( $mode == 1 && $_ ne "" ) {
+            $text .= $_ . "\n";
+        }
+        elsif ( $mode == 1 ) {
+            $mode = 2;
+        }
+    }
+
+    # Fixup trailing commas before container terminators
+    $text =~ s/,([\s\r\n]*[\}\]])/$1/gi;
+
+    my $bonuses = from_json( $text );
+    for my $bonus ( sort { $a->{name} cmp $b->{name} } @{$bonuses} ) {
+        print " - $bonus->{name}\n";
+
+        print {$outfile} "internal.itemsets.$bonus->{name} = { ";
+
+        for my $itemset ( sort @{ $bonus->{bonuses} } ) {
+            my $url  = "http://www.wowhead.com/item-set=${itemset}";
+            my $data = datacache::get_url( $url );
+            my %items;
+            while ( $data =~ m/g_items\.add\((\d+)/g ) {
+                $items{$1} = 1;
+            }
+            for my $itemid ( sort keys %items ) {
+                print {$outfile} "${itemid}, ";
+            }
+        }
+
+        print {$outfile} "}\n";
+    }
+
+    close( $outfile );
+}
+
 sub create_xml_wrapper {
     my ( $searchdir ) = @_;
 
@@ -294,5 +350,6 @@ package main;
 simc::update();
 generator::create_action_lists();
 generator::create_equipped_mapping();
+generator::create_itemset_bonuses();
 generator::create_xml_wrapper( "${cfg::script_dir}/ActionProfileLists" );
 generator::create_xml_wrapper( "${cfg::script_dir}/Classes" );

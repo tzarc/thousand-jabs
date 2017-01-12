@@ -20,4 +20,3 @@ ignore:
     - tag-release.sh
     - tag-alpha.sh
     - update-generated-data.pl
-    - update-set_bonus.sh
