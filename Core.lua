@@ -389,6 +389,7 @@ function TJ:GenerateDebuggingInformation()
         },
         equippedItems = equippedItems(),
         internals = {
+            devMode = devMode,
             savedVariables = ThousandJabsDB,
             tableCache = {
                 allocated = totalAllocated,

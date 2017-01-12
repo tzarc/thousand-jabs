@@ -41,6 +41,10 @@ local watchdogScreenUpdateTime = 0.75 -- seconds
 local nextScreenUpdateExpiry = GetTime()
 local watchdogScreenUpdateExpiry = GetTime()
 
+-- Profile reload frequency
+local lastProfileReload = 0
+local profileReloadThrottle = 2 -- Seconds
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Shared private variables
 ------------------------------------------------------------------------------------------------------------------------
@@ -210,8 +214,9 @@ function TJ:PerformUpdate()
     -- Update stats
     UpdateUsageStatistics()
 
-    if self.needsProfileReload then
+    if self.needsProfileReload and lastProfileReload + profileReloadThrottle < now then
         self.needsProfileReload = nil
+        lastProfileReload = now
 
         -- Deactivate the current profile
         self:DeactivateProfile()
