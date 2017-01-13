@@ -13,6 +13,31 @@ mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
 our $cachetime = 86400;
 
+package common;
+
+sub header {
+    my ($txt) = @_;
+    print("\n\n\e[1;33m$txt\e[0m\n");
+}
+
+sub exec {
+    my ($cmd, $getoutput) = @_;
+
+    if($#ARGV > 0 && $ARGV[0] eq "-v") {
+        print("\e[1;30m \$ $cmd\e[0m\n");
+    }
+
+    if(!defined($getoutput)) {
+        system($cmd);
+        die("Non-zero exit code.") unless (($? >> 8) == 0);
+        return;
+    }
+
+    my $output = `$cmd`;
+    die("Non-zero exit code.") unless (($? >> 8) == 0);
+    return $output;
+}
+
 package datacache;
 
 use utf8;
@@ -40,7 +65,7 @@ sub get_url {
         return $row->{data};
     }
     else {
-        print "Getting '$url'...\n";
+        print("\e[1;30mGetting '$url'\n\e[0m");
         $sth->finish();
         my $data = get($url);
         $sth = $dbh->prepare("INSERT OR REPLACE INTO cache (urlhash, timestamp, data) VALUES(?, ?, ?)");
@@ -60,39 +85,36 @@ our $directory = "${cfg::script_dir}/simc";
 
 my $last_branch = "";
 if(-d ${directory}) {
-    $last_branch = `cd "${directory}" && git rev-parse --abbrev-ref HEAD`;
-    die unless (($? >> 8) == 0);
+    common::header("Getting current branch:");
+    $last_branch = common::exec("cd '${directory}' && git rev-parse --abbrev-ref HEAD", 1);
     chomp $last_branch;
+    print(" - ${last_branch}");
 }
 
 sub update {
     my ($requested_branch) = @_;
     $requested_branch = $requested_branch || ${simc::branch};
 
+    common::header("Updating simulationcraft:");
+
     if(!-d "${simc::directory}/.git") {
-        system("git clone --depth=1 https://github.com/simulationcraft/simc \"${simc::directory}\"");
-        die unless (($? >> 8) == 0);
+        common::exec("git clone --depth=1 https://github.com/simulationcraft/simc '${simc::directory}'");
     }
     else {
-        system("cd \"${simc::directory}\" && git pull");
-        die unless (($? >> 8) == 0);
+        common::exec("cd '${simc::directory}' && git pull");
     }
 
     if($requested_branch ne $last_branch) {
-        system("cd \"${simc::directory}\" && git reset --hard HEAD && git clean -xfd && git checkout \"${requested_branch}\" && git pull");
-        die unless (($? >> 8) == 0);
-        $last_branch = `cd "${simc::directory}" && git rev-parse --abbrev-ref HEAD`;
-        die unless (($? >> 8) == 0);
+        common::exec("cd '${simc::directory}' && git reset --hard HEAD && git clean -xfd && git checkout '${requested_branch}' && git pull");
+        $last_branch = common::exec("cd '${simc::directory}' && git rev-parse --abbrev-ref HEAD", 1);
         die unless ($last_branch eq $requested_branch);
     }
 
-    system("cd \"${simc::directory}/engine\" && make -j9 OS=UNIX");
-    die unless (($? >> 8) == 0);
+    common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
 }
 
 package generator;
 
-use Data::Dumper;
 use File::Basename;
 use JSON;
 
@@ -159,7 +181,7 @@ my $profiles = {
 };
 
 sub create_action_lists {
-    print("\nPre-creating actions files...\n");
+    common::header("Pre-creating actions files:");
     for my $cls (sort keys %{$profiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
         my $bn                     = basename($class_lua_actions_file);
@@ -170,7 +192,7 @@ sub create_action_lists {
         close($outfile);
     }
 
-    print("\nGenerating custom simc profile APLs:\n");
+    common::header("Generating custom simc profile APLs:");
     for my $cls (sort keys %{$customprofiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
@@ -194,7 +216,7 @@ sub create_action_lists {
         close($outfile);
     }
 
-    print("\nGenerating normal simc APLs:\n");
+    common::header("Generating normal simc APLs:");
     for my $cls (sort keys %{$profiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
@@ -224,9 +246,8 @@ sub create_action_lists {
             $artifact = "artifact=${artifact}" if $artifact ne "";
 
             my $new_simc_file = "${cfg::script_dir}/Temp/${simc::branch}-${cls}_${spec}.simc";
-            my $simc_cmd      = "\"${simc::directory}/engine/simc\" ${cls}=${cls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} \"save=${new_simc_file}\"";
-            system("{ $simc_cmd ;} >/dev/null 2>&1");
-            die unless (($? >> 8) == 0);
+            my $simc_cmd      = "'${simc::directory}/engine/simc' ${cls}=${cls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} 'save=${new_simc_file}'";
+            common::exec("{ $simc_cmd ;} >/dev/null 2>&1");
 
             open(my $infile, "<", $new_simc_file);
             while(<$infile>) {
@@ -255,16 +276,15 @@ sub create_action_lists {
 sub validate_actions_files {
     my ($searchpattern) = @_;
 
-    print("\nValidating action files:\n");
+    common::header("Validating action files:");
     my @files = <"$searchpattern">;
     for my $file (sort @files) {
         my $bn = basename($file);
         print(" - ${bn}\n");
-        system("lua '${cfg::script_dir}/Simc-Expressions.lua' < '${file}' > '${cfg::script_dir}/Temp/${bn}.parsed' 2> '${cfg::script_dir}/Temp/${bn}.errors'");
-        die unless (($? >> 8) == 0);
+        common::exec("lua '${cfg::script_dir}/Simc-Expressions.lua' < '${file}' > '${cfg::script_dir}/Temp/${bn}.parsed' 2> '${cfg::script_dir}/Temp/${bn}.errors'");
         unlink("${cfg::script_dir}/Temp/${bn}.errors") if -z "${cfg::script_dir}/Temp/${bn}.errors";
         if(-f "${cfg::script_dir}/Temp/${bn}.errors") {
-            system("cat '${cfg::script_dir}/Temp/${bn}.errors'");
+            common::exec("cat '${cfg::script_dir}/Temp/${bn}.errors'");
             print("\n\nError parsing file '${file}'.");
             exit(1);
         }
@@ -272,7 +292,7 @@ sub validate_actions_files {
 }
 
 sub create_equipped_mapping {
-    print("\nGenerating equipped item mapping:\n");
+    common::header("Generating equipped item mapping:");
     my $equipped_file = "${cfg::script_dir}/ActionProfileLists/equipped.lua";
     open(my $outfile, ">", $equipped_file);
     print {$outfile} "local _, internal = ...\n";
@@ -315,7 +335,7 @@ sub create_equipped_mapping {
 }
 
 sub create_itemset_bonuses {
-    print("\nGenerating set bonus listing:\n");
+    common::header("Generating set bonus listing:");
     my $setbonus_file = "${cfg::script_dir}/ActionProfileLists/itemsets.lua";
     open(my $outfile, ">", $setbonus_file);
     print {$outfile} "local _, internal = ...\n";
@@ -372,7 +392,7 @@ sub create_xml_wrapper {
     my ($searchdir) = @_;
 
     my $bn = basename($searchdir);
-    print("\nGenerating '${bn}/all.xml'\n");
+    common::header("Generating '${bn}/all.xml'");
     open(my $out, ">", "${searchdir}/all.xml");
     print {$out} "<Ui xmlns=\"http://www.blizzard.com/wow/ui/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.blizzard.com/wow/ui/\n";
     print {$out} "..\\FrameXML\\UI.xsd\">\n";
