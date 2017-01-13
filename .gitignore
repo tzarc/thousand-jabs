@@ -1,9 +1,3 @@
 /simc
-/test-parser-output.txt
-/Parser/PythonEnvironment
-/Parser/__pycache__
-/ActionProfileLists/*.parsed.txt
 /Temp
-/set_bonuses.json
 /datacache.sqlitedb
-/update-generated-data.pl.bak

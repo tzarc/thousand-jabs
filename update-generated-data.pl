@@ -248,6 +248,25 @@ sub create_action_lists {
     }
 }
 
+sub validate_actions_files {
+    my ($searchpattern) = @_;
+
+    print("\nValidating action files:\n");
+    my @files = <"$searchpattern">;
+    for my $file (sort @files) {
+        my $bn = basename($file);
+        print(" - ${bn}\n");
+        system("lua '${cfg::script_dir}/Simc-Expressions.lua' < '${file}' > '${cfg::script_dir}/Temp/${bn}.parsed' 2> '${cfg::script_dir}/Temp/${bn}.errors'");
+        die unless (($? >> 8) == 0);
+        unlink("${cfg::script_dir}/Temp/${bn}.errors") if -z "${cfg::script_dir}/Temp/${bn}.errors";
+        if(-f "${cfg::script_dir}/Temp/${bn}.errors") {
+            system("cat '${cfg::script_dir}/Temp/${bn}.errors'");
+            print("\n\nError parsing file '${file}'.");
+            exit(1);
+        }
+    }
+}
+
 sub create_equipped_mapping {
     print("\nGenerating equipped item mapping:\n");
     my $equipped_file = "${cfg::script_dir}/ActionProfileLists/equipped.lua";
@@ -354,9 +373,9 @@ sub create_xml_wrapper {
     print {$out} "<Ui xmlns=\"http://www.blizzard.com/wow/ui/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.blizzard.com/wow/ui/\n";
     print {$out} "..\\FrameXML\\UI.xsd\">\n";
 
-    my @actionfiles = <"${searchdir}/*.lua">;
-    for my $actionfile (sort @actionfiles) {
-        $bn = basename($actionfile);
+    my @files = <"${searchdir}/*.lua">;
+    for my $file (sort @files) {
+        $bn = basename($file);
         print(" - ${bn}\n");
         print {$out} "    <Script file=\"${bn}\"/>\n";
     }
@@ -373,3 +392,5 @@ generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
 generator::create_xml_wrapper("${cfg::script_dir}/ActionProfileLists");
 generator::create_xml_wrapper("${cfg::script_dir}/Classes");
+generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
+generator::validate_actions_files("${cfg::script_dir}/ActionProfileLists/actions-*.lua");
