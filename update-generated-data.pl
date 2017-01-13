@@ -9,6 +9,7 @@ use File::Basename;
 use Cwd qw/abs_path/;
 (our $script_path = abs_path($0)) =~ s|^(.*)(\[\/\])(.*)|$1$2|g;
 our $script_dir = dirname($script_path);
+mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
 our $cachetime = 86400;
 
