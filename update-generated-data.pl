@@ -97,8 +97,10 @@ sub update {
 
     common::header("Updating simulationcraft:");
 
+    my $cloned = 0;
     if(!-d "${simc::directory}/.git") {
         common::exec("git clone --depth=1 https://github.com/simulationcraft/simc '${simc::directory}'");
+        $cloned = 1;
     }
     else {
         common::exec("cd '${simc::directory}' && git pull");
@@ -107,7 +109,7 @@ sub update {
     if($requested_branch ne $last_branch) {
         common::exec("cd '${simc::directory}' && git reset --hard HEAD && git clean -xfd && git checkout '${requested_branch}' && git pull");
         $last_branch = common::exec("cd '${simc::directory}' && git rev-parse --abbrev-ref HEAD", 1);
-        die unless ($last_branch eq $requested_branch);
+        die unless (($cloned == 1) || ($last_branch eq $requested_branch));
     }
 
     common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
