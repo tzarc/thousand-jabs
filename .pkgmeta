@@ -14,11 +14,11 @@ externals:
 
 ignore:
     - .gitignore
+    - ActionProfilePrefix
+    - ActionProfileSuffix
     - CustomProfiles
     - Screenshots
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh
-    - update-apls.sh
-    - update-equipped.sh
-    - update-set_bonus.sh
+    - update-generated-data.pl

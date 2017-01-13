@@ -13,5 +13,5 @@
     <Script file="actions-warlock.lua"/>
     <Script file="actions-warrior.lua"/>
     <Script file="equipped.lua"/>
-    <Script file="set_bonuses.lua"/>
+    <Script file="itemsets.lua"/>
 </Ui>

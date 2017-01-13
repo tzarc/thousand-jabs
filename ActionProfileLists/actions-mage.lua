@@ -11,7 +11,7 @@ actions.precombat+=/mirror_image
 actions.precombat+=/potion,name=deadly_grace
 actions.precombat+=/arcane_blast
 actions=counterspell,if=target.debuff.casting.react
-actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410)
+actions+=/time_warp,if=(buff.bloodlust.down)&((time=0)|(equipped.132410&buff.arcane_power.up&prev_off_gcd.arcane_power)|(target.time_to_die<40))
 actions+=/mirror_image,if=buff.arcane_power.down
 actions+=/stop_burn_phase,if=prev_gcd.1.evocation&burn_phase_duration>gcd.max
 actions+=/mark_of_aluneth,if=cooldown.arcane_power.remains>20
@@ -79,7 +79,7 @@ actions.precombat+=/mirror_image
 actions.precombat+=/potion,name=deadly_grace
 actions.precombat+=/pyroblast
 actions=counterspell,if=target.debuff.casting.react
-actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410)
+actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410&(cooldown.combustion.remains<1|target.time_to_die.remains<50))
 actions+=/mirror_image,if=buff.combustion.down
 actions+=/rune_of_power,if=cooldown.combustion.remains>40&buff.combustion.down&!talent.kindling.enabled|target.time_to_die.remains<11|talent.kindling.enabled&(charges_fractional>1.8|time<40)&cooldown.combustion.remains>40
 actions+=/call_action_list,name=combustion_phase,if=cooldown.combustion.remains<=action.rune_of_power.cast_time+(!talent.kindling.enabled*gcd)|buff.combustion.up
