@@ -372,21 +372,28 @@ sub create_itemset_bonuses {
     for my $bonus (sort { $a->{name} cmp $b->{name} } @{$bonuses}) {
         print " - $bonus->{name}\n";
 
-        print {$outfile} "internal.itemsets.$bonus->{name} = { ";
+        print {$outfile} "internal.itemsets.$bonus->{name} = {\n   ";
 
+        my %items;
         for my $itemset (sort @{ $bonus->{bonuses} }) {
             my $url  = "http://www.wowhead.com/item-set=${itemset}";
             my $data = datacache::get_url($url);
-            my %items;
             while($data =~ m/g_items\.add\((\d+)/g) {
                 $items{$1} = 1;
             }
-            for my $itemid (sort keys %items) {
-                print {$outfile} "${itemid}, ";
-            }
         }
 
-        print {$outfile} "}\n";
+        my $ctr = 1;
+        for my $itemid (sort keys %items) {
+            print {$outfile} " ${itemid},";
+            if($ctr == 10) {
+                $ctr = 0;
+                print {$outfile} "\n   ";
+            }
+            $ctr++;
+        }
+
+        print {$outfile} "\n}\n\n";
     }
 
     close($outfile);

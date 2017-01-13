@@ -204,6 +204,26 @@ function internal.orderedpairs(t, f)
     return iter
 end
 
+function internal.intersectioncount(tbl1, tbl2) -- inputs must be sorted!
+    local i, j = 1, 1
+    local intersection = TableCache:Acquire()
+    while i <= #tbl1 and j <= #tbl2 do
+        if tbl1[i] == tbl2[j] then
+            i, j = i + 1, j + 1
+            tinsert(intersection, tbl1[i])
+        elseif tbl1[i] > tbl2[j] then
+            tbl1, tbl2 = tbl2, tbl1
+            i, j = j, i
+        else
+            i = i + 1
+        end
+    end
+
+    local c = #intersection
+    TableCache:Release(intersection)
+    return c
+end
+
 local function scope_exit(self, f)
     local e = TableCache:Acquire()
     e.type = "exit"
