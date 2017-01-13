@@ -12,6 +12,8 @@ our $script_dir = dirname($script_path);
 mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
 our $cachetime = 86400;
+our $verbose   = 0;
+${cfg::verbose} = 1 if(scalar(@ARGV) > 0 && $ARGV[0] eq "-v");
 
 package common;
 
@@ -23,7 +25,7 @@ sub header {
 sub exec {
     my ($cmd, $getoutput) = @_;
 
-    if($#ARGV > 0 && $ARGV[0] eq "-v") {
+    if(${cfg::verbose} == 1) {
         print("\e[1;30m \$ $cmd\e[0m\n");
     }
 
