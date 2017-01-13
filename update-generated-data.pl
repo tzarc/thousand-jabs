@@ -58,9 +58,12 @@ package simc;
 our $branch    = "legion-dev";
 our $directory = "${cfg::script_dir}/simc";
 
-my $last_branch = `cd "${directory}" && git rev-parse --abbrev-ref HEAD`;
-die unless (($? >> 8) == 0);
-chomp $last_branch;
+my $last_branch = "";
+if(-d ${directory}) {
+    $last_branch = `cd "${directory}" && git rev-parse --abbrev-ref HEAD`;
+    die unless (($? >> 8) == 0);
+    chomp $last_branch;
+}
 
 sub update {
     my ($requested_branch) = @_;
