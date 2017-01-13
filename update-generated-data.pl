@@ -7,10 +7,10 @@ package cfg;
 
 use File::Basename;
 use Cwd qw/abs_path/;
-( our $script_path = abs_path( $0 ) ) =~ s|^(.*)(\[\/\])(.*)|$1$2|g;
-our $script_dir = dirname( $script_path );
+(our $script_path = abs_path($0)) =~ s|^(.*)(\[\/\])(.*)|$1$2|g;
+our $script_dir = dirname($script_path);
 
-our $cachetime = 3600;
+our $cachetime = 86400;
 
 package datacache;
 
@@ -19,33 +19,33 @@ use LWP::Simple;
 use DBI;
 use Digest::SHA1 qw(sha1 sha1_hex sha1_base64);
 
-my $dbh = DBI->connect( "dbi:SQLite:dbname=${cfg::script_dir}/datacache.sqlitedb", "", "", { RaiseError => 1 } ) or die $DBI::errstr;
-$dbh->do( "CREATE TABLE IF NOT EXISTS cache (urlhash TEXT PRIMARY KEY, timestamp INTEGER, data TEXT)" );
-my $sth = $dbh->prepare( "DELETE FROM cache WHERE timestamp < ?" );
-$sth->bind_param( 1, time - ${cfg::cachetime} );
+my $dbh = DBI->connect("dbi:SQLite:dbname=${cfg::script_dir}/datacache.sqlitedb", "", "", { RaiseError => 1 }) or die $DBI::errstr;
+$dbh->do("CREATE TABLE IF NOT EXISTS cache (urlhash TEXT PRIMARY KEY, timestamp INTEGER, data TEXT)");
+my $sth = $dbh->prepare("DELETE FROM cache WHERE timestamp < ?");
+$sth->bind_param(1, time - ${cfg::cachetime});
 $sth->execute();
 
 sub get_url {
-    my ( $url ) = @_;
-    my $urlhash = sha1_base64( $url );
-    my $sth     = $dbh->prepare( "SELECT * FROM cache WHERE urlhash = ? AND timestamp > ?" );
-    $sth->bind_param( 1, $urlhash );
-    $sth->bind_param( 2, time - ${cfg::cachetime} );
+    my ($url)   = @_;
+    my $urlhash = sha1_base64($url);
+    my $sth     = $dbh->prepare("SELECT * FROM cache WHERE urlhash = ? AND timestamp > ?");
+    $sth->bind_param(1, $urlhash);
+    $sth->bind_param(2, time - ${cfg::cachetime});
     $sth->execute();
 
     my $row;
-    if ( $row = $sth->fetchrow_hashref() ) {
+    if($row = $sth->fetchrow_hashref()) {
         $sth->finish();
         return $row->{data};
     }
     else {
         print "Getting '$url'...\n";
         $sth->finish();
-        my $data = get( $url );
-        $sth = $dbh->prepare( "INSERT OR REPLACE INTO cache (urlhash, timestamp, data) VALUES(?, ?, ?)" );
-        $sth->bind_param( 1, $urlhash );
-        $sth->bind_param( 2, time );
-        $sth->bind_param( 3, $data );
+        my $data = get($url);
+        $sth = $dbh->prepare("INSERT OR REPLACE INTO cache (urlhash, timestamp, data) VALUES(?, ?, ?)");
+        $sth->bind_param(1, $urlhash);
+        $sth->bind_param(2, time);
+        $sth->bind_param(3, $data);
         $sth->execute();
         $sth->finish();
         return $data;
@@ -58,32 +58,32 @@ our $branch    = "legion-dev";
 our $directory = "${cfg::script_dir}/simc";
 
 my $last_branch = `cd "${directory}" && git rev-parse --abbrev-ref HEAD`;
-die unless ( ( $? >> 8 ) == 0 );
+die unless (($? >> 8) == 0);
 chomp $last_branch;
 
 sub update {
-    my ( $requested_branch ) = @_;
+    my ($requested_branch) = @_;
     $requested_branch = $requested_branch || ${simc::branch};
 
-    if ( !-d "${simc::directory}/.git" ) {
-        system( "git clone --depth=1 https://github.com/simulationcraft/simc \"${simc::directory}\"" );
-        die unless ( ( $? >> 8 ) == 0 );
+    if(!-d "${simc::directory}/.git") {
+        system("git clone --depth=1 https://github.com/simulationcraft/simc \"${simc::directory}\"");
+        die unless (($? >> 8) == 0);
     }
     else {
-        system( "cd \"${simc::directory}\" && git pull" );
-        die unless ( ( $? >> 8 ) == 0 );
+        system("cd \"${simc::directory}\" && git pull");
+        die unless (($? >> 8) == 0);
     }
 
-    if ( $requested_branch ne $last_branch ) {
-        system( "cd \"${simc::directory}\" && git reset --hard HEAD && git clean -xfd && git checkout \"${requested_branch}\" && git pull" );
-        die unless ( ( $? >> 8 ) == 0 );
+    if($requested_branch ne $last_branch) {
+        system("cd \"${simc::directory}\" && git reset --hard HEAD && git clean -xfd && git checkout \"${requested_branch}\" && git pull");
+        die unless (($? >> 8) == 0);
         $last_branch = `cd "${simc::directory}" && git rev-parse --abbrev-ref HEAD`;
-        die unless ( ( $? >> 8 ) == 0 );
-        die unless ( $last_branch eq $requested_branch );
+        die unless (($? >> 8) == 0);
+        die unless ($last_branch eq $requested_branch);
     }
 
-    system( "cd \"${simc::directory}/engine\" && make -j9 OS=UNIX" );
-    die unless ( ( $? >> 8 ) == 0 );
+    system("cd \"${simc::directory}/engine\" && make -j9 OS=UNIX");
+    die unless (($? >> 8) == 0);
 }
 
 package generator;
@@ -155,48 +155,48 @@ my $profiles = {
 };
 
 sub create_action_lists {
-    print( "\nPre-creating actions files...\n" );
-    for my $cls ( sort keys %{$profiles} ) {
+    print("\nPre-creating actions files...\n");
+    for my $cls (sort keys %{$profiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
-        my $bn                     = basename( $class_lua_actions_file );
-        print( " - ${bn}\n" );
-        open( my $outfile, ">", $class_lua_actions_file );
+        my $bn                     = basename($class_lua_actions_file);
+        print(" - ${bn}\n");
+        open(my $outfile, ">", $class_lua_actions_file);
         print {$outfile} "local _, internal = ...\n";
         print {$outfile} "internal.apls = internal.apls or {}\n\n";
-        close( $outfile );
+        close($outfile);
     }
 
-    print( "\nGenerating custom simc profile APLs:\n" );
-    for my $cls ( sort keys %{$customprofiles} ) {
+    print("\nGenerating custom simc profile APLs:\n");
+    for my $cls (sort keys %{$customprofiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
-        open( my $outfile, ">>", $class_lua_actions_file );
+        open(my $outfile, ">>", $class_lua_actions_file);
 
-        for my $spec ( @{ $customprofiles->{$cls} } ) {
-            printf( "%14s / %s\n", $cls, $spec );
+        for my $spec (@{ $customprofiles->{$cls} }) {
+            printf("%14s / %s\n", $cls, $spec);
 
             print {$outfile} "internal.apls['custom::${cls}::${spec}'] = [[\n";
 
             my $custom_simc_file = "${cfg::script_dir}/CustomProfiles/${cls}_${spec}.simc";
-            open( my $infile, "<", $custom_simc_file );
-            while ( <$infile> ) {
+            open(my $infile, "<", $custom_simc_file);
+            while(<$infile>) {
                 chomp $_;
                 print {$outfile} "$_\n" if $_ =~ /^action/;
             }
-            close( $infile );
+            close($infile);
 
             print {$outfile} "]]\n\n";
         }
 
-        close( $outfile );
+        close($outfile);
     }
 
-    print( "\nGenerating normal simc APLs:\n" );
-    for my $cls ( sort keys %{$profiles} ) {
+    print("\nGenerating normal simc APLs:\n");
+    for my $cls (sort keys %{$profiles}) {
         my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
-        open( my $outfile, ">>", $class_lua_actions_file );
+        open(my $outfile, ">>", $class_lua_actions_file);
 
-        for my $spec ( sort keys %{ $profiles->{$cls} } ) {
-            printf( "%14s / %s\n", $cls, $spec );
+        for my $spec (sort keys %{ $profiles->{$cls} }) {
+            printf("%14s / %s\n", $cls, $spec);
 
             print {$outfile} "internal.apls['${simc::branch}::${cls}::${spec}'] = [[\n";
 
@@ -211,89 +211,89 @@ sub create_action_lists {
 
             my $new_simc_file = "${cfg::script_dir}/Temp/${simc::branch}-${cls}_${spec}.simc";
             my $simc_cmd      = "\"${simc::directory}/engine/simc\" ${cls}=${cls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} \"save=${new_simc_file}\"";
-            system( "{ $simc_cmd ;} >/dev/null 2>&1" );
-            die unless ( ( $? >> 8 ) == 0 );
+            system("{ $simc_cmd ;} >/dev/null 2>&1");
+            die unless (($? >> 8) == 0);
 
-            open( my $infile, "<", $new_simc_file );
-            while ( <$infile> ) {
+            open(my $infile, "<", $new_simc_file);
+            while(<$infile>) {
                 chomp $_;
                 print {$outfile} "$_\n" if $_ =~ /^action/;
             }
-            close( $infile );
+            close($infile);
 
             print {$outfile} "]]\n\n";
         }
 
-        close( $outfile );
+        close($outfile);
     }
 }
 
 sub create_equipped_mapping {
-    print( "\nGenerating equipped item mapping:\n" );
+    print("\nGenerating equipped item mapping:\n");
     my $equipped_file = "${cfg::script_dir}/ActionProfileLists/equipped.lua";
-    open( my $outfile, ">", $equipped_file );
+    open(my $outfile, ">", $equipped_file);
     print {$outfile} "local _, internal = ...\n";
     print {$outfile} "internal.equipped_mapping = internal.equipped_mapping or {}\n\n";
 
     my @files = <"${cfg::script_dir}/ActionProfileLists/actions-*.lua">;
     my %items;
-    for my $file ( sort @files ) {
-        open( my $infile, "<", $file );
-        while ( <$infile> ) {
+    for my $file (sort @files) {
+        open(my $infile, "<", $file);
+        while(<$infile>) {
             chomp $_;
-            while ( $_ =~ m/equipped\.([a-zA-Z][[:alnum:]_]*)/g ) {
+            while($_ =~ m/equipped\.([a-zA-Z][[:alnum:]_]*)/g) {
                 $items{$1} = 1;
             }
         }
-        close( $infile );
+        close($infile);
     }
 
-    for my $item ( sort keys %items ) {
-        print( " - Item: '${item}'\n" );
+    for my $item (sort keys %items) {
+        print(" - Item: '${item}'\n");
         my $urlitem = $item;
         $urlitem =~ s/_/+/g;
         my $url  = "http://www.wowhead.com/items/name:${urlitem}/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9";
-        my $data = datacache::get_url( $url );
+        my $data = datacache::get_url($url);
 
         my %itemids;
-        while ( $data =~ m/_\[(\d+)\]/g ) {
+        while($data =~ m/_\[(\d+)\]/g) {
             $itemids{$1} = 1;
         }
 
         print {$outfile} "internal.equipped_mapping.${item} = { ";
-        for my $itemid ( sort keys %itemids ) {
+        for my $itemid (sort keys %itemids) {
             print "       ID: $itemid\n";
             print {$outfile} "$itemid, ";
         }
         print {$outfile} "}\n";
     }
 
-    close( $outfile );
+    close($outfile);
 }
 
 sub create_itemset_bonuses {
-    print( "\nGenerating set bonus listing:\n" );
+    print("\nGenerating set bonus listing:\n");
     my $setbonus_file = "${cfg::script_dir}/ActionProfileLists/itemsets.lua";
-    open( my $outfile, ">", $setbonus_file );
+    open(my $outfile, ">", $setbonus_file);
     print {$outfile} "local _, internal = ...\n";
     print {$outfile} "internal.itemsets = internal.itemsets or {}\n\n";
 
-    open( my $infile, "<", "${simc::directory}/dbc_extract3/dbc/generator.py" );
+    open(my $infile, "<", "${simc::directory}/dbc_extract3/dbc/generator.py");
     my $mode = 0;
     my $text = "";
-    while ( <$infile> ) {
+    while(<$infile>) {
         chomp $_;
         next if $_ =~ /^\s*#/;
         $_ =~ s/#.*//g;
         $_ =~ s/'/"/g;
-        if ( $mode == 0 && $_ =~ /\s*set_bonus_map/ ) {
+        if($mode == 0 && $_ =~ /\s*set_bonus_map/) {
             $mode = 1;
             $text .= "[\n";
         }
-        elsif ( $mode == 1 && $_ ne "" ) {
+        elsif ($mode == 1 && $_ ne "") {
             $text .= $_ . "\n";
         }
-        elsif ( $mode == 1 ) {
+        elsif ($mode == 1) {
             $mode = 2;
         }
     }
@@ -301,20 +301,20 @@ sub create_itemset_bonuses {
     # Fixup trailing commas before container terminators
     $text =~ s/,([\s\r\n]*[\}\]])/$1/gi;
 
-    my $bonuses = from_json( $text );
-    for my $bonus ( sort { $a->{name} cmp $b->{name} } @{$bonuses} ) {
+    my $bonuses = from_json($text);
+    for my $bonus (sort { $a->{name} cmp $b->{name} } @{$bonuses}) {
         print " - $bonus->{name}\n";
 
         print {$outfile} "internal.itemsets.$bonus->{name} = { ";
 
-        for my $itemset ( sort @{ $bonus->{bonuses} } ) {
+        for my $itemset (sort @{ $bonus->{bonuses} }) {
             my $url  = "http://www.wowhead.com/item-set=${itemset}";
-            my $data = datacache::get_url( $url );
+            my $data = datacache::get_url($url);
             my %items;
-            while ( $data =~ m/g_items\.add\((\d+)/g ) {
+            while($data =~ m/g_items\.add\((\d+)/g) {
                 $items{$1} = 1;
             }
-            for my $itemid ( sort keys %items ) {
+            for my $itemid (sort keys %items) {
                 print {$outfile} "${itemid}, ";
             }
         }
@@ -322,27 +322,27 @@ sub create_itemset_bonuses {
         print {$outfile} "}\n";
     }
 
-    close( $outfile );
+    close($outfile);
 }
 
 sub create_xml_wrapper {
-    my ( $searchdir ) = @_;
+    my ($searchdir) = @_;
 
-    my $bn = basename( $searchdir );
-    print( "\nGenerating '${bn}/all.xml'\n" );
-    open( my $out, ">", "${searchdir}/all.xml" );
+    my $bn = basename($searchdir);
+    print("\nGenerating '${bn}/all.xml'\n");
+    open(my $out, ">", "${searchdir}/all.xml");
     print {$out} "<Ui xmlns=\"http://www.blizzard.com/wow/ui/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.blizzard.com/wow/ui/\n";
     print {$out} "..\\FrameXML\\UI.xsd\">\n";
 
     my @actionfiles = <"${searchdir}/*.lua">;
-    for my $actionfile ( sort @actionfiles ) {
-        $bn = basename( $actionfile );
-        print( " - ${bn}\n" );
+    for my $actionfile (sort @actionfiles) {
+        $bn = basename($actionfile);
+        print(" - ${bn}\n");
         print {$out} "    <Script file=\"${bn}\"/>\n";
     }
 
     print {$out} "</Ui>\n";
-    close( $out );
+    close($out);
 }
 
 package main;
@@ -351,5 +351,5 @@ simc::update();
 generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
-generator::create_xml_wrapper( "${cfg::script_dir}/ActionProfileLists" );
-generator::create_xml_wrapper( "${cfg::script_dir}/Classes" );
+generator::create_xml_wrapper("${cfg::script_dir}/ActionProfileLists");
+generator::create_xml_wrapper("${cfg::script_dir}/Classes");

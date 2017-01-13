@@ -6,7 +6,7 @@ SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${SCRIPT_DIR}"
 
 tjfind() {
-    find . \( "$@" \) -and -not -path './.git/*' -and -not -path '*__pycache__*' -and -not -path '*PythonEnvironment*' -and -not -path './simc*' -and -not -path './Temp*' -print | sort
+    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -print | sort
 }
 
 # Remove executable flag on all files
@@ -22,7 +22,7 @@ tjfind -iname '*.lua' | parallel "sed -i 's/^local devMode = true/local devMode 
 tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
 
 # Reformat perl scripts
-tjfind -iname '*.pl' | parallel "perltidy -pt=0 -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
+tjfind -iname '*.pl' | parallel "perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
 
 # Make sure everything has Unix line endings
 tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' | parallel "dos2unix '{1}' >/dev/null 2>&1"
