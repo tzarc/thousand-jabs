@@ -200,6 +200,16 @@ sub create_action_lists {
 
             print {$outfile} "internal.apls['${simc::branch}::${cls}::${spec}'] = [[\n";
 
+            my $prefix_simc_file = "${cfg::script_dir}/ActionProfilePrefix/${cls}_${spec}.simc";
+            if(-f $prefix_simc_file) {
+                open(my $infile, "<", $prefix_simc_file);
+                while(<$infile>) {
+                    chomp $_;
+                    print {$outfile} "$_\n" if $_ =~ /^(--|action)/;
+                }
+                close($infile);
+            }
+
             my $specdata = $profiles->{$cls}->{$spec};
 
             my $mainhand = $specdata->{mainhand} || "";
@@ -220,6 +230,16 @@ sub create_action_lists {
                 print {$outfile} "$_\n" if $_ =~ /^action/;
             }
             close($infile);
+
+            my $suffix_simc_file = "${cfg::script_dir}/ActionProfileSuffix/${cls}_${spec}.simc";
+            if(-f $suffix_simc_file) {
+                open(my $infile, "<", $suffix_simc_file);
+                while(<$infile>) {
+                    chomp $_;
+                    print {$outfile} "$_\n" if $_ =~ /^(--|action)/;
+                }
+                close($infile);
+            }
 
             print {$outfile} "]]\n\n";
         }
