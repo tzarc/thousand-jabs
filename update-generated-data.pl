@@ -12,6 +12,8 @@ our $script_dir = dirname($script_path);
 mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
 our $cachetime = 86400;
+our $verbose   = 0;
+${cfg::verbose} = 1 if(scalar(@ARGV) > 0 && $ARGV[0] eq "-v");
 
 package common;
 
@@ -23,7 +25,7 @@ sub header {
 sub exec {
     my ($cmd, $getoutput) = @_;
 
-    if($#ARGV > 0 && $ARGV[0] eq "-v") {
+    if(${cfg::verbose} == 1) {
         print("\e[1;30m \$ $cmd\e[0m\n");
     }
 
@@ -370,21 +372,28 @@ sub create_itemset_bonuses {
     for my $bonus (sort { $a->{name} cmp $b->{name} } @{$bonuses}) {
         print " - $bonus->{name}\n";
 
-        print {$outfile} "internal.itemsets.$bonus->{name} = { ";
+        print {$outfile} "internal.itemsets.$bonus->{name} = {\n   ";
 
+        my %items;
         for my $itemset (sort @{ $bonus->{bonuses} }) {
             my $url  = "http://www.wowhead.com/item-set=${itemset}";
             my $data = datacache::get_url($url);
-            my %items;
             while($data =~ m/g_items\.add\((\d+)/g) {
                 $items{$1} = 1;
             }
-            for my $itemid (sort keys %items) {
-                print {$outfile} "${itemid}, ";
-            }
         }
 
-        print {$outfile} "}\n";
+        my $ctr = 1;
+        for my $itemid (sort keys %items) {
+            print {$outfile} " ${itemid},";
+            if($ctr == 10) {
+                $ctr = 0;
+                print {$outfile} "\n   ";
+            }
+            $ctr++;
+        }
+
+        print {$outfile} "\n}\n\n";
     }
 
     close($outfile);

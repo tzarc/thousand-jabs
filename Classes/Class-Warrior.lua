@@ -54,6 +54,18 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local arms_base_overrides = {
+    pummel = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     charge = {
         CanCast = function(spell,env)
             return (12 <= env.movement.distance and env.movement.distance <= 25) -- tooltip says 8, but in-game range is 12... does tooltip mean range-to-max-melee?
@@ -222,6 +234,18 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local protection_overrides = {
+    pummel = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     avatar = {
         AuraID = { 107574 },
         AuraUnit = 'player',

@@ -22,17 +22,22 @@ tjfind -iname '*.lua' | parallel "sed -i 's/^local devMode = true/local devMode 
 tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
 
 # Reformat perl scripts
-tjfind -iname '*.pl' | parallel "perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
+tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
 
 # Make sure everything has Unix line endings
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' | parallel "dos2unix '{1}' >/dev/null 2>&1"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' | parallel "dos2unix '{1}' >/dev/null 2>&1"
 
 # Make sure scripts are executable
 tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
 
+# Install this script as a pre-commit hook if it's not already present
 if [[ ! -L "${SCRIPT_DIR}/.git/hooks/pre-commit" ]] ; then
     (cd "${SCRIPT_DIR}/.git/hooks" && ln -sf ../../cleanup.sh pre-commit)
 fi
 
-[[ ! -z "$(git diff)" ]] && echo -e "\e[0;37m[\e[1;31mFAIL\e[0;37m]\e[0m Aborting commit: 'git diff' says changes are still present." && exit 1
+# Drop out of "git commit" if there are any uncommitted changes after the cleanup.
+if [[ ! -z "$(echo "${BASH_SOURCE[@]}" | grep "pre-commit")" ]] ; then
+    [[ ! -z "$(git diff)" ]] && echo -e "\e[0;37m[\e[1;31mFAIL\e[0;37m]\e[0m Aborting commit: 'git diff' says changes are still present." && exit 1
+fi
+
 exit 0

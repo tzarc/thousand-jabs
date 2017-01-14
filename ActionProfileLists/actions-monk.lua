@@ -3,6 +3,7 @@ internal.apls = internal.apls or {}
 
 internal.apls['custom::monk::brewmaster'] = [[
 actions=auto_attack
+actions+=/spear_hand_strike
 actions+=/variable,name=heal_threshold,value=health.pct<80
 actions+=/purifying_brew,if=stagger.heavy
 actions+=/ironskin_brew,if=charges>1&buff.ironskin_brew.down&incoming_damage_1s>0

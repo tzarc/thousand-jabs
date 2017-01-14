@@ -18,6 +18,7 @@ local setmetatable = setmetatable
 local tconcat = table.concat
 local tcontains = tContains
 local tinsert = table.insert
+local tsort = table.sort
 local tonumber = tonumber
 local tostring = tostring
 local type = type
@@ -32,6 +33,8 @@ local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 local UnitLevel = UnitLevel
 local UnitSpellHaste = UnitSpellHaste
+
+local intersectioncount = internal.intersectioncount
 
 internal.Safety()
 
@@ -168,12 +171,12 @@ local function CreateEquippedTable(state, profile)
         __index = function(tbl,idx)
             local ae = getmetatable(tbl).__state.actuallyEquipped
             if type(idx) == "number" then
-                return ae[idx] and true or false
+                if tcontains(ae, idx) then return true end
             elseif type(idx) == "string" then
                 local l = internal.equipped_mapping[idx]
                 if l then
                     for i=1,#l do
-                        if ae[l[i]] then return true end
+                        if tcontains(ae, l[i]) then return true end
                     end
                 end
             end
@@ -181,6 +184,35 @@ local function CreateEquippedTable(state, profile)
         end,
     })
     return equipped
+end
+
+local function CreateSetBonusTable(state, profile)
+    local checks = {}
+    for k,v in pairs(internal.itemsets) do
+        -- Check that we match all the items in the set, if there's no suffix
+        checks[k] = function()
+            return (intersectioncount(v, state.actuallyEquipped) >= #v) and true or false
+        end
+        -- Loop through and create _2pc to _8pc
+        if #v > 2 then
+            for c=2,8 do
+                if #v >= c then
+                    checks[fmt("%s_%dpc", k, c)] = function(spell, env)
+                        return (intersectioncount(v, state.actuallyEquipped) >= c) and true or false
+                    end
+                end
+            end
+        end
+    end
+
+    local set_bonus = setmetatable({}, {
+        __checks = checks,
+        __index = function(tbl,idx)
+            return checks[idx] and checks[idx]() or false
+        end,
+    })
+
+    return set_bonus
 end
 
 
@@ -191,6 +223,7 @@ local function StateResetPrototype(self, targetCount)
     env.equipped = nil
     env.lastCastTimes = nil
     env.abilitiesUsed = nil
+    env.set_bonus = nil
 
     self.numTargets = targetCount or self.numTargets
 
@@ -209,9 +242,10 @@ local function StateResetPrototype(self, targetCount)
     for i=1,30 do
         local ok, itemid = pcall(GetInventoryItemID, 'player', i)
         if ok and itemid then
-            self.actuallyEquipped[itemid] = true
+            self.actuallyEquipped[1+#self.actuallyEquipped] = itemid
         end
     end
+    tsort(self.actuallyEquipped)
 
     -- Clear out the environment and reset to initial values
     for k,v in pairs(env) do
@@ -302,6 +336,7 @@ local function StateResetPrototype(self, targetCount)
     env.equipped = self.equipped
     env.lastCastTimes = self.lastCastTimes
     env.abilitiesUsed = self.abilitiesUsed
+    env.set_bonus = self.set_bonus
 
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit
@@ -528,6 +563,7 @@ function TJ:CreateNewState(numTargets)
     state.env = CreateStateEnvTable(state, profile)
     state.prev_gcd = CreatePrevGcdTable(state, profile)
     state.equipped = CreateEquippedTable(state, profile)
+    state.set_bonus = CreateSetBonusTable(state, profile)
 
     state.Reset = StateResetPrototype
     Profiling:ProfileFunction(state, 'Reset', 'state:Reset')
