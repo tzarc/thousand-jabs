@@ -103,7 +103,7 @@ local frost_base_abilities = {
     frostbolt = {
         PerformCast = function(spell, env)
             env.icicles.expirationTime = env.currentTime + 60
-            env.icicles.aura_count = env.icicles.aura_count + 1
+            env.icicles.aura_stack = env.icicles.aura_stack + 1
         end,
     },
     fingers_of_frost = {
