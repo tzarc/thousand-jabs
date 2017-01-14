@@ -83,6 +83,14 @@ local frost_base_abilities = {
             if env.fingers_of_frost.aura_stack == 0 then
                 env.fingers_of_frost.expirationTime = 0
             end
+            if not env.glacial_spike.talent_enabled then
+                if env.icicles.aura_stack > 0 then
+                    env.icicles.aura_stack = env.icicles.aura_stack - 1
+                end
+                if env.icicles.aura_stack == 0 then
+                    env.icicles.expirationTime = 0
+                end
+            end
         end,
     },
     ray_of_frost = {
@@ -90,6 +98,12 @@ local frost_base_abilities = {
             local lastCast = env.lastCastTimes[spell.SpellIDs[1]] or 0
             local castEnd = lastCast + 10
             return (lastCast == 0 or env.currentTime < castEnd) and true or false
+        end,
+    },
+    frostbolt = {
+        PerformCast = function(spell, env)
+            env.icicles.expirationTime = env.currentTime + 60
+            env.icicles.aura_count = env.icicles.aura_count + 1
         end,
     },
     fingers_of_frost = {
@@ -106,6 +120,11 @@ local frost_base_abilities = {
         AuraID = 205473,
         AuraUnit = 'player',
         AuraMine = true,
+    },
+    glacial_spike = {
+        CanCast = function(spell, env)
+            return env.icicles.aura_stack == 5 and true or false
+        end,
     },
     brain_freeze = {
         AuraID = { 190447, 231584 },
@@ -130,6 +149,9 @@ local frost_base_abilities = {
         AuraID = 206397,
         AuraUnit = 'player',
         AuraMine = true,
+    },
+    waterbolt = {
+        spell_cast_time = 0.01, -- pet ability, off GCD
     },
     water_jet = {
         spell_cast_time = 0.01, -- pet ability, off GCD
