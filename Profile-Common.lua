@@ -32,46 +32,6 @@ local UnitPowerMax = UnitPowerMax
 
 internal.Safety()
 
-local range_checks = {
-    { range = 80, items = { 35278 } },
-    { range = 60, items = { 35825, 34111, 34121 } },
-    { range = 45, items = { 23836 } },
-    { range = 40, items = { 44114, 44228, 90888, 90883 } },
-    { range = 35, items = { 18904, 24501 } },
-    { range = 30, items = { 21713, 85231, 9328 } },
-    { range = 26, interact = { 1, 4 } },
-    { range = 25, items = { 31463, 86567, 13289 } },
-    { range = 20, items = { 10645, 21519 } },
-    { range = 15, items = { 46722, 56184, 31129, 33069 } },
-    { range = 12, items = { 32321, 21267 } },
-    { range = 11, interact = { 2 }, items = { 33278 } },
-    { range =  9, interact = { 3 } },
-    { range =  8, items = { 56837, 36771 } },
-    { range =  5, items = { 37727 } },
-}
-
-function internal.range_to_unit(unitID)
-    local minrange = 9999
-    for _,v in pairs(range_checks) do
-        if v.items then
-            for _,i in pairs(v.items) do
-                if IsItemInRange(i, unitID) then
-                    minrange = v.range
-                    break
-                end
-            end
-        end
-        if v.interact then
-            for _,i in pairs(v.interact) do
-                if CheckInteractDistance(unitID, i) then
-                    minrange = v.range
-                end
-            end
-        end
-    end
-    return minrange
-end
-
 internal.global_blacklisted_abilities = {
     'auto_attack',
     'potion',
