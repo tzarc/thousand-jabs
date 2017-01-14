@@ -1,4 +1,3 @@
-local _, internal = ...
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Config = TJ:GetModule('Config')
 
@@ -10,14 +9,13 @@ local mmax = math.max
 
 -- exported with /tj _esd
 local frost_abilities_exported = {}
-if TJ:MatchesBuild('7.1.0', '7.1.0') then
+if TJ:MatchesBuild('7.1.5', '7.1.5') then
     frost_abilities_exported = {
         arctic_gale = { TalentID = 22473, },
         blink = { SpellIDs = { 1953 }, },
         blizzard = { SpellIDs = { 190356 }, },
         bone_chilling = { TalentID = 22463, },
-        cauterize = { TalentID = 22443, },
-        cold_snap = { TalentID = 16025, },
+        cold_snap = { SpellIDs = { 235219 }, },
         comet_storm = { TalentID = 21634, },
         cone_of_cold = { SpellIDs = { 120 }, },
         conjure_refreshment = { SpellIDs = { 190336 }, },
@@ -25,15 +23,17 @@ if TJ:MatchesBuild('7.1.0', '7.1.0') then
         ebonbolt = { SpellIDs = { 214634 }, },
         flurry = { SpellIDs = { 44614 }, },
         freeze = { SpellIDs = { 33395 }, },
+        frigid_winds = { TalentID = 22446, },
         frost_bomb = { SpellIDs = { 112948 }, TalentID = 22454, },
         frost_nova = { SpellIDs = { 122 }, },
         frostbolt = { SpellIDs = { 116 }, },
         frozen_orb = { SpellIDs = { 84714 }, },
-        frozen_touch = { SpellIDs = { 205030 }, TalentID = 22466, },
+        frozen_touch = { TalentID = 22466, },
+        glacial_insulation = { TalentID = 16025, },
         glacial_spike = { TalentID = 22309, },
         ice_barrier = { SpellIDs = { 11426 }, },
         ice_block = { SpellIDs = { 45438 }, },
-        ice_floes = { SpellIDs = { 108839 }, TalentID = 22446, },
+        ice_floes = { SpellIDs = { 108839 }, TalentID = 22903, },
         ice_lance = { SpellIDs = { 30455 }, },
         ice_nova = { SpellIDs = { 157997 }, TalentID = 22452, },
         ice_ward = { TalentID = 22471, },
@@ -63,6 +63,18 @@ if TJ:MatchesBuild('7.1.0', '7.1.0') then
 end
 
 local frost_base_abilities = {
+    counterspell = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     ice_lance = {
         PerformCast = function(spell, env)
             if env.fingers_of_frost.aura_stack > 0 then
@@ -81,7 +93,7 @@ local frost_base_abilities = {
         end,
     },
     fingers_of_frost = {
-        AuraID = 112965,
+        AuraID = { 44544, 112965 },
         AuraUnit = 'player',
         AuraMine = true,
     },
@@ -92,11 +104,6 @@ local frost_base_abilities = {
     },
     icicles = {
         AuraID = 205473,
-        AuraUnit = 'player',
-        AuraMine = true,
-    },
-    fingers_of_frost = {
-        AuraID = 44544,
         AuraUnit = 'player',
         AuraMine = true,
     },
@@ -124,6 +131,10 @@ local frost_base_abilities = {
         AuraUnit = 'player',
         AuraMine = true,
     },
+    water_jet = {
+        spell_cast_time = 0.01, -- pet ability, off GCD
+        OverlayTitle = "PET ABILITY",
+    }
 }
 
 local frost_artifact_overrides = {
@@ -132,20 +143,6 @@ local frost_artifact_overrides = {
             return Config:GetSpec("icy_hand_selected") and true or false
         end,
     },
-}
-
-local frost_base_hooks = {
-    hooks = {
-        OnPredictActionAtOffset = function(env)
-            internal.Debug({
-                water_jet_cooldown_remains = env.water_jet.cooldown_remains,
-                rune_of_power_aura_up = env.rune_of_power.aura_up,
-                rune_of_power_aura_remains = env.rune_of_power.aura_remains,
-                env_currentTime = env.currentTime,
-                env_lastCastTimes = env.lastCastTimes,
-            })
-        end,
-    }
 }
 
 TJ:RegisterPlayerClass({
@@ -157,7 +154,6 @@ TJ:RegisterPlayerClass({
     resources = { 'mana' },
     actions = {
         frost_abilities_exported,
-        frost_base_hooks,
         frost_base_abilities,
         frost_artifact_overrides,
     },

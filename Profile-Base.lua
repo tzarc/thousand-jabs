@@ -250,6 +250,8 @@ local function addMissingFields(action)
         if not rawget(action, 'aura_ticking') then action.aura_ticking = false end
         if not rawget(action, 'aura_react') then action.aura_react = false end
         if not rawget(action, 'aura_stack') then action.aura_stack = 0 end
+
+        if not rawget(action, 'OverlayTitle') then action.OverlayTitle = '' end
     end
 end
 
