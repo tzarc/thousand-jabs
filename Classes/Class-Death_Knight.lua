@@ -367,7 +367,18 @@ local frost_base_abilities = {
         AuraApplyLength = 24,
         PerformCast = function(spell, env)
             if env.rime.aura_up then
+                -- The cost is free, so we need to re-add the runic power we normally would've received
+                env.runic_power.gained = env.runic_power.gained + 10
+                -- Remove Rime
                 env.rime.expirationTime = 0
+            end
+        end
+    },
+    obliterate = {
+        PerformCast = function(spell, env)
+            if env.obliteration.aura_up then
+                -- The cost is decreased by 1 rune, so we need to re-add the runic power we normally would've received
+                env.runic_power.gained = env.runic_power.gained + 10
             end
         end
     },
@@ -482,6 +493,7 @@ local frost_hooks = {
 }
 
 TJ:RegisterPlayerClass({
+    betaProfile = true,
     name = 'Frost',
     class_id = 6,
     spec_id = 2,
