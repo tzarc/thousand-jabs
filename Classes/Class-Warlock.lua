@@ -236,7 +236,14 @@ TJ:RegisterPlayerClass({
         destruction_talent_overrides,
         destruction_hooks,
     },
-    blacklisted = {},
+    blacklisted = {
+        'summon_doomguard',
+        'summon_felhunter',
+        'summon_imp',
+        'summon_infernal',
+        'summon_succubus',
+        'summon_voidwalker',
+    },
     config_checkboxes = {
         lord_of_flames_selected = false,
         conflagration_of_chaos_selected = false,
