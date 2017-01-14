@@ -21,13 +21,17 @@ internal.Safety()
 -- Locals
 ------------------------------------------------------------------------------------------------------------------------
 
-local playerGUID, targetGUID = nil, nil
+local playerGUID, petGUID, targetGUID = nil, nil, nil
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Events
 ------------------------------------------------------------------------------------------------------------------------
 
 function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
+    -- Save the player/pet/target GUID
+    playerGUID = UnitExists('player') and UnitGUID('player') or nil
+    petGUID = UnitExists('pet') and UnitGUID('pet') or nil
+    targetGUID = UnitExists('target') and UnitGUID('target') or nil
     -- Notify the profile
     if self.currentProfile then
         local handler = rawget(self.currentProfile, eventName)
@@ -38,11 +42,15 @@ function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     self:QueueUpdate()
 end
 
+function TJ:UNIT_PET(eventName, unitID, ...)
+    if unitID == 'player' then
+        self:GENERIC_RELOAD_PROFILE_HANDLER(eventName, unitID, ...)
+    end
+end
+
 function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
     --self:DevPrint("Queueing a profile reload due to event %q", eventName)
 
-    -- Save the player GUID
-    playerGUID = UnitExists('player') and UnitGUID('player') or nil
     -- Queue up a profile reload
     self:QueueProfileReload()
     -- Notify the profile
@@ -93,13 +101,6 @@ function TJ:PLAYER_REGEN_DISABLED(eventName)
     self.lastOffhandAttack = now
     -- Start combat
     self.combatStart = now
-    -- Notify the profile
-    self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
-end
-
-function TJ:PLAYER_TARGET_CHANGED(eventName)
-    -- Save the target GUID
-    targetGUID = UnitExists('target') and UnitGUID('target') or nil
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end

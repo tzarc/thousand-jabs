@@ -316,7 +316,7 @@ local function StateResetPrototype(self, targetCount)
     env.desired_targets = self.numTargets - 1
     env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
     env.player_level = UnitLevel('player')
-    env.movement.distance = internal.range_to_unit('target')
+    env.movement.distance = UnitCache:UnitRange('target')
     env.gcd = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
     env.gcd_max = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
     env.in_combat = (TJ.combatStart ~= 0) and true or false
