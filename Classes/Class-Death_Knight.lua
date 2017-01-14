@@ -296,3 +296,202 @@ TJ:RegisterPlayerClass({
     },
     blacklisted = {},
 })
+
+------------------------------------------------------------------------------------------------------------------------
+-- Frost profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+local frost_abilities_exported = {}
+if TJ:MatchesBuild('7.1.5', '7.1.5') then
+    frost_abilities_exported = {
+        abominations_might = { TalentID = 22521, },
+        antimagic_shell = { SpellIDs = { 48707 }, },
+        avalanche = { TalentID = 22519, },
+        blinding_sleet = { SpellIDs = { 207167 }, TalentID = 22523, },
+        breath_of_sindragosa = { SpellIDs = { 152279 }, TalentID = 22109, },
+        chains_of_ice = { SpellIDs = { 45524 }, },
+        control_undead = { SpellIDs = { 111673 }, },
+        dark_command = { SpellIDs = { 56222 }, },
+        death_gate = { SpellIDs = { 50977 }, },
+        death_grip = { SpellIDs = { 49576 }, },
+        death_strike = { SpellIDs = { 49998 }, },
+        empower_rune_weapon = { SpellIDs = { 47568 }, },
+        freezing_fog = { TalentID = 22019, },
+        frost_strike = { SpellIDs = { 49143 }, },
+        frostscythe = { SpellIDs = { 207230 }, TalentID = 22531, },
+        frozen_pulse = { TalentID = 22020, },
+        gathering_storm = { TalentID = 22535, },
+        glacial_advance = { SpellIDs = { 194913 }, TalentID = 22537, },
+        horn_of_winter = { SpellIDs = { 57330 }, TalentID = 22021, },
+        howling_blast = { SpellIDs = { 49184 }, },
+        hungering_rune_weapon = { SpellIDs = { 207127 }, TalentID = 22517, },
+        icebound_fortitude = { SpellIDs = { 48792 }, },
+        icecap = { TalentID = 22515, },
+        icy_talons = { TalentID = 22017, },
+        mind_freeze = { SpellIDs = { 47528 }, },
+        murderous_efficiency = { TalentID = 22018, },
+        obliterate = { SpellIDs = { 49020 }, },
+        obliteration = { SpellIDs = { 207256 }, TalentID = 22023, },
+        path_of_frost = { SpellIDs = { 3714 }, },
+        permafrost = { TalentID = 22529, },
+        pillar_of_frost = { SpellIDs = { 51271 }, },
+        raise_ally = { SpellIDs = { 61999 }, },
+        remorseless_winter = { SpellIDs = { 196770 }, },
+        runeforging = { SpellIDs = { 53428 }, },
+        runic_attenuation = { TalentID = 22533, },
+        shattering_strikes = { TalentID = 22016, },
+        sindragosas_fury = { SpellIDs = { 190778, } },
+        volatile_shielding = { TalentID = 22527, },
+        white_walker = { TalentID = 22031, },
+        winter_is_coming = { TalentID = 22525, },
+        wraith_walk = { SpellIDs = { 212552 }, },
+    }
+end
+
+local frost_base_abilities = {
+    mind_freeze = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
+    howling_blast = {
+        AuraApplied = 'frost_fever',
+        AuraApplyLength = 24,
+        PerformCast = function(spell, env)
+            if env.rime.aura_up then
+                env.rime.expirationTime = 0
+            end
+        end
+    },
+    frost_strike = {
+        PerformCast = function(spell, env)
+            if env.obliteration.aura_up then
+                env.killing_machine.expirationTime = env.currentTime + 10
+            end
+        end
+    },
+    empower_rune_weapon = {
+        PerformCast = function(spell, env)
+            env.rune.gained = env.rune.gained + 6 -- This will get reset next time around anyway, and we can't cast 6 runes before that
+            env.runic_power.gained = env.runic_power.gained + 25
+        end,
+        spell_cast_time = 0.01,
+    },
+    frost_fever = {
+        AuraID = 55095,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    razorice = {
+        AuraID = 51714,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    rime = {
+        AuraID = 59052,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    killing_machine = {
+        AuraID = 51124,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    pillar_of_frost = {
+        AuraID = 51271,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'pillar_of_frost',
+        AuraApplyLength = 20,
+        spell_cast_time = 0.01,
+    },
+    icebound_fortitude = {
+        AuraID = 48792,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'icebound_fortitude',
+        AuraApplyLength = 8,
+        spell_cast_time = 0.01,
+    },
+    remorseless_winter = {
+        AuraID = 211793,
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'remorseless_winter',
+        AuraApplyLength = 8,
+    },
+}
+
+local frost_talent_overrides = {
+    icy_talons = {
+        AuraID = 194879,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    obliteration = {
+        AuraID = 207256,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'obliteration',
+        AuraApplyLength = 8,
+        spell_cast_time = 0.01,
+    },
+}
+
+local frost_hooks = {
+    hooks = {
+        OnPredictActionAtOffset = function(env)
+        --[[
+        internal.Debug({
+        env_obliterate_rune_cost = env.obliterate.rune_cost,
+        env_obliterate_spell_can_cast = env.obliterate.spell_can_cast,
+        })
+        --]]
+        end,
+        perform_spend = function(spell, env, action, origCostType, origCostAmount)
+            -- One-less-rune for Obliterate when Obliteration is active
+            if env.obliteration.aura_up and action == 'obliterate' then
+                return origCostType, origCostAmount-1
+            end
+            -- Howling Blast is free when Rime is active
+            if env.rime.aura_up and action == 'howling_blast' then
+                return 'none'
+            end
+            return origCostType, origCostAmount
+        end,
+        can_spend = function(spell, env, action, origCostType, origCostAmount)
+            -- One-less-rune for Obliterate when Obliteration is active
+            if env.obliteration.aura_up and action == 'obliterate' then
+                return origCostType, origCostAmount-1
+            end
+            -- Howling Blast is free when Rime is active
+            if env.rime.aura_up and action == 'howling_blast' then
+                return 'none'
+            end
+            return origCostType, origCostAmount
+        end,
+    }
+}
+
+TJ:RegisterPlayerClass({
+    name = 'Frost',
+    class_id = 6,
+    spec_id = 2,
+    action_profile = 'legion-dev::deathknight::frost',
+    resources = { 'rune', 'runic_power' },
+    actions = {
+        frost_abilities_exported,
+        frost_base_abilities,
+        frost_talent_overrides,
+        frost_hooks,
+    },
+    blacklisted = {},
+})
