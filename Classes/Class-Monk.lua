@@ -54,6 +54,18 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local brewmaster_base_overrides = {
+    spear_hand_strike = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     tiger_palm = {
         PerformCast = function(spell, env)
             if env.eye_of_the_tiger.talent_enabled then
@@ -212,6 +224,15 @@ end
 local windwalker_base_overrides = {
     spear_hand_strike = {
         spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
     },
     touch_of_karma = {
         spell_cast_time = 0.01, -- off GCD!

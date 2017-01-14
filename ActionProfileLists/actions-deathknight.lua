@@ -3,6 +3,7 @@ internal.apls = internal.apls or {}
 
 internal.apls['custom::deathknight::blood'] = [[
 actions=auto_attack
+actions+=/mind_freeze
 actions+=/call_action_list,name=st,if=active_enemies=1
 actions+=/call_action_list,name=cleave,if=active_enemies=2
 actions+=/call_action_list,name=aoe,if=active_enemies>=3

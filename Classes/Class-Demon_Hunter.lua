@@ -58,8 +58,9 @@ end
 
 local vengeance_base_overrides = {
     consume_magic = {
+        spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
-            return env.target.is_interruptible and true or false
+            return env.target.is_casting and env.target.is_interruptible
         end,
         PerformCast = function(spell, env)
             env.pain.gained = env.pain.gained + 50
@@ -68,7 +69,6 @@ local vengeance_base_overrides = {
                 env.target.is_interruptible = false
             end
         end,
-        spell_cast_time = 0.01, -- off GCD!
     },
     demon_spikes = {
         AuraID = 203819,
@@ -271,6 +271,19 @@ if TJ:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local havoc_base_overrides = {
+    consume_magic = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            env.pain.gained = env.pain.gained + 50
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     demons_bite = {
         fury_gain = 23, -- 20-30, err on the side of caution, needs to be modified by AotHG (see demon_blades below)
         CanCast = function(spell,env)
@@ -436,7 +449,6 @@ TJ:RegisterPlayerClass({
         havoc_hooks,
     },
     blacklisted = {
-        'consume_magic',
         'pick_up_fragment',
     },
     config_checkboxes = {

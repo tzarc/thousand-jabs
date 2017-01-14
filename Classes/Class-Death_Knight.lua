@@ -75,8 +75,15 @@ local blood_base_abilities = {
         AuraUnit = "player",
     },
     mind_freeze = {
+        spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
             return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
         end,
     },
     marrowrend = {
@@ -254,8 +261,15 @@ local unholy_base_abilities = {
         end,
     },
     mind_freeze = {
+        spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
             return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
         end,
     },
     clawing_shadows = {

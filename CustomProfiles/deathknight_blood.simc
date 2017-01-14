@@ -4,6 +4,7 @@ role=tank
 spec=blood
 
 actions=auto_attack
+actions+=/mind_freeze
 
 actions+=/call_action_list,name=st,if=active_enemies=1
 actions+=/call_action_list,name=cleave,if=active_enemies=2
