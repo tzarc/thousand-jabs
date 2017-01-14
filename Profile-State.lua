@@ -163,6 +163,17 @@ local function CreatePrevGcdTable(state, profile)
     return prev_gcd
 end
 
+local function CreatePrevOffGcdTable(state, profile)
+    local prev_off_gcd = setmetatable({}, {
+        __state = state,
+        __index = function(tbl, idx)
+            local castsOffGCD = getmetatable(tbl).__state.castsOffGCD
+            return castsOffGCD[idx] and true or false
+        end,
+    })
+    return prev_off_gcd
+end
+
 local function CreateEquippedTable(state, profile)
     local equipped = setmetatable({}, {
         __state = state,
@@ -215,11 +226,11 @@ local function CreateSetBonusTable(state, profile)
     return set_bonus
 end
 
-
 -- Helper for cleaning a state
 local function StateResetPrototype(self, targetCount)
     local env = self.env
     env.prev_gcd = nil
+    env.prev_off_gcd = nil
     env.equipped = nil
     env.lastCastTimes = nil
     env.abilitiesUsed = nil
@@ -228,13 +239,17 @@ local function StateResetPrototype(self, targetCount)
     self.numTargets = targetCount or self.numTargets
 
     -- Deep copy over the last cast times for the state so that we're not writing to the global state instead
+    wipe(self.abilitiesUsed)
+    for k,v in pairs(TJ.abilitiesUsed) do
+        self.abilitiesUsed[k] = v
+    end
     wipe(self.lastCastTimes)
     for k,v in pairs(TJ.lastCastTime) do
         self.lastCastTimes[k] = v
     end
-    wipe(self.abilitiesUsed)
-    for k,v in pairs(TJ.abilitiesUsed) do
-        self.abilitiesUsed[k] = v
+    wipe(self.castsOffGCD)
+    for k,v in pairs(TJ.castsOffGCD) do
+        self.castsOffGCD[k] = v
     end
 
     -- Work out which items are actually equipped
@@ -326,13 +341,21 @@ local function StateResetPrototype(self, targetCount)
     local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
     local tName = (UnitCastingInfo("target") or UnitChannelInfo("target"))
     local tInterruptible = (tName and not (select(9,UnitCastingInfo("target")) or select(8,UnitChannelInfo("target")))) and true or false
+    local mName = (UnitCastingInfo("pet") or UnitChannelInfo("pet"))
+    local mInterruptible = (mName and not (select(9,UnitCastingInfo("pet")) or select(8,UnitChannelInfo("pet")))) and true or false
     env.player.is_casting = pName and true or false
+    env.player.casting_spell = pName
     env.player.is_interruptible = pInterruptible
     env.target.is_casting = tName and true or false
     env.target.is_interruptible = tInterruptible
+    env.target.casting_spell = tName
+    env.pet.is_casting = mName and true or false
+    env.pet.is_interruptible = mInterruptible
+    env.pet.casting_spell = mName
 
     -- Reset the prev_gcd/equipped tables
     env.prev_gcd = self.prev_gcd
+    env.prev_off_gcd = self.prev_off_gcd
     env.equipped = self.equipped
     env.lastCastTimes = self.lastCastTimes
     env.abilitiesUsed = self.abilitiesUsed
@@ -410,6 +433,14 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
             end
             -- Perform the cast of the supplied action
             self.profile.actions[action].perform_cast(act, env)
+
+            -- If we have a cast time, then assume we're going to invoke the GCD, wipe out the castsOffGCD table
+            if act.spell_cast_time > 0.1 then
+                wipe(self.castsOffGCD)
+            else
+                -- Otherwise, add it to the castsOffGCD table
+                self.castsOffGCD[action] = true
+            end
         end
     end
 
@@ -555,13 +586,15 @@ function TJ:CreateNewState(numTargets)
 
     -- Keep track of the profile, last cast times
     state.profile = profile
-    state.lastCastTimes = {}
     state.abilitiesUsed = {}
+    state.lastCastTimes = {}
+    state.castsOffGCD = {}
     state.actuallyEquipped = {}
 
     -- Set up proxy tables
     state.env = CreateStateEnvTable(state, profile)
     state.prev_gcd = CreatePrevGcdTable(state, profile)
+    state.prev_off_gcd = CreatePrevOffGcdTable(state, profile)
     state.equipped = CreateEquippedTable(state, profile)
     state.set_bonus = CreateSetBonusTable(state, profile)
 

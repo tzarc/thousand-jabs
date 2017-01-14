@@ -96,6 +96,10 @@ internal.commonData = {
         is_casting = false,
         is_interruptible = false,
     },
+    pet = {
+        is_casting = false,
+        is_interruptible = false,
+    },
     variable = {
     },
     adds = {

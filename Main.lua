@@ -58,6 +58,7 @@ TJ.combatStart = 0
 -- Cast tracking
 TJ.abilitiesUsed = {}
 TJ.lastCastTime = {}
+TJ.castsOffGCD = {}
 TJ.lastMainhandAttack = 0
 TJ.lastOffhandAttack = 0
 
@@ -402,13 +403,13 @@ function TJ:ExecuteAllActionProfiles()
 
     -- Calculate the single-target profiles
     local action = self.state:PredictNextAction() or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon)
+    UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
     action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon)
+    UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
     action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon)
+    UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
     action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon)
+    UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
 
     if Config:Get('displayMode') ~= 'automatic' then
         if Config:Get('showCleave') then
@@ -416,9 +417,9 @@ function TJ:ExecuteAllActionProfiles()
             Debug("|cFFFFFFFFCleave|r")
             self.state:Reset(2)
             action = self.state:PredictNextAction() or "wait"
-            UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon)
+            UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
             action = self.state:PredictActionFollowing(action) or "wait"
-            UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon)
+            UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
         end
 
         if Config:Get('showAoE') then
@@ -426,9 +427,9 @@ function TJ:ExecuteAllActionProfiles()
             Debug("|cFFFFFFFFAoE|r")
             self.state:Reset(3)
             action = self.state:PredictNextAction() or "wait"
-            UI:SetAction(UI.AOE, 1, self.state.env[action].Icon)
+            UI:SetAction(UI.AOE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
             action = self.state:PredictActionFollowing(action) or "wait"
-            UI:SetAction(UI.AOE, 2, self.state.env[action].Icon)
+            UI:SetAction(UI.AOE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
         end
     end
 end
