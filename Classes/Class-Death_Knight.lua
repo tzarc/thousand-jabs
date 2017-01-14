@@ -74,6 +74,11 @@ local blood_base_abilities = {
         AuraMine = true,
         AuraUnit = "player",
     },
+    mind_freeze = {
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+    },
     marrowrend = {
         PerformCast = function(spell,env)
             env.bone_shield.aura_stack = env.bone_shield.aura_stack + 3
@@ -250,7 +255,7 @@ local unholy_base_abilities = {
     },
     mind_freeze = {
         CanCast = function(spell, env)
-            return env.target.is_casting
+            return env.target.is_casting and env.target.is_interruptible
         end,
     },
     clawing_shadows = {
