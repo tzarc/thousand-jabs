@@ -20,8 +20,8 @@ if IsLoadedByWoW then
 else
     TJ = { Core = {} }
     Core = TJ.Core
-    fmt = function(f, ...) return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '') end
-    Debug = function(...) print(Core:Format(...)) end
+    Core.Format = function(self, f, ...) return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '') end
+    Core.Debug = function(self, ...) print(Core:Format(...)) end
     LSD = require('Libs/LibSerpentDump')
     function tContains(table, item)
         local index = 1

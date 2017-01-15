@@ -17,6 +17,8 @@ ${cfg::verbose} = 1 if(scalar(@ARGV) > 0 && $ARGV[0] eq "-v");
 
 package common;
 
+use Carp qw(confess);
+
 sub header {
     my ($txt) = @_;
     print("\n\n\e[1;33m$txt\e[0m\n");
@@ -31,12 +33,12 @@ sub exec {
 
     if(!defined($getoutput)) {
         system($cmd);
-        die("Non-zero exit code.") unless (($? >> 8) == 0);
+        confess("Non-zero exit code.") unless (($? >> 8) == 0);
         return;
     }
 
     my $output = `$cmd`;
-    die("Non-zero exit code.") unless (($? >> 8) == 0);
+    confess("Non-zero exit code.") unless (($? >> 8) == 0);
     return $output;
 }
 
@@ -123,61 +125,61 @@ use File::Basename;
 use JSON;
 
 my $customprofiles = {
-    deathknight => ["blood"],
-    monk        => ["brewmaster"],
+    DeathKnight => ["blood"],
+    Monk        => ["brewmaster"],
 };
 
 my $profiles = {
-    deathknight => {
+    DeathKnight => {
         blood  => { mainhand => 128402, artifact => "15:0:0:0:0:289:1" },
         frost  => { mainhand => 128292, offhand  => 128293, artifact => "12:0:0:0:0:122:1" },
         unholy => { mainhand => 128403, artifact => "16:0:0:0:0:149:1" },
     },
-    demonhunter => {
+    DemonHunter => {
         vengeance => { mainhand => 128832, offhand => 128831, artifact => "60:0:0:0:0:1096:1" },
         havoc     => { mainhand => 127829, offhand => 127830, artifact => "3:0:0:0:0:1010:1" },
     },
-    druid => {
+    Druid => {
         balance  => { mainhand => 128858, artifact => "59:0:0:0:0:1049:1" },
         feral    => { mainhand => 128860, offhand  => 128859, artifact => "58:0:0:0:0:1153:1" },
         guardian => { mainhand => 128821, offhand  => 128822, artifact => "57:0:0:0:0:960:1" },
     },
-    hunter => {
+    Hunter => {
         beast_mastery => { mainhand => 128861, artifact => "56:0:0:0:0:881:1" },
         marksmanship  => { mainhand => 128826, artifact => "55:0:0:0:0:307:1" },
         survival      => { mainhand => 128808, artifact => "34:0:0:0:0:1068:1" },
     },
-    mage => {
+    Mage => {
         arcane => { mainhand => 127857, artifact => "4:0:0:0:0:290:1" },
         fire   => { mainhand => 128820, offhand  => 133959, artifact => "54:0:0:0:0:748:1" },
         frost  => { mainhand => 128862, artifact => "53:0:0:0:0:783:1" },
     },
-    monk => {
+    Monk => {
         brewmaster => { mainhand => 128938, artifact => "52:0:0:0:0:1277:1" },
         windwalker => { mainhand => 128940, offhand  => 133948, artifact => "50:0:0:0:0:831:1" },
     },
-    paladin => {
+    Paladin => {
         protection  => { mainhand => 128867, offhand  => 128866, artifact => "49:0:0:0:0:1120:1" },
         retribution => { mainhand => 120978, artifact => "2:0:0:0:0:40:1" },
     },
-    priest => {
+    Priest => {
         shadow => { mainhand => 128827, offhand => 133958, artifact => "47:0:0:0:0:764:1" },
     },
-    rogue => {
+    Rogue => {
         assassination => { mainhand => 128870, offhand => 128869, artifact => "43:0:0:0:0:346:1" },
         outlaw        => { mainhand => 128872, offhand => 134552, artifact => "44:0:0:0:0:1052:1" },
         subtlety      => { mainhand => 128476, offhand => 128479, artifact => "17:0:0:0:0:851:1" },
     },
-    shaman => {
+    Shaman => {
         enhancement => { mainhand => 128819, offhand => 128873, artifact => "41:0:0:0:0:899:1" },
         elemental   => { mainhand => 128935, offhand => 128936, artifact => "40:0:0:0:0:291:1" },
     },
-    warlock => {
+    Warlock => {
         affliction  => { mainhand => 128942, artifact => "39:0:0:0:0:999:1" },
         demonology  => { mainhand => 137246, offhand  => 128943, artifact => "37:0:0:0:0:1170:1" },
         destruction => { mainhand => 128941, artifact => "38:0:0:0:0:803:1" },
     },
-    warrior => {
+    Warrior => {
         arms       => { mainhand => 128910, artifact => "36:0:0:0:0:1136:1" },
         fury       => { mainhand => 128908, offhand  => 134553, artifact => "35:0:0:0:0:984:1" },
         protection => { mainhand => 128288, offhand  => 128289, artifact => "11:0:0:0:0:91:1" },
@@ -187,7 +189,7 @@ my $profiles = {
 sub create_action_lists {
     common::header("Pre-creating actions files:");
     for my $cls (sort keys %{$profiles}) {
-        my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
@@ -198,15 +200,16 @@ sub create_action_lists {
 
     common::header("Generating custom simc profile APLs:");
     for my $cls (sort keys %{$customprofiles}) {
-        my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
+        my $lcls                   = lc $cls;
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (@{ $customprofiles->{$cls} }) {
-            printf("%14s / %s\n", $cls, $spec);
+            printf("%14s / %s\n", $lcls, $spec);
 
-            print {$outfile} "internal.apls['custom::${cls}::${spec}'] = [[\n";
+            print {$outfile} "internal.apls['custom::${lcls}::${spec}'] = [[\n";
 
-            my $custom_simc_file = "${cfg::script_dir}/CustomProfiles/${cls}_${spec}.simc";
+            my $custom_simc_file = "${cfg::script_dir}/Support/CustomProfiles/${lcls}_${spec}.simc";
             open(my $infile, "<", $custom_simc_file);
             while(<$infile>) {
                 chomp $_;
@@ -222,15 +225,16 @@ sub create_action_lists {
 
     common::header("Generating normal simc APLs:");
     for my $cls (sort keys %{$profiles}) {
-        my $class_lua_actions_file = "${cfg::script_dir}/ActionProfileLists/actions-${cls}.lua";
+        my $lcls                   = lc $cls;
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (sort keys %{ $profiles->{$cls} }) {
-            printf("%14s / %s\n", $cls, $spec);
+            printf("%14s / %s\n", $lcls, $spec);
 
-            print {$outfile} "internal.apls['${simc::branch}::${cls}::${spec}'] = [[\n";
+            print {$outfile} "internal.apls['${simc::branch}::${lcls}::${spec}'] = [[\n";
 
-            my $prefix_simc_file = "${cfg::script_dir}/ActionProfilePrefix/${cls}_${spec}.simc";
+            my $prefix_simc_file = "${cfg::script_dir}/Support/ActionProfilePrefix/${lcls}_${spec}.simc";
             if(-f $prefix_simc_file) {
                 open(my $infile, "<", $prefix_simc_file);
                 while(<$infile>) {
@@ -249,8 +253,8 @@ sub create_action_lists {
             my $artifact = $specdata->{artifact} || "";
             $artifact = "artifact=${artifact}" if $artifact ne "";
 
-            my $new_simc_file = "${cfg::script_dir}/Temp/${simc::branch}-${cls}_${spec}.simc";
-            my $simc_cmd      = "'${simc::directory}/engine/simc' ${cls}=${cls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} 'save=${new_simc_file}'";
+            my $new_simc_file = "${cfg::script_dir}/Temp/${simc::branch}-${lcls}_${spec}.simc";
+            my $simc_cmd      = "'${simc::directory}/engine/simc' ${lcls}=${lcls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} 'save=${new_simc_file}'";
             common::exec("{ $simc_cmd ;} >/dev/null 2>&1");
 
             open(my $infile, "<", $new_simc_file);
@@ -260,7 +264,7 @@ sub create_action_lists {
             }
             close($infile);
 
-            my $suffix_simc_file = "${cfg::script_dir}/ActionProfileSuffix/${cls}_${spec}.simc";
+            my $suffix_simc_file = "${cfg::script_dir}/Support/ActionProfileSuffix/${lcls}_${spec}.simc";
             if(-f $suffix_simc_file) {
                 open(my $infile, "<", $suffix_simc_file);
                 while(<$infile>) {
@@ -284,11 +288,14 @@ sub validate_actions_files {
     my @files = <"$searchpattern">;
     for my $file (sort @files) {
         my $bn = basename($file);
-        print(" - ${bn}\n");
-        common::exec("lua '${cfg::script_dir}/Simc-Expressions.lua' < '${file}' > '${cfg::script_dir}/Temp/${bn}.parsed' 2> '${cfg::script_dir}/Temp/${bn}.errors'");
-        unlink("${cfg::script_dir}/Temp/${bn}.errors") if -z "${cfg::script_dir}/Temp/${bn}.errors";
-        if(-f "${cfg::script_dir}/Temp/${bn}.errors") {
-            common::exec("cat '${cfg::script_dir}/Temp/${bn}.errors'");
+        my $dn = basename(dirname($file));
+        my $tn = $file;
+        $tn =~ s/\//_/g;
+        print(" - ${dn}/${bn}\n");
+        common::exec("{ cd '${cfg::script_dir}/ThousandJabs/' && lua Simc-Expressions.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
+        unlink("${cfg::script_dir}/Temp/${tn}.errors") if -z "${cfg::script_dir}/Temp/${tn}.errors";
+        if(-f "${cfg::script_dir}/Temp/${tn}.errors") {
+            common::exec("cat '${cfg::script_dir}/Temp/${tn}.errors'");
             print("\n\nError parsing file '${file}'.");
             exit(1);
         }
@@ -297,12 +304,14 @@ sub validate_actions_files {
 
 sub create_equipped_mapping {
     common::header("Generating equipped item mapping:");
-    my $equipped_file = "${cfg::script_dir}/ActionProfileLists/equipped.lua";
+    my $equipped_file = "${cfg::script_dir}/ThousandJabs/Generated-EquippedItems.lua";
     open(my $outfile, ">", $equipped_file);
-    print {$outfile} "local _, internal = ...\n";
-    print {$outfile} "internal.equipped_mapping = internal.equipped_mapping or {}\n\n";
+    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n";
+    print {$outfile} "local Core = TJ:GetModule('Core')\n";
+    print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
+    print {$outfile} "TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}\n\n";
 
-    my @files = <"${cfg::script_dir}/ActionProfileLists/actions-*.lua">;
+    my @files = <"${cfg::script_dir}/ThousandJabs_*/Actions.lua">;
     my %items;
     for my $file (sort @files) {
         open(my $infile, "<", $file);
@@ -327,7 +336,7 @@ sub create_equipped_mapping {
             $itemids{$1} = 1;
         }
 
-        print {$outfile} "internal.equipped_mapping.${item} = { ";
+        print {$outfile} "TJ.Generated.EquippedMapping.${item} = { ";
         for my $itemid (sort keys %itemids) {
             print "       ID: $itemid\n";
             print {$outfile} "$itemid, ";
@@ -340,10 +349,12 @@ sub create_equipped_mapping {
 
 sub create_itemset_bonuses {
     common::header("Generating set bonus listing:");
-    my $setbonus_file = "${cfg::script_dir}/ActionProfileLists/itemsets.lua";
+    my $setbonus_file = "${cfg::script_dir}/ThousandJabs/Generated-ItemSets.lua";
     open(my $outfile, ">", $setbonus_file);
-    print {$outfile} "local _, internal = ...\n";
-    print {$outfile} "internal.itemsets = internal.itemsets or {}\n\n";
+    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n";
+    print {$outfile} "local Core = TJ:GetModule('Core')\n";
+    print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
+    print {$outfile} "TJ.Generated.ItemSets = TJ.Generated.ItemSets or {}\n\n";
 
     open(my $infile, "<", "${simc::directory}/dbc_extract3/dbc/generator.py");
     my $mode = 0;
@@ -372,7 +383,7 @@ sub create_itemset_bonuses {
     for my $bonus (sort { $a->{name} cmp $b->{name} } @{$bonuses}) {
         print " - $bonus->{name}\n";
 
-        print {$outfile} "internal.itemsets.$bonus->{name} = {\n   ";
+        print {$outfile} "TJ.Generated.ItemSets.$bonus->{name} = {\n   ";
 
         my %items;
         for my $itemset (sort @{ $bonus->{bonuses} }) {
@@ -399,33 +410,11 @@ sub create_itemset_bonuses {
     close($outfile);
 }
 
-sub create_xml_wrapper {
-    my ($searchdir) = @_;
-
-    my $bn = basename($searchdir);
-    common::header("Generating '${bn}/all.xml'");
-    open(my $out, ">", "${searchdir}/all.xml");
-    print {$out} "<Ui xmlns=\"http://www.blizzard.com/wow/ui/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.blizzard.com/wow/ui/\n";
-    print {$out} "..\\FrameXML\\UI.xsd\">\n";
-
-    my @files = <"${searchdir}/*.lua">;
-    for my $file (sort @files) {
-        $bn = basename($file);
-        print(" - ${bn}\n");
-        print {$out} "    <Script file=\"${bn}\"/>\n";
-    }
-
-    print {$out} "</Ui>\n";
-    close($out);
-}
-
 package main;
 
 simc::update();
 generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
-generator::create_xml_wrapper("${cfg::script_dir}/ActionProfileLists");
-generator::create_xml_wrapper("${cfg::script_dir}/Classes");
 generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
-generator::validate_actions_files("${cfg::script_dir}/ActionProfileLists/actions-*.lua");
+generator::validate_actions_files("${cfg::script_dir}/ThousandJabs_*/Actions.lua");
