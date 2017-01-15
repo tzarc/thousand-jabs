@@ -1,6 +1,7 @@
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local TableCache = TJ:GetModule('TableCache')
+local Profiling = TJ:GetModule('Profiling')
 local UnitCache = TJ:GetModule('UnitCache')
 
 local CheckInteractDistance = CheckInteractDistance
@@ -24,8 +25,6 @@ local nextUpdateTime = 0
 local updateThrottle = 2.5 -- in seconds
 local playerGUID, targetGUID
 local unitCache = {}
-
-UnitCache.unitCache = unitCache
 
 local range_checks = {
     { range = 80, items = { 35278 } },
@@ -138,6 +137,7 @@ function UnitCache:GetAura(unitID, spellID, mine)
         end
     end
 end
+Profiling:ProfileFunction(UnitCache, 'GetAura', 'unitcache:GetAura')
 
 function UnitCache:UpdateUnitCache(unitID, forceUpdate)
     if UnitExists(unitID) then
@@ -154,15 +154,18 @@ function UnitCache:UpdateUnitCache(unitID, forceUpdate)
     end
     return nil
 end
+Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 
 function UnitCache:PurgeExpiredUnitCaches()
+    local now = GetTime()
     for k, v in pairs(unitCache) do
-        if v.lastSeen and (v.lastSeen + purgeTime) <= GetTime() then
+        if v.lastSeen and (v.lastSeen + purgeTime) <= now then
             TableCache:Release(unitCache[k])
             unitCache[k] = nil
         end
     end
 end
+Profiling:ProfileFunction(UnitCache, 'PurgeExpiredUnitCaches', 'unitcache:PurgeExpiredUnitCaches')
 
 function UnitCache:UpdateTimeToDie(unitID)
     local theGUID = UnitGUID(unitID)
@@ -185,6 +188,7 @@ function UnitCache:UpdateTimeToDie(unitID)
     local deltaHealth = ttdData.midHealth - ttdData.initHealth
     ttdData.ttd = (deltaHealth == 0) and 99999 or mabs(currHealth * (ttdData.initTime - ttdData.midTime) / deltaHealth)
 end
+Profiling:ProfileFunction(UnitCache, 'UpdateTimeToDie', 'unitcache:UpdateTimeToDie')
 
 function UnitCache:UnitTimeToDie(unitID)
     local theGUID = UnitGUID(unitID)
@@ -207,11 +211,6 @@ else
 end
 updateFrame:Show()
 
-updateFrame:SetScript("OnEvent", function(self, eventName, ...) UnitCache[eventName](UnitCache, eventName, ...) end)
-updateFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
-updateFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
-updateFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-
 function UnitCache:PLAYER_ENTERING_WORLD(eventName)
     self:UpdateUnitCache('player', true)
 end
@@ -224,9 +223,7 @@ function UnitCache:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent
     if (sourceGUID == playerGUID or sourceGUID == targetGUID or destGUID == playerGUID or destGUID == targetGUID) and combatEvent:sub(1,11) == 'SPELL_AURA_' then
         forceUpdate = true
     end
-end
 
-updateFrame:SetScript("OnUpdate", function()
     local now = GetTime()
     if forceUpdate or nextUpdateTime < now then
         forceUpdate = false
@@ -237,4 +234,10 @@ updateFrame:SetScript("OnUpdate", function()
         if UnitExists('target') then UnitCache:UpdateUnitCache('target', true) end
         UnitCache:PurgeExpiredUnitCaches()
     end
-end)
+end
+Profiling:ProfileFunction(UnitCache, 'COMBAT_LOG_EVENT_UNFILTERED', 'unitcache:COMBAT_LOG_EVENT_UNFILTERED')
+
+updateFrame:SetScript("OnEvent", function(self, eventName, ...) UnitCache[eventName](UnitCache, eventName, ...) end)
+updateFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
+updateFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
+updateFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')

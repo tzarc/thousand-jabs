@@ -7,6 +7,9 @@ Core.Broker = {}
 
 local CreateFrame = CreateFrame
 local InCombatLockdown = InCombatLockdown
+local IsRightAltKeyDown = IsRightAltKeyDown
+local IsRightControlKeyDown = IsRightControlKeyDown
+local IsRightShiftKeyDown = IsRightShiftKeyDown
 local mceil = math.ceil
 local mpow = math.pow
 local real_G = _G

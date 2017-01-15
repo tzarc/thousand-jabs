@@ -71,10 +71,6 @@ TJ.seenTargets = {}
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
 function TJ:OnInitialize()
-    -- Turn on profiling if we're in dev mode
-    Profiling:EnableProfiling(Core.devMode)
-    Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
-
     -- Upgrade any config entries that need to be updated
     Config:Upgrade()
 
@@ -87,11 +83,13 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local commandQueue = {}
+
 function TJ:ExecuteFuncAsCoroutine(funcToExec)
     local th = co_create(funcToExec)
     commandQueue[th] = true
     TJ:QueueUpdate()
 end
+
 function TJ:RunFuncCoroutines()
     for th in pairs(commandQueue) do
         if co_status(th) == "dead" then
@@ -136,6 +134,12 @@ function TJ:PerformUpdate()
     nextScreenUpdateExpiry = nil
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
+    -- Clear out any errors for the last screen update
+    Core:DebugReset()
+
+    -- Update stats
+    Core:UpdateUsageStatistics()
+
     -- Purge any old cast times
     local expiryTime = 10 * (TJ.currentGCD or 1)
     for k,v in pairs(TJ.abilitiesUsed) do
@@ -153,12 +157,6 @@ function TJ:PerformUpdate()
             TJ.seenTargets[k] = nil
         end
     end
-
-    -- Clear out any errors for the last screen update
-    Core:DebugReset()
-
-    -- Update stats
-    Core:UpdateUsageStatistics()
 
     if TJ.needsProfileReload and lastProfileReload + profileReloadThrottle < now then
         TJ.needsProfileReload = nil
@@ -260,7 +258,7 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('PLAYER_LEVEL_UP', 'GENERIC_RELOAD_PROFILE_HANDLER')
         TJ:RegisterEvent('PLAYER_REGEN_ENABLED')
         TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
-        TJ:RegisterEvent('PLAYER_TARGET_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
+        TJ:RegisterEvent('PLAYER_TARGET_CHANGED', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
         TJ:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
         TJ:RegisterEvent('PLAYER_TALENT_UPDATE', 'GENERIC_RELOAD_PROFILE_HANDLER')
@@ -549,7 +547,9 @@ function TJ:ConsoleCommand(args)
         Core:Print(' - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d',
             TableCache.TableCache.TotalAllocated, TableCache.TableCache.TotalAcquired, TableCache.TableCache.TotalReleased, TableCache.TableCache.TotalAcquired - TableCache.TableCache.TotalReleased)
     elseif argv[1] == '_dbe' then
-        Core:Debug('Thousand Jabs SavedVariables Export', LSD(ThousandJabsDB))
+        Core:OpenDebugWindow('Thousand Jabs SavedVariables Export', LSD(ThousandJabsDB))
+    elseif argv[1] == '_prof' then
+        Core:Print(Profiling:GetProfilingString())
     elseif argv[1] == '_duc' then
         Core:Print('Dumping unit cache table:')
         if not IsAddOnLoaded('Blizzard_DebugTools') then LoadAddOn('Blizzard_DebugTools') end

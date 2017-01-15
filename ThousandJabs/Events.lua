@@ -92,7 +92,7 @@ function TJ:UNIT_PET(eventName, unitID, ...)
 end
 
 function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
-    --Core:DevPrint("Queueing a profile reload due to event %q", eventName)
+    Core:DevPrint("Queueing a profile reload due to event %q", eventName)
 
     -- Queue up a profile reload
     TJ:QueueProfileReload()

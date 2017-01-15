@@ -3,9 +3,12 @@ local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
 local GetSpecialization = GetSpecialization
+local LoadAddOn = LoadAddOn
 local select = select
 local type = type
 local UnitClass = UnitClass
+
+local LibStub = LibStub
 
 Core:Safety()
 

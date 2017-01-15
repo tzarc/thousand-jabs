@@ -5,13 +5,16 @@ local TableCache = TJ:GetModule('TableCache')
 
 local debugprofilestop = debugprofilestop
 local format = string.format
+local GetAddOnMemoryUsage = GetAddOnMemoryUsage
 local GetNumAddOns = GetNumAddOns
 local IsAddOnLoaded = IsAddOnLoaded
+local pairs = pairs
 local tconcat = table.concat
 local tinsert = table.insert
 local tsort = table.sort
 local type = type
 local unpack = unpack
+local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 
 Core:Safety()
 
@@ -19,8 +22,8 @@ local addon_count = 0
 for i=1,GetNumAddOns() do
     addon_count = addon_count + (IsAddOnLoaded(i) and 1 or 0)
 end
-local do_mem = (addon_count < 5) and true or false
-do_mem = false
+local do_mem = (addon_count < 10) and true or false
+--do_mem = false
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Miscellaneous functions
@@ -51,16 +54,18 @@ end
 function Profiling:ProfilingProlog(...)
     if not self.profiling.enabled then return end
     local e = TableCache:Acquire()
+    e.innerTime = 0
+    e.innerMem = 0
     e.func = Core:Format(...)
-    e.start = debugprofilestop()
+    self.profiling.stack[1+#self.profiling.stack] = e
     if do_mem then UpdateAddOnMemoryUsage() end
     e.mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
-    self.profiling.stack[1+#self.profiling.stack] = e
+    e.start = debugprofilestop()
 end
 
 function Profiling:ProfilingEpilog()
-    if not self.profiling.enabled or #self.profiling.stack == 0 then return end
     local now = debugprofilestop()
+    if not self.profiling.enabled or #self.profiling.stack == 0 then return end
     if do_mem then UpdateAddOnMemoryUsage() end
     local mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
     local e = self.profiling.stack[#self.profiling.stack]
@@ -68,8 +73,13 @@ function Profiling:ProfilingEpilog()
     self.profiling.data[e.func] = self.profiling.data[e.func] or { count = 0, timeSpent = 0, memGain = 0 }
     local d = self.profiling.data[e.func]
     d.count = d.count + 1
-    d.timeSpent = d.timeSpent + (now - e.start)
-    d.memGain = d.memGain + (mem - e.mem)
+    d.timeSpent = d.timeSpent + (now - e.start) - e.innerTime
+    d.memGain = d.memGain + (mem - e.mem) - e.innerMem
+    if #self.profiling.stack > 1 then
+        local p = self.profiling.stack[#self.profiling.stack-1]
+        p.innerTime = (now - e.start) + e.innerTime
+        p.innerMem = (mem - e.mem) + e.innerMem
+    end
     TableCache:Release(e)
 end
 
@@ -80,6 +90,8 @@ function Profiling:EnableProfiling(v)
     self.profiling.data = self.profiling.data or {}
     self.profiling.unembeds = self.profiling.unembeds or {}
 end
+
+Profiling:EnableProfiling(Core.devMode)
 
 function Profiling:ProfilingEnabled()
     return self.profiling and self.profiling.enabled and true or false
@@ -92,7 +104,7 @@ function Profiling:GetProfilingString()
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
             l[1+#l] = do_mem
-                and Core:Format('%5dx %6.3fms/ea, %10.3fms/tot: %s (mem=%.3fkB/ea, %.3fkB/tot)', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
+                and Core:Format('%5dx %9.3fms/ea, %13.3fms/tot: %-40s | mem=%9.3fkB/ea, %12.3fkB/tot', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
                 or  Core:Format('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
         end
     end

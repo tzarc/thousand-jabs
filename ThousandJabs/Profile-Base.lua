@@ -266,7 +266,8 @@ function TJ:RegisterPlayerClass(config)
         betaProfile = config.betaProfile and true or false,
         config = config,
         blacklisted = blacklisted,
-        configCheckboxes = config.config_checkboxes or {}
+        configCheckboxes = config.config_checkboxes or {},
+        spellIDactionMapping = {},
     }
 
     -- Add it to the list of profiles so we can get access to it when swapping specs
@@ -336,11 +337,13 @@ function TJ:RegisterPlayerClass(config)
     end
 
     function profile:FindActionForSpellID(spellID)
+        if self.spellIDactionMapping[spellID] then return self.spellIDactionMapping[spellID] end
         for k,v in pairs(profile.actions) do
             local spellIDs = rawget(v, 'SpellIDs')
             if spellIDs then
                 for k2,v2 in pairs(spellIDs) do
                     if v2 == spellID then
+                        self.spellIDactionMapping[spellID] = k
                         return k
                     end
                 end

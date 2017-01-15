@@ -6,6 +6,13 @@ local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 
+local assert = assert
+local debugprofilestop = debugprofilestop
+local GetBuildInfo = GetBuildInfo
+local loadstring = loadstring
+local pcall = pcall
+local tonumber = tonumber
+
 local LSD = LibStub('LibSerpentDump')
 
 Core:Safety()
