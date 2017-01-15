@@ -102,7 +102,15 @@ Core.Environment.common = {
         raid_event_up = function(self,state) return self.raid_event_exists end,
         raid_event_in = 180,
     },
-
+    potion = {
+        AuraID = {}, -- TODO (do we actually care?)
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    proc = {
+        trinket_any_react = false, -- TODO (do we actually care?)
+        trinket_agility_react = false, -- TODO (do we actually care?)
+    },
     bloodlust = {
         AuraID = {
             2825, -- Bloodlust

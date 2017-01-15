@@ -18,6 +18,7 @@ local GetSpellBaseCooldown = GetSpellBaseCooldown
 local GetSpellCooldown = GetSpellCooldown
 local GetTime = GetTime
 local LoadAddOn = LoadAddOn
+local mmax = math.max
 local NewTicker = C_Timer.NewTicker
 local pairs = pairs
 local select = select
@@ -326,8 +327,8 @@ function TJ:ExportCurrentProfile()
         Core:OpenDebugWindow('ThousandJabs Current profile', 'zzzz='..LSD({
             ['!dbg'] = dbg,
             ['actions'] = actionsTable,
-            ['parsed'] = TJ.currentProfile.parsedActions,
-        }))
+            ['parsed'] = self.state:ExportParsedTable(),
+        }):gsub('|', '||'))
     end
 end
 
@@ -345,6 +346,7 @@ function TJ:ExecuteAllActionProfiles()
     else
         targetCount = 1
     end
+    targetCount = mmax(1, targetCount)
 
     -- Reset the single-target state
     Core:Debug("")

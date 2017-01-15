@@ -18,11 +18,13 @@ if Core:MatchesBuild('7.1.5', '7.1.5') then
         conflagrate = { SpellIDs = { 17962 }, },
         create_healthstone = { SpellIDs = { 6201 }, },
         create_soulwell = { SpellIDs = { 29893 }, },
+        cripple = { SpellIDs = { 170995 }, },
         dark_pact = { SpellIDs = { 108416 }, TalentID = 19288, },
         demon_skin = { TalentID = 22047, },
         demonic_circle = { SpellIDs = { 48018 }, TalentID = 19280, },
         demonic_gateway = { SpellIDs = { 111771 }, },
         dimensional_rift = { SpellIDs = { 196586 }, },
+        doom_bolt = { SpellIDs = { 85692 }, },
         drain_life = { SpellIDs = { 234153 }, },
         empowered_life_tap = { TalentID = 22088, },
         enslave_demon = { SpellIDs = { 1098 }, },
@@ -49,9 +51,9 @@ if Core:MatchesBuild('7.1.5', '7.1.5') then
         ritual_of_summoning = { SpellIDs = { 698 }, },
         roaring_blaze = { TalentID = 22048, },
         seethe = { SpellIDs = { 171014 }, },
+        shadow_lock = { SpellIDs = { 171138 }, },
         shadowburn = { SpellIDs = { 17877 }, TalentID = 22052, },
         shadowfury = { SpellIDs = { 30283 }, TalentID = 19286, },
-        shoot = { SpellIDs = { 5019 }, },
         soul_conduit = { TalentID = 19293, },
         soul_harvest = { SpellIDs = { 196098 }, TalentID = 22046, },
         soulstone = { SpellIDs = { 20707 }, },
@@ -69,6 +71,11 @@ if Core:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local destruction_base_overrides = {
+    pet = {
+        doomguard_active = function(spell, env)
+            return env.doom_bolt.in_spellbook
+        end,
+    },
     immolate = {
         AuraID = { 157736, },
         AuraUnit = 'target',
@@ -118,6 +125,11 @@ local destruction_base_overrides = {
     },
     backdraft = {
         AuraID = { 117828, },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    demonic_power = {
+        AuraID = { 196099, },
         AuraUnit = 'player',
         AuraMine = true,
     },
@@ -171,7 +183,25 @@ local destruction_talent_overrides = {
         AuraID = 235156,
         AuraUnit = 'player',
         AuraMine = true
-    }
+    },
+    channel_demonfire = {
+        spell_cast_time = function(spell, env)
+            return 3 * env.playerHasteMultiplier
+        end
+    },
+}
+
+local destruction_legendaries = {
+    lessons_of_spacetime = {
+        AuraID = { 236174, },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    sindorei_spite_icd = {
+        cooldown_remains = function(spell, env)
+            return 99999 -- TODO
+        end,
+    },
 }
 
 local havocTarget = {
@@ -236,6 +266,7 @@ TJ:RegisterPlayerClass({
         destruction_abilities_exported,
         destruction_base_overrides,
         destruction_talent_overrides,
+        destruction_legendaries,
         destruction_hooks,
     },
     blacklisted = {

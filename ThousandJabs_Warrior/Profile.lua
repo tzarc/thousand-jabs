@@ -159,6 +159,7 @@ local arms_base_overrides = {
         AuraMine = true,
         AuraApplied = 'rend',
         AuraApplyLength = 15,
+        aura_duration = 15,
         spell_remains = function(spell, env) return spell.AuraApplyLength - spell.time_since_last_cast end, -- TODO: Is this how long the DoT has to go?
     },
     overpower = {

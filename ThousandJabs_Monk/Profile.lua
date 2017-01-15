@@ -301,8 +301,8 @@ local windwalker_talent_overrides = {
     },
     power_strikes = {
         AuraID = 129914,
-        AuraMine = true,
         AuraUnit = 'player',
+        AuraMine = true,
     },
     healing_elixir = {
         spell_cast_time = 0.01, -- off GCD!
@@ -325,6 +325,14 @@ local windwalker_artifact_overrides = {
     strike_of_the_windlord = {
         artifact_enabled = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
     },
+}
+
+local windwalker_legendaries = {
+    the_emperors_capacitor = {
+        AuraID = 235053,
+        AuraUnit = 'player',
+        AuraMine = true,
+    }
 }
 
 local windwalker_hooks = {
@@ -353,6 +361,7 @@ TJ:RegisterPlayerClass({
         windwalker_base_overrides,
         windwalker_talent_overrides,
         windwalker_artifact_overrides,
+        windwalker_legendaries,
         windwalker_hooks,
     },
     blacklisted = {

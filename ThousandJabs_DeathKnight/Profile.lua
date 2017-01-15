@@ -403,6 +403,11 @@ local frost_base_abilities = {
         AuraUnit = 'target',
         AuraMine = true,
     },
+    unholy_strength = {
+        AuraID = 53365,
+        AuraMine = true,
+        AuraUnit = "player",
+    },
     razorice = {
         AuraID = 51714,
         AuraUnit = 'target',

@@ -331,6 +331,9 @@ local function StateResetPrototype(self, targetCount)
     env.gcd_max = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
     env.in_combat = (TJ.combatStart ~= 0) and true or false
 
+    -- Haste
+    env.spell_haste = env.playerHasteMultiplier
+
     -- Determine if player/target are casting things
     local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
     local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
@@ -356,6 +359,9 @@ local function StateResetPrototype(self, targetCount)
     env.abilitiesUsed = self.abilitiesUsed
     env.set_bonus = self.set_bonus
 
+    -- Set the combat start time
+    env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
+
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit
     if initFunc then initFunc(env) end
@@ -367,9 +373,6 @@ local function StatePredictNextActionPrototype(self)
 
     -- Attempt to work out when we can next cast something, based off the gcd
     local start, duration = GetSpellCooldown(61304)
-
-    -- Set the combat start time
-    env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
 
     -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
     local cname, _, _, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
@@ -536,12 +539,12 @@ local function StateExecuteActionProfileListPrototype(self, listname)
 end
 
 -- Export the actions table
-local function exportVisitor(env, ctx, t)
+local function exportActionVisitor(env, ctx, t)
     local out = {}
     for k,v in pairs(t) do
         local key = ctx and ctx:len() > 0 and Core:Format("%s.%s", ctx, k) or k
         if type(v) == "table" then
-            out[k] = exportVisitor(env, key, v)
+            out[k] = exportActionVisitor(env, key, v)
         elseif type(v) == "function" then
             local funcsrc = Core:Format("function() return %s end", key)
             local func = Core:LoadFunctionString(funcsrc, key)
@@ -565,8 +568,47 @@ local function exportVisitor(env, ctx, t)
 end
 local function StateExportActionsTablePrototype(self)
     local env = self.env
-    local output = exportVisitor(env, nil, self.profile.actions)
+    local output = exportActionVisitor(env, nil, self.profile.actions)
     return output
+end
+
+local function StateExportParsedTablePrototype(self)
+    local cache = {}
+    local env = self.env
+    local copy = Core:MergeTables({}, self.profile.parsedActions)
+    for list,listactions in Core:OrderedPairs(copy) do
+        for _,action in pairs(listactions) do
+            local checked_tables = { 'condition_converted', 'target_if_converted', 'value_converted' }
+            for _,check in pairs(checked_tables) do
+                if action.params and action.params[check] and action.params[check].keywords then
+                    local kws = action.params[check].keywords
+                    local kwv = {}
+                    action.params[check].keyword_values = kwv
+                    for _,n in pairs(kws) do
+                        n = n:gsub("THIS_SPELL", action.action)
+                        if not (n:find("variable.") == 1) then
+                            if not cache[n] then
+                                local funcsrc = Core:Format("function() return %s end", n)
+                                local func = Core:LoadFunctionString(funcsrc, n)
+                                if func then
+                                    setfenv(func, env)
+                                    local ok, ret = pcall(func)
+                                    kwv[n] = (not ok) and { error = ret } or ret
+                                else
+                                    kwv[n] = { error = 'Failed to load function: ' .. n }
+                                end
+                            else
+                                kwv[n] = cache[n]
+                            end
+                        else
+                            kwv[n] = "variable, not evaluated"
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return copy
 end
 
 function TJ:CreateNewState(numTargets)
@@ -615,6 +657,10 @@ function TJ:CreateNewState(numTargets)
     -- Export the actions table
     state.ExportActionsTable = StateExportActionsTablePrototype
     Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
+
+    -- Export the parsed results table
+    state.ExportParsedTable = StateExportParsedTablePrototype
+    Profiling:ProfileFunction(state, 'ExportParsedTable', 'state:ExportParsedTable')
 
     -- Reset the state by default, populating with initial data
     state:Reset(1)

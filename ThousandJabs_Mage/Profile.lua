@@ -144,6 +144,11 @@ local frost_base_abilities = {
             spell.expirationTime = env.currentTime + 10
         end,
     },
+    winters_chill = {
+        AuraID = 228358,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
     zannesu_journey = {
         AuraID = 206397,
         AuraUnit = 'player',

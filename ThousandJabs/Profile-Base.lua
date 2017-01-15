@@ -105,6 +105,9 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     -- Fixup time_to_die
     keyword = keyword:gsub("time_to_die.target_remains", "target.time_to_die")
 
+    -- Pet stuff
+    keyword = keyword:gsub('^([%a_]+)%.pet_([%a_]+)$', 'pet.%1_%2')
+
     -- Handle any profile-specific substitutions
     if profileSubstitutions then
         for _,e in pairs(profileSubstitutions) do
