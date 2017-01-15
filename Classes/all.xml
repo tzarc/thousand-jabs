@@ -1,9 +1,0 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-..\FrameXML\UI.xsd">
-    <Script file="Class-Death_Knight.lua"/>
-    <Script file="Class-Demon_Hunter.lua"/>
-    <Script file="Class-Mage.lua"/>
-    <Script file="Class-Monk.lua"/>
-    <Script file="Class-Warlock.lua"/>
-    <Script file="Class-Warrior.lua"/>
-</Ui>
