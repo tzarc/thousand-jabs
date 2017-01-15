@@ -14,7 +14,7 @@ Core:Safety()
 -- Addon initialisation
 ------------------------------------------------------------------------------------------------------------------------
 
-Profiling:EnableProfiling(internal.devMode)
+Profiling:EnableProfiling(Core.devMode)
 Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ local tableNames = {}
 ------------------------------------------------------------------------------------------------------------------------
 
 function Core:Print(...)
-    Core:Print(self, Core:Format(...))
+    TJ:Print(Core:Format(...))
 end
 
 function Core:PrintOnce(...)
@@ -172,11 +172,11 @@ function TJ:ConsoleCommand(args)
         if Config:Get("do_debug") then
             Config:Set(false, "do_debug")
             Core:HideLoggingFrame()
-            Core:Print('Debugging info disabled. Enable with "|cFFFF6600/%s _dbg|r".', internal.consoleCommand)
+            Core:Print('Debugging info disabled. Enable with "|cFFFF6600/tj _dbg|r".')
         else
             Config:Set(true, "do_debug")
             Core:ShowLoggingFrame()
-            Core:Print('Debugging info enabled. Disable with "|cFFFF6600/%s _dbg|r".', internal.consoleCommand)
+            Core:Print('Debugging info enabled. Disable with "|cFFFF6600/tj _dbg|r".')
         end
     elseif argv[1] == '_dtc' then
         Core:Print('Dumping table cache metrics:')
@@ -205,8 +205,8 @@ function TJ:ConsoleCommand(args)
         Core:Print("     |cFFFF6600/tj ticket|r - Shows a window that can be used to copy/paste debugging information for raising tickets.")
         Core:Print("     |cFFFF6600/tj blacklist <action>|r - Enables blacklisting of actions using slash commands / macros.")
         Core:Print('%s debugging:', addonName)
-        Core:Print('     |cFFFF6600/%s _dbg|r - Toggles debug information visibility.', internal.consoleCommand)
+        Core:Print('     |cFFFF6600/tj _dbg|r - Toggles debug information visibility.')
     end
 end
 
-TJ:RegisterChatCommand(internal.consoleCommand, 'ConsoleCommand')
+TJ:RegisterChatCommand('tj', 'ConsoleCommand')

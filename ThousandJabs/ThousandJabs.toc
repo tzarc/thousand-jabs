@@ -17,7 +17,6 @@ Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 Libs\AceAddon-3.0\AceAddon-3.0.xml
 Libs\AceConsole-3.0\AceConsole-3.0.xml
 Libs\AceEvent-3.0\AceEvent-3.0.xml
-Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
@@ -28,8 +27,6 @@ Module-Config.lua
 Module-Profiling.lua
 Module-TableCache.lua
 Module-UnitCache.lua
-
-Translations.lua
 
 Base.lua
 Main.lua

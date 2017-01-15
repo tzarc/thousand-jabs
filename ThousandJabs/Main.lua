@@ -214,8 +214,8 @@ function TJ:LoadClassAddOn()
         local classAddonName = Core:Format("ThousandJabs_%s", select(2, UnitClass('player'))):upper()
         for i=1,GetNumAddOns() do
             local name = GetAddOnInfo(i)
-            if name:upper() == classAddonName then
-                Core:Print("Loading class addon: %s", name)
+            if name and name:upper() == classAddonName then
+                Core:DevPrint("Loading class addon: %s", name)
                 LoadAddOn(name)
             end
         end

@@ -10,7 +10,9 @@
 ## LoadOnDemand: 1
 ## Dependencies: ThousandJabs
 
+Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
 
+Translations.lua
 Config.lua
