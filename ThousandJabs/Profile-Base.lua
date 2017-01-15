@@ -564,4 +564,7 @@ function TJ:RegisterPlayerClass(config)
 
     function profile:Deactivate()
     end
+
+    -- If someone decides to load-on-demand their class module, then queue up a full profile reload.
+    TJ:QueueProfileReload()
 end

@@ -78,6 +78,7 @@ local frost_base_abilities = {
         end,
     },
     ice_lance = {
+        spell_travel_time = function(spell, env) return mmax(2, (env.movement.distance / 20)) end, -- 10yd->0.5sec, ballpark, can't really tell
         PerformCast = function(spell, env)
             if env.fingers_of_frost.aura_stack > 0 then
                 env.fingers_of_frost.aura_stack = env.fingers_of_frost.aura_stack - 1
@@ -86,12 +87,8 @@ local frost_base_abilities = {
                 env.fingers_of_frost.expirationTime = 0
             end
             if not env.glacial_spike.talent_enabled then
-                if env.icicles.aura_stack > 0 then
-                    env.icicles.aura_stack = env.icicles.aura_stack - 1
-                end
-                if env.icicles.aura_stack == 0 then
-                    env.icicles.expirationTime = 0
-                end
+                env.icicles.aura_stack = 0
+                env.icicles.expirationTime = 0
             end
         end,
     },
