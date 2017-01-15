@@ -158,5 +158,6 @@ actions.prot+=/ignore_pain,if=(rage>=60&!talent.vengeance.enabled)|(buff.vengean
 actions.prot+=/revenge,if=(buff.vengeance_revenge.up&!buff.vengeance_ignore_pain.up&rage>=59)|!buff.vengeance_ignore_pain.up|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage>=69)|(rage>=100)
 actions.prot+=/thunder_clap,if=spell_targets.thunder_clap>=4
 actions.prot+=/devastate
+actions.prot+=/thunder_clap
 ]]
 
