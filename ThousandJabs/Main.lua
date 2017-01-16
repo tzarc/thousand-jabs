@@ -74,9 +74,6 @@ TJ.seenTargets = {}
 function TJ:OnInitialize()
     -- Upgrade any config entries that need to be updated
     Config:Upgrade()
-
-    -- Load the class addon if available
-    TJ:LoadClassAddOn()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -207,20 +204,6 @@ Profiling:ProfileFunction(TJ, 'PerformUpdate')
 ------------------------------------------------------------------------------------------------------------------------
 -- Profile activation/deactivation
 ------------------------------------------------------------------------------------------------------------------------
-
-function TJ:LoadClassAddOn()
-    if not self.classAddonLoaded then
-        local classAddonName = Core:Format("ThousandJabs_%s", select(2, UnitClass('player'))):upper()
-        for i=1,GetNumAddOns() do
-            local name = GetAddOnInfo(i)
-            if name and name:upper() == classAddonName then
-                Core:DevPrint("Loading class addon: %s", name)
-                LoadAddOn(name)
-            end
-        end
-    end
-    self.classAddonLoaded = true
-end
 
 function TJ:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()

@@ -1,0 +1,15 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+..\FrameXML\UI.xsd">
+    <Script file="Class_DeathKnight/Actions.lua"/>
+    <Script file="Class_DemonHunter/Actions.lua"/>
+    <Script file="Class_Druid/Actions.lua"/>
+    <Script file="Class_Hunter/Actions.lua"/>
+    <Script file="Class_Mage/Actions.lua"/>
+    <Script file="Class_Monk/Actions.lua"/>
+    <Script file="Class_Paladin/Actions.lua"/>
+    <Script file="Class_Priest/Actions.lua"/>
+    <Script file="Class_Rogue/Actions.lua"/>
+    <Script file="Class_Shaman/Actions.lua"/>
+    <Script file="Class_Warlock/Actions.lua"/>
+    <Script file="Class_Warrior/Actions.lua"/>
+</Ui>

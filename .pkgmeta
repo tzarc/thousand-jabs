@@ -17,22 +17,16 @@ externals:
 move-folders:
     ThousandJabs/ThousandJabs: ThousandJabs
     ThousandJabs/ThousandJabs_Config: ThousandJabs_Config
-    ThousandJabs/ThousandJabs_DeathKnight: ThousandJabs_DeathKnight
-    ThousandJabs/ThousandJabs_DemonHunter: ThousandJabs_DemonHunter
-    ThousandJabs/ThousandJabs_Mage: ThousandJabs_Mage
-    ThousandJabs/ThousandJabs_Monk: ThousandJabs_Monk
-    ThousandJabs/ThousandJabs_Warlock: ThousandJabs_Warlock
-    ThousandJabs/ThousandJabs_Warrior: ThousandJabs_Warrior
 
 ignore:
     - .gitignore
     - Support
-    - ThousandJabs_Druid
-    - ThousandJabs_Hunter
-    - ThousandJabs_Paladin
-    - ThousandJabs_Priest
-    - ThousandJabs_Rogue
-    - ThousandJabs_Shaman
+    - ThousandJabs/Class_Druid
+    - ThousandJabs/Class_Hunter
+    - ThousandJabs/Class_Paladin
+    - ThousandJabs/Class_Priest
+    - ThousandJabs/Class_Rogue
+    - ThousandJabs/Class_Shaman
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh

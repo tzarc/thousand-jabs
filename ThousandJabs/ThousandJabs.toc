@@ -42,3 +42,5 @@ Profile-State.lua
 
 Generated-EquippedItems.lua
 Generated-ItemSets.lua
+Generated-Actions.xml
+Generated-Profiles.xml

@@ -122,6 +122,7 @@ sub update {
 package generator;
 
 use File::Basename;
+use Path::Class;
 use JSON;
 
 my $customprofiles = {
@@ -189,10 +190,12 @@ my $profiles = {
 sub create_action_lists {
     common::header("Pre-creating actions files:");
     for my $cls (sort keys %{$profiles}) {
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
+        my $ucls                   = uc $cls;
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
+        print {$outfile} "if select(2, UnitClass('player')) ~= '${ucls}' then return end\n\n";
         print {$outfile} "local _, internal = ...\n";
         print {$outfile} "internal.apls = internal.apls or {}\n\n";
         close($outfile);
@@ -201,7 +204,7 @@ sub create_action_lists {
     common::header("Generating custom simc profile APLs:");
     for my $cls (sort keys %{$customprofiles}) {
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (@{ $customprofiles->{$cls} }) {
@@ -226,7 +229,7 @@ sub create_action_lists {
     common::header("Generating normal simc APLs:");
     for my $cls (sort keys %{$profiles}) {
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs_${cls}/Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (sort keys %{ $profiles->{$cls} }) {
@@ -311,7 +314,7 @@ sub create_equipped_mapping {
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
     print {$outfile} "TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}\n\n";
 
-    my @files = <"${cfg::script_dir}/ThousandJabs_*/Actions.lua">;
+    my @files = <"${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua">;
     my %items;
     for my $file (sort @files) {
         open(my $infile, "<", $file);
@@ -410,6 +413,26 @@ sub create_itemset_bonuses {
     close($outfile);
 }
 
+sub create_xml_wrapper {
+    my ($outfilename, $searchpattern) = @_;
+
+    common::header("Generating '${outfilename}'");
+    open(my $out, ">", $outfilename);
+    print {$out} "<Ui xmlns=\"http://www.blizzard.com/wow/ui/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.blizzard.com/wow/ui/\n";
+    print {$out} "..\\FrameXML\\UI.xsd\">\n";
+
+    my @files = <"${searchpattern}">;
+    for my $file (sort @files) {
+        my $af = file($file);
+        my $bn = $af->relative(dirname($outfilename));
+        print(" - ${bn}\n");
+        print {$out} "    <Script file=\"${bn}\"/>\n";
+    }
+
+    print {$out} "</Ui>\n";
+    close($out);
+}
+
 package main;
 
 simc::update();
@@ -417,4 +440,6 @@ generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
 generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
-generator::validate_actions_files("${cfg::script_dir}/ThousandJabs_*/Actions.lua");
+generator::validate_actions_files("${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Actions.xml",  "${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Profiles.xml", "${cfg::script_dir}/ThousandJabs/Class_*/Profile.lua");
