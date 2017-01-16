@@ -12,23 +12,23 @@ tjfind() {
 # Remove executable flag on all files
 tjfind -type f | parallel "chmod -x '{1}'"
 
-# Remove trailing whitespace
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
-
-# Disable devMode
-tjfind -iname '*.lua' | parallel "sed -i 's/^local devMode = true/local devMode = false/' '{1}'"
-
-# Reformat lua files
-tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
-
-# Reformat perl scripts
-tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
+# Make sure scripts are executable
+tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
 
 # Make sure everything has Unix line endings
 tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' | parallel "dos2unix '{1}' >/dev/null 2>&1"
 
-# Make sure scripts are executable
-tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
+# Remove trailing whitespace
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
+
+# Reformat perl scripts
+tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
+
+# Reformat lua files
+tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
+
+# Disable devMode
+tjfind -iname '*.lua' | parallel "sed -i 's/^local devMode = true/local devMode = false/' '{1}'"
 
 # Install this script as a pre-commit hook if it's not already present
 if [[ ! -L "${SCRIPT_DIR}/.git/hooks/pre-commit" ]] ; then

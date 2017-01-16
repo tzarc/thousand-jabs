@@ -21,12 +21,12 @@ move-folders:
 ignore:
     - .gitignore
     - Support
-    - ThousandJabs/Class_Druid
-    - ThousandJabs/Class_Hunter
-    - ThousandJabs/Class_Paladin
-    - ThousandJabs/Class_Priest
-    - ThousandJabs/Class_Rogue
-    - ThousandJabs/Class_Shaman
+    - Class_Druid
+    - Class_Hunter
+    - Class_Paladin
+    - Class_Priest
+    - Class_Rogue
+    - Class_Shaman
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh
