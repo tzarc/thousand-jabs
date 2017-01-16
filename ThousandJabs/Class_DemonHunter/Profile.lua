@@ -344,6 +344,11 @@ local havoc_base_overrides = {
         CanCast = function(spell,env)
             return env.movement.distance < 20
         end,
+        PerformCast = function(spell, env)
+            if env.blind_fury.talent_enabled then
+                env.fury.gained = env.fury.gained + 106
+            end
+        end,
     },
     fel_rush = {
         AuraApplied = 'momentum',
@@ -459,5 +464,6 @@ TJ:RegisterPlayerClass({
         demon_speed_selected = false,
         anguish_of_the_deceiver_selected = false,
         ignore_fr_vr_range = false,
+        ignore_demon_blades_gains = false,
     },
 })

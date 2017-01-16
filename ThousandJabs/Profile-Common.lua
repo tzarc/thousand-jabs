@@ -1,5 +1,6 @@
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
+local Config = TJ:GetModule('Config')
 local UnitCache = TJ:GetModule('UnitCache')
 
 local GetPowerRegen = GetPowerRegen
@@ -268,7 +269,7 @@ Core.Environment.resources = {
         spent = 0,
         gained = 0,
         gained_from_autoattacks = function(spell,env)
-            if IsHavoc() and env.demon_blades.talent_enabled then
+            if IsHavoc() and env.demon_blades.talent_enabled and not Config:GetSpec('ignore_demon_blades_gains') then
                 local now = GetTime()
                 local mh_speed, oh_speed = UnitAttackSpeed('player')
                 if TJ.lastMainhandAttack < now - mh_speed then TJ.lastMainhandAttack = now end
