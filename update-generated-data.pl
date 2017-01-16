@@ -191,7 +191,7 @@ sub create_action_lists {
     common::header("Pre-creating actions files:");
     for my $cls (sort keys %{$profiles}) {
         my $ucls                   = uc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
@@ -204,7 +204,7 @@ sub create_action_lists {
     common::header("Generating custom simc profile APLs:");
     for my $cls (sort keys %{$customprofiles}) {
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (@{ $customprofiles->{$cls} }) {
@@ -229,7 +229,7 @@ sub create_action_lists {
     common::header("Generating normal simc APLs:");
     for my $cls (sort keys %{$profiles}) {
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (sort keys %{ $profiles->{$cls} }) {
@@ -314,7 +314,7 @@ sub create_equipped_mapping {
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
     print {$outfile} "TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}\n\n";
 
-    my @files = <"${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua">;
+    my @files = <"${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua">;
     my %items;
     for my $file (sort @files) {
         open(my $infile, "<", $file);
@@ -440,6 +440,6 @@ generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
 generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
-generator::validate_actions_files("${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua");
-generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Actions.xml",  "${cfg::script_dir}/ThousandJabs/Class_*/Actions.lua");
+generator::validate_actions_files("${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Actions.xml",  "${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
 generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Profiles.xml", "${cfg::script_dir}/ThousandJabs/Class_*/Profile.lua");
