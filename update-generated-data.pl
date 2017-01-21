@@ -28,7 +28,6 @@ sub exec {
     my ($cmd, $getoutput, $allowfail) = @_;
     $getoutput = $getoutput || 0;
     $allowfail = $allowfail || 0;
-    print("\$cmd = $cmd\n\$getoutput = $getoutput\n\$allowfail = $allowfail\n");
 
     if(${cfg::verbose} == 1) {
         print("\e[1;30m \$ $cmd\e[0m\n");
