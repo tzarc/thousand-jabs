@@ -25,20 +25,27 @@ sub header {
 }
 
 sub exec {
-    my ($cmd, $getoutput) = @_;
+    my ($cmd, $getoutput, $allowfail) = @_;
+    $getoutput = $getoutput || 0;
+    $allowfail = $allowfail || 0;
+    print("\$cmd = $cmd\n\$getoutput = $getoutput\n\$allowfail = $allowfail\n");
 
     if(${cfg::verbose} == 1) {
         print("\e[1;30m \$ $cmd\e[0m\n");
     }
 
-    if(!defined($getoutput)) {
+    if($getoutput == 0) {
         system($cmd);
-        confess("Non-zero exit code.") unless (($? >> 8) == 0);
+        if($allowfail == 0) {
+            confess("Non-zero exit code.") unless (($? >> 8) == 0);
+        }
         return;
     }
 
     my $output = `$cmd`;
-    confess("Non-zero exit code.") unless (($? >> 8) == 0);
+    if($allowfail == 0) {
+        confess("Non-zero exit code.") unless (($? >> 8) == 0);
+    }
     return $output;
 }
 
@@ -258,7 +265,7 @@ sub create_action_lists {
 
             my $new_simc_file = "${cfg::script_dir}/Temp/${simc::branch}-${lcls}_${spec}.simc";
             my $simc_cmd      = "'${simc::directory}/engine/simc' ${lcls}=${lcls}_${spec} default_actions=1 level=110 spec=${spec} ${mainhand} ${offhand} ${artifact} 'save=${new_simc_file}'";
-            common::exec("{ $simc_cmd ;} >/dev/null 2>&1");
+            common::exec("{ $simc_cmd ;} >/dev/null 2>&1", undef, 1);
 
             open(my $infile, "<", $new_simc_file);
             while(<$infile>) {
