@@ -146,7 +146,7 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
             action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
 
-            action.cooldown_remains = function(spell, env) return mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
+            action.cooldown_remains = function(spell, env) return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
             action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
             action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
             action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
@@ -174,7 +174,7 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
             if usesSpellCountForCharges then
                 action.spell_max_charges = 999
                 action.spell_charges_fractional = function(spell, env)
-                    return spell.rechargeSampled - spell.rechargeSpent
+                    return (spell.blacklisted and 0) or (spell.rechargeSampled - spell.rechargeSpent)
                 end
             else
                 action.spell_max_charges = function(spell, env) return spell.rechargeMax end
@@ -182,14 +182,14 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
                     local f = (spell.rechargeSampled == spell.rechargeMax)
                         and spell.rechargeMax - spell.rechargeSpent
                         or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
-                    return mmin(f, spell.rechargeMax)
+                    return (spell.blacklisted and 0) or mmin(f, spell.rechargeMax)
                 end
             end
 
             action.spell_charges = function(spell, env) return mfloor(spell.spell_charges_fractional+0.001) end
 
             action.spell_recharge_time = function(spell, env)
-                local remains = spell.rechargeStartTime + spell.rechargeDuration - env.currentTime
+                local remains = (spell.blacklisted and 999) or (spell.rechargeStartTime + spell.rechargeDuration - env.currentTime)
                 return (spell.spell_charges > 0) and 0 or remains
             end
 
