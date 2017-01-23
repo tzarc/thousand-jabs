@@ -272,6 +272,7 @@ Core.Environment.resources = {
             if IsHavoc() and env.demon_blades.talent_enabled and not Config:GetSpec('ignore_demon_blades_gains') then
                 local now = GetTime()
                 local mh_speed, oh_speed = UnitAttackSpeed('player')
+                oh_speed = oh_speed or 99999
                 if TJ.lastMainhandAttack < now - mh_speed then TJ.lastMainhandAttack = now end
                 if TJ.lastOffhandAttack < now - oh_speed then TJ.lastOffhandAttack = now end
                 local mh_swings = mfloor((env.currentTime - TJ.lastMainhandAttack) / mh_speed)
