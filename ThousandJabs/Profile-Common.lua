@@ -320,6 +320,7 @@ Core.Environment.resources = {
             local count = 0
             for i=1,6 do
                 local s, d = GetRuneCooldown(i)
+                s, d = (s or 0), (d or 0)
                 if env.currentTime >= (s + d) then count = count + 1 end
             end
             return count
