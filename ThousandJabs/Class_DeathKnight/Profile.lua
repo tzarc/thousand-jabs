@@ -108,7 +108,7 @@ TJ:RegisterPlayerClass({
     class_id = 6,
     spec_id = 1,
     action_profile = internal.apls['custom::deathknight::blood'],
-    resources = { 'rune', 'runic_power' },
+    resources = { 'rune', 'runic_power', 'runic_power_per_time', 'runic_power_per_time_no_base' },
     actions = {
         blood_abilities_exported,
         blood_base_abilities,
@@ -293,7 +293,7 @@ TJ:RegisterPlayerClass({
     class_id = 6,
     spec_id = 3,
     action_profile = internal.apls['legion-dev::deathknight::unholy'],
-    resources = { 'rune', 'runic_power' },
+    resources = { 'rune', 'runic_power', 'runic_power_per_time', 'runic_power_per_time_no_base' },
     actions = {
         unholy_abilities_exported,
         unholy_base_abilities,
@@ -507,7 +507,7 @@ TJ:RegisterPlayerClass({
     class_id = 6,
     spec_id = 2,
     action_profile = internal.apls['legion-dev::deathknight::frost'],
-    resources = { 'rune', 'runic_power' },
+    resources = { 'rune', 'runic_power', 'runic_power_per_time', 'runic_power_per_time_no_base' },
     actions = {
         frost_abilities_exported,
         frost_base_abilities,

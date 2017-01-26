@@ -88,15 +88,21 @@ function TJ:ExecuteFuncAsCoroutine(funcToExec)
     TJ:QueueUpdate()
 end
 
+local coroutineSkipped = true -- Run a screen update in between every exec
 function TJ:RunFuncCoroutines()
-    for th in pairs(commandQueue) do
-        if co_status(th) == "dead" then
-            commandQueue[th] = nil
-        else
-            co_resume(th)
+    if coroutineSkipped then
+        for th in pairs(commandQueue) do
+            coroutineSkipped = false
+            if co_status(th) == "dead" then
+                commandQueue[th] = nil
+            else
+                co_resume(th)
+            end
         end
-        TJ:QueueUpdate()
+    else
+        coroutineSkipped = true
     end
+    TJ:QueueUpdate()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -114,8 +120,12 @@ function TJ:QueueUpdate()
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
 end
 
-function TJ:QueueProfileReload()
+function TJ:QueueProfileReload(forceNow)
     TJ.needsProfileReload = true
+    if forceNow then
+        lastProfileReload = 0
+        nextScreenUpdateExpiry = 0
+    end
     TJ:QueueUpdate()
 end
 

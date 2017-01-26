@@ -281,6 +281,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                 TJ:DetectAbilitiesFromSpellBook()
                 co_yield()
                 TJ:DetectAbilitiesFromSpellBook()
+                TJ:QueueProfileReload(true)
                 co_yield()
 
                 if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
@@ -296,6 +297,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                         TJ:DetectAbilitiesFromSpellBook()
                         co_yield()
                         TJ:DetectAbilitiesFromSpellBook()
+                        TJ:QueueProfileReload(true)
                         co_yield()
                     end
                 end
@@ -313,6 +315,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
             TJ:DetectAbilitiesFromSpellBook()
             co_yield()
             TJ:DetectAbilitiesFromSpellBook()
+            TJ:QueueProfileReload(true)
             co_yield()
         end
 

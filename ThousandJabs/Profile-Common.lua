@@ -341,5 +341,15 @@ Core.Environment.resources = {
 }
 
 -- Set up the per-time resources to match the base resources
-Core.Environment.resources.energy_per_time = Core.Environment.resources.energy
+Core.Environment.resources.mana_per_time = Core.Environment.resources.mana
 Core.Environment.resources.mana_per_time_no_base = Core.Environment.resources.mana
+Core.Environment.resources.energy_per_time = Core.Environment.resources.energy
+Core.Environment.resources.energy_per_time_no_base = Core.Environment.resources.energy
+Core.Environment.resources.runic_power_per_time = Core.Environment.resources.runic_power
+Core.Environment.resources.runic_power_per_time_no_base = Core.Environment.resources.runic_power
+Core.Environment.resources.rage_per_time = Core.Environment.resources.rage
+Core.Environment.resources.rage_per_time_no_base = Core.Environment.resources.rage
+Core.Environment.resources.fury_per_time = Core.Environment.resources.fury
+Core.Environment.resources.fury_per_time_no_base = Core.Environment.resources.fury
+Core.Environment.resources.pain_per_time = Core.Environment.resources.pain
+Core.Environment.resources.pain_per_time_no_base = Core.Environment.resources.pain
