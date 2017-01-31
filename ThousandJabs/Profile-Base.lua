@@ -224,6 +224,10 @@ local function addMissingFields(action)
         if not rawget(action, 'last_cast') then action.time_since_last_cast = 0 end
         if not rawget(action, 'time_since_last_cast') then action.time_since_last_cast = 99999 end
 
+        if not rawget(action, 'spell_cast_time') then
+            action.spell_cast_time = function(spell, env) return TJ.currentGCD end
+        end
+
         if not rawget(action, 'talent_enabled') then action.talent_enabled = false end
 
         if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
