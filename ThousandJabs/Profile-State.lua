@@ -450,6 +450,12 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
     local func = env.hooks.OnPredictActionAtOffset
     if func then func(env) end
 
+    if not TJ.inCombat then
+        return self:ExecuteActionProfileList("precombat")
+            or self:ExecuteActionProfileList("default")
+            or nil
+    end
+
     return self:ExecuteActionProfileList("default")
 end
 

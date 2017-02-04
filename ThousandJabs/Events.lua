@@ -128,6 +128,7 @@ function TJ:PLAYER_REGEN_ENABLED(eventName)
     self.lastMainhandAttack = 0
     self.lastOffhandAttack = 0
     -- Reset combat
+    self.inCombat = false
     self.combatStart = 0
     wipe(self.seenTargets)
     -- Reset last casts
@@ -143,6 +144,7 @@ function TJ:PLAYER_REGEN_DISABLED(eventName)
     self.lastMainhandAttack = now
     self.lastOffhandAttack = now
     -- Start combat
+    self.inCombat = true
     self.combatStart = now
     -- Notify the profile
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)

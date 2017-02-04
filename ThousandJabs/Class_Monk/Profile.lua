@@ -72,8 +72,22 @@ local brewmaster_base_overrides = {
     },
     tiger_palm = {
         PerformCast = function(spell, env)
+            -- Extend Eye of the Tiger
             if env.eye_of_the_tiger.talent_enabled then
                 env.eye_of_the_tiger.expirationTime = env.currentTime + 8
+            end
+
+            -- Remove Blackout Combo
+            if env.blackout_combo.talent_enabled then
+                env.blackout_combo.expirationTime = 0
+            end
+        end
+    },
+    breath_of_fire = {
+        PerformCast = function(spell, env)
+            -- Remove Blackout Combo
+            if env.blackout_combo.talent_enabled then
+                env.blackout_combo.expirationTime = 0
             end
         end
     },
@@ -83,6 +97,12 @@ local brewmaster_base_overrides = {
         AuraMine = true,
         AuraApplied = 'keg_smash',
         AuraApplyLength = 15,
+        PerformCast = function(spell, env)
+            -- Remove Blackout Combo
+            if env.blackout_combo.talent_enabled then
+                env.blackout_combo.expirationTime = 0
+            end
+        end
     },
     blackout_strike = {
         AuraApplied = 'blackout_combo',
@@ -98,6 +118,11 @@ local brewmaster_base_overrides = {
         PerformCast = function(spell,env)
             -- Need to also decrement the number of charges for Purifying Brew
             env.purifying_brew.rechargeSpent = env.purifying_brew.rechargeSpent+1
+
+            -- Remove Blackout Combo
+            if env.blackout_combo.talent_enabled then
+                env.blackout_combo.expirationTime = 0
+            end
         end,
     },
     expel_harm = {
@@ -110,6 +135,11 @@ local brewmaster_base_overrides = {
         PerformCast = function(spell,env)
             -- Need to also decrement the number of charges for Ironskin Brew
             env.ironskin_brew.rechargeSpent = env.ironskin_brew.rechargeSpent+1
+
+            -- Remove Blackout Combo
+            if env.blackout_combo.talent_enabled then
+                env.blackout_combo.expirationTime = 0
+            end
 
             -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
             if env.stagger_heavy.aura_up then

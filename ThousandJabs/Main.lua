@@ -35,8 +35,8 @@ Core:Safety()
 
 -- Timer update
 local screenUpdateTimer = nil
-local queuedScreenUpdateTime = Core.devMode and 0.05 or 0.2  -- seconds (high-speed in dev mode, hopefully trigger issues)
-local watchdogScreenUpdateTime = 0.75 -- seconds
+local queuedScreenUpdateTime = 0.2
+local watchdogScreenUpdateTime = 0.75
 local nextScreenUpdateExpiry = GetTime()
 local watchdogScreenUpdateExpiry = GetTime()
 
@@ -53,6 +53,7 @@ TJ.currentProfile = nil
 
 -- Time combat was last entered
 TJ.combatStart = 0
+TJ.inCombat = false
 
 -- Cast tracking
 TJ.abilitiesUsed = {}
@@ -114,7 +115,7 @@ function TJ:QueueUpdate()
 
     if not screenUpdateTimer then
         watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
-        screenUpdateTimer = NewTicker(Core.devMode and 0.01 or 0.1, function() TJ:PerformUpdate() end)
+        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdate() end)
     end
 
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
@@ -125,6 +126,8 @@ function TJ:QueueProfileReload(forceNow)
     if forceNow then
         lastProfileReload = 0
         nextScreenUpdateExpiry = 0
+        queuedScreenUpdateTime = Config:Get("fastUpdateSpeed")
+        watchdogScreenUpdateTime = Config:Get("slowUpdateSpeed")
     end
     TJ:QueueUpdate()
 end

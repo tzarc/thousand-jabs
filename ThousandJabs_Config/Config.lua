@@ -137,6 +137,51 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                             UI:UpdateAlpha()
                         end
                     },
+                    timingHeader = {
+                        type = "header",
+                        name = L["Timing"],
+                        order = 300,
+                    },
+                    fastUpdateSpeed = {
+                        type = "range",
+                        order = 301,
+                        name = L["Fast update speed"],
+                        min = 0.05,
+                        max = 0.5,
+                        step = 0.05,
+                        get = function(info)
+                            return Config:Get("fastUpdateSpeed")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "fastUpdateSpeed")
+                            TJ:QueueProfileReload()
+                        end
+                    },
+                    slowUpdateSpeed = {
+                        type = "range",
+                        order = 302,
+                        name = L["Slow update speed"],
+                        min = 0.1,
+                        max = 1.0,
+                        step = 0.05,
+                        get = function(info)
+                            return Config:Get("slowUpdateSpeed")
+                        end,
+                        set = function(info, val)
+                            Config:Set(val, "slowUpdateSpeed")
+                            TJ:QueueProfileReload()
+                        end
+                    },
+                    resetTiming = {
+                        type = "execute",
+                        order = 303,
+                        name = L["Reset Timing"],
+                        func = function()
+                            Config:Set(nil, "fastUpdateSpeed")
+                            Config:Set(nil, "slowUpdateSpeed")
+                            TJ:QueueProfileReload()
+                        end
+                    },
                     fadingHeader = {
                         type = "header",
                         name = L["Fading"],
