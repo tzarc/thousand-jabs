@@ -17,6 +17,7 @@ actions.st+=/death_strike,if=runic_power>80
 actions.st+=/death_strike,if=incoming_damage_3s>health.max*0.25
 actions.st+=/blood_boil,if=buff.bone_shield.stack<5
 actions.st+=/death_and_decay
+actions.st+=/consumption
 actions.st+=/heart_strike
 actions.cleave=blood_boil,if=debuff.blood_plague.down
 actions.cleave+=/death_strike,if=runic_power>95
@@ -26,6 +27,7 @@ actions.cleave+=/blood_boil,if=buff.bone_shield.stack<5
 actions.cleave+=/death_strike,if=runic_power>80
 actions.cleave+=/death_strike,if=incoming_damage_3s>health.max*0.25
 actions.cleave+=/death_and_decay
+actions.cleave+=/consumption
 actions.cleave+=/heart_strike
 actions.aoe=blood_boil,if=debuff.blood_plague.down
 actions.aoe+=/death_strike,if=runic_power>95
@@ -35,6 +37,7 @@ actions.aoe+=/blood_boil,if=buff.bone_shield.stack<1
 actions.aoe+=/death_strike,if=runic_power>80
 actions.aoe+=/death_strike,if=incoming_damage_3s>health.max*0.25
 actions.aoe+=/death_and_decay
+actions.aoe+=/consumption
 actions.aoe+=/heart_strike
 ]]
 

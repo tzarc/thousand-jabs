@@ -23,6 +23,7 @@ if Core:MatchesBuild('7.1.5', '7.1.5') then
         bloodworms = { TalentID = 19165, },
         bonestorm = { SpellIDs = { 194844 }, TalentID = 21207, },
         control_undead = { SpellIDs = { 111673 }, },
+        consumption = { SpellIDs = { 205223 }, },
         dancing_rune_weapon = { SpellIDs = { 49028 }, },
         dark_command = { SpellIDs = { 56222 }, },
         death_and_decay = { SpellIDs = { 43265 }, },
