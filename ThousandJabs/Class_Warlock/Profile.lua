@@ -272,6 +272,7 @@ TJ:RegisterPlayerClass({
         destruction_hooks,
     },
     blacklisted = {
+        'summon_pet',
         'summon_doomguard',
         'summon_felhunter',
         'summon_imp',

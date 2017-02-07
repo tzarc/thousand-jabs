@@ -323,7 +323,7 @@ local function StateResetPrototype(self, targetCount)
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
-    env.desired_targets = self.numTargets - 1
+    env.desired_targets = 1
     env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
     env.player_level = UnitLevel('player')
     env.movement.distance = UnitCache:UnitRange('target')

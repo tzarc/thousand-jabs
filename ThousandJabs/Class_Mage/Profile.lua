@@ -162,7 +162,12 @@ local frost_base_abilities = {
     water_jet = {
         spell_cast_time = 0.01, -- pet ability, off GCD
         OverlayTitle = "PET ABILITY",
-    }
+    },
+    summon_water_elemental = {
+        CanCast = function(spell, env)
+            return (not UnitExists("pet"))
+        end
+    },
 }
 
 local frost_artifact_overrides = {
@@ -189,4 +194,7 @@ TJ:RegisterPlayerClass({
         icy_hand_selected = false,
     },
     blacklisted = {},
+    simc_mapping = { -- simc_name = "equivalent_parsed_ingame_table_name"
+        water_elemental = "summon_water_elemental",
+    },
 })

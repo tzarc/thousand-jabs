@@ -315,6 +315,11 @@ local windwalker_base_overrides = {
         AuraMine = true,
         AuraUnit = 'player',
     },
+    spinning_crane_kick = {
+        count = function(spell, env)
+            return env.active_enemies
+        end
+    },
 }
 
 local windwalker_talent_overrides = {

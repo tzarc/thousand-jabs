@@ -177,6 +177,14 @@ local arms_base_overrides = {
     },
 }
 
+local arms_legendaries = {
+    corrupted_blood_of_zakajz = {
+        AuraID = { 209566, 209567, 209569 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    }
+}
+
 TJ:RegisterPlayerClass({
     name = 'Arms',
     class_id = 1,
@@ -186,6 +194,7 @@ TJ:RegisterPlayerClass({
     actions = {
         arms_abilities_exported,
         arms_base_overrides,
+        arms_legendaries,
     },
     blacklisted = {},
 })

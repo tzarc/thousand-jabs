@@ -58,13 +58,13 @@ end
 function Core:LoadFunctionString(funcStr, name)
     local loader, errStr = loadstring('return (' .. funcStr .. ')', name)
     if errStr then
-        Core:PrintOnce('Error loading function for %s:\n%s', name, errStr)
+        Core:Error(Core:Format('Error loading function for %s:\n%s', name, errStr))
     else
         local success, retval = pcall(assert(loader))
         if success then
             return retval
         else
-            Core:PrintOnce('Error creating function for %s:\n%s', name, tostring(retval))
+            Core:Error(Core:Format('Error creating function for %s:\n%s', name, tostring(retval)))
         end
     end
 end

@@ -173,6 +173,11 @@ if Core:MatchesBuild('7.1.5', '7.1.5') then
 end
 
 local unholy_base_abilities = {
+    raise_dead = {
+        CanCast = function(spell, env)
+            return (not UnitExists("pet"))
+        end
+    },
     outbreak = {
         AuraID = 196782,
         AuraUnit = 'target',
@@ -258,8 +263,8 @@ local unholy_base_abilities = {
         AuraMine = true,
         AuraUnit = "player",
     },
-    valkyr_battlemaiden = {
-        pet_active = function(spell,env)
+    pet = {
+        valkyr_battlemaiden_active = function(spell,env)
             -- active for 15secs after last cast
             local lastCast = env.lastCastTimes[207349]
             return lastCast and (env.currentTime < (lastCast + 15)) and true or false
@@ -467,6 +472,14 @@ local frost_talent_overrides = {
     },
 }
 
+local frost_legendaries = {
+    perseverance_of_the_ebon_martyr = {
+        AuraID = { 216059 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    }
+}
+
 local frost_hooks = {
     hooks = {
         OnPredictActionAtOffset = function(env)
@@ -513,6 +526,7 @@ TJ:RegisterPlayerClass({
         frost_abilities_exported,
         frost_base_abilities,
         frost_talent_overrides,
+        frost_legendaries,
         frost_hooks,
     },
     blacklisted = {},

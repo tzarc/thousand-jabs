@@ -32,6 +32,10 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     -- Any trailing digit selectors (i.e.  something.1) we change to array indexing
     keyword = keyword:gsub('([^%d])%.([%d]+)', '%1[%2]')
 
+    -- Min/max modifiers (ignored)
+    keyword = keyword:gsub("^min:", "")
+    keyword = keyword:gsub("^max:", "")
+
     -- Casting checks
     if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
     if keyword == "debuff.casting.down" then keyword = "(not target.is_casting)" end
