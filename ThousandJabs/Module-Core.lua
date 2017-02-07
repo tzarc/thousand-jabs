@@ -253,24 +253,19 @@ function Core:OrderedPairs(t, f)
     return iter
 end
 
-function Core:IntersectionCount(tbl1, tbl2) -- inputs must be sorted!
-    local i, j = 1, 1
-    local intersection = TableCache:Acquire()
-    while i <= #tbl1 and j <= #tbl2 do
-        if tbl1[i] == tbl2[j] then
-            i, j = i + 1, j + 1
-            tinsert(intersection, tbl1[i])
-        elseif tbl1[i] > tbl2[j] then
-            tbl1, tbl2 = tbl2, tbl1
-            i, j = j, i
-        else
-            i = i + 1
-        end
+function Core:IntersectionCount(tbl1, tbl2)
+    local a = (#a < #b) and tbl1 or tbl2 -- Make 'a' the smallest of the two arrays
+    local b = (#a < #b) and tbl2 or tbl1
+    local cnt = 0
+    local i = TableCache:Acquire()
+    for n=1,#a do
+        i[a[n]] = true
     end
-
-    local c = #intersection
-    TableCache:Release(intersection)
-    return c
+    for n=1,#b do
+        if i[b[n]] then cnt = cnt + 1 end
+    end
+    TableCache:Release(i)
+    return cnt
 end
 
 local function scope_exit(self, f)
