@@ -254,8 +254,8 @@ function Core:OrderedPairs(t, f)
 end
 
 function Core:IntersectionCount(tbl1, tbl2)
-    local a = (#a < #b) and tbl1 or tbl2 -- Make 'a' the smallest of the two arrays
-    local b = (#a < #b) and tbl2 or tbl1
+    local a = (#tbl1 < #tbl2) and tbl1 or tbl2 -- Make 'a' the smallest of the two arrays
+    local b = (#tbl1 < #tbl2) and tbl2 or tbl1
     local cnt = 0
     local i = TableCache:Acquire()
     for n=1,#a do
