@@ -383,6 +383,18 @@ local havoc_base_overrides = {
         PerformCast = function(spell,env)
             env.movement.distance = 5 -- melee
         end,
+        cooldown_adjusted_remains = function(spell, env)
+            -- Basic estimate... thanks Kojiyama! ;)
+            if env.equipped[144279] and env.equipped[140806] then -- Delusions of Grandeur + Convergence of Fates
+                return spell.cooldown_remains * 0.56
+            elseif env.equipped[144279] then -- Delusions of Grandeur
+                return spell.cooldown_remains * 0.67
+            elseif env.equipped[140806] then -- Convergence of Fates
+                return spell.cooldown_remains * 0.78
+            else
+                return spell.cooldown_remains
+            end
+        end,
     },
     bloodlet = {
         AuraID = 207690,
