@@ -200,6 +200,8 @@ function UI:OnInitialize()
 end
 
 function UI:SetAction(actionType, actionIndex, texture, overlayText)
+    if not actionFrames.backdrop then return end
+
     local actions = actionFrames.actions[actionType]
     if actions then
         local button = actions[actionIndex]
@@ -211,38 +213,56 @@ function UI:SetAction(actionType, actionIndex, texture, overlayText)
 end
 
 function UI:Show()
+    if not actionFrames.backdrop then return end
+
     actionFrames.backdrop:Show()
 end
 
 function UI:Hide()
+    if not actionFrames.backdrop then return end
+
     actionFrames.backdrop:Hide()
 end
 
 function UI:SetMovable(enabled)
+    if not actionFrames.backdrop then return end
+
     actionFrames.backdrop:SetMovable(enabled)
 end
 
 function UI:GetPoint(...)
+    if not actionFrames.backdrop then return end
+
     return actionFrames.backdrop:GetPoint(...)
 end
 
 function UI:GetScale()
+    if not actionFrames.backdrop then return end
+
     return actionFrames.backdrop:GetScale()
 end
 
 function UI:EnableMouse(enabled)
+    if not actionFrames.backdrop then return end
+
     actionFrames.backdrop:EnableMouse(enabled)
 end
 
 function UI:SetScript(event, func)
+    if not actionFrames.backdrop then return end
+
     actionFrames.backdrop:SetScript(event, func)
 end
 
 function UI:SetCooldown(start, duration)
+    if not actionFrames.backdrop then return end
+
     actionFrames.cooldown:SetCooldown(start, duration)
 end
 
 function UI:UpdateAlpha()
+    if not actionFrames.backdrop then return end
+
     local inCombat = InCombatLockdown()
     local alpha = inCombat and Config:Get("inCombatAlpha") or Config:Get("outOfCombatAlpha")
     if alpha > 0 then
@@ -254,6 +274,8 @@ function UI:UpdateAlpha()
 end
 
 function UI:ToggleMovement()
+    if not actionFrames.backdrop then return end
+
     if self.movable then
         self.movable = false
         Core:Print('Frame movement disabled.')
@@ -266,6 +288,8 @@ function UI:ToggleMovement()
 end
 
 function UI:ResetPosition()
+    if not actionFrames.backdrop then return end
+
     Core:Print('Resetting position.')
     Config:Set(nil, "position")
     self:ReapplyLayout()
@@ -274,6 +298,8 @@ function UI:ResetPosition()
 end
 
 function UI:ReapplyLayout(skipMasque)
+    if not actionFrames.backdrop then return end
+
     -- Resize buttons
     for i=1,4 do
         local btn = actionFrames.actions[UI.SINGLE_TARGET][i]
