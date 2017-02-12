@@ -265,6 +265,7 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('UNIT_POWER')
         TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
         TJ:RegisterEvent('UNIT_PET')
+        TJ:RegisterEvent('UNIT_AURA')
         TJ:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW', 'GENERIC_EVENT_UPDATE_HANDLER')
     else
         UI:Hide()
@@ -289,6 +290,7 @@ function TJ:DeactivateProfile()
 
     -- Remove event listeners
     TJ:UnregisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW')
+    TJ:UnregisterEvent('UNIT_AURA')
     TJ:UnregisterEvent('UNIT_PET')
     TJ:UnregisterEvent('UNIT_POWER_FREQUENT')
     TJ:UnregisterEvent('UNIT_POWER')

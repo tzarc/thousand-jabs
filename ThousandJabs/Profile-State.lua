@@ -271,6 +271,7 @@ local function StateResetPrototype(self, targetCount)
             if rawget(entry, 'AuraID') then
                 local aura = UnitCache:GetAura(entry.AuraUnit, entry.AuraID, entry.AuraMine)
                 v.expirationTime = aura and aura.expires or 0
+                if aura and v.expirationTime == 0 then v.expirationTime = GetTime() + 99999 end -- Handle no-timer auras that are present
                 v.auraCount = aura and aura.count or 0
             end
 
@@ -279,7 +280,7 @@ local function StateResetPrototype(self, targetCount)
                 if abilityID then
                     v.cooldownStart, v.cooldownDuration = GetSpellCooldown(abilityID)
                 else
-                    v.cooldownStart, v.cooldownDuration = env.CurrentTime, v.CooldownTime
+                    v.cooldownStart, v.cooldownDuration = env.currentTime, v.CooldownTime
                 end
             end
 

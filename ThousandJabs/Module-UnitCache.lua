@@ -211,6 +211,12 @@ else
 end
 updateFrame:Show()
 
+function UnitCache:UNIT_AURA(eventName, unit)
+    if unit == 'player' or unit == 'target' or unit == 'pet' then
+        self:UpdateUnitCache(unit, true)
+    end
+end
+
 function UnitCache:PLAYER_ENTERING_WORLD(eventName)
     self:UpdateUnitCache('player', true)
 end
@@ -238,6 +244,7 @@ end
 Profiling:ProfileFunction(UnitCache, 'COMBAT_LOG_EVENT_UNFILTERED', 'unitcache:COMBAT_LOG_EVENT_UNFILTERED')
 
 updateFrame:SetScript("OnEvent", function(self, eventName, ...) UnitCache[eventName](UnitCache, eventName, ...) end)
+updateFrame:RegisterEvent('UNIT_AURA')
 updateFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 updateFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 updateFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')

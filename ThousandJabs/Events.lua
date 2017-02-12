@@ -107,6 +107,13 @@ function TJ:UNIT_POWER(eventName, unitID, powerType)
     end
 end
 
+function TJ:UNIT_AURA(eventName, unitID, powerType)
+    if unitID == 'player' then
+        -- Notify the profile
+        TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, powerType)
+    end
+end
+
 function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
     if unitID == 'player' then
         local now = GetTime()
