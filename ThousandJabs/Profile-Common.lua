@@ -12,6 +12,7 @@ local select = select
 local SPELL_POWER_CHI = SPELL_POWER_CHI
 local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
 local SPELL_POWER_FURY = SPELL_POWER_FURY
+local SPELL_POWER_MAELSTROM = SPELL_POWER_MAELSTROM
 local SPELL_POWER_MANA = SPELL_POWER_MANA
 local SPELL_POWER_PAIN = SPELL_POWER_PAIN
 local SPELL_POWER_RAGE = SPELL_POWER_RAGE
@@ -106,6 +107,7 @@ Core.Environment.common = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
         raid_event_up = function(self,state) return self.raid_event_exists end,
         raid_event_in = 180,
+        raid_event_count = 0,
     },
     potion = {
         AuraID = {}, -- TODO (do we actually care?)
@@ -342,6 +344,16 @@ Core.Environment.resources = {
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
+    maelstrom = {
+        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_MAELSTROM) or 0) end,
+        gained = 0,
+        spent = 0,
+        curr = function(power,env) return power.sampled - power.spent + power.gained end,
+        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_MAELSTROM) or 0) end,
+        deficit = function(power,env) return power.max - power.curr end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
+    },
 }
 
 -- Set up the per-time resources to match the base resources
@@ -357,3 +369,5 @@ Core.Environment.resources.fury_per_time = Core.Environment.resources.fury
 Core.Environment.resources.fury_per_time_no_base = Core.Environment.resources.fury
 Core.Environment.resources.pain_per_time = Core.Environment.resources.pain
 Core.Environment.resources.pain_per_time_no_base = Core.Environment.resources.pain
+Core.Environment.resources.maelstrom_per_time = Core.Environment.resources.maelstrom
+Core.Environment.resources.maelstrom_per_time_no_base = Core.Environment.resources.maelstrom

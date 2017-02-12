@@ -103,7 +103,9 @@ function TJ:RunFuncCoroutines()
     else
         coroutineSkipped = true
     end
-    TJ:QueueUpdate()
+    local exists = false
+    for _,_ in pairs(commandQueue) do exists = true end
+    if exists then TJ:QueueUpdate() end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -339,19 +341,15 @@ end
 function TJ:ExecuteAllActionProfiles()
     -- Work out how many targets we're dealing with
     local targetCount = 0
-    if Config:Get('displayMode') == 'automatic' then
-        for k,v in Core:OrderedPairs(self.seenTargets) do
-            targetCount = targetCount + 1
-        end
-    else
-        targetCount = 1
+    for k,v in Core:OrderedPairs(self.seenTargets) do
+        targetCount = targetCount + 1
     end
     targetCount = mmax(1, targetCount)
 
     -- Reset the single-target state
     Core:Debug("")
     Core:Debug(Config:Get('displayMode') ~= 'automatic' and "|cFFFFFFFFSingle Target|r" or "|cFFFFFFFFAutomatic Target Counting|r" )
-    self.state:Reset(targetCount)
+    self.state:Reset(Config:Get('displayMode') == 'automatic' and targetCount or 1, targetCount)
 
     -- Export the current profile state just after reset, if requested
     if TJ.needExportCurrentProfile then
@@ -374,7 +372,7 @@ function TJ:ExecuteAllActionProfiles()
         if Config:Get('showCleave') then
             Core:Debug("")
             Core:Debug("|cFFFFFFFFCleave|r")
-            self.state:Reset(2)
+            self.state:Reset(2, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
             action = self.state:PredictActionFollowing(action) or "wait"
@@ -384,7 +382,7 @@ function TJ:ExecuteAllActionProfiles()
         if Config:Get('showAoE') then
             Core:Debug("")
             Core:Debug("|cFFFFFFFFAoE|r")
-            self.state:Reset(3)
+            self.state:Reset(3, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.AOE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
             action = self.state:PredictActionFollowing(action) or "wait"

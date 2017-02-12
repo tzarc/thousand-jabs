@@ -50,6 +50,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword == "gcd.remains" then keyword = "gcd_remains" end
 
     -- Single-word conversions
+    if keyword == "refreshable" then keyword = "spell.THIS_SPELL.refreshable" end
     if keyword == "time" then keyword = "time_since_combat_start" end
     if keyword == "cooldown" then keyword = "cooldown.THIS_SPELL.remains" end
     if keyword == "cooldown_react" then keyword = "cooldown.THIS_SPELL.react" end
@@ -76,6 +77,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub("^soul_shard", "soul_shards")
     keyword = keyword:gsub("^soul_shardss", "soul_shards")
     if keyword == "soul_shards" then keyword = "soul_shards.curr" end
+    if keyword == "maelstrom" then keyword = "maelstrom.curr" end
 
     -- Aura consolidation
     keyword = keyword:gsub("^target%.dot%.", "aura.")

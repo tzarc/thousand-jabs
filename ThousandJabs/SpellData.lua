@@ -413,7 +413,7 @@ local function IsGreen(colour) -- work out if it's increased by haste
     return colour[1] == 0 and colour[2] == 255 and colour[3] == 0 and true
 end
 
-local PowerTypes = { 'mana', 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power', 'rage', 'soul_shards' }
+local PowerTypes = { 'mana', 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power', 'rage', 'soul_shards', 'maelstrom' }
 local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
 local PowerPatterns = {}
 for _,v in pairs(PowerTypes) do

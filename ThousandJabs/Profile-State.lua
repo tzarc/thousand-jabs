@@ -222,7 +222,7 @@ local function CreateSetBonusTable(state, profile)
 end
 
 -- Helper for cleaning a state
-local function StateResetPrototype(self, targetCount)
+local function StateResetPrototype(self, targetCount, seenTargets)
     local env = self.env
     env.prev_gcd = nil
     env.prev_off_gcd = nil
@@ -232,6 +232,7 @@ local function StateResetPrototype(self, targetCount)
     env.set_bonus = nil
 
     self.numTargets = targetCount or self.numTargets
+    self.seenTargets = seenTargets or 1
 
     -- Deep copy over the last cast times for the state so that we're not writing to the global state instead
     wipe(self.abilitiesUsed)
@@ -325,6 +326,7 @@ local function StateResetPrototype(self, targetCount)
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
     env.desired_targets = 1
+    env.seen_targets = self.seenTargets
     env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
     env.player_level = UnitLevel('player')
     env.movement.distance = UnitCache:UnitRange('target')

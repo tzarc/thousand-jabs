@@ -26,7 +26,6 @@ ignore:
     - Class_Paladin
     - Class_Priest
     - Class_Rogue
-    - Class_Shaman
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh

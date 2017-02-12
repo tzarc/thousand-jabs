@@ -25,6 +25,7 @@ local nextUpdateTime = 0
 local updateThrottle = 2.5 -- in seconds
 local playerGUID, targetGUID
 local unitCache = {}
+UnitCache.unitCache = unitCache
 
 local range_checks = {
     { range = 80, items = { 35278 } },
