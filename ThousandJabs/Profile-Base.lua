@@ -482,17 +482,20 @@ function TJ:RegisterPlayerClass(config)
                 v.perform_cast_funcsrc = ''
 
                 -- Work out the cast time based off the spell info, or the GCD
+                local castTime = select(4, GetSpellInfo(v.AbilityID))
+                if castTime and castTime > 0 then
+                    v.base_cast_time = function(spell, env)
+                        return select(4, GetSpellInfo(v.AbilityID)) / 1000.0
+                    end
+                else
+                    v.base_cast_time = function(spell, env)
+                        local gcd = TJ.currentGCD * env.playerHasteMultiplier
+                        return (gcd > 1) and gcd or 1
+                    end
+                end
                 if not rawget(v, 'spell_cast_time') then
-                    local castTime = select(4, GetSpellInfo(v.AbilityID))
-                    if castTime and castTime > 0 then
-                        v.spell_cast_time = function(spell, env)
-                            return select(4, GetSpellInfo(v.AbilityID)) / 1000.0
-                        end
-                    else
-                        v.spell_cast_time = function(spell, env)
-                            local gcd = TJ.currentGCD * env.playerHasteMultiplier
-                            return (gcd > 1) and gcd or 1
-                        end
+                    v.spell_cast_time = function(spell, env)
+                        return spell.base_cast_time
                     end
                 end
 
