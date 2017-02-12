@@ -72,8 +72,18 @@ local function DecrementUpdateElementalFocus(env)
     end
 end
 
+local function DecrementIcefury(env)
+    if env.icefury.aura_up then
+        env.icefury.aura_stack = env.icefury.aura_stack - 1
+        if env.icefury.aura_stack == 0 then
+            env.icefury.expirationTime = 0
+        end
+    end
+end
+
 local elemental_base_overrides = {
     flame_shock = {
+        spell_cast_time = 0.01,
         AuraID = 188389,
         AuraUnit = 'target',
         AuraMine = true,
@@ -90,6 +100,7 @@ local elemental_base_overrides = {
         end,
     },
     earth_shock = {
+        spell_cast_time = 0.01,
         cost_type = 'maelstrom',
         maelstrom_cost = function(spell, env)
             return mmax(10, mmin(100, env.maelstrom.curr))
@@ -99,12 +110,14 @@ local elemental_base_overrides = {
         end,
     },
     frost_shock = {
+        spell_cast_time = 0.01,
         cost_type = 'maelstrom',
         maelstrom_cost = function(spell, env)
             return mmax(0, mmin(20, env.maelstrom.curr))
         end,
         PerformCast = function(spell, env)
             DecrementUpdateElementalFocus(env)
+            DecrementIcefury(env)
         end,
     },
     lightning_bolt = {
@@ -130,6 +143,14 @@ local elemental_base_overrides = {
         end,
     },
     lava_burst = {
+        spell_cast_time = function(spell, env)
+            -- Insta-cast when Lava Surge is up
+            if env.lava_surge.aura_up then
+                env.lava_surge.expirationTime = 0
+                return 0.01
+            end
+            return spell.base_cast_time
+        end,
         PerformCast = function(spell, env)
             env.maelstrom.gained = env.maelstrom.gained + 12
             DecrementUpdateElementalFocus(env)
@@ -166,6 +187,18 @@ local elemental_talent_overrides = {
         AuraApplyLength = 120,
         CanCast = function(spell, env)
             return env.resonance_totem.aura_down and true or false
+        end,
+    },
+    icefury = {
+        AuraID = 210714,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'icefury',
+        AuraApplyLength = 15,
+        PerformCast = function(spell, env)
+            env.maelstrom.gained = env.maelstrom.gained + 24
+            env.icefury.aura_stack = 4
+            DecrementUpdateElementalFocus(env)
         end,
     },
     resonance_totem = {
