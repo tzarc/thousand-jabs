@@ -233,6 +233,19 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                             UI:UpdateAlpha()
                         end
                     },
+                    showSpellFlash = {
+                        type = "toggle",
+                        order = 604,
+                        name = L["Show Spell Flash"],
+                        get = function(info)
+                            return Config:Get("showSpellFlash") and true or false
+                        end,
+                        set = function(info, val)
+                            Config:Set(val and true or false, "showSpellFlash")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
                     geometryHeader = {
                         type = "header",
                         name = L["Geometry"],

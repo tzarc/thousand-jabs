@@ -23,6 +23,7 @@ local defaultConf = {
     inCombatAlpha = 1,
     outOfCombatAlpha = 1,
     backgroundOpacity = 0.3,
+    showSpellFlash = true,
     fastUpdateSpeed = 0.2,
     slowUpdateSpeed = 0.75,
     geometry = {

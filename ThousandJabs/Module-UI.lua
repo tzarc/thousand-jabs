@@ -353,6 +353,9 @@ function UI:ReapplyLayout(skipMasque)
     actionFrames.backdrop:SetPoint(Config:Get("position", "tgtPoint"), Config:Get("position", "offsetX"), Config:Get("position", "offsetY"))
     actionFrames.backdrop:SetScale(Config:Get("geometry", "scale"))
     actionFrames.backdrop:SetBackdropColor(0, 0, 0, Config:Get("backgroundOpacity"))
+
+    -- Enable/disable the spell flash on the cooldown
+    actionFrames.cooldown:SetDrawBling(Config:Get("showSpellFlash"))
 end
 
 function UI:CreateFrames()
@@ -388,6 +391,7 @@ function UI:CreateFrames()
 
     -- Create the cooldown frame beforehand
     actionFrames.cooldown = CreateFrame('Cooldown', 'ThousandJabs_ST1Cooldown', actionFrames.containers[UI.SINGLE_TARGET], 'CooldownFrameTemplate')
+    actionFrames.cooldown:SetDrawBling(Config:Get("showSpellFlash"))
 
     -- Create the ST icons
     for i=1,4 do
