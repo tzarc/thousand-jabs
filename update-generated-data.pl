@@ -337,7 +337,7 @@ sub create_equipped_mapping {
         print(" - Item: '${item}'\n");
         my $urlitem = $item;
         $urlitem =~ s/_/+/g;
-        my $url  = "http://www.wowhead.com/items/name:${urlitem}/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9";
+        my $url  = "http://ptr.wowhead.com/items/name:${urlitem}/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9";
         my $data = datacache::get_url($url);
 
         my %itemids;
@@ -396,7 +396,7 @@ sub create_itemset_bonuses {
 
         my %items;
         for my $itemset (sort @{ $bonus->{bonuses} }) {
-            my $url  = "http://www.wowhead.com/item-set=${itemset}";
+            my $url  = "http://ptr.wowhead.com/item-set=${itemset}";
             my $data = datacache::get_url($url);
             while($data =~ m/g_items\.add\((\d+)/g) {
                 $items{$1} = 1;

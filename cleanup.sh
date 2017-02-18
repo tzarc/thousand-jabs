@@ -5,6 +5,21 @@ set -e
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${SCRIPT_DIR}"
 
+nsudo() { [[ ${EUID} -ne 0 ]] && echo "sudo" ; true ; }
+havecmd()  { command command type "${1}" >/dev/null 2>&1 || return 1 ; }
+
+if [[ $(uname -s) == "Linux" ]] ; then
+  if havecmd apt-get ; then # Debian / Ubuntu etc.
+    $(nsudo) apt-get install dos2unix luarocks perltidy
+  fi
+
+  if ! havecmd luaformatter ; then
+    luarocks install --local formatter
+  fi
+
+  export PATH=$PATH:${HOME}/.luarocks/bin
+fi
+
 tjfind() {
     find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -print | sort
 }

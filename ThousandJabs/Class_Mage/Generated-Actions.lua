@@ -31,7 +31,6 @@ actions.burn=call_action_list,name=cooldowns
 actions.burn+=/charged_up,if=(equipped.132451&buff.arcane_charge.stack<=1)
 actions.burn+=/arcane_missiles,if=buff.arcane_missiles.react=3
 actions.burn+=/nether_tempest,if=dot.nether_tempest.remains<=2|!ticking
-actions.burn+=/arcane_blast,if=active_enemies<=1&mana.pct%10*execute_time>target.time_to_die
 actions.burn+=/arcane_explosion,if=active_enemies>1&mana.pct%10*execute_time>target.time_to_die
 actions.burn+=/presence_of_mind,if=buff.rune_of_power.remains<=2*action.arcane_blast.execute_time
 actions.burn+=/arcane_missiles,if=buff.arcane_missiles.react>1
@@ -177,7 +176,7 @@ actions.single+=/ice_lance,if=buff.fingers_of_frost.react>0&cooldown.icy_veins.r
 actions.single+=/frozen_orb
 actions.single+=/ice_nova
 actions.single+=/comet_storm
-actions.single+=/blizzard,if=talent.arctic_gale.enabled|active_enemies>2|active_enemies>1&!(talent.glacial_spike.enabled&talent.splitting_ice.enabled)|(buff.zannesu_journey.stack=5&buff.zannesu_journey.remains>cast_time)
+actions.single+=/blizzard,if=active_enemies>2|active_enemies>1&!(talent.glacial_spike.enabled&talent.splitting_ice.enabled)|(buff.zannesu_journey.stack=5&buff.zannesu_journey.remains>cast_time)
 actions.single+=/ebonbolt,if=buff.brain_freeze.react=0
 actions.single+=/glacial_spike
 actions.single+=/frostbolt
