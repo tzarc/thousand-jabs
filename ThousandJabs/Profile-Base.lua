@@ -259,7 +259,9 @@ local function addMissingFields(action)
         if not rawget(action, 'aura_react') then action.aura_react = false end
         if not rawget(action, 'aura_stack') then action.aura_stack = 0 end
 
-        if not rawget(action, 'OverlayTitle') then action.OverlayTitle = '' end
+        if not rawget(action, 'OverlayTitle') then
+            action.OverlayTitle = Config:GetSpecOverlay(action.ActionName) or ''
+        end
 
         if rawget(action, 'OverallSpellID') then
             local overallSpellID = action.OverallSpellID
@@ -435,6 +437,7 @@ function TJ:RegisterPlayerClass(config)
 
         -- Update each of the actions with any detected/generated data
         for k,v in pairs(actions) do
+            v.ActionName = k
 
             local spellIDs = rawget(v, 'SpellIDs')
             local auraIDs = rawget(v, 'AuraID')
@@ -487,7 +490,7 @@ function TJ:RegisterPlayerClass(config)
 
                 -- Set up a function to check to see if an ability is blacklisted
                 v.blacklisted = function(spell, env)
-                    return Config:Get("class", config.class_id, "spec", config.spec_id, "blacklist", k) and true or false
+                    return Config:GetSpecBlacklist(k) and true or false
                 end
 
                 -- Start constructing the spell_can_cast() and perform_cast() functions

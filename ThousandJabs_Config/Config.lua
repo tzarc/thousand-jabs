@@ -386,7 +386,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                     end,
                     set = function(info, val)
                         Config:Set(val and true or false, "class", classID, "spec", specID, "disabled")
-                        TJ:QueueProfileReload()
+                        TJ:QueueProfileReload(true)
                         UI:UpdateAlpha()
                     end
                 },
@@ -472,7 +472,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                     args = {
                         bl = {
                             type = "toggle",
-                            order = order,
+                            order = 1,
                             name = L["Disable"],
                             get = function(info)
                                 return Config:Get("class", classID, "spec", specID, "blacklist", k) and true or false
@@ -482,7 +482,21 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                                 TJ:QueueProfileReload()
                                 UI:UpdateAlpha()
                             end
-                        }
+                        },
+                        overlay = {
+                            type = "input",
+                            order = 2,
+                            name = L["Text Overlay"],
+                            usage = L["Text to show over icon during prediction"],
+                            get = function(info)
+                                return Config:Get("class", classID, "spec", specID, "overlay", k)
+                            end,
+                            set = function(info, val)
+                                Config:Set(val:len() > 0 and val or nil, "class", classID, "spec", specID, "overlay", k)
+                                TJ:QueueProfileReload()
+                                UI:UpdateAlpha()
+                            end
+                        },
                     }
                 }
             end

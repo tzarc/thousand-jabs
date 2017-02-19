@@ -89,12 +89,37 @@ function Config:Set(value, ...)
     setconf(value, ThousandJabsDB, ...)
 end
 
-function Config:GetSpec(e)
+function Config:GetSpecGeneric(...)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    return Config:Get("class", classID, "spec", specID, "config", e)
+    return Config:Get("class", classID, "spec", specID, ...)
 end
 
-function Config:SetSpec(value, e)
+function Config:GetSpec(...)
+    return Config:GetSpecGeneric("config", ...)
+end
+
+function Config:GetSpecBlacklist(...)
+    return Config:GetSpecGeneric("blacklist", ...)
+end
+
+function Config:GetSpecOverlay(...)
+    return Config:GetSpecGeneric("overlay", ...)
+end
+
+function Config:SetSpecGeneric(value, ...)
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    Config:Set(value, "class", classID, "spec", specID, "config", e)
+    Config:Set(value, "class", classID, "spec", specID, ...)
+    TJ:QueueProfileReload()
+end
+
+function Config:SetSpec(value, ...)
+    Config:SetSpecGeneric(value, "config", ...)
+end
+
+function Config:SetSpecBlacklist(value, ...)
+    Config:SetSpecGeneric(value, "blacklist", ...)
+end
+
+function Config:SetSpecOverlay(value, ...)
+    Config:SetSpecGeneric(value, "overlay", ...)
 end

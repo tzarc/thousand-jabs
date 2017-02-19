@@ -222,8 +222,8 @@ Profiling:ProfileFunction(TJ, 'PerformUpdate')
 
 function TJ:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-    local isDisabled = Config:Get("class", classID, "spec", specID, "disabled") and true or false
-    local profile = self.profiles and self.profiles[classID] and self.profiles[classID][specID] or nil
+    local isDisabled = Config:GetSpecGeneric("disabled") and true or false
+    local profile = (not isDisabled) and (self.profiles and self.profiles[classID] and self.profiles[classID][specID]) or nil
     local betaAllowed = Config:Get("allowBetaProfiles")
     local isBetaProfile = profile and profile.betaProfile and true or false
     if (isBetaProfile and betaAllowed) then
@@ -524,9 +524,9 @@ function TJ:ConsoleCommand(args)
             Core:Print('Error, action "|cFFFF6600%s|r" not found.', argv[2])
         else
             local classID, specID = select(3, UnitClass('player')), GetSpecialization()
-            local current = Config:Get("class", classID, "spec", specID, "blacklist", argv[2]) and true or false
+            local current = Config:GetSpecBlacklist(argv[2]) and true or false
             local newvalue = not current
-            Config:Set(newvalue and true or false, "class", classID, "spec", specID, "blacklist", argv[2])
+            Config:SetSpecBlacklist(newvalue and true or false, argv[2])
             Core:Print('Blacklist |cFFFF6600%s|r=|cFFFFCC00%s|r', argv[2], tostring(newvalue))
             self:QueueUpdate()
         end
