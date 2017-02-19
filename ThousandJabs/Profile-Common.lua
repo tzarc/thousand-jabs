@@ -113,6 +113,8 @@ Core.Environment.common = {
         AuraID = {}, -- TODO (do we actually care?)
         AuraUnit = 'player',
         AuraMine = true,
+        Icon = 'Interface\\Icons\\inv_potion_108',
+        ConfigName = 'Potion'
     },
     proc = {
         trinket_any_react = false, -- TODO (do we actually care?)

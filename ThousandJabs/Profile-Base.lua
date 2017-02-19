@@ -260,6 +260,12 @@ local function addMissingFields(action)
         if not rawget(action, 'aura_stack') then action.aura_stack = 0 end
 
         if not rawget(action, 'OverlayTitle') then action.OverlayTitle = '' end
+
+        if rawget(action, 'OverallSpellID') then
+            local overallSpellID = action.OverallSpellID
+            if not rawget(action, 'Name') then action.Name = select(1, GetSpellInfo(overallSpellID)) end
+            if not rawget(action, 'Icon') then action.Icon = select(3, GetSpellInfo(overallSpellID)) end
+        end
     end
 end
 
@@ -429,6 +435,13 @@ function TJ:RegisterPlayerClass(config)
 
         -- Update each of the actions with any detected/generated data
         for k,v in pairs(actions) do
+
+            local spellIDs = rawget(v, 'SpellIDs')
+            local auraIDs = rawget(v, 'AuraID')
+            local talentID = rawget(v, 'TalentID')
+            v.OverallSpellID = spellIDs and (type(spellIDs) == "table" and rawget(spellIDs, 1) or spellIDs)
+                or auraIDs and (type(auraIDs) == "table" and rawget(auraIDs, 1) or auraIDs)
+                or talentID and select(6, GetTalentInfoByID(talentID))
 
             addActionTalentFields(v)
 

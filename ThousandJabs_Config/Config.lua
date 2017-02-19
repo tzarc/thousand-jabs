@@ -445,7 +445,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
             local order = 3000
             thisSpecOptions.args.abilityHeader = {
                 type = "header",
-                name = L["Ability Disabling"],
+                name = L["Ability Configuration"],
                 order = order,
             }
             local allActions = {}
@@ -454,25 +454,36 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                 for _, entry in pairs(apl) do
                     local action = rawget(profile.actions, entry.action)
                     if action then
-                        allActions[--[[action.Name or]] entry.action] = entry.action
+                        allActions[entry.action] = {
+                            name = rawget(action, 'Name') or (rawget(action, 'ConfigName') and L[action.ConfigName]) or entry.action,
+                            icon = rawget(action, 'Icon')
+                        }
                     end
                 end
             end
 
             for k,v in orderedpairs(allActions) do
                 order = order + 1
-                thisSpecOptions.args[k] = {
-                    type = "toggle",
-                    order = order,
-                    name = k,
-                    get = function(info)
-                        return Config:Get("class", classID, "spec", specID, "blacklist", k) and true or false
-                    end,
-                    set = function(info, val)
-                        Config:Set(val and true or false, "class", classID, "spec", specID, "blacklist", k)
-                        TJ:QueueProfileReload()
-                        UI:UpdateAlpha()
-                    end
+                thisSpecOptions.args[v.name] = {
+                    name = v.icon and ("\124T%s:0|t %s"):format(v.icon, v.name) or v.name,
+                    type = "group",
+                    order = 3000+order,
+                    inline = true,
+                    args = {
+                        bl = {
+                            type = "toggle",
+                            order = order,
+                            name = L["Disable"],
+                            get = function(info)
+                                return Config:Get("class", classID, "spec", specID, "blacklist", k) and true or false
+                            end,
+                            set = function(info, val)
+                                Config:Set(val and true or false, "class", classID, "spec", specID, "blacklist", k)
+                                TJ:QueueProfileReload()
+                                UI:UpdateAlpha()
+                            end
+                        }
+                    }
                 }
             end
         end
