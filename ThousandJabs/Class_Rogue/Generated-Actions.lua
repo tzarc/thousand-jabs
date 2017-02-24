@@ -6,7 +6,8 @@ internal.apls = internal.apls or {}
 internal.apls['legion-dev::rogue::assassination'] = [[
 actions.precombat=flask,name=flask_of_the_seventh_demon
 actions.precombat+=/augmentation,name=defiled
-actions.precombat+=/food,name=seedbattered_fish_plate
+actions.precombat+=/food,name=seedbattered_fish_plate,if=talent.exsanguinate.enabled
+actions.precombat+=/food,name=nightborne_delicacy_platter,if=!talent.exsanguinate.enabled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/apply_poison
 actions.precombat+=/stealth
@@ -17,10 +18,10 @@ actions+=/call_action_list,name=maintain
 actions+=/call_action_list,name=finish,if=(!talent.exsanguinate.enabled|cooldown.exsanguinate.remains>2)&(!dot.rupture.refreshable|(dot.rupture.exsanguinated&dot.rupture.remains>=3.5)|target.time_to_die-dot.rupture.remains<=4)&active_dot.rupture>=spell_targets.rupture
 actions+=/call_action_list,name=build,if=(combo_points.deficit>0|energy.time_to_max<1)
 actions.build=hemorrhage,if=refreshable
-actions.build+=/hemorrhage,cycle_targets=1,if=refreshable&dot.rupture.ticking&spell_targets.fan_of_knives<=3
-actions.build+=/fan_of_knives,if=spell_targets>=3|buff.the_dreadlords_deceit.stack>=29
-actions.build+=/mutilate,cycle_targets=1,if=(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)|(set_bonus.tier19_2pc=1&dot.mutilated_flesh.refreshable)
-actions.build+=/mutilate
+actions.build+=/hemorrhage,cycle_targets=1,if=refreshable&dot.rupture.ticking&((talent.agonizing_poison.enabled&spell_targets<3+equipped.insignia_of_ravenholdt)|(!talent.agonizing_poison.enabled&spell_targets<2))
+actions.build+=/fan_of_knives,if=(talent.agonizing_poison.enabled&spell_targets>=3+equipped.insignia_of_ravenholdt)|(!talent.agonizing_poison.enabled&spell_targets>=2)|buff.the_dreadlords_deceit.stack>=29
+actions.build+=/mutilate,cycle_targets=1,if=(!talent.agonizing_poison.enabled&dot.deadly_poison_dot.refreshable)|(talent.agonizing_poison.enabled&debuff.agonizing_poison.remains<debuff.agonizing_poison.duration*0.3)
+actions.build+=/mutilate,if=debuff.vendetta.up|debuff.kingsbane.up|(set_bonus.tier19_2pc=1&dot.mutilated_flesh.refreshable)|(energy.deficit<=22&target.time_to_die-remains>4)|cooldown.vendetta.remains<7
 actions.cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|debuff.vendetta.up&cooldown.vanish.remains<5
 actions.cds+=/blood_fury,if=debuff.vendetta.up
 actions.cds+=/berserking,if=debuff.vendetta.up
@@ -40,7 +41,7 @@ actions.maintain+=/rupture,if=!talent.exsanguinate.enabled&!ticking
 actions.maintain+=/rupture,cycle_targets=1,if=combo_points>=cp_max_spend-talent.exsanguinate.enabled&refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4
 actions.maintain+=/kingsbane,if=(talent.exsanguinate.enabled&dot.rupture.exsanguinated)|(!talent.exsanguinate.enabled&buff.envenom.up&(debuff.vendetta.up|cooldown.vendetta.remains>10))
 actions.maintain+=/pool_resource,for_next=1
-actions.maintain+=/garrote,cycle_targets=1,if=refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4
+actions.maintain+=/garrote,cycle_targets=1,if=combo_points.deficit>=1&refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4
 ]]
 
 internal.apls['legion-dev::rogue::outlaw'] = [[
@@ -90,7 +91,7 @@ actions.stealth+=/shadowmeld,if=variable.stealth_condition
 internal.apls['legion-dev::rogue::subtlety'] = [[
 actions.precombat=flask,name=flask_of_the_seventh_demon
 actions.precombat+=/augmentation,name=defiled
-actions.precombat+=/food,name=seedbattered_fish_plate
+actions.precombat+=/food,name=nightborne_delicacy_platter
 actions.precombat+=/snapshot_stats
 actions.precombat+=/stealth
 actions.precombat+=/potion,name=prolonged_power
@@ -109,7 +110,7 @@ actions+=/call_action_list,name=build,if=energy.deficit<=variable.stealth_thresh
 actions.build=shuriken_storm,if=spell_targets.shuriken_storm>=2
 actions.build+=/gloomblade
 actions.build+=/backstab
-actions.cds=potion,name=prolonged_power,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
+actions.cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
 actions.cds+=/blood_fury,if=stealthed.rogue
 actions.cds+=/berserking,if=stealthed.rogue
 actions.cds+=/arcane_torrent,if=stealthed.rogue&energy.deficit>70
@@ -132,7 +133,7 @@ actions.stealth_cds+=/pool_resource,for_next=1,extra_amount=40
 actions.stealth_cds+=/shadowmeld,if=energy>=40&energy.deficit>=10+variable.ssw_refund
 actions.stealth_cds+=/shadow_dance,if=combo_points<=1
 actions.stealthed=symbols_of_death,if=buff.symbols_of_death.remains<target.time_to_die-4&buff.symbols_of_death.remains<=buff.symbols_of_death.duration*0.3
-actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5&(spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk|(mantle_duration>0&mantle_duration<=1.2))
+actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5&(spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk|(mantle_duration<=1.3&mantle_duration-gcd.remains>=0.3))
 actions.stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk)|(combo_points.deficit>=1+buff.shadow_blades.up&buff.the_dreadlords_deceit.stack>=29))
 actions.stealthed+=/shadowstrike,if=combo_points.deficit>=2+talent.premeditation.enabled+buff.shadow_blades.up-equipped.mantle_of_the_master_assassin
 actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5

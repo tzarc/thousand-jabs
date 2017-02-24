@@ -12,6 +12,7 @@ TJ.Generated.EquippedMapping.frizzos_fingertrap = { 137043, }
 TJ.Generated.EquippedMapping.gnawed_thumb_ring = { 134526, }
 TJ.Generated.EquippedMapping.greenskins_waterlogged_wristcuffs = { 137099, }
 TJ.Generated.EquippedMapping.hidden_masters_forbidden_touch = { 137057, }
+TJ.Generated.EquippedMapping.insignia_of_ravenholdt = { 137049, }
 TJ.Generated.EquippedMapping.mantle_of_the_master_assassin = { 144236, }
 TJ.Generated.EquippedMapping.shadow_satyrs_walk = { 137032, }
 TJ.Generated.EquippedMapping.shivarran_symmetry = { 141321, }
