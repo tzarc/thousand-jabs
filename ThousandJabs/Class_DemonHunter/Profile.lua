@@ -15,7 +15,7 @@ local mfloor = math.floor
 
 -- exported with /tj _esd
 local vengeance_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     vengeance_abilities_exported = {
         abyssal_strike = { TalentID = 22502, },
         agonizing_flames = { TalentID = 22503, },
@@ -230,7 +230,7 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local havoc_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     havoc_abilities_exported = {
         annihilation = { SpellIDs = { 201427 }, },
         blade_dance = { SpellIDs = { 188499 }, },

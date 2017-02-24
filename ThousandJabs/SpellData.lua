@@ -322,6 +322,8 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         -- Show the spell export window
         if not canceled then
             TJ:ShowSpellExportWindow()
+        else
+            TJ:Print('Spell data export canceled.')
         end
     end)
 end

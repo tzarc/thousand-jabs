@@ -11,7 +11,7 @@ local Config = TJ:GetModule('Config')
 
 -- exported with /tj _esd
 local brewmaster_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     brewmaster_abilities_exported = {
         black_ox_brew = { SpellIDs = { 115399 }, TalentID = 22097, },
         blackout_combo = { TalentID = 22104, },
@@ -208,7 +208,7 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local windwalker_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     windwalker_abilities_exported = {
         ascension = { TalentID = 19771, },
         blackout_kick = { SpellIDs = { 100784 }, },

@@ -14,7 +14,7 @@ local mmin = math.min
 
 -- exported with /tj _esd
 local arms_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     arms_abilities_exported = {
         anger_management = { TalentID = 21204, },
         avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
@@ -205,7 +205,7 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local protection_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     protection_abilities_exported = {
         anger_management = { TalentID = 21204, },
         avatar = { SpellIDs = { 107574 }, TalentID = 19138, },

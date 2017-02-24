@@ -11,7 +11,7 @@ local Config = TJ:GetModule('Config')
 
 -- exported with /tj _esd
 local blood_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     blood_abilities_exported = {
         antimagic_barrier = { TalentID = 22135, },
         antimagic_shell = { SpellIDs = { 48707 }, },
@@ -123,7 +123,7 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local unholy_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     unholy_abilities_exported = {
         all_will_serve = { TalentID = 22024, },
         antimagic_shell = { SpellIDs = { 48707 }, },
@@ -313,7 +313,7 @@ TJ:RegisterPlayerClass({
 
 -- exported with /tj _esd
 local frost_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     frost_abilities_exported = {
         abominations_might = { TalentID = 22521, },
         antimagic_shell = { SpellIDs = { 48707 }, },

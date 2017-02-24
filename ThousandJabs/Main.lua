@@ -97,7 +97,11 @@ function TJ:RunFuncCoroutines()
             if co_status(th) == "dead" then
                 commandQueue[th] = nil
             else
-                co_resume(th)
+                local ok, errstr = co_resume(th)
+                if not ok then
+                    Core:Error(errstr)
+                    commandQueue[th] = nil
+                end
             end
         end
     else

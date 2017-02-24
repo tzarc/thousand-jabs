@@ -9,7 +9,7 @@ local mmax = math.max
 
 -- exported with /tj _esd
 local elemental_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     elemental_abilities_exported = {
         aftershock = { TalentID = 19271, },
         ancestral_guidance = { SpellIDs = { 108281 }, TalentID = 22139, },

@@ -7,7 +7,7 @@ local Config = TJ:GetModule('Config')
 
 -- exported with /tj _esd
 local destruction_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     destruction_abilities_exported = {
         backdraft = { TalentID = 22039, },
         banish = { SpellIDs = { 710 }, },

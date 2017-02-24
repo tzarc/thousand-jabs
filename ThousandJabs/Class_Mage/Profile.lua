@@ -13,7 +13,7 @@ local mmax = math.max
 
 -- exported with /tj _esd
 local frost_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.5') then
+if Core:MatchesBuild('7.1.5', '7.1.9') then
     frost_abilities_exported = {
         arctic_gale = { TalentID = 22473, },
         blink = { SpellIDs = { 1953 }, },
