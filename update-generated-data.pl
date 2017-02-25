@@ -448,4 +448,4 @@ generator::create_itemset_bonuses();
 generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
 generator::validate_actions_files("${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
 generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Actions.xml",  "${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
-generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Profiles.xml", "${cfg::script_dir}/ThousandJabs/Class_*/Profile.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Profiles.xml", "${cfg::script_dir}/ThousandJabs/Class_*/Profile*.lua");

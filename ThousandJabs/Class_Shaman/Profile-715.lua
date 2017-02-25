@@ -4,64 +4,65 @@ local addonName, internal = ...
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
+
+if not Core:MatchesBuild('7.1.5', '7.1.9') then return end
+
 local mmin = math.min
 local mmax = math.max
 
 -- exported with /tj _esd
 local elemental_abilities_exported = {}
-if Core:MatchesBuild('7.1.5', '7.1.9') then
-    elemental_abilities_exported = {
-        aftershock = { TalentID = 19271, },
-        ancestral_guidance = { SpellIDs = { 108281 }, TalentID = 22139, },
-        ancestral_spirit = { SpellIDs = { 2008 }, },
-        ancestral_swiftness = { TalentID = 19272, },
-        ascendance = { SpellIDs = { 114050 }, TalentID = 21198, },
-        astral_recall = { SpellIDs = { 556 }, },
-        astral_shift = { SpellIDs = { 108271 }, },
-        bloodlust = { SpellIDs = { 2825 }, },
-        chain_lightning = { SpellIDs = { 188443 }, },
-        cleanse_spirit = { SpellIDs = { 51886 }, },
-        earth_elemental = { SpellIDs = { 198103 }, },
-        earth_shock = { SpellIDs = { 8042 }, },
-        earthbind_totem = { SpellIDs = { 2484 }, },
-        earthen_rage = { TalentID = 22357, },
-        earthgrab_totem = { SpellIDs = { 51485 }, TalentID = 19260, },
-        earthquake = { SpellIDs = { 61882 }, },
-        echo_of_the_elements = { TalentID = 21968, },
-        elemental_blast = { SpellIDs = { 117014 }, TalentID = 19270, },
-        elemental_fusion = { TalentID = 22144, },
-        elemental_mastery = { SpellIDs = { 16166 }, TalentID = 19273, },
-        far_sight = { SpellIDs = { 6196 }, },
-        fire_elemental = { SpellIDs = { 198067 }, },
-        flame_shock = { SpellIDs = { 188389 }, },
-        frost_shock = { SpellIDs = { 196840 }, },
-        ghost_wolf = { SpellIDs = { 2645 }, },
-        gust_of_wind = { SpellIDs = { 192063 }, TalentID = 19259, },
-        healing_surge = { SpellIDs = { 8004 }, },
-        hex = { SpellIDs = { 51514 }, },
-        icefury = { SpellIDs = { 210714 }, TalentID = 21972, },
-        lava_beam = { SpellIDs = { 114074 }, },
-        lava_burst = { SpellIDs = { 51505 }, },
-        lightning_bolt = { SpellIDs = { 188196 }, },
-        lightning_rod = { TalentID = 21199, },
-        lightning_surge_totem = { SpellIDs = { 192058 }, TalentID = 19275, },
-        liquid_magma_totem = { SpellIDs = { 192222 }, TalentID = 22145, },
-        pack_hobgoblin = { SpellIDs = { 69046 }, },
-        path_of_flame = { TalentID = 22356, },
-        primal_elementalist = { TalentID = 22172, },
-        purge = { SpellIDs = { 370 }, },
-        rocket_barrage = { SpellIDs = { 69041 }, },
-        rocket_jump = { SpellIDs = { 69070 }, },
-        storm_elemental = { SpellIDs = { 192249 }, TalentID = 19266, },
-        stormkeeper = {  SpellIDs = { 205495 }, }, -- TODO: Check
-        thunderstorm = { SpellIDs = { 51490 }, },
-        totem_mastery = { SpellIDs = { 210643 }, TalentID = 22358, },
-        voodoo_totem = { SpellIDs = { 196932 }, TalentID = 22127, },
-        water_walking = { SpellIDs = { 546 }, },
-        wind_rush_totem = { SpellIDs = { 192077 }, TalentID = 21963, },
-        wind_shear = { SpellIDs = { 57994 }, },
-    }
-end
+elemental_abilities_exported = {
+    aftershock = { TalentID = 19271, },
+    ancestral_guidance = { SpellIDs = { 108281 }, TalentID = 22139, },
+    ancestral_spirit = { SpellIDs = { 2008 }, },
+    ancestral_swiftness = { TalentID = 19272, },
+    ascendance = { SpellIDs = { 114050 }, TalentID = 21198, },
+    astral_recall = { SpellIDs = { 556 }, },
+    astral_shift = { SpellIDs = { 108271 }, },
+    bloodlust = { SpellIDs = { 2825 }, },
+    chain_lightning = { SpellIDs = { 188443 }, },
+    cleanse_spirit = { SpellIDs = { 51886 }, },
+    earth_elemental = { SpellIDs = { 198103 }, },
+    earth_shock = { SpellIDs = { 8042 }, },
+    earthbind_totem = { SpellIDs = { 2484 }, },
+    earthen_rage = { TalentID = 22357, },
+    earthgrab_totem = { SpellIDs = { 51485 }, TalentID = 19260, },
+    earthquake = { SpellIDs = { 61882 }, },
+    echo_of_the_elements = { TalentID = 21968, },
+    elemental_blast = { SpellIDs = { 117014 }, TalentID = 19270, },
+    elemental_fusion = { TalentID = 22144, },
+    elemental_mastery = { SpellIDs = { 16166 }, TalentID = 19273, },
+    far_sight = { SpellIDs = { 6196 }, },
+    fire_elemental = { SpellIDs = { 198067 }, },
+    flame_shock = { SpellIDs = { 188389 }, },
+    frost_shock = { SpellIDs = { 196840 }, },
+    ghost_wolf = { SpellIDs = { 2645 }, },
+    gust_of_wind = { SpellIDs = { 192063 }, TalentID = 19259, },
+    healing_surge = { SpellIDs = { 8004 }, },
+    hex = { SpellIDs = { 51514 }, },
+    icefury = { SpellIDs = { 210714 }, TalentID = 21972, },
+    lava_beam = { SpellIDs = { 114074 }, },
+    lava_burst = { SpellIDs = { 51505 }, },
+    lightning_bolt = { SpellIDs = { 188196 }, },
+    lightning_rod = { TalentID = 21199, },
+    lightning_surge_totem = { SpellIDs = { 192058 }, TalentID = 19275, },
+    liquid_magma_totem = { SpellIDs = { 192222 }, TalentID = 22145, },
+    pack_hobgoblin = { SpellIDs = { 69046 }, },
+    path_of_flame = { TalentID = 22356, },
+    primal_elementalist = { TalentID = 22172, },
+    purge = { SpellIDs = { 370 }, },
+    rocket_barrage = { SpellIDs = { 69041 }, },
+    rocket_jump = { SpellIDs = { 69070 }, },
+    storm_elemental = { SpellIDs = { 192249 }, TalentID = 19266, },
+    stormkeeper = {  SpellIDs = { 205495 }, }, -- TODO: Check
+    thunderstorm = { SpellIDs = { 51490 }, },
+    totem_mastery = { SpellIDs = { 210643 }, TalentID = 22358, },
+    voodoo_totem = { SpellIDs = { 196932 }, TalentID = 22127, },
+    water_walking = { SpellIDs = { 546 }, },
+    wind_rush_totem = { SpellIDs = { 192077 }, TalentID = 21963, },
+    wind_shear = { SpellIDs = { 57994 }, },
+}
 
 local function DecrementUpdateElementalFocus(env)
     if env.elemental_focus.aura_up then
