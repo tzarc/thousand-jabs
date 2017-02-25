@@ -409,7 +409,6 @@ local protection_overrides = {
 
 
 TJ:RegisterPlayerClass({
-    betaProfile = true,
     name = 'Protection',
     class_id = 1,
     spec_id = 3,

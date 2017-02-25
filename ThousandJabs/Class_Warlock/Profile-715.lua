@@ -257,7 +257,6 @@ local destruction_hooks = {
 }
 
 TJ:RegisterPlayerClass({
-    betaProfile = true,
     name = 'Destruction',
     class_id = 9,
     spec_id = 3,

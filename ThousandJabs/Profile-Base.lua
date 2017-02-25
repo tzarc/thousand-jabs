@@ -6,6 +6,7 @@ local LSD = LibStub('LibSerpentDump')
 
 local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
+local GetSpecialization = GetSpecialization
 local GetSpellInfo = GetSpellInfo
 local GetSpellLevelLearned = GetSpellLevelLearned
 local GetTalentInfoByID = GetTalentInfoByID
@@ -17,7 +18,9 @@ local pairs = pairs
 local rawget = rawget
 local select = select
 local tonumber = tonumber
+local tsort = table.sort
 local type = type
+local UnitClass = UnitClass
 local UnitSpellHaste = UnitSpellHaste
 local unpack = unpack
 local wipe = wipe
@@ -284,7 +287,6 @@ function TJ:RegisterPlayerClass(config)
     local profile = {
         defaultActionProfile = config.default_action_profile,
         name = config.name,
-        betaProfile = config.betaProfile and true or false,
         config = config,
         blacklisted = blacklisted,
         configCheckboxes = config.config_checkboxes or {},
@@ -303,9 +305,8 @@ function TJ:RegisterPlayerClass(config)
         end
     end
 
-    function profile:ReloadActions()
+    function profile:ResetActions()
         self.parsedActions = nil
-        self:LoadActions()
     end
 
     function profile:LoadActions()
@@ -322,7 +323,7 @@ function TJ:RegisterPlayerClass(config)
             -- Update the parsed actions
             if not self.parsedActions then
                 local aplID = Config:GetSpecGeneric("aplID") or self.defaultActionProfile
-                local aplDef = TJ.profileDefinitions[aplID]
+                local aplDef = TJ.profileDefinitions[aplID] or TJ.profileDefinitions[self.defaultActionProfile]
                 if aplDef.classID == config.class_id and aplDef.specID == config.spec_id then
                     self.parsedActions = Core:ExpressionParser(aplDef.aplData, primaryModifier)
                 else
@@ -623,4 +624,23 @@ function TJ:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
         aplName = aplName,
         aplData = aplData
     }
+
+    TJ.availableProfiles[classID] = TJ.availableProfiles[classID] or {}
+    TJ.availableProfiles[classID][specID] = TJ.availableProfiles[classID][specID] or {}
+    local t = TJ.availableProfiles[classID][specID]
+    t[1+#t] = aplID
+    tsort(t)
+end
+
+function TJ:GetAvailableProfilesForSpec(classID, specID)
+    local classID = classID or select(3, UnitClass('player'))
+    local specID = specID or GetSpecialization()
+    local available = TJ.availableProfiles and TJ.availableProfiles[classID] and TJ.availableProfiles[classID][specID] or {}
+
+    local defaultProfile = self.profiles
+        and self.profiles[classID]
+        and self.profiles[classID][specID]
+        and self.profiles[classID][specID].defaultActionProfile
+
+    return available, defaultProfile
 end

@@ -236,7 +236,6 @@ local elemental_hooks = {
 }
 
 TJ:RegisterPlayerClass({
-    betaProfile = true,
     name = 'Elemental',
     class_id = 7,
     spec_id = 1,

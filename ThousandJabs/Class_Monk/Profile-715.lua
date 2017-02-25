@@ -188,7 +188,6 @@ local brewmaster_talent_overrides = {
 }
 
 TJ:RegisterPlayerClass({
-    betaProfile = true,
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,

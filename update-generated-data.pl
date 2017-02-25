@@ -332,7 +332,7 @@ sub create_action_lists {
             my $specName = $exportedSpecData->{$cls}->{specs}->{$spec}->{name};
             printf("%14s / %-20s (%2d-%d)\n", $lcls, $spec, $classID, $specID);
 
-            print {$outfile} "TJ:RegisterActionProfileList('custom::${lcls}::${spec}', 'Custom ${className} Profile: ${specName}', ${classID}, ${specID}, [[\n";
+            print {$outfile} "TJ:RegisterActionProfileList('custom::${lcls}::${spec}', 'Thousand Jabs Custom ${className} Profile: ${specName}', ${classID}, ${specID}, [[\n";
 
             my $custom_simc_file = "${cfg::script_dir}/Support/CustomProfiles/${lcls}_${spec}.simc";
             open(my $infile, "<", $custom_simc_file);

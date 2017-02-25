@@ -2,7 +2,7 @@ if select(3, UnitClass('player')) ~= 6 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-TJ:RegisterActionProfileList('custom::deathknight::blood', 'Custom Death Knight Profile: Blood', 6, 1, [[
+TJ:RegisterActionProfileList('custom::deathknight::blood', 'Thousand Jabs Custom Death Knight Profile: Blood', 6, 1, [[
 actions=auto_attack
 actions+=/mind_freeze
 actions+=/call_action_list,name=st,if=active_enemies=1

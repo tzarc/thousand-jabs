@@ -179,7 +179,6 @@ local frost_artifact_overrides = {
 }
 
 TJ:RegisterPlayerClass({
-    betaProfile = true,
     name = 'Frost',
     class_id = 8,
     spec_id = 3,

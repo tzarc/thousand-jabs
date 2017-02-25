@@ -73,19 +73,6 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                             UI:UpdateAlpha()
                         end
                     },
-                    allowBetaProfiles = {
-                        type = "toggle",
-                        order = 104,
-                        name = L["Allow Beta Profiles"],
-                        get = function(info)
-                            return Config:Get("allowBetaProfiles") and true or false
-                        end,
-                        set = function(info, val)
-                            Config:Set(val and true or false, "allowBetaProfiles")
-                            TJ:QueueProfileReload()
-                            UI:UpdateAlpha()
-                        end
-                    },
                     displayModeHeader = {
                         type = "header",
                         name = L["Display Mode"],
@@ -367,6 +354,14 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
     for specID=1,GetNumSpecializations() do
         local _, _, classID = UnitClass("player")
         local _, specName, _, specIcon = GetSpecializationInfo(specID)
+        local aplList = {}
+        local available, defaultProfile = TJ:GetAvailableProfilesForSpec(classID, specID)
+        for k,v in pairs(available) do
+            aplList[v] = TJ.profileDefinitions[v].aplName
+        end
+
+        local profile = TJ.profiles and TJ.profiles[classID] and TJ.profiles[classID][specID] or nil
+
         local thisSpecOptions = {
             name = ("\124T%s:0|t %s"):format(specIcon, specName),
             type = "group",
@@ -377,9 +372,58 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                     name = L["Specialisation Settings"],
                     order = 1000,
                 },
+                actionProfileList = {
+                    type = "select",
+                    order = 1001,
+                    hidden = function() return #available == 1 end,
+                    name = L["Action Profile List"],
+                    width = "double",
+                    values = aplList,
+                    get = function(info)
+                        local curr = Config:Get("class", classID, "spec", specID, "aplID")
+                        curr = curr and aplList[curr] and curr or defaultProfile
+                        return curr
+                    end,
+                    set = function(info, val)
+                        local cprof = TJ.currentProfile
+                        if cprof == profile then
+                            TJ:DeactivateProfile()
+                            if cprof then cprof:ResetActions() end
+                        end
+                        if val ~= defaultProfile then
+                            Config:Set(val, "class", classID, "spec", specID, "aplID")
+                        else
+                            Config:Set(nil, "class", classID, "spec", specID, "aplID")
+                        end
+                        if cprof == profile then
+                            cprof:LoadActions()
+                            TJ:QueueProfileReload(true)
+                            UI:UpdateAlpha()
+                        end
+                    end,
+                },
+                useDefaultAPL = {
+                    type = "execute",
+                    order = 1002,
+                    hidden = function() return #available == 1 end,
+                    name = L["Use Default APL"],
+                    func = function()
+                        local cprof = TJ.currentProfile
+                        if cprof == profile then
+                            TJ:DeactivateProfile()
+                            if cprof then cprof:ResetActions() end
+                        end
+                        Config:Set(nil, "class", classID, "spec", specID, "aplID")
+                        if cprof == profile then
+                            cprof:LoadActions()
+                            TJ:QueueProfileReload(true)
+                            UI:UpdateAlpha()
+                        end
+                    end
+                },
                 profileDisabled = {
                     type = "toggle",
-                    order = 1001,
+                    order = 1003,
                     name = L["Disable Specialisation"],
                     get = function(info)
                         return Config:Get("class", classID, "spec", specID, "disabled") and true or false
@@ -393,14 +437,20 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
             },
         }
 
-        local profile = TJ.profiles and TJ.profiles[classID] and TJ.profiles[classID][specID] or nil
-
         if profile and profile.configCheckboxes then
+
+            local hasAtLeastOneConfig = false
+            for k,v in pairs(profile.configCheckboxes) do
+                hasAtLeastOneConfig = true
+                break
+            end
+
             local order = 2000
             thisSpecOptions.args.specConfigHeader = {
                 type = "header",
                 name = L["Specialisation Configuration"],
                 order = order,
+                hidden = function() return not hasAtLeastOneConfig end,
             }
 
             for e, v in pairs(profile.configCheckboxes) do

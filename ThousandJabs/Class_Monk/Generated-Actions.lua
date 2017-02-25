@@ -2,7 +2,7 @@ if select(3, UnitClass('player')) ~= 10 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-TJ:RegisterActionProfileList('custom::monk::brewmaster', 'Custom Monk Profile: Brewmaster', 10, 1, [[
+TJ:RegisterActionProfileList('custom::monk::brewmaster', 'Thousand Jabs Custom Monk Profile: Brewmaster', 10, 1, [[
 actions=auto_attack
 actions+=/spear_hand_strike
 actions+=/variable,name=heal_threshold,value=health.pct<80

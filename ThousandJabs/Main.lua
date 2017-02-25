@@ -51,6 +51,7 @@ local profileReloadThrottle = 2 -- Seconds
 -- Profile data
 TJ.currentProfile = nil
 TJ.profileDefinitions = {}
+TJ.availableProfiles = {}
 
 -- Time combat was last entered
 TJ.combatStart = 0
@@ -229,13 +230,7 @@ function TJ:GetActiveProfile()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
     local isDisabled = Config:GetSpecGeneric("disabled") and true or false
     local profile = (not isDisabled) and (self.profiles and self.profiles[classID] and self.profiles[classID][specID]) or nil
-    local betaAllowed = Config:Get("allowBetaProfiles")
-    local isBetaProfile = profile and profile.betaProfile and true or false
-    if (isBetaProfile and betaAllowed) then
-        return profile
-    elseif (not isBetaProfile) then
-        return profile
-    end
+    return profile
 end
 
 function TJ:ActivateProfile()
