@@ -261,7 +261,7 @@ TJ:RegisterPlayerClass({
     name = 'Destruction',
     class_id = 9,
     spec_id = 3,
-    action_profile = internal.apls['legion-dev::warlock::destruction'],
+    default_action_profile = 'simc::warlock::destruction',
     resources = { 'mana', 'mana_per_time_no_base', 'soul_shards' },
     events = destruction_events,
     actions = {

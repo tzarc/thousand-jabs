@@ -282,7 +282,7 @@ function TJ:RegisterPlayerClass(config)
 
     -- Set up the profile table
     local profile = {
-        actionProfile = config.action_profile,
+        defaultActionProfile = config.default_action_profile,
         name = config.name,
         betaProfile = config.betaProfile and true or false,
         config = config,
@@ -303,6 +303,11 @@ function TJ:RegisterPlayerClass(config)
         end
     end
 
+    function profile:ReloadActions()
+        self.parsedActions = nil
+        self:LoadActions()
+    end
+
     function profile:LoadActions()
         if Core.devMode or not self.parsedActions then
             local converted = {}
@@ -315,7 +320,17 @@ function TJ:RegisterPlayerClass(config)
             end
 
             -- Update the parsed actions
-            self.parsedActions = self.parsedActions or Core:ExpressionParser(self.actionProfile, primaryModifier)
+            if not self.parsedActions then
+                local aplID = Config:GetSpecGeneric("aplID") or self.defaultActionProfile
+                local aplDef = TJ.profileDefinitions[aplID]
+                if aplDef.classID == config.class_id and aplDef.specID == config.spec_id then
+                    self.parsedActions = Core:ExpressionParser(aplDef.aplData, primaryModifier)
+                else
+                    Core:Error(Core:Format("Mismatching class/spec IDs: APL expects %s/%s, character is %s/%s.", aplDef.classID, aplDef.specID, config.class_id, config.spec_id))
+                    TJ:DeactivateProfile()
+                    return
+                end
+            end
 
             -- Create the condition functions for each action
             local counts = {}
@@ -599,4 +614,13 @@ function TJ:RegisterPlayerClass(config)
 
     -- If someone decides to load-on-demand their class module, then queue up a full profile reload.
     TJ:QueueProfileReload()
+end
+
+function TJ:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
+    TJ.profileDefinitions[aplID] = {
+        classID = classID,
+        specID = specID,
+        aplName = aplName,
+        aplData = aplData
+    }
 end

@@ -192,7 +192,7 @@ TJ:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
     spec_id = 1,
-    action_profile = internal.apls['custom::monk::brewmaster'],
+    default_action_profile = 'custom::monk::brewmaster',
     resources = { 'energy', 'energy_per_time' },
     actions = {
         brewmaster_abilities_exported,
@@ -389,7 +389,7 @@ TJ:RegisterPlayerClass({
     name = 'Windwalker',
     class_id = 10,
     spec_id = 3,
-    action_profile = internal.apls['legion-dev::monk::windwalker'],
+    default_action_profile = 'simc::monk::windwalker',
     resources = { 'energy', 'energy_per_time', 'chi' },
     actions = {
         windwalker_abilities_exported,

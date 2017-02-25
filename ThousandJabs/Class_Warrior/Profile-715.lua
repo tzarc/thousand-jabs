@@ -189,7 +189,7 @@ TJ:RegisterPlayerClass({
     name = 'Arms',
     class_id = 1,
     spec_id = 1,
-    action_profile = internal.apls['legion-dev::warrior::arms'],
+    default_action_profile = 'simc::warrior::arms',
     resources = { 'rage' },
     actions = {
         arms_abilities_exported,
@@ -413,7 +413,7 @@ TJ:RegisterPlayerClass({
     name = 'Protection',
     class_id = 1,
     spec_id = 3,
-    action_profile = internal.apls['legion-dev::warrior::protection'],
+    default_action_profile = 'simc::warrior::protection',
     resources = { 'rage' },
     actions = {
         protection_abilities_exported,

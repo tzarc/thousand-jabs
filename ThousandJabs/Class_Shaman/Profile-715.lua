@@ -240,7 +240,7 @@ TJ:RegisterPlayerClass({
     name = 'Elemental',
     class_id = 7,
     spec_id = 1,
-    action_profile = internal.apls['legion-dev::shaman::elemental'],
+    default_action_profile = 'simc::shaman::elemental',
     resources = { 'mana', 'maelstrom' },
     actions = {
         elemental_abilities_exported,

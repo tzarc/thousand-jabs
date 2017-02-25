@@ -204,7 +204,7 @@ TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
     spec_id = 2,
-    action_profile = internal.apls['legion-dev::demonhunter::vengeance'],
+    default_action_profile = 'simc::demonhunter::vengeance',
     resources = { 'pain', 'soul_fragments' },
     actions = {
         vengeance_abilities_exported,
@@ -460,7 +460,7 @@ TJ:RegisterPlayerClass({
     name = 'Havoc',
     class_id = 12,
     spec_id = 1,
-    action_profile = internal.apls['legion-dev::demonhunter::havoc'],
+    default_action_profile = 'simc::demonhunter::havoc',
     resources = { 'fury', 'soul_fragments' },
     actions = {
         havoc_abilities_exported,

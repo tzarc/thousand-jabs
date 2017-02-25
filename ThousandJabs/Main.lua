@@ -48,8 +48,9 @@ local profileReloadThrottle = 2 -- Seconds
 -- Shared private variables
 ------------------------------------------------------------------------------------------------------------------------
 
--- The active profile
+-- Profile data
 TJ.currentProfile = nil
+TJ.profileDefinitions = {}
 
 -- Time combat was last entered
 TJ.combatStart = 0

@@ -183,7 +183,7 @@ TJ:RegisterPlayerClass({
     name = 'Frost',
     class_id = 8,
     spec_id = 3,
-    action_profile = internal.apls['legion-dev::mage::frost'],
+    default_action_profile = 'simc::mage::frost',
     resources = { 'mana' },
     actions = {
         frost_abilities_exported,
