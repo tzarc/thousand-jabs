@@ -131,6 +131,118 @@ use File::Basename;
 use Path::Class;
 use JSON;
 
+# Exported by /tj _est
+my $exportedSpecData = {
+    DeathKnight => {
+        classID => 6,
+        name    => 'Death Knight',
+        specs   => {
+            blood  => { specID => 1, name => "Blood" },
+            frost  => { specID => 2, name => "Frost" },
+            unholy => { specID => 3, name => "Unholy" }
+        }
+    },
+    DemonHunter => {
+        classID => 12,
+        name    => 'Demon Hunter',
+        specs   => {
+            havoc     => { specID => 1, name => "Havoc" },
+            vengeance => { specID => 2, name => "Vengeance" }
+        }
+    },
+    Druid => {
+        classID => 11,
+        name    => 'Druid',
+        specs   => {
+            balance     => { specID => 1, name => "Balance" },
+            feral       => { specID => 2, name => "Feral" },
+            guardian    => { specID => 3, name => "Guardian" },
+            restoration => { specID => 4, name => "Restoration" }
+        }
+    },
+    Hunter => {
+        classID => 3,
+        name    => 'Hunter',
+        specs   => {
+            beast_mastery => { specID => 1, name => "Beast Mastery" },
+            marksmanship  => { specID => 2, name => "Marksmanship" },
+            survival      => { specID => 3, name => "Survival" }
+        }
+    },
+    Mage => {
+        classID => 8,
+        name    => 'Mage',
+        specs   => {
+            arcane => { specID => 1, name => "Arcane" },
+            fire   => { specID => 2, name => "Fire" },
+            frost  => { specID => 3, name => "Frost" }
+        }
+    },
+    Monk => {
+        classID => 10,
+        name    => 'Monk',
+        specs   => {
+            brewmaster => { specID => 1, name => "Brewmaster" },
+            mistweaver => { specID => 2, name => "Mistweaver" },
+            windwalker => { specID => 3, name => "Windwalker" }
+        }
+    },
+    Paladin => {
+        classID => 2,
+        name    => 'Paladin',
+        specs   => {
+            holy        => { specID => 1, name => "Holy" },
+            protection  => { specID => 2, name => "Protection" },
+            retribution => { specID => 3, name => "Retribution" }
+        }
+    },
+    Priest => {
+        classID => 5,
+        name    => 'Priest',
+        specs   => {
+            discipline => { specID => 1, name => "Discipline" },
+            holy       => { specID => 2, name => "Holy" },
+            shadow     => { specID => 3, name => "Shadow" }
+        }
+    },
+    Rogue => {
+        classID => 4,
+        name    => 'Rogue',
+        specs   => {
+            assassination => { specID => 1, name => "Assassination" },
+            outlaw        => { specID => 2, name => "Outlaw" },
+            subtlety      => { specID => 3, name => "Subtlety" }
+        }
+    },
+    Shaman => {
+        classID => 7,
+        name    => 'Shaman',
+        specs   => {
+            elemental   => { specID => 1, name => "Elemental" },
+            enhancement => { specID => 2, name => "Enhancement" },
+            restoration => { specID => 3, name => "Restoration" }
+        }
+    },
+    Warlock => {
+        classID => 9,
+        name    => 'Warlock',
+        specs   => {
+            affliction  => { specID => 1, name => "Affliction" },
+            demonology  => { specID => 2, name => "Demonology" },
+            destruction => { specID => 3, name => "Destruction" }
+        }
+    },
+    Warrior => {
+        classID => 1,
+        name    => 'Warrior',
+        specs   => {
+            arms       => { specID => 1, name => "Arms" },
+            fury       => { specID => 2, name => "Fury" },
+            protection => { specID => 3, name => "Protection" }
+        }
+    }
+};
+
 my $customprofiles = {
     DeathKnight => ["blood"],
     Monk        => ["brewmaster"],
@@ -196,27 +308,31 @@ my $profiles = {
 sub create_action_lists {
     common::header("Pre-creating actions files:");
     for my $cls (sort keys %{$profiles}) {
+        my $classID                = $exportedSpecData->{$cls}->{classID};
         my $ucls                   = uc $cls;
         my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
-        print {$outfile} "if select(2, UnitClass('player')) ~= '${ucls}' then return end\n\n";
-        print {$outfile} "local _, internal = ...\n";
-        print {$outfile} "internal.apls = internal.apls or {}\n\n";
+        print {$outfile} "if select(3, UnitClass('player')) ~= ${classID} then return end\n\n";
+        print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n\n";
         close($outfile);
     }
 
     common::header("Generating custom simc profile APLs:");
     for my $cls (sort keys %{$customprofiles}) {
+        my $classID                = $exportedSpecData->{$cls}->{classID};
+        my $className              = $exportedSpecData->{$cls}->{name};
         my $lcls                   = lc $cls;
         my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (@{ $customprofiles->{$cls} }) {
-            printf("%14s / %s\n", $lcls, $spec);
+            my $specID   = $exportedSpecData->{$cls}->{specs}->{$spec}->{specID};
+            my $specName = $exportedSpecData->{$cls}->{specs}->{$spec}->{name};
+            printf("%14s / %-20s (%2d-%d)\n", $lcls, $spec, $classID, $specID);
 
-            print {$outfile} "internal.apls['custom::${lcls}::${spec}'] = [[\n";
+            print {$outfile} "TJ:RegisterActionProfileList('custom::${lcls}::${spec}', 'Custom ${className} Profile: ${specName}', ${classID}, ${specID}, [[\n";
 
             my $custom_simc_file = "${cfg::script_dir}/Support/CustomProfiles/${lcls}_${spec}.simc";
             open(my $infile, "<", $custom_simc_file);
@@ -226,7 +342,7 @@ sub create_action_lists {
             }
             close($infile);
 
-            print {$outfile} "]]\n\n";
+            print {$outfile} "]])\n\n";
         }
 
         close($outfile);
@@ -234,14 +350,18 @@ sub create_action_lists {
 
     common::header("Generating normal simc APLs:");
     for my $cls (sort keys %{$profiles}) {
+        my $classID                = $exportedSpecData->{$cls}->{classID};
+        my $className              = $exportedSpecData->{$cls}->{name};
         my $lcls                   = lc $cls;
         my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (sort keys %{ $profiles->{$cls} }) {
-            printf("%14s / %s\n", $lcls, $spec);
+            my $specID   = $exportedSpecData->{$cls}->{specs}->{$spec}->{specID};
+            my $specName = $exportedSpecData->{$cls}->{specs}->{$spec}->{name};
+            printf("%14s / %-20s (%2d-%d)\n", $lcls, $spec, $classID, $specID);
 
-            print {$outfile} "internal.apls['${simc::branch}::${lcls}::${spec}'] = [[\n";
+            print {$outfile} "TJ:RegisterActionProfileList('simc::${lcls}::${spec}', 'Simulationcraft ${className} Profile: ${specName}', ${classID}, ${specID}, [[\n";
 
             my $prefix_simc_file = "${cfg::script_dir}/Support/ActionProfilePrefix/${lcls}_${spec}.simc";
             if(-f $prefix_simc_file) {
@@ -283,7 +403,7 @@ sub create_action_lists {
                 close($infile);
             }
 
-            print {$outfile} "]]\n\n";
+            print {$outfile} "]])\n\n";
         }
 
         close($outfile);

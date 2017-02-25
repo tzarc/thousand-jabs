@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'PRIEST' then return end
+if select(3, UnitClass('player')) ~= 5 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::priest::shadow'] = [[
+TJ:RegisterActionProfileList('simc::priest::shadow', 'Simulationcraft Priest Profile: Shadow', 5, 3, [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -90,5 +89,5 @@ actions.vf+=/vampiric_touch,if=!talent.misery.enabled&!ticking&target.time_to_di
 actions.vf+=/shadow_word_pain,if=!talent.misery.enabled&!ticking&target.time_to_die>10&(active_enemies<5&artifact.sphere_of_insanity.rank),cycle_targets=1
 actions.vf+=/mind_flay,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2&(action.void_bolt.usable|(current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+30)<100&cooldown.shadow_word_death.charges>=1))
 actions.vf+=/shadow_word_pain
-]]
+]])
 

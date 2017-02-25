@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'WARRIOR' then return end
+if select(3, UnitClass('player')) ~= 1 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::warrior::arms'] = [[
+TJ:RegisterActionProfileList('simc::warrior::arms', 'Simulationcraft Warrior Profile: Arms', 1, 1, [[
 actions.precombat=flask,type=countless_armies
 actions.precombat+=/food,type=fishbrul_special
 actions.precombat+=/augmentation,type=defiled
@@ -66,9 +65,9 @@ actions.single+=/execute,if=buff.stone_heart.react
 actions.single+=/whirlwind,if=spell_targets.whirlwind>1|talent.fervor_of_battle.enabled
 actions.single+=/slam,if=spell_targets.whirlwind=1&!talent.fervor_of_battle.enabled
 actions.single+=/bladestorm,interrupt=1,if=raid_event.adds.in>90|!raid_event.adds.exists|spell_targets.bladestorm_mh>desired_targets
-]]
+]])
 
-internal.apls['legion-dev::warrior::fury'] = [[
+TJ:RegisterActionProfileList('simc::warrior::fury', 'Simulationcraft Warrior Profile: Fury', 1, 2, [[
 actions.precombat=flask,type=countless_armies
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -139,9 +138,9 @@ actions.single_target+=/bloodthirst
 actions.single_target+=/raging_blow,if=!set_bonus.tier19_2pc&!talent.inner_rage.enabled
 actions.single_target+=/whirlwind,if=spell_targets.whirlwind>2
 actions.single_target+=/furious_slash
-]]
+]])
 
-internal.apls['legion-dev::warrior::protection'] = [[
+TJ:RegisterActionProfileList('simc::warrior::protection', 'Simulationcraft Warrior Profile: Protection', 1, 3, [[
 actions.precombat=flask,type=ten_thousand_scars
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -168,5 +167,5 @@ actions.prot+=/shield_slam,if=(!(cooldown.shield_block.remains<=gcd.max*2&!buff.
 actions.prot+=/thunder_clap
 actions.prot+=/revenge,if=(talent.vengeance.enabled&buff.revenge.react&!buff.vengeance_ignore_pain.up)|(buff.vengeance_revenge.up&rage>=59)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage>=69)|(!talent.vengeance.enabled&buff.revenge.react)
 actions.prot+=/devastate
-]]
+]])
 

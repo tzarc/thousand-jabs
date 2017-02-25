@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'DEMONHUNTER' then return end
+if select(3, UnitClass('player')) ~= 12 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::demonhunter::havoc'] = [[
+TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
@@ -52,9 +51,9 @@ actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(buff.chaos_blades.up|buff
 actions.cooldown+=/chaos_blades,if=buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains>60|target.time_to_die<=12
 actions.cooldown+=/metamorphosis,if=!variable.pooling_for_meta&(!talent.demonic.enabled|!cooldown.eye_beam.ready)
 actions.cooldown+=/potion,name=old_war,if=buff.metamorphosis.remains>25|target.time_to_die<30
-]]
+]])
 
-internal.apls['legion-dev::demonhunter::vengeance'] = [[
+TJ:RegisterActionProfileList('simc::demonhunter::vengeance', 'Simulationcraft Demon Hunter Profile: Vengeance', 12, 2, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
@@ -83,5 +82,5 @@ actions+=/soul_cleave,if=pain>=80
 actions+=/shear
 -- Manually added, as it's not in simulationcraft yet!
 actions+=/sever
-]]
+]])
 

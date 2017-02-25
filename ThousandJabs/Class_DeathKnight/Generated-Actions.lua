@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'DEATHKNIGHT' then return end
+if select(3, UnitClass('player')) ~= 6 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['custom::deathknight::blood'] = [[
+TJ:RegisterActionProfileList('custom::deathknight::blood', 'Custom Death Knight Profile: Blood', 6, 1, [[
 actions=auto_attack
 actions+=/mind_freeze
 actions+=/call_action_list,name=st,if=active_enemies=1
@@ -39,9 +38,9 @@ actions.aoe+=/death_strike,if=incoming_damage_3s>health.max*0.25
 actions.aoe+=/death_and_decay
 actions.aoe+=/consumption
 actions.aoe+=/heart_strike
-]]
+]])
 
-internal.apls['legion-dev::deathknight::blood'] = [[
+TJ:RegisterActionProfileList('simc::deathknight::blood', 'Simulationcraft Death Knight Profile: Blood', 6, 1, [[
 actions.precombat=flask,name=countless_armies
 actions.precombat+=/food,name=fishbrul_special
 actions.precombat+=/augmentation,name=defiled
@@ -61,9 +60,9 @@ actions+=/call_action_list,name=gs_ticking,if=talent.gathering_storm.enabled&buf
 actions.bos_ticking=empower_rune_weapon,if=runic_power<20
 actions.generic=empower_rune_weapon
 actions.gs_ticking=empower_rune_weapon
-]]
+]])
 
-internal.apls['legion-dev::deathknight::frost'] = [[
+TJ:RegisterActionProfileList('simc::deathknight::frost', 'Simulationcraft Death Knight Profile: Frost', 6, 2, [[
 actions.precombat=flask,name=countless_armies
 actions.precombat+=/food,name=fishbrul_special
 actions.precombat+=/augmentation,name=defiled
@@ -143,9 +142,9 @@ actions.gs_ticking+=/glacial_advance
 actions.gs_ticking+=/frost_strike
 actions.gs_ticking+=/hungering_rune_weapon,if=!buff.hungering_rune_weapon.up
 actions.gs_ticking+=/empower_rune_weapon
-]]
+]])
 
-internal.apls['legion-dev::deathknight::unholy'] = [[
+TJ:RegisterActionProfileList('simc::deathknight::unholy', 'Simulationcraft Death Knight Profile: Unholy', 6, 3, [[
 actions.precombat=flask,name=countless_armies
 actions.precombat+=/food,name=nightborne_delicacy_platter
 actions.precombat+=/augmentation,name=defiled
@@ -236,5 +235,5 @@ actions.valkyr+=/call_action_list,name=aoe,if=active_enemies>=2
 actions.valkyr+=/festering_strike,if=debuff.festering_wound.stack<=3
 actions.valkyr+=/scourge_strike,if=debuff.festering_wound.up
 actions.valkyr+=/clawing_shadows,if=debuff.festering_wound.up
-]]
+]])
 

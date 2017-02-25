@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'ROGUE' then return end
+if select(3, UnitClass('player')) ~= 4 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::rogue::assassination'] = [[
+TJ:RegisterActionProfileList('simc::rogue::assassination', 'Simulationcraft Rogue Profile: Assassination', 4, 1, [[
 actions.precombat=flask,name=flask_of_the_seventh_demon
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/food,name=seedbattered_fish_plate,if=talent.exsanguinate.enabled
@@ -42,9 +41,9 @@ actions.maintain+=/rupture,cycle_targets=1,if=combo_points>=cp_max_spend-talent.
 actions.maintain+=/kingsbane,if=(talent.exsanguinate.enabled&dot.rupture.exsanguinated)|(!talent.exsanguinate.enabled&buff.envenom.up&(debuff.vendetta.up|cooldown.vendetta.remains>10))
 actions.maintain+=/pool_resource,for_next=1
 actions.maintain+=/garrote,cycle_targets=1,if=combo_points.deficit>=1&refreshable&(!exsanguinated|remains<=1.5)&target.time_to_die-remains>4
-]]
+]])
 
-internal.apls['legion-dev::rogue::outlaw'] = [[
+TJ:RegisterActionProfileList('simc::rogue::outlaw', 'Simulationcraft Rogue Profile: Outlaw', 4, 2, [[
 actions.precombat=flask,name=flask_of_the_seventh_demon
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/food,name=seedbattered_fish_plate
@@ -86,9 +85,9 @@ actions.stealth=variable,name=stealth_condition,value=combo_points.deficit>=2+2*
 actions.stealth+=/ambush
 actions.stealth+=/vanish,if=(equipped.mantle_of_the_master_assassin&buff.true_bearing.up)|variable.stealth_condition
 actions.stealth+=/shadowmeld,if=variable.stealth_condition
-]]
+]])
 
-internal.apls['legion-dev::rogue::subtlety'] = [[
+TJ:RegisterActionProfileList('simc::rogue::subtlety', 'Simulationcraft Rogue Profile: Subtlety', 4, 3, [[
 actions.precombat=flask,name=flask_of_the_seventh_demon
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/food,name=nightborne_delicacy_platter
@@ -138,5 +137,5 @@ actions.stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.defici
 actions.stealthed+=/shadowstrike,if=combo_points.deficit>=2+talent.premeditation.enabled+buff.shadow_blades.up-equipped.mantle_of_the_master_assassin
 actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5
 actions.stealthed+=/shadowstrike
-]]
+]])
 

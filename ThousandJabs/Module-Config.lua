@@ -42,7 +42,6 @@ local defaultConf = {
     do_debug = false,
 }
 
-
 function Config:OpenDialog()
     LoadAddOn("ThousandJabs_Config")
     local ACD = LibStub('AceConfigDialog-3.0')

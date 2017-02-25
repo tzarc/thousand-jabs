@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'MAGE' then return end
+if select(3, UnitClass('player')) ~= 8 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::mage::arcane'] = [[
+TJ:RegisterActionProfileList('simc::mage::arcane', 'Simulationcraft Mage Profile: Arcane', 8, 1, [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=the_hungry_magister
 actions.precombat+=/augmentation,type=defiled
@@ -69,9 +68,9 @@ actions.rop_phase+=/arcane_missiles,if=buff.arcane_charge.stack=4
 actions.rop_phase+=/arcane_explosion,if=active_enemies>1
 actions.rop_phase+=/arcane_blast,if=mana.pct>45
 actions.rop_phase+=/arcane_barrage
-]]
+]])
 
-internal.apls['legion-dev::mage::fire'] = [[
+TJ:RegisterActionProfileList('simc::mage::fire', 'Simulationcraft Mage Profile: Fire', 8, 2, [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=the_hungry_magister
 actions.precombat+=/augmentation,type=defiled
@@ -130,9 +129,9 @@ actions.standard_rotation+=/phoenixs_flames,if=(buff.combustion.up|buff.rune_of_
 actions.standard_rotation+=/flamestrike,if=(talent.flame_patch.enabled&active_enemies>1)|active_enemies>5
 actions.standard_rotation+=/scorch,if=target.health.pct<=30&equipped.132454
 actions.standard_rotation+=/fireball
-]]
+]])
 
-internal.apls['legion-dev::mage::frost'] = [[
+TJ:RegisterActionProfileList('simc::mage::frost', 'Simulationcraft Mage Profile: Frost', 8, 3, [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -180,5 +179,5 @@ actions.single+=/blizzard,if=active_enemies>2|active_enemies>1&!(talent.glacial_
 actions.single+=/ebonbolt,if=buff.brain_freeze.react=0
 actions.single+=/glacial_spike
 actions.single+=/frostbolt
-]]
+]])
 

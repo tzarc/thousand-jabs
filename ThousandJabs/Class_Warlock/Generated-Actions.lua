@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'WARLOCK' then return end
+if select(3, UnitClass('player')) ~= 9 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::warlock::affliction'] = [[
+TJ:RegisterActionProfileList('simc::warlock::affliction', 'Simulationcraft Warlock Profile: Affliction', 9, 1, [[
 actions.precombat=flask,type=whispered_pact
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet,if=!talent.grimoire_of_supremacy.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.demonic_power.down)
@@ -60,9 +59,9 @@ actions+=/reap_souls,if=!buff.deadwind_harvester.remains&prev_gcd.1.unstable_aff
 actions+=/life_tap,if=mana.pct<=10
 actions+=/drain_soul,chain=1,interrupt=1
 actions+=/life_tap
-]]
+]])
 
-internal.apls['legion-dev::warlock::demonology'] = [[
+TJ:RegisterActionProfileList('simc::warlock::demonology', 'Simulationcraft Warlock Profile: Demonology', 9, 2, [[
 actions.precombat=flask,type=whispered_pact
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/summon_pet,if=!talent.grimoire_of_supremacy.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.demonic_power.down)
@@ -106,9 +105,9 @@ actions+=/demonwrath,moving=1,chain=1,interrupt=1
 actions+=/demonbolt
 actions+=/shadow_bolt
 actions+=/life_tap
-]]
+]])
 
-internal.apls['legion-dev::warlock::destruction'] = [[
+TJ:RegisterActionProfileList('simc::warlock::destruction', 'Simulationcraft Warlock Profile: Destruction', 9, 3, [[
 actions.precombat=flask,type=whispered_pact
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/summon_pet,if=!talent.grimoire_of_supremacy.enabled&(!talent.grimoire_of_sacrifice.enabled|buff.demonic_power.down)
@@ -159,5 +158,5 @@ actions+=/conflagrate,if=!talent.roaring_blaze.enabled&buff.backdraft.stack<3
 actions+=/immolate,if=!talent.roaring_blaze.enabled&remains<=duration*0.3
 actions+=/incinerate
 actions+=/life_tap
-]]
+]])
 

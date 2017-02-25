@@ -563,6 +563,8 @@ function TJ:ConsoleCommand(args)
         Core:Print('Memory usage: %d kB', GetAddOnMemoryUsage('ThousandJabs'))
     elseif argv[1] == '_esd' then
         self:ExportAbilitiesFromSpellBook()
+    elseif argv[1] == '_est' then
+        self:ExportSpecsTables()
     elseif argv[1] == '_dcp' then
         if TJ.currentProfile then
             TJ.needExportCurrentProfile = true

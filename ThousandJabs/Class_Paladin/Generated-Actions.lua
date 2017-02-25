@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'PALADIN' then return end
+if select(3, UnitClass('player')) ~= 2 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::paladin::protection'] = [[
+TJ:RegisterActionProfileList('simc::paladin::protection', 'Simulationcraft Paladin Profile: Protection', 2, 2, [[
 actions.precombat=flask,type=flask_of_ten_thousand_scars
 actions.precombat+=/flask,type=flask_of_the_countless_armies,if=role.attack|using_apl.max_dps
 actions.precombat+=/food,type=seedbattered_fish_plate
@@ -56,9 +55,9 @@ actions.prot+=/avengers_shield
 actions.prot+=/consecration
 actions.prot+=/blinding_light
 actions.prot+=/hammer_of_the_righteous
-]]
+]])
 
-internal.apls['legion-dev::paladin::retribution'] = [[
+TJ:RegisterActionProfileList('simc::paladin::retribution', 'Simulationcraft Paladin Profile: Retribution', 2, 3, [[
 actions.precombat=flask,type=flask_of_the_countless_armies
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -108,5 +107,5 @@ actions+=/zeal,if=holy_power<=4
 actions+=/crusader_strike,if=holy_power<=4
 actions+=/divine_storm,if=debuff.judgment.up&holy_power>=3&spell_targets.divine_storm>=2&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*5)
 actions+=/templars_verdict,if=debuff.judgment.up&holy_power>=3&(!talent.crusade.enabled|cooldown.crusade.remains>gcd*5)
-]]
+]])
 

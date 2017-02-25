@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'HUNTER' then return end
+if select(3, UnitClass('player')) ~= 3 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::hunter::beast_mastery'] = [[
+TJ:RegisterActionProfileList('simc::hunter::beast_mastery', 'Simulationcraft Hunter Profile: Beast Mastery', 3, 1, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet
@@ -29,9 +28,9 @@ actions+=/kill_command
 actions+=/multishot,if=spell_targets>1&(pet.buff.beast_cleave.remains<gcd.max*2|pet.buff.beast_cleave.down)
 actions+=/chimaera_shot,if=focus<90
 actions+=/cobra_shot,if=cooldown.kill_command.remains>focus.time_to_max&cooldown.bestial_wrath.remains>focus.time_to_max|(buff.bestial_wrath.up&focus.regen*cooldown.kill_command.remains>30)|target.time_to_die<cooldown.kill_command.remains
-]]
+]])
 
-internal.apls['legion-dev::hunter::marksmanship'] = [[
+TJ:RegisterActionProfileList('simc::hunter::marksmanship', 'Simulationcraft Hunter Profile: Marksmanship', 3, 2, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/summon_pet
@@ -108,9 +107,9 @@ actions.targetdie+=/arcane_shot,if=buff.marking_targets.up|buff.trueshot.up
 actions.targetdie+=/aimed_shot,if=debuff.vulnerability.remains>execute_time&target.time_to_die>cast_time
 actions.targetdie+=/sidewinders
 actions.targetdie+=/arcane_shot
-]]
+]])
 
-internal.apls['legion-dev::hunter::survival'] = [[
+TJ:RegisterActionProfileList('simc::hunter::survival', 'Simulationcraft Hunter Profile: Survival', 3, 3, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/summon_pet
@@ -199,5 +198,5 @@ actions.nomok+=/flanking_strike
 actions.nomok+=/butchery
 actions.nomok+=/throwing_axes
 actions.nomok+=/raptor_strike,if=focus>75-cooldown.flanking_strike.remains*focus.regen
-]]
+]])
 

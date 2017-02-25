@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'DRUID' then return end
+if select(3, UnitClass('player')) ~= 11 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::druid::balance'] = [[
+TJ:RegisterActionProfileList('simc::druid::balance', 'Simulationcraft Druid Profile: Balance', 11, 1, [[
 actions.precombat=flask,type=flask_of_the_whispered_pact
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -96,9 +95,9 @@ actions.single_target+=/lunar_strike,if=buff.lunar_empowerment.up
 actions.single_target+=/solar_wrath,if=talent.natures_balance.enabled&dot.sunfire_dmg.remains<5&cast_time<dot.sunfire_dmg.remains
 actions.single_target+=/lunar_strike,if=(talent.natures_balance.enabled&dot.moonfire_dmg.remains<5&cast_time<dot.moonfire_dmg.remains)|active_enemies>=2
 actions.single_target+=/solar_wrath
-]]
+]])
 
-internal.apls['legion-dev::druid::feral'] = [[
+TJ:RegisterActionProfileList('simc::druid::feral', 'Simulationcraft Druid Profile: Feral', 11, 2, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=nightborne_delicacy_platter
 actions.precombat+=/augmentation,type=defiled
@@ -155,9 +154,9 @@ actions.generator+=/swipe_cat,if=combo_points<5&spell_targets.swipe_cat>=3
 actions.generator+=/shred,if=combo_points<5&(spell_targets.swipe_cat<3|talent.brutal_slash.enabled)
 actions.sbt_opener=regrowth,if=talent.bloodtalons.enabled&combo_points=5&!buff.bloodtalons.up&!dot.rip.ticking
 actions.sbt_opener+=/tigers_fury,if=!dot.rip.ticking&combo_points=5
-]]
+]])
 
-internal.apls['legion-dev::druid::guardian'] = [[
+TJ:RegisterActionProfileList('simc::druid::guardian', 'Simulationcraft Druid Profile: Guardian', 11, 3, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=azshari_salad
 actions.precombat+=/augmentation,type=defiled
@@ -182,5 +181,5 @@ actions+=/moonfire,if=buff.galactic_guardian.up=1&(!ticking|dot.moonfire.remains
 actions+=/moonfire,if=buff.galactic_guardian.up=1
 actions+=/moonfire,if=dot.moonfire.remains<=4.8
 actions+=/swipe_bear
-]]
+]])
 

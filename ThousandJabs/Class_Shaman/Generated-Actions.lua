@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'SHAMAN' then return end
+if select(3, UnitClass('player')) ~= 7 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['legion-dev::shaman::elemental'] = [[
+TJ:RegisterActionProfileList('simc::shaman::elemental', 'Simulationcraft Shaman Profile: Elemental', 7, 1, [[
 actions.precombat=flask,type=whispered_pact
 actions.precombat+=/food,name=fishbrul_special
 actions.precombat+=/augmentation,type=defiled
@@ -99,9 +98,9 @@ actions.single_lr+=/lightning_bolt
 actions.single_lr+=/flame_shock,moving=1,target_if=refreshable
 actions.single_lr+=/earth_shock,moving=1
 actions.single_lr+=/flame_shock,moving=1,if=movement.distance>6
-]]
+]])
 
-internal.apls['legion-dev::shaman::enhancement'] = [[
+TJ:RegisterActionProfileList('simc::shaman::enhancement', 'Simulationcraft Shaman Profile: Enhancement', 7, 2, [[
 actions.precombat=flask,type=seventh_demon
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/food,name=nightborne_delicacy_platter
@@ -147,5 +146,5 @@ actions+=/sundering
 actions+=/rockbiter
 actions+=/flametongue
 actions+=/boulderfist
-]]
+]])
 

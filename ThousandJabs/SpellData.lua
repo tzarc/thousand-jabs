@@ -339,12 +339,10 @@ function TJ:ShowSpellExportWindow()
 
     -- Ability IDs
     addline("-- exported with /tj _esd")
-    addline("local %s_abilities_exported = {}", select(2, GetSpecializationInfo(GetSpecialization())):lower())
-    addline("if Core:MatchesBuild('%s', '%s') then", gameVersion, gameVersion)
-    addline("    %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
+    addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
     for k,v in Core:OrderedPairs(definedAbilities) do
         if not tContains(blacklistedExportedAbilities, k) then
-            local line = Core:Format('        %s = { ', k)
+            local line = Core:Format('    %s = { ', k)
             if v.KeyedSpellIDs then
                 local ids = {}
                 for id in Core:OrderedPairs(v.KeyedSpellIDs) do
@@ -357,8 +355,7 @@ function TJ:ShowSpellExportWindow()
             addline(line)
         end
     end
-    addline("    }")
-    addline("end")
+    addline("}")
     addline("")
 
     -- Display the exported data
@@ -566,4 +563,56 @@ function TJ:ScanTooltip(link, callback, pattern, colour)
         end
     end
     TableCache:Release(entries)
+end
+
+function TJ:ExportSpecsTables()
+    local allClasses = {}
+    local allSpecs = {}
+    for classID=1,30 do
+        local className, classToken = GetClassInfo(classID)
+        if className then
+            local noSpaceClassName = className:gsub(' ', '')
+            for specID=1,10 do
+                local specNumber, specName = GetSpecializationInfoForClassID(classID, specID)
+                if specNumber then
+                    local simcSpecName = specName:gsub(' ', '_'):lower()
+                    allSpecs[noSpaceClassName] = allSpecs[noSpaceClassName] or {
+                        classID = classID,
+                        className = className,
+                        noSpaceClassName = noSpaceClassName,
+                        classToken = classToken,
+                        specs = {}
+                    }
+
+                    allSpecs[noSpaceClassName].specs[simcSpecName] = allSpecs[noSpaceClassName].specs[simcSpecName] or {}
+                    allSpecs[noSpaceClassName].specs[simcSpecName] = {
+                        specID = specID,
+                        specName = specName,
+                        simcSpecName = simcSpecName,
+                        specNumber = specNumber
+                    }
+                end
+            end
+        end
+    end
+
+    local output = "# Exported by /tj _est\nmy $exportedSpecData = {"
+    local firstClass = true
+    for className,classData in Core:OrderedPairs(allSpecs) do
+        output = output .. Core:Format("%s\n    %s => {", firstClass and '' or ',', className)
+        output = output .. Core:Format("\n        classID => %d,", classData.classID)
+        output = output .. Core:Format("\n        name => '%s',", classData.className)
+        output = output .. Core:Format("\n        specs => {")
+        local firstSpec = true
+        for specName,specData in Core:OrderedPairs(classData.specs) do
+            output = output .. Core:Format("%s\n            %s => { specID => %d, name => \"%s\" }", firstSpec and '' or ',', specName, specData.specID, specData.specName)
+            firstSpec = false
+        end
+        output = output .. "\n        }"
+        output = output .. "\n    }"
+        firstClass = false
+    end
+    output = output .. "\n};"
+    output = output .. "\n\nlocal lua_spec_table = " .. LSD(allSpecs)
+    Core:OpenDebugWindow('Thousand Jabs Spec Data Export', output)
 end

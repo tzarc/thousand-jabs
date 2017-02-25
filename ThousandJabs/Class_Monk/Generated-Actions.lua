@@ -1,9 +1,8 @@
-if select(2, UnitClass('player')) ~= 'MONK' then return end
+if select(3, UnitClass('player')) ~= 10 then return end
 
-local _, internal = ...
-internal.apls = internal.apls or {}
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
-internal.apls['custom::monk::brewmaster'] = [[
+TJ:RegisterActionProfileList('custom::monk::brewmaster', 'Custom Monk Profile: Brewmaster', 10, 1, [[
 actions=auto_attack
 actions+=/spear_hand_strike
 actions+=/variable,name=heal_threshold,value=health.pct<80
@@ -41,9 +40,9 @@ actions.aoe+=/tiger_palm,if=energy>65
 actions.aoe+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.remains<gcd*2
 actions.aoe+=/blackout_strike
 actions.aoe+=/expel_harm,if=charges=3&variable.heal_threshold
-]]
+]])
 
-internal.apls['legion-dev::monk::brewmaster'] = [[
+TJ:RegisterActionProfileList('simc::monk::brewmaster', 'Simulationcraft Monk Profile: Brewmaster', 10, 1, [[
 actions.precombat=flask,type=greater_draenic_agility_flask
 actions.precombat+=/food,type=sleeper_sushi
 actions.precombat+=/snapshot_stats
@@ -61,9 +60,9 @@ actions.st+=/chi_wave
 actions.st+=/rushing_jade_wind
 actions.st+=/breath_of_fire
 actions.st+=/tiger_palm
-]]
+]])
 
-internal.apls['legion-dev::monk::windwalker'] = [[
+TJ:RegisterActionProfileList('simc::monk::windwalker', 'Simulationcraft Monk Profile: Windwalker', 10, 3, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
 actions.precombat+=/food,type=the_hungry_magister
 actions.precombat+=/augmentation,type=defiled
@@ -126,5 +125,5 @@ actions.st+=/blackout_kick,cycle_targets=1,if=(chi>1|buff.bok_proc.up)&!prev_gcd
 actions.st+=/chi_wave,if=energy.time_to_max>=2.25
 actions.st+=/chi_burst,if=energy.time_to_max>=2.25
 actions.st+=/tiger_palm,cycle_targets=1,if=!prev_gcd.1.tiger_palm
-]]
+]])
 
