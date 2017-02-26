@@ -10,7 +10,15 @@ havecmd()  { command command type "${1}" >/dev/null 2>&1 || return 1 ; }
 
 if [[ $(uname -s) == "Linux" ]] ; then
   if havecmd apt-get ; then # Debian / Ubuntu etc.
-    $(nsudo) apt-get install dos2unix luarocks perltidy
+    if ! havecmd dos2unix ; then
+      $(nsudo) apt-get install dos2unix
+    fi
+    if ! havecmd luarocks ; then
+      $(nsudo) apt-get install luarocks
+    fi
+    if ! havecmd perltidy ; then
+      $(nsudo) apt-get install perltidy
+    fi
   fi
 
   if ! havecmd luaformatter ; then

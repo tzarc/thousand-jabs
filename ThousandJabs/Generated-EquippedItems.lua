@@ -18,5 +18,6 @@ TJ.Generated.EquippedMapping.shadow_satyrs_walk = { 137032, }
 TJ.Generated.EquippedMapping.shivarran_symmetry = { 141321, }
 TJ.Generated.EquippedMapping.the_emerald_dreamcatcher = { 137062, }
 TJ.Generated.EquippedMapping.the_emperors_capacitor = { 144239, }
+TJ.Generated.EquippedMapping.the_mantle_of_command = { 144326, 17569, 23317, 23319, 77647, 77801, }
 TJ.Generated.EquippedMapping.thraxis_tricksy_treads = { 137031, }
 TJ.Generated.EquippedMapping.weight_of_the_earth = { 137077, }
