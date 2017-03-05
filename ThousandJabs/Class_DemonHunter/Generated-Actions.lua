@@ -4,17 +4,19 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=nightborne_delicacy_platter
+actions.precombat+=/food,type=the_hungry_magister
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=old_war
 actions.precombat+=/metamorphosis,if=!(talent.demon_reborn.enabled&talent.demonic.enabled)
 actions=auto_attack
-actions+=/variable,name=pooling_for_meta,value=cooldown.metamorphosis.remains<6&fury.deficit>30&!talent.demonic.enabled
+actions+=/variable,name=waiting_for_nemesis,value=!(!talent.nemesis.enabled|cooldown.nemesis.ready|cooldown.nemesis.remains>target.time_to_die|cooldown.nemesis.remains>60)
+actions+=/variable,name=waiting_for_chaos_blades,value=!(!talent.chaos_blades.enabled|cooldown.chaos_blades.ready|cooldown.chaos_blades.remains>target.time_to_die|cooldown.chaos_blades.remains>60)
+actions+=/variable,name=pooling_for_meta,value=cooldown.metamorphosis.remains<6&fury.deficit>30&!talent.demonic.enabled&(!variable.waiting_for_nemesis|cooldown.nemesis.remains<10)&(!variable.waiting_for_chaos_blades|cooldown.chaos_blades.remains<6)
 actions+=/variable,name=blade_dance,value=talent.first_blood.enabled|spell_targets.blade_dance1>=3+(talent.chaos_cleave.enabled*2)
 actions+=/variable,name=pooling_for_blade_dance,value=variable.blade_dance&fury-40<35-talent.first_blood.enabled*20&(spell_targets.blade_dance1>=3+(talent.chaos_cleave.enabled*2))
 actions+=/variable,name=pooling_for_chaos_strike,value=talent.chaos_cleave.enabled&fury.deficit>40&!raid_event.adds.up&raid_event.adds.in<2*gcd
-actions+=/call_action_list,name=cooldown
+actions+=/call_action_list,name=cooldown,if=gcd.remains=0
 actions+=/pick_up_fragment,if=talent.demonic_appetite.enabled&fury.deficit>=35&(!talent.demonic.enabled|cooldown.eye_beam.remains>5)
 actions+=/consume_magic
 actions+=/vengeful_retreat,if=(talent.prepared.enabled|talent.momentum.enabled)&buff.prepared.down&buff.momentum.down
@@ -46,10 +48,10 @@ actions+=/felblade,if=movement.distance|buff.out_of_range.up
 actions+=/fel_rush,if=movement.distance>15|(buff.out_of_range.up&!talent.momentum.enabled)
 actions+=/vengeful_retreat,if=movement.distance>15
 actions+=/throw_glaive,if=!talent.bloodlet.enabled
-actions.cooldown=nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&((active_enemies>desired_targets&active_enemies>1)|raid_event.adds.in>60)
+actions.cooldown=metamorphosis,if=!(variable.pooling_for_meta|variable.waiting_for_nemesis|variable.waiting_for_chaos_blades)|target.time_to_die<25
+actions.cooldown+=/nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&((active_enemies>desired_targets&active_enemies>1)|raid_event.adds.in>60)
 actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(buff.chaos_blades.up|buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains<20|target.time_to_die<=60)
 actions.cooldown+=/chaos_blades,if=buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains>60|target.time_to_die<=12
-actions.cooldown+=/metamorphosis,if=!variable.pooling_for_meta&(!talent.demonic.enabled|!cooldown.eye_beam.ready)
 actions.cooldown+=/potion,name=old_war,if=buff.metamorphosis.remains>25|target.time_to_die<30
 ]])
 

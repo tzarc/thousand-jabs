@@ -79,7 +79,7 @@ actions.patient_sniper+=/variable,name=vuln_aim_casts,op=set,value=floor((focus+
 actions.patient_sniper+=/variable,name=can_gcd,value=variable.vuln_window>variable.vuln_aim_casts*(2*attack_haste)+gcd.max
 actions.patient_sniper+=/piercing_shot,if=cooldown.piercing_shot.up&spell_targets=1&lowest_vuln_within.5>0&lowest_vuln_within.5<1
 actions.patient_sniper+=/piercing_shot,if=cooldown.piercing_shot.up&spell_targets>1&lowest_vuln_within.5>0&((!buff.trueshot.up&focus>80&(lowest_vuln_within.5<1|debuff.hunters_mark.up))|(buff.trueshot.up&focus>105&lowest_vuln_within.5<6))
-actions.patient_sniper+=/aimed_shot,if=spell_targets>1&debuff.vulnerability.remains>cast_time&talent.trick_shot.enabled&buff.sentinels_sight.stack=20
+actions.patient_sniper+=/aimed_shot,if=spell_targets>1&debuff.vulnerability.remains>cast_time&talent.trick_shot.enabled&(buff.sentinels_sight.stack=20|(buff.trueshot.up&buff.sentinels_sight.stack>=spell_targets.multishot*5))
 actions.patient_sniper+=/marked_shot,if=spell_targets>1
 actions.patient_sniper+=/multishot,if=spell_targets>1&(buff.marking_targets.up|buff.trueshot.up)
 actions.patient_sniper+=/windburst,if=variable.vuln_aim_casts<1&!variable.pooling_for_piercing
@@ -129,6 +129,8 @@ actions+=/call_action_list,name=moknathal,if=talent.way_of_the_moknathal.enabled
 actions+=/call_action_list,name=nomok,if=!talent.way_of_the_moknathal.enabled
 actions.moknathal=raptor_strike,if=buff.moknathal_tactics.stack<=1
 actions.moknathal+=/raptor_strike,if=buff.moknathal_tactics.remains<gcd
+actions.moknathal+=/fury_of_the_eagle,if=buff.mongoose_fury.stack>=4&buff.mongoose_fury.remains<gcd
+actions.moknathal+=/raptor_strike,if=buff.mongoose_fury.stack>=4&buff.mongoose_fury.remains>gcd&buff.moknathal_tactics.stack>=3&buff.moknathal_tactics.remains<4&cooldown.fury_of_the_eagle.remains<buff.mongoose_fury.remains
 actions.moknathal+=/snake_hunter,if=cooldown.mongoose_bite.charges<=0&buff.mongoose_fury.remains>3*gcd&time>15
 actions.moknathal+=/spitting_cobra,if=buff.mongoose_fury.duration>=gcd&cooldown.mongoose_bite.charges>=0&buff.mongoose_fury.stack<4&buff.moknathal_tactics.stack=3
 actions.moknathal+=/steel_trap,if=buff.mongoose_fury.duration>=gcd&buff.mongoose_fury.stack<1
@@ -146,6 +148,7 @@ actions.moknathal+=/dragonsfire_grenade,if=buff.mongoose_fury.duration>=gcd&cool
 actions.moknathal+=/raptor_strike,if=buff.moknathal_tactics.remains<4&buff.mongoose_fury.stack=6&buff.mongoose_fury.remains>cooldown.fury_of_the_eagle.remains&cooldown.fury_of_the_eagle.remains<=5
 actions.moknathal+=/fury_of_the_eagle,if=buff.moknathal_tactics.remains>4&buff.mongoose_fury.stack=6&cooldown.mongoose_bite.charges<=1
 actions.moknathal+=/mongoose_bite,if=buff.aspect_of_the_eagle.up&buff.mongoose_fury.up&buff.moknathal_tactics.stack>=4
+actions.moknathal+=/raptor_strike,if=buff.mongoose_fury.up&buff.mongoose_fury.remains<=3*gcd&buff.moknathal_tactics.remains<4+gcd&cooldown.fury_of_the_eagle.remains<gcd
 actions.moknathal+=/fury_of_the_eagle,if=buff.mongoose_fury.up&buff.mongoose_fury.remains<=2*gcd
 actions.moknathal+=/aspect_of_the_eagle,if=buff.mongoose_fury.stack>4&time<15
 actions.moknathal+=/aspect_of_the_eagle,if=buff.mongoose_fury.stack>1&time>15
