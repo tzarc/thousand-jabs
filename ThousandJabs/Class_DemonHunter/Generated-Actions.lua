@@ -4,7 +4,8 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
 actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=the_hungry_magister
+actions.precombat+=/food,type=the_hungry_magister,if=!equipped.majordomos_dinner_bell
+actions.precombat+=/food,type=nightborne_delicacy_platter,if=equipped.majordomos_dinner_bell
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=old_war
