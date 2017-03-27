@@ -12,6 +12,7 @@ actions.precombat+=/totem_mastery
 actions.precombat+=/stormkeeper
 actions=bloodlust,if=target.health.pct<25|time>0.500
 actions+=/potion,name=prolonged_power,if=cooldown.fire_elemental.remains>280|target.time_to_die<=60
+actions+=/wind_shear
 actions+=/run_action_list,name=ptr_default,if=ptr
 actions+=/totem_mastery,if=buff.resonance_totem.remains<2
 actions+=/fire_elemental

@@ -16,6 +16,7 @@ TJ.Generated.EquippedMapping.hidden_masters_forbidden_touch = { 137057, }
 TJ.Generated.EquippedMapping.insignia_of_ravenholdt = { 137049, }
 TJ.Generated.EquippedMapping.majordomos_dinner_bell = { 142168, }
 TJ.Generated.EquippedMapping.mantle_of_the_master_assassin = { 144236, }
+TJ.Generated.EquippedMapping.sephuzs_secret = { 132452, }
 TJ.Generated.EquippedMapping.shadow_satyrs_walk = { 137032, }
 TJ.Generated.EquippedMapping.shivarran_symmetry = { 141321, }
 TJ.Generated.EquippedMapping.the_emerald_dreamcatcher = { 137062, }
