@@ -14,6 +14,7 @@ TJ.Generated.EquippedMapping.gnawed_thumb_ring = { 134526, }
 TJ.Generated.EquippedMapping.greenskins_waterlogged_wristcuffs = { 137099, }
 TJ.Generated.EquippedMapping.hidden_masters_forbidden_touch = { 137057, }
 TJ.Generated.EquippedMapping.insignia_of_ravenholdt = { 137049, }
+TJ.Generated.EquippedMapping.lady_vashjs_grasp = { 132411, }
 TJ.Generated.EquippedMapping.majordomos_dinner_bell = { 142168, }
 TJ.Generated.EquippedMapping.mantle_of_the_master_assassin = { 144236, }
 TJ.Generated.EquippedMapping.sephuzs_secret = { 132452, }

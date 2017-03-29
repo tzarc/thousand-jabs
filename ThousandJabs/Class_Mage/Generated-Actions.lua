@@ -3,13 +3,13 @@ if select(3, UnitClass('player')) ~= 8 then return end
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::mage::arcane', 'Simulationcraft Mage Profile: Arcane', 8, 1, [[
-actions.precombat=flask,type=flask_of_the_whispered_pact
-actions.precombat+=/food,type=the_hungry_magister
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/summon_arcane_familiar
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion
 actions.precombat+=/arcane_blast
 actions=counterspell,if=target.debuff.casting.react
 actions+=/time_warp,if=(buff.bloodlust.down)&((time=0)|(equipped.132410&buff.arcane_power.up&prev_off_gcd.arcane_power)|(target.time_to_die<40))
@@ -57,7 +57,7 @@ actions.cooldowns+=/arcane_power
 actions.cooldowns+=/blood_fury
 actions.cooldowns+=/berserking
 actions.cooldowns+=/arcane_torrent
-actions.cooldowns+=/potion,name=deadly_grace,if=buff.arcane_power.up
+actions.cooldowns+=/potion,if=buff.arcane_power.up
 actions.init_burn=mark_of_aluneth
 actions.init_burn+=/nether_tempest,if=dot.nether_tempest.remains<10&(prev_gcd.1.mark_of_aluneth|(talent.rune_of_power.enabled&cooldown.rune_of_power.remains<gcd.max))
 actions.init_burn+=/rune_of_power
@@ -71,12 +71,12 @@ actions.rop_phase+=/arcane_barrage
 ]])
 
 TJ:RegisterActionProfileList('simc::mage::fire', 'Simulationcraft Mage Profile: Fire', 8, 2, [[
-actions.precombat=flask,type=flask_of_the_whispered_pact
-actions.precombat+=/food,type=the_hungry_magister
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion
 actions.precombat+=/pyroblast
 actions=counterspell,if=target.debuff.casting.react
 actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410&(cooldown.combustion.remains<1|target.time_to_die.remains<50))
@@ -93,7 +93,7 @@ actions.active_talents+=/living_bomb,if=active_enemies>1&buff.combustion.down
 actions.combustion_phase=rune_of_power,if=buff.combustion.down
 actions.combustion_phase+=/call_action_list,name=active_talents
 actions.combustion_phase+=/combustion
-actions.combustion_phase+=/potion,name=deadly_grace
+actions.combustion_phase+=/potion
 actions.combustion_phase+=/blood_fury
 actions.combustion_phase+=/berserking
 actions.combustion_phase+=/arcane_torrent
@@ -132,16 +132,19 @@ actions.standard_rotation+=/fireball
 ]])
 
 TJ:RegisterActionProfileList('simc::mage::frost', 'Simulationcraft Mage Profile: Frost', 8, 3, [[
-actions.precombat=flask,type=flask_of_the_whispered_pact
-actions.precombat+=/food,type=azshari_salad
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/water_elemental
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image
-actions.precombat+=/potion,name=prolonged_power
+actions.precombat+=/potion
 actions.precombat+=/frostbolt
 actions=counterspell,if=target.debuff.casting.react
-actions+=/ice_lance,if=buff.fingers_of_frost.react=0&prev_gcd.1.flurry
+actions+=/variable,name=time_until_fof,value=10-(time-variable.iv_start-floor((time-variable.iv_start)%10)*10)
+actions+=/variable,name=fof_react,value=buff.fingers_of_frost.react
+actions+=/variable,name=fof_react,value=buff.fingers_of_frost.stack,if=equipped.lady_vashjs_grasp&buff.icy_veins.up&variable.time_until_fof>9|prev_off_gcd.freeze
+actions+=/ice_lance,if=variable.fof_react=0&prev_gcd.1.flurry
 actions+=/time_warp,if=(time=0&buff.bloodlust.down)|(buff.bloodlust.down&equipped.132410&(cooldown.icy_veins.remains<1|target.time_to_die<50))
 actions+=/call_action_list,name=cooldowns
 actions+=/call_action_list,name=aoe,if=active_enemies>=4
@@ -153,13 +156,14 @@ actions.aoe+=/comet_storm
 actions.aoe+=/ice_nova
 actions.aoe+=/water_jet,if=prev_gcd.1.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0
 actions.aoe+=/flurry,if=prev_gcd.1.ebonbolt|prev_gcd.1.frostbolt&buff.brain_freeze.react
-actions.aoe+=/frost_bomb,if=debuff.frost_bomb.remains<action.ice_lance.travel_time&buff.fingers_of_frost.react>0
-actions.aoe+=/ice_lance,if=buff.fingers_of_frost.react>0
+actions.aoe+=/frost_bomb,if=debuff.frost_bomb.remains<action.ice_lance.travel_time&variable.fof_react>0
+actions.aoe+=/ice_lance,if=variable.fof_react>0
 actions.aoe+=/ebonbolt,if=buff.brain_freeze.react=0
 actions.aoe+=/glacial_spike
 actions.aoe+=/frostbolt
 actions.cooldowns=rune_of_power,if=cooldown.icy_veins.remains<cast_time|charges_fractional>1.9&cooldown.icy_veins.remains>10|buff.icy_veins.up|target.time_to_die.remains+5<charges_fractional*10
-actions.cooldowns+=/potion,name=prolonged_power,if=cooldown.icy_veins.remains<1
+actions.cooldowns+=/potion,if=cooldown.icy_veins.remains<1
+actions.cooldowns+=/variable,name=iv_start,value=time,if=cooldown.icy_veins.ready&buff.icy_veins.down
 actions.cooldowns+=/icy_veins,if=buff.icy_veins.down
 actions.cooldowns+=/mirror_image
 actions.cooldowns+=/blood_fury
@@ -170,9 +174,9 @@ actions.single+=/frostbolt,if=prev_off_gcd.water_jet
 actions.single+=/water_jet,if=prev_gcd.1.frostbolt&buff.fingers_of_frost.stack<(2+artifact.icy_hand.enabled)&buff.brain_freeze.react=0
 actions.single+=/ray_of_frost,if=buff.icy_veins.up|(cooldown.icy_veins.remains>action.ray_of_frost.cooldown&buff.rune_of_power.down)
 actions.single+=/flurry,if=prev_gcd.1.ebonbolt|prev_gcd.1.frostbolt&buff.brain_freeze.react
-actions.single+=/blizzard,if=cast_time=0&active_enemies>1&buff.fingers_of_frost.react<3
-actions.single+=/frost_bomb,if=debuff.frost_bomb.remains<action.ice_lance.travel_time&buff.fingers_of_frost.react>0
-actions.single+=/ice_lance,if=buff.fingers_of_frost.react>0&cooldown.icy_veins.remains>10|buff.fingers_of_frost.react>2
+actions.single+=/blizzard,if=cast_time=0&active_enemies>1&variable.fof_react<3
+actions.single+=/frost_bomb,if=debuff.frost_bomb.remains<action.ice_lance.travel_time&variable.fof_react>0
+actions.single+=/ice_lance,if=variable.fof_react>0&cooldown.icy_veins.remains>10|variable.fof_react>2
 actions.single+=/frozen_orb
 actions.single+=/ice_nova
 actions.single+=/comet_storm
