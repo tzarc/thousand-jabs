@@ -42,17 +42,19 @@ actions.aoe+=/heart_strike
 
 TJ:RegisterActionProfileList('simc::deathknight::blood', 'Simulationcraft Death Knight Profile: Blood', 6, 1, [[
 actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=fishbrul_special
+actions.precombat+=/food,name=lavish_suramar_feast
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=prolonged_power
 actions=auto_attack
 actions+=/mind_freeze
-actions+=/arcane_torrent,if=runic_power.deficit>20
+actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.enabled
+actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
 actions+=/potion,name=prolonged_power,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
-actions+=/sindragosas_fury,if=buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
+actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
+actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
 actions+=/call_action_list,name=generic,if=!talent.breath_of_sindragosa.enabled&!(talent.gathering_storm.enabled&buff.remorseless_winter.remains)
 actions+=/call_action_list,name=bos,if=talent.breath_of_sindragosa.enabled&!dot.breath_of_sindragosa.ticking
 actions+=/call_action_list,name=bos_ticking,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking
@@ -64,7 +66,7 @@ actions.gs_ticking=empower_rune_weapon
 
 TJ:RegisterActionProfileList('simc::deathknight::frost', 'Simulationcraft Death Knight Profile: Frost', 6, 2, [[
 actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=fishbrul_special
+actions.precombat+=/food,name=lavish_suramar_feast
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=prolonged_power
@@ -72,11 +74,13 @@ actions=auto_attack
 actions+=/pillar_of_frost,if=!equipped.140806|!talent.breath_of_sindragosa.enabled
 actions+=/pillar_of_frost,if=equipped.140806&talent.breath_of_sindragosa.enabled&((runic_power>=50&cooldown.hungering_rune_weapon.remains<10)|(cooldown.breath_of_sindragosa.remains>20))
 actions+=/mind_freeze
-actions+=/arcane_torrent,if=runic_power.deficit>20
+actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.enabled
+actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
 actions+=/potion,name=prolonged_power,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
-actions+=/sindragosas_fury,if=buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
+actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
+actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
 actions+=/obliteration,if=(!talent.frozen_pulse.enabled|(rune<2&runic_power<28))&!talent.gathering_storm.enabled
 actions+=/call_action_list,name=generic,if=!talent.breath_of_sindragosa.enabled&!(talent.gathering_storm.enabled&buff.remorseless_winter.remains)
 actions+=/call_action_list,name=bos,if=talent.breath_of_sindragosa.enabled&!dot.breath_of_sindragosa.ticking
@@ -88,10 +92,10 @@ actions.bos+=/howling_blast,target_if=!dot.frost_fever.ticking
 actions.bos+=/breath_of_sindragosa,if=runic_power>=50&(!equipped.140806|cooldown.hungering_rune_weapon.remains<10)
 actions.bos+=/frost_strike,if=runic_power>=90&set_bonus.tier19_4pc
 actions.bos+=/remorseless_winter,if=buff.rime.react&equipped.132459
-actions.bos+=/howling_blast,if=buff.rime.react&(dot.remorseless_winter.ticking|cooldown.remorseless_winter.remains>1.5|!equipped.132459)
+actions.bos+=/howling_blast,if=buff.rime.react&(dot.remorseless_winter.ticking|cooldown.remorseless_winter.remains>1.5|(!equipped.132459&!talent.gathering_storm.enabled))
 actions.bos+=/obliterate,if=!buff.rime.react&!(talent.gathering_storm.enabled&!(cooldown.remorseless_winter.remains>2|rune>4))&rune>3
-actions.bos+=/frost_strike,if=runic_power>=70|((talent.gathering_storm.enabled&cooldown.remorseless_winter.remains<3&cooldown.breath_of_sindragosa.remains>10)&rune<5)
-actions.bos+=/obliterate,if=!buff.rime.react&!(talent.gathering_storm.enabled&!(cooldown.remorseless_winter.remains>2|rune>4))
+actions.bos+=/frost_strike,if=runic_power>=70|((talent.gathering_storm.enabled&cooldown.remorseless_winter.remains<3&cooldown.breath_of_sindragosa.remains>10)&rune<5)|(buff.gathering_storm.stack=10&cooldown.breath_of_sindragosa.remains>15)
+actions.bos+=/obliterate,if=!buff.rime.react&(!talent.gathering_storm.enabled|(cooldown.remorseless_winter.remains>2|rune>4))
 actions.bos+=/horn_of_winter,if=cooldown.breath_of_sindragosa.remains>15&runic_power<=70&rune<4
 actions.bos+=/frost_strike,if=cooldown.breath_of_sindragosa.remains>15
 actions.bos+=/remorseless_winter,if=cooldown.breath_of_sindragosa.remains>10
@@ -99,11 +103,13 @@ actions.bos_ticking=howling_blast,target_if=!dot.frost_fever.ticking
 actions.bos_ticking+=/remorseless_winter,if=runic_power>=30&((buff.rime.react&equipped.132459)|(talent.gathering_storm.enabled&(dot.remorseless_winter.remains<=gcd|!dot.remorseless_winter.ticking)))
 actions.bos_ticking+=/howling_blast,if=((runic_power>=20&set_bonus.tier19_4pc)|runic_power>=30)&buff.rime.react
 actions.bos_ticking+=/obliterate,if=runic_power<=75|rune>3
+actions.bos_ticking+=/remorseless_winter,if=(buff.rime.react&equipped.132459)|(talent.gathering_storm.enabled&(dot.remorseless_winter.remains<=gcd|!dot.remorseless_winter.ticking))
+actions.bos_ticking+=/howling_blast,if=buff.rime.react
 actions.bos_ticking+=/horn_of_winter,if=runic_power<70&!buff.hungering_rune_weapon.up&rune<5
-actions.bos_ticking+=/hungering_rune_weapon,if=equipped.140806&(runic_power<30|(runic_power<70&talent.gathering_storm.enabled))&!buff.hungering_rune_weapon.up&rune<2
+actions.bos_ticking+=/hungering_rune_weapon,if=equipped.140806&(runic_power<30|(runic_power<70&talent.gathering_storm.enabled)|(talent.horn_of_winter.enabled&talent.gathering_storm.enabled&runic_power<55))&!buff.hungering_rune_weapon.up&rune<2
 actions.bos_ticking+=/hungering_rune_weapon,if=talent.runic_attenuation.enabled&runic_power<30&!buff.hungering_rune_weapon.up&rune<2
-actions.bos_ticking+=/hungering_rune_weapon,if=runic_power<35&!buff.hungering_rune_weapon.up&rune<2
-actions.bos_ticking+=/hungering_rune_weapon,if=runic_power<25&!buff.hungering_rune_weapon.up&rune<1
+actions.bos_ticking+=/hungering_rune_weapon,if=runic_power<35&!buff.hungering_rune_weapon.up&rune<1
+actions.bos_ticking+=/hungering_rune_weapon,if=runic_power<25&!buff.hungering_rune_weapon.up&rune<2
 actions.bos_ticking+=/empower_rune_weapon,if=runic_power<20
 actions.bos_ticking+=/remorseless_winter,if=talent.gathering_storm.enabled|!set_bonus.tier19_4pc|runic_power<30
 actions.generic=frost_strike,if=!talent.shattering_strikes.enabled&(buff.icy_talons.remains<1.5&talent.icy_talons.enabled)
@@ -131,7 +137,7 @@ actions.generic+=/empower_rune_weapon
 actions.generic+=/hungering_rune_weapon,if=!buff.hungering_rune_weapon.up
 actions.gs_ticking=frost_strike,if=buff.icy_talons.remains<1.5&talent.icy_talons.enabled
 actions.gs_ticking+=/remorseless_winter
-actions.gs_ticking+=/howling_blast,target_if=!dot.frost_fever.ticking
+actions.gs_ticking+=/howling_blast,if=!dot.frost_fever.ticking
 actions.gs_ticking+=/howling_blast,if=buff.rime.react&!(buff.obliteration.up&spell_targets.howling_blast<2)
 actions.gs_ticking+=/obliteration,if=(!talent.frozen_pulse.enabled|(rune<2&runic_power<28))
 actions.gs_ticking+=/obliterate,if=rune>3|buff.killing_machine.react|buff.obliteration.up

@@ -125,6 +125,7 @@ actions+=/call_action_list,name=sbt_opener,if=talent.sabertooth.enabled&time<20
 actions+=/regrowth,if=equipped.ailuro_pouncers&talent.bloodtalons.enabled&buff.predatory_swiftness.stack>1&buff.bloodtalons.down
 actions+=/call_action_list,name=finisher
 actions+=/call_action_list,name=generator
+actions+=/wait,sec=1,if=energy.time_to_max>3
 actions.finisher=pool_resource,for_next=1
 actions.finisher+=/savage_roar,if=!buff.savage_roar.up&(combo_points=5|(talent.brutal_slash.enabled&spell_targets.brutal_slash>desired_targets&action.brutal_slash.charges>0))
 actions.finisher+=/pool_resource,for_next=1

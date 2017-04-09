@@ -9,6 +9,7 @@ TJ.Generated.EquippedMapping.convergence_of_fates = { 140806, }
 TJ.Generated.EquippedMapping.denial_of_the_halfgiants = { 137100, }
 TJ.Generated.EquippedMapping.draught_of_souls = { 140808, }
 TJ.Generated.EquippedMapping.drinking_horn_cover = { 137097, }
+TJ.Generated.EquippedMapping.duskwalkers_footpads = { 137030, }
 TJ.Generated.EquippedMapping.frizzos_fingertrap = { 137043, }
 TJ.Generated.EquippedMapping.gnawed_thumb_ring = { 134526, }
 TJ.Generated.EquippedMapping.greenskins_waterlogged_wristcuffs = { 137099, }
