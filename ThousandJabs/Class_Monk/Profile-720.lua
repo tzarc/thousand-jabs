@@ -369,6 +369,14 @@ local windwalker_legendaries = {
     }
 }
 
+local windwalker_tiersets = {
+    rising_fist = {
+        AuraID = -1, -- TBD!
+        AuraUnit = 'target',
+        AuraMine = true,
+    }
+}
+
 local windwalker_hooks = {
     hooks = {
         perform_spend = function(spell, env, action, origCostType, origCostAmount)
@@ -396,6 +404,7 @@ TJ:RegisterPlayerClass({
         windwalker_talent_overrides,
         windwalker_artifact_overrides,
         windwalker_legendaries,
+        windwalker_tiersets,
         windwalker_hooks,
     },
     blacklisted = {

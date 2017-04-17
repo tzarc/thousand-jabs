@@ -601,11 +601,11 @@ function Core:GenerateDebuggingInformation()
                 released = totalReleased,
                 used = totalAcquired - totalReleased
             },
-            patterns = {
-                power = Core.PowerPatterns,
-                cooldown = Core.CooldownPatterns,
-                recharge = Core.RechargePatterns,
-            },
+            --            patterns = {
+            --                power = Core.PowerPatterns,
+            --                cooldown = Core.CooldownPatterns,
+            --                recharge = Core.RechargePatterns,
+            --            },
             localCopies = copiesExport(),
         },
     }
