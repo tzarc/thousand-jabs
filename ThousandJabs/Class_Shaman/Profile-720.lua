@@ -83,6 +83,18 @@ local function DecrementIcefury(env)
 end
 
 local elemental_base_overrides = {
+    wind_shear = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     flame_shock = {
         spell_cast_time = 0.01,
         AuraID = 188389,
@@ -220,6 +232,11 @@ local elemental_artifact_abilities = {
         AuraUnit = 'player',
         AuraMine = true,
     },
+    swelling_maelstrom = {
+        artifact_enabled = function(spell,env)
+            return Config:GetSpec("swelling_maelstrom_selected") and true or false
+        end,
+    },
 }
 
 local elemental_legendary_overrides = {
@@ -248,5 +265,8 @@ TJ:RegisterPlayerClass({
         elemental_artifact_abilities,
         elemental_legendary_overrides,
         elemental_hooks,
+    },
+    config_checkboxes = {
+        swelling_maelstrom_selected = false,
     },
 })

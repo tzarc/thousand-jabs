@@ -99,6 +99,7 @@ actions.single_lr+=/lightning_bolt
 actions.single_lr+=/flame_shock,moving=1,target_if=refreshable
 actions.single_lr+=/earth_shock,moving=1
 actions.single_lr+=/flame_shock,moving=1,if=movement.distance>6
+actions+=/run_action_list,name=single_lr,if=level<100
 ]])
 
 TJ:RegisterActionProfileList('simc::shaman::enhancement', 'Simulationcraft Shaman Profile: Enhancement', 7, 2, [[
