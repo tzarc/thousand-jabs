@@ -41,18 +41,18 @@ actions.aoe+=/heart_strike
 ]])
 
 TJ:RegisterActionProfileList('simc::deathknight::blood', 'Simulationcraft Death Knight Profile: Blood', 6, 1, [[
-actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=lavish_suramar_feast
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=prolonged_power
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/mind_freeze
 actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.enabled
 actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
-actions+=/potion,name=prolonged_power,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
+actions+=/potion,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
 actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
 actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
 actions+=/call_action_list,name=generic,if=!talent.breath_of_sindragosa.enabled&!(talent.gathering_storm.enabled&buff.remorseless_winter.remains)
@@ -65,11 +65,11 @@ actions.gs_ticking=empower_rune_weapon
 ]])
 
 TJ:RegisterActionProfileList('simc::deathknight::frost', 'Simulationcraft Death Knight Profile: Frost', 6, 2, [[
-actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=lavish_suramar_feast
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=prolonged_power
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/pillar_of_frost,if=!equipped.140806|!talent.breath_of_sindragosa.enabled
 actions+=/pillar_of_frost,if=equipped.140806&talent.breath_of_sindragosa.enabled&((runic_power>=50&cooldown.hungering_rune_weapon.remains<10)|(cooldown.breath_of_sindragosa.remains>20))
@@ -78,7 +78,7 @@ actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.
 actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
-actions+=/potion,name=prolonged_power,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
+actions+=/potion,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
 actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
 actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
 actions+=/obliteration,if=(!talent.frozen_pulse.enabled|(rune<2&runic_power<28))&!talent.gathering_storm.enabled
@@ -151,11 +151,11 @@ actions.gs_ticking+=/empower_rune_weapon
 ]])
 
 TJ:RegisterActionProfileList('simc::deathknight::unholy', 'Simulationcraft Death Knight Profile: Unholy', 6, 3, [[
-actions.precombat=flask,name=countless_armies
-actions.precombat+=/food,name=nightborne_delicacy_platter
+actions.precombat=flask
+actions.precombat+=/food
 actions.precombat+=/augmentation,name=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=prolonged_power
+actions.precombat+=/potion
 actions.precombat+=/raise_dead
 actions.precombat+=/army_of_the_dead
 actions=auto_attack
@@ -163,7 +163,7 @@ actions+=/mind_freeze
 actions+=/arcane_torrent,if=runic_power.deficit>20
 actions+=/blood_fury
 actions+=/berserking
-actions+=/potion,name=prolonged_power,if=buff.unholy_strength.react
+actions+=/potion,if=buff.unholy_strength.react
 actions+=/outbreak,target_if=!dot.virulent_plague.ticking
 actions+=/dark_transformation,if=equipped.137075&cooldown.dark_arbiter.remains>165
 actions+=/dark_transformation,if=equipped.137075&!talent.shadow_infusion.enabled&cooldown.dark_arbiter.remains>55
