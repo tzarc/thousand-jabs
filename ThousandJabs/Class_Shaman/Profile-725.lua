@@ -5,7 +5,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
-if not Core:MatchesBuild('7.2.0', '7.2.4') then return end
+if not Core:MatchesBuild('7.2.5', '7.2.5') then return end
 
 local mmin = math.min
 local mmax = math.max
