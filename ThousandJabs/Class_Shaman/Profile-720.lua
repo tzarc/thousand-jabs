@@ -104,6 +104,7 @@ local elemental_base_overrides = {
         AuraApplyLength = 120,
         aura_duration = 15,
         cost_type = 'maelstrom',
+        spell_refreshable = function(spell, env) return spell.aura_up end,
         maelstrom_cost = function(spell, env)
             return mmax(0, mmin(20, env.maelstrom.curr))
         end,
