@@ -17,6 +17,7 @@ actions+=/totem_mastery,if=buff.resonance_totem.remains<2
 actions+=/fire_elemental
 actions+=/storm_elemental
 actions+=/elemental_mastery
+actions+=/use_items
 actions+=/use_item,name=gnawed_thumb_ring,if=equipped.gnawed_thumb_ring&(talent.ascendance.enabled&!buff.ascendance.up|!talent.ascendance.enabled)
 actions+=/blood_fury,if=!talent.ascendance.enabled|buff.ascendance.up|cooldown.ascendance.remains>50
 actions+=/berserking,if=!talent.ascendance.enabled|buff.ascendance.up
@@ -49,7 +50,7 @@ actions.single_asc+=/lava_burst,if=dot.flame_shock.remains>cast_time&(cooldown_r
 actions.single_asc+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_if=refreshable
 actions.single_asc+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_asc+=/totem_mastery,if=buff.resonance_totem.remains<10|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
-actions.single_asc+=/earthquake,if=buff.echoes_of_the_great_sundering.up
+actions.single_asc+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
 actions.single_asc+=/lava_beam,if=active_enemies>1&spell_targets.lava_beam>1
 actions.single_asc+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_asc+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1
@@ -72,7 +73,7 @@ actions.single_if+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_
 actions.single_if+=/frost_shock,moving=1,if=buff.icefury.up
 actions.single_if+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_if+=/totem_mastery,if=buff.resonance_totem.remains<10
-actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up
+actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
 actions.single_if+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_if+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1
 actions.single_if+=/lightning_bolt
@@ -89,7 +90,7 @@ actions.single_lr+=/lava_burst,if=dot.flame_shock.remains>cast_time&cooldown_rea
 actions.single_lr+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_if=refreshable
 actions.single_lr+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_lr+=/totem_mastery,if=buff.resonance_totem.remains<10|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
-actions.single_lr+=/earthquake,if=buff.echoes_of_the_great_sundering.up
+actions.single_lr+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
 actions.single_lr+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3,target_if=debuff.lightning_rod.down
 actions.single_lr+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_lr+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1,target_if=debuff.lightning_rod.down
@@ -114,6 +115,7 @@ actions+=/bloodlust,if=target.health.pct<25|time>0.500
 actions+=/auto_attack
 actions+=/feral_spirit,if=!artifact.alpha_wolf.rank|(maelstrom>=20&cooldown.crash_lightning.remains<=gcd)
 actions+=/crash_lightning,if=artifact.alpha_wolf.rank&prev_gcd.1.feral_spirit
+actions+=/use_items
 actions+=/berserking,if=buff.ascendance.up|(feral_spirit.remains>5)|level<100
 actions+=/blood_fury,if=buff.ascendance.up|(feral_spirit.remains>5)|level<100
 actions+=/potion,if=feral_spirit.remains>5|target.time_to_die<=60

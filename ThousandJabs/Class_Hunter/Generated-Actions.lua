@@ -10,6 +10,7 @@ actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions=auto_shot
+actions+=/counter_shot,if=target.debuff.casting.react
 actions+=/arcane_torrent,if=focus.deficit>=30
 actions+=/berserking
 actions+=/blood_fury
@@ -39,6 +40,7 @@ actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/windburst
 actions=auto_shot
+actions+=/counter_shot,if=target.debuff.casting.react
 actions+=/volley,toggle=on
 actions+=/variable,name=pooling_for_piercing,value=talent.piercing_shot.enabled&cooldown.piercing_shot.remains<5&lowest_vuln_within.5>0&lowest_vuln_within.5>cooldown.piercing_shot.remains&(buff.trueshot.down|spell_targets=1)
 actions+=/variable,name=waiting_for_sentinel,value=talent.sentinel.enabled&(buff.marking_targets.up|buff.trueshot.up)&!cooldown.sentinel.up&((cooldown.sentinel.remains>54&cooldown.sentinel.remains<(54+gcd.max))|(cooldown.sentinel.remains>48&cooldown.sentinel.remains<(48+gcd.max))|(cooldown.sentinel.remains>42&cooldown.sentinel.remains<(42+gcd.max)))
@@ -115,6 +117,7 @@ actions.precombat+=/steel_trap
 actions.precombat+=/dragonsfire_grenade
 actions.precombat+=/harpoon
 actions=auto_attack
+actions+=/muzzle,if=target.debuff.casting.react
 actions+=/call_action_list,name=mokMaintain,if=talent.way_of_the_moknathal.enabled
 actions+=/call_action_list,name=CDs,if=buff.moknathal_tactics.stack>=2|!talent.way_of_the_moknathal.enabled
 actions+=/call_action_list,name=preBitePhase,if=!buff.mongoose_fury.up

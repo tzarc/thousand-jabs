@@ -52,6 +52,8 @@ actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.
 actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
+actions+=/use_items
+actions+=/use_item,name=ring_of_collapsing_futures,if=(buff.temptation.stack=0&target.time_to_die>60)|target.time_to_die<60
 actions+=/potion,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
 actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
 actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
@@ -78,6 +80,8 @@ actions+=/arcane_torrent,if=runic_power.deficit>20&!talent.breath_of_sindragosa.
 actions+=/arcane_torrent,if=talent.breath_of_sindragosa.enabled&dot.breath_of_sindragosa.ticking&runic_power<30&rune<2
 actions+=/blood_fury,if=buff.pillar_of_frost.up
 actions+=/berserking,if=buff.pillar_of_frost.up
+actions+=/use_items
+actions+=/use_item,name=ring_of_collapsing_futures,if=(buff.temptation.stack=0&target.time_to_die>60)|target.time_to_die<60
 actions+=/potion,if=buff.pillar_of_frost.up&(!talent.breath_of_sindragosa.enabled|!cooldown.breath_of_sindragosa.remains)
 actions+=/sindragosas_fury,if=!equipped.144293&buff.pillar_of_frost.up&(buff.unholy_strength.up|(buff.pillar_of_frost.remains<3&target.time_to_die<60))&debuff.razorice.stack=5&!buff.obliteration.up
 actions+=/sindragosas_fury,if=equipped.144293&buff.unholy_strength.up&cooldown.pillar_of_frost.remains>20
@@ -163,6 +167,8 @@ actions+=/mind_freeze
 actions+=/arcane_torrent,if=runic_power.deficit>20
 actions+=/blood_fury
 actions+=/berserking
+actions+=/use_items
+actions+=/use_item,name=ring_of_collapsing_futures,if=(buff.temptation.stack=0&target.time_to_die>60)|target.time_to_die<60
 actions+=/potion,if=buff.unholy_strength.react
 actions+=/outbreak,target_if=!dot.virulent_plague.ticking
 actions+=/dark_transformation,if=equipped.137075&cooldown.dark_arbiter.remains>165
