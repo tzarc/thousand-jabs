@@ -504,9 +504,11 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                 for _, entry in pairs(apl) do
                     local action = rawget(profile.actions, entry.action)
                     if action then
+                        local actionIcon = rawget(action, 'Icon')
+                        actionIcon = type(actionIcon) == 'function' and actionIcon() or actionIcon
                         allActions[entry.action] = {
                             name = rawget(action, 'Name') or (rawget(action, 'ConfigName') and L[action.ConfigName]) or entry.action,
-                            icon = rawget(action, 'Icon')
+                            icon = actionIcon
                         }
                     end
                 end

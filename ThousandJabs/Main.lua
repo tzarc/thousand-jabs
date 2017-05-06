@@ -525,9 +525,15 @@ function TJ:ConsoleCommand(args)
         else
             local classID, specID = select(3, UnitClass('player')), GetSpecialization()
             local current = Config:GetSpecBlacklist(argv[2]) and true or false
-            local newvalue = not current
-            Config:SetSpecBlacklist(newvalue and true or false, argv[2])
-            Core:Print('Blacklist |cFFFF6600%s|r=|cFFFFCC00%s|r', argv[2], tostring(newvalue))
+            local enableFlag = rawget(argv, 3)
+            local newState
+            if enableFlag then
+                newState = (enableFlag and (enableFlag == 'y' or enableFlag == '1') and true or false)
+            else
+                newState = not current
+            end
+            Config:SetSpecBlacklist(newState and true or false, argv[2])
+            Core:Print('Blacklist |cFFFF6600%s|r=|cFFFFCC00%s|r', argv[2], tostring(newState))
             self:QueueUpdate()
         end
     elseif argv[1] == '_rp' then

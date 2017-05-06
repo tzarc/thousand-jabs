@@ -151,7 +151,7 @@ local destruction_base_overrides = {
     },
     service_pet = {
         SpellIDs = { 111859, 111895, 111896, 111897 },
-        Icon = function(spell, env) return select(3, GetSpellInfo(108501)) end,
+        Icon = function() return select(3, GetSpellInfo(108501)) end,
     },
     havoc = {
         expirationTime = 0,
