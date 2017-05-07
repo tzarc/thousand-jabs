@@ -11,10 +11,12 @@ local CreateFrame = CreateFrame
 local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
 local GetActiveSpecGroup = GetActiveSpecGroup
 local GetLocale = GetLocale
+local GetNumSpellTabs = GetNumSpellTabs
 local GetSpellBookItemInfo = GetSpellBookItemInfo
 local GetSpellBookItemName = GetSpellBookItemName
 local GetSpellInfo = GetSpellInfo
 local GetSpellLink = GetSpellLink
+local GetSpellTabInfo = GetSpellTabInfo
 local GetTalentInfo = GetTalentInfo
 local IsPassiveSpell = IsPassiveSpell
 local IsPlayerSpell = IsPlayerSpell
@@ -39,25 +41,36 @@ Core:Safety()
 
 local IterateSpellbook
 do
+    local function isOffspec(idx)
+        local numTabs = GetNumSpellTabs()
+        for i=1,numTabs do
+            local name,texture,offset,numSpells,isGuild,offSpec = GetSpellTabInfo(i)
+            if offset <= idx and idx < offset+numSpells then
+                return (offSpec ~= 0) and true or false
+            end
+        end
+        return false
+    end
+
     local function dispatch(state)
         while true do
-            state.spellBookItem = state.spellBookItem + 1
-            local skillType = GetSpellBookItemInfo(state.spellBookItem, state.bookType)
+            state.idx = state.idx + 1
+            local skillType = GetSpellBookItemInfo(state.idx, state.bookType)
             if not skillType then return nil end
-            local spellID = tonumber((GetSpellLink(state.spellBookItem, state.bookType) or ''):match('Hspell:(%d+)') or '-1')
-            if spellID and spellID >= 0 and (state.bookType == BOOKTYPE_PET or IsPlayerSpell(spellID)) then
+            local spellID = tonumber((GetSpellLink(state.idx, state.bookType) or ''):match('Hspell:(%d+)') or '-1')
+            if spellID and spellID >= 0 and (state.bookType == BOOKTYPE_PET or not isOffspec(state.idx)) then
                 local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellID)
-                local _, spellSubtext = GetSpellBookItemName(state.spellBookItem, state.bookType)
+                local _, spellSubtext = GetSpellBookItemName(state.idx, state.bookType)
                 local isPassive = IsPassiveSpell(spellID) and true or false
-                local isTalent = IsTalentSpell(state.spellBookItem, state.bookType) and true or false
-                return spellID, spellName, spellSubtext, state.spellBookItem, isTalent, icon, castTime
+                local isTalent = IsTalentSpell(state.idx, state.bookType) and true or false
+                return spellID, spellName, spellSubtext, state.idx, isTalent, icon, castTime
             end
         end
     end
 
     IterateSpellbook = function(bookType)
         local state = {}
-        state.spellBookItem = 0
+        state.idx = 0
         state.bookType = bookType
         return dispatch, state
     end
@@ -75,6 +88,9 @@ local function slug(name)
 end
 local blacklistedExportedAbilities = {
     'apprentice_riding',
+    'arcane_acuity',
+    'arcane_affinity',
+    'arcane_resistance',
     'arcane_torrent',
     'archaeology',
     'armor_skills',
@@ -89,6 +105,7 @@ local blacklistedExportedAbilities = {
     'cooking',
     'da_voodoo_shuffle',
     'disenchant',
+    'double_jump',
     'draenor_pathfinder',
     'enchanting',
     'engineering',
@@ -96,6 +113,7 @@ local blacklistedExportedAbilities = {
     'fishing',
     'flight_masters_license',
     'garrison_ability',
+    'gnomish_engineer',
     'goblin_engineer',
     'guild_mail',
     'hasty_hearth',

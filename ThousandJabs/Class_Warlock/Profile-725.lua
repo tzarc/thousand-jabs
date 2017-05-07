@@ -283,6 +283,7 @@ TJ:RegisterPlayerClass({
         'summon_infernal',
         'summon_succubus',
         'summon_voidwalker',
+        'doom_bolt', -- uses energy, not set up to retrieve anything for pets at this stage
     },
     config_checkboxes = {
         lord_of_flames_selected = false,
