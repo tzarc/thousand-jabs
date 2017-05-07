@@ -63,7 +63,7 @@ do
                 local _, spellSubtext = GetSpellBookItemName(state.idx, state.bookType)
                 local isPassive = IsPassiveSpell(spellID) and true or false
                 local isTalent = IsTalentSpell(state.idx, state.bookType) and true or false
-                return spellID, spellName, spellSubtext, state.idx, isTalent, icon, castTime
+                return spellID, spellName, spellSubtext, state.idx, isTalent, icon, castTime, isPassive
             end
         end
     end
@@ -97,7 +97,10 @@ local blacklistedExportedAbilities = {
     'auto_attack',
     'avoidance',
     'beast_slaying',
+    'blacksmithing',
+    'bouncy',
     'broken_isles_pathfinder',
+    'celestial_fortune',
     'cold_weather_flying',
     'combat_ally',
     'command_demon',
@@ -109,18 +112,25 @@ local blacklistedExportedAbilities = {
     'draenor_pathfinder',
     'enchanting',
     'engineering',
+    'epicurean',
     'first_aid',
     'fishing',
     'flight_masters_license',
     'garrison_ability',
     'gnomish_engineer',
     'goblin_engineer',
+    'gourmand',
     'guild_mail',
     'hasty_hearth',
+    'herb_gathering',
+    'herbalism_skills',
     'honorable_medallion',
+    'inner_peace',
+    'jewelcrafting',
     'languages',
     'master_riding',
     'mastery_chaotic_energies',
+    'mining_skills',
     'mobile_banking',
     'mount_up',
     'path_of_the_black_ox',
@@ -139,6 +149,7 @@ local blacklistedExportedAbilities = {
     'portal_stonard',
     'portal_thunder_bluff',
     'portal_undercity',
+    'prospecting',
     'quaking_palm',
     'regeneration',
     'revive_battle_pets',
@@ -154,6 +165,7 @@ local blacklistedExportedAbilities = {
     'the_codex_of_xerrath',
     'the_quick_and_the_dead',
     'weapon_skills',
+    'windwalking',
     'wisdom_of_the_four_winds',
     'zen_pilgrimage_return',
     'zen_pilgrimage',
@@ -165,8 +177,8 @@ function TJ:DetectAbilitiesFromSpellBook()
     -- Helper to work out the 'simulationcraft-ified' name for the spell
     -- Iterate over the spellbook, collecting all the abilities
     local function RetrieveSpells(bookType, caster)
-        for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IterateSpellbook(bookType) do
-            if spellID and spellName then
+        for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon, castTime, isPassive in IterateSpellbook(bookType) do
+            if spellID and spellName and not isPassive then
                 abilities[slug(spellName)] = {
                     Name = spellName,
                     SpellIDs = { spellID },
@@ -174,6 +186,7 @@ function TJ:DetectAbilitiesFromSpellBook()
                     SpellBookSubtext = spellSubText,
                     SpellBookItem = spellBookItem,
                     IsTalent = spellIsTalent,
+                    IsPassive = isPassive,
                     SpellBookSpellID = spellID,
                     Icon = spellIcon,
                     SpellBookCaster = caster

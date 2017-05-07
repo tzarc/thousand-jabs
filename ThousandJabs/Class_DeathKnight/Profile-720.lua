@@ -12,8 +12,7 @@ if not Core:MatchesBuild('7.2.0', '7.2.4') then return end
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local blood_abilities_exported = {}
-blood_abilities_exported = {
+local blood_abilities_exported = {
     antimagic_barrier = { TalentID = 22135, },
     antimagic_shell = { SpellIDs = { 48707 }, },
     asphyxiate = { SpellIDs = { 221562 }, },
@@ -120,9 +119,10 @@ TJ:RegisterPlayerClass({
 -- Unholy profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
+-- When exporting for Unholy, summon the pet then run /tj _esd
+
 -- exported with /tj _esd
-local unholy_abilities_exported = {}
-unholy_abilities_exported = {
+local unholy_abilities_exported = {
     all_will_serve = { TalentID = 22024, },
     antimagic_shell = { SpellIDs = { 48707 }, },
     apocalypse = { SpellIDs = { 220143 }, },
@@ -133,6 +133,7 @@ unholy_abilities_exported = {
     castigator = { TalentID = 22518, },
     chains_of_ice = { SpellIDs = { 45524 }, },
     clawing_shadows = { SpellIDs = { 207311 }, TalentID = 22520, },
+    cleaver = { SpellIDs = { 212333 }, },
     control_undead = { SpellIDs = { 111673 }, },
     corpse_shield = { SpellIDs = { 207319 }, TalentID = 22530, },
     dark_arbiter = { SpellIDs = { 207349 }, TalentID = 22030, },
@@ -148,6 +149,7 @@ unholy_abilities_exported = {
     ebon_fever = { TalentID = 22026, },
     epidemic = { SpellIDs = { 207317 }, TalentID = 22027, },
     festering_strike = { SpellIDs = { 85948 }, },
+    hook = { SpellIDs = { 212468 }, },
     icebound_fortitude = { SpellIDs = { 48792 }, },
     infected_claws = { TalentID = 22536, },
     lingering_apparition = { TalentID = 22022, },
@@ -156,12 +158,14 @@ unholy_abilities_exported = {
     outbreak = { SpellIDs = { 77575 }, },
     path_of_frost = { SpellIDs = { 3714 }, },
     pestilent_pustules = { TalentID = 22028, },
+    protective_bile = { SpellIDs = { 212384 }, },
     raise_ally = { SpellIDs = { 61999 }, },
     raise_dead = { SpellIDs = { 46584 }, },
     runeforging = { SpellIDs = { 53428 }, },
     scourge_strike = { SpellIDs = { 55090 }, },
     shadow_infusion = { TalentID = 22532, },
     sludge_belcher = { TalentID = 22522, },
+    smash = { SpellIDs = { 212336 }, },
     soul_reaper = { SpellIDs = { 130736 }, TalentID = 22538, },
     spell_eater = { TalentID = 22528, },
     summon_gargoyle = { SpellIDs = { 49206 }, },
@@ -289,6 +293,11 @@ local unholy_base_abilities = {
             end
         end,
     },
+    temptation = {
+        AuraID = 234143,
+        AuraMine = true,
+        AuraUnit = "player",
+    },
 }
 
 TJ:RegisterPlayerClass({
@@ -309,8 +318,7 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local frost_abilities_exported = {}
-frost_abilities_exported = {
+local frost_abilities_exported = {
     abominations_might = { TalentID = 22521, },
     antimagic_shell = { SpellIDs = { 48707 }, },
     avalanche = { TalentID = 22519, },
@@ -448,6 +456,11 @@ local frost_base_abilities = {
         AuraMine = true,
         AuraApplied = 'remorseless_winter',
         AuraApplyLength = 8,
+    },
+    temptation = {
+        AuraID = 234143,
+        AuraMine = true,
+        AuraUnit = "player",
     },
 }
 

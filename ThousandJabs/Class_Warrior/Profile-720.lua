@@ -15,8 +15,7 @@ local mmin = math.min
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local arms_abilities_exported = {}
-arms_abilities_exported = {
+local arms_abilities_exported = {
     anger_management = { TalentID = 21204, },
     avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
     battle_cry = { SpellIDs = { 1719 }, },
@@ -204,8 +203,7 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local protection_abilities_exported = {}
-protection_abilities_exported = {
+local protection_abilities_exported = {
     anger_management = { TalentID = 21204, },
     avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
     battle_cry = { SpellIDs = { 1719 }, },

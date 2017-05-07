@@ -14,8 +14,7 @@ local mmax = math.max
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local frost_abilities_exported = {}
-frost_abilities_exported = {
+local frost_abilities_exported = {
     arctic_gale = { TalentID = 22473, },
     blink = { SpellIDs = { 1953 }, },
     blizzard = { SpellIDs = { 190356 }, },

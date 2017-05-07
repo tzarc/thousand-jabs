@@ -10,9 +10,10 @@ if not Core:MatchesBuild('7.2.0', '7.2.4') then return end
 local mmin = math.min
 local mmax = math.max
 
+-- When exporting Ele shaman, run a normal export, then select Ascendance and re-run '/tj _esd' a second time.
+
 -- exported with /tj _esd
-local elemental_abilities_exported = {}
-elemental_abilities_exported = {
+local elemental_abilities_exported = {
     aftershock = { TalentID = 19271, },
     ancestral_guidance = { SpellIDs = { 108281 }, TalentID = 22139, },
     ancestral_spirit = { SpellIDs = { 2008 }, },
@@ -238,6 +239,11 @@ local elemental_artifact_abilities = {
             return Config:GetSpec("swelling_maelstrom_selected") and true or false
         end,
     },
+    seismic_storm = {
+        artifact_enabled = function(spell,env)
+            return Config:GetSpec("seismic_storm_selected") and true or false
+        end,
+    },
 }
 
 local elemental_legendary_overrides = {
@@ -269,5 +275,6 @@ TJ:RegisterPlayerClass({
     },
     config_checkboxes = {
         swelling_maelstrom_selected = false,
+        seismic_storm_selected = false,
     },
 })

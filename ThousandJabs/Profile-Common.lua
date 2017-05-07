@@ -36,6 +36,7 @@ Core.Environment.globalBlacklist = {
     'berserking',
     'bloodlust',
     'use_item',
+    'use_items',
     'food',
     'flask',
     'augmentation',
