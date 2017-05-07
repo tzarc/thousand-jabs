@@ -162,6 +162,11 @@ local destruction_base_overrides = {
             spell.expirationTime = env.currentTime + (env.wreak_havoc.talent_enabled and 20 or 8)
         end,
     },
+    embrace_chaos = { -- T19 2P bonus
+        AuraID = { 212019, },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 
 local destruction_talent_overrides = {

@@ -10,22 +10,14 @@ local co_yield = coroutine.yield
 local CreateFrame = CreateFrame
 local DECIMAL_SEPERATOR = DECIMAL_SEPERATOR
 local GetActiveSpecGroup = GetActiveSpecGroup
-local GetBuildInfo = GetBuildInfo
-local GetFlyoutInfo = GetFlyoutInfo
-local GetFlyoutSlotInfo = GetFlyoutSlotInfo
 local GetLocale = GetLocale
-local GetMaxTalentTier = GetMaxTalentTier
-local GetNumSpellTabs = GetNumSpellTabs
-local GetSpecialization = GetSpecialization
-local GetSpecializationInfo = GetSpecializationInfo
 local GetSpellBookItemInfo = GetSpellBookItemInfo
 local GetSpellBookItemName = GetSpellBookItemName
 local GetSpellInfo = GetSpellInfo
-local GetSpellTabInfo = GetSpellTabInfo
+local GetSpellLink = GetSpellLink
 local GetTalentInfo = GetTalentInfo
-local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
 local IsPassiveSpell = IsPassiveSpell
-local IsRightShiftKeyDown = IsRightShiftKeyDown
+local IsPlayerSpell = IsPlayerSpell
 local IsTalentSpell = IsTalentSpell
 local LARGE_NUMBER_SEPERATOR = LARGE_NUMBER_SEPERATOR
 local LearnTalent = LearnTalent
@@ -45,86 +37,28 @@ Core:Safety()
 -- Spellbook iteration
 ------------------------------------------------------------------------------------------------------------------------
 
-local IteratePlayerSpells, IteratePetSpells
+local IterateSpellbook
 do
-    -- Forward declarations
-    local iterateFlyout, iterateSlots, iterateTabs
-
-    iterateFlyout = function(state)
-        while state.flyoutSlotIdx <= state.numFlyoutSlots do
-            local spellID, _, spellKnown, spellName = GetFlyoutSlotInfo(state.flyoutID, state.flyoutSlotIdx)
-            state.flyoutSlotIdx = state.flyoutSlotIdx + 1
-            if spellKnown then
-                return spellID, spellName
-            end
-        end
-        state.slotIdx = state.slotIdx + 1
-        state.currentIterator = iterateSlots
-        return state:currentIterator()
-    end
-
-    iterateSlots = function (state)
-        while state.slotIdx <= state.numSlots do
-            local spellBookItem = state.slotOffset + state.slotIdx
-            local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellBookItem, state.booktype)
-            local _, spellSubtext = GetSpellBookItemName(spellBookItem, state.booktype)
-            local spellType, spellBookSpellId = GetSpellBookItemInfo(spellBookItem, state.booktype)
-            local isTalent = IsTalentSpell(spellBookItem, state.booktype)
-            if spellType == "SPELL" and not IsPassiveSpell(spellID) then
-                state.slotIdx = state.slotIdx + 1
-                return spellID, spellName, spellSubtext, spellBookItem, isTalent, icon, castTime
-            elseif spellType == "FLYOUT" then
-                local _, _, numFlyoutSlots, flyoutKnown = GetFlyoutInfo(spellBookSpellId)
-                if flyoutKnown then
-                    state.flyoutID = spellBookSpellId
-                    state.flyoutSlotIdx = 1
-                    state.numFlyoutSlots = numFlyoutSlots
-                    state.currentIterator = iterateFlyout
-                    return state:currentIterator()
-                end
-            end
-            state.slotIdx = state.slotIdx + 1
-        end
-        state.tabIdx = state.tabIdx + 1
-        state.currentIterator = iterateTabs
-        return state:currentIterator()
-    end
-
-    iterateTabs = function (state)
-        while state.tabIdx <= state.numOfTabs do
-            local _, _, slotOffset, numSlots, _, offSpecID = GetSpellTabInfo(state.tabIdx)
-            if offSpecID ~= 0 then
-                state.tabIdx = state.tabIdx + 1
-            else
-                state.slotOffset = slotOffset
-                state.numSlots = numSlots
-                state.slotIdx = 1
-                state.currentIterator = iterateSlots
-                return state:currentIterator()
-            end
-        end
-        return nil
-    end
-
     local function dispatch(state)
-        return state:currentIterator()
+        while true do
+            state.spellBookItem = state.spellBookItem + 1
+            local skillType = GetSpellBookItemInfo(state.spellBookItem, state.bookType)
+            if not skillType then return nil end
+            local spellID = tonumber((GetSpellLink(state.spellBookItem, state.bookType) or ''):match('Hspell:(%d+)') or '-1')
+            if spellID and spellID >= 0 and (state.bookType == BOOKTYPE_PET or IsPlayerSpell(spellID)) then
+                local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellID)
+                local _, spellSubtext = GetSpellBookItemName(state.spellBookItem, state.bookType)
+                local isPassive = IsPassiveSpell(spellID) and true or false
+                local isTalent = IsTalentSpell(state.spellBookItem, state.bookType) and true or false
+                return spellID, spellName, spellSubtext, state.spellBookItem, isTalent, icon, castTime
+            end
+        end
     end
 
-    IteratePlayerSpells = function()
+    IterateSpellbook = function(bookType)
         local state = {}
-        state.tabIdx = 1
-        state.booktype = BOOKTYPE_SPELL
-        state.numOfTabs = GetNumSpellTabs()
-        state.currentIterator = iterateTabs
-        return dispatch, state
-    end
-
-    IteratePetSpells = function()
-        local state = {}
-        state.tabIdx = 1
-        state.booktype = BOOKTYPE_PET
-        state.numOfTabs = GetNumSpellTabs()
-        state.currentIterator = iterateTabs
+        state.spellBookItem = 0
+        state.bookType = bookType
         return dispatch, state
     end
 end
@@ -140,10 +74,37 @@ local function slug(name)
     return name:lower():gsub(' ','_'):gsub('[^%a%d_]','')
 end
 local blacklistedExportedAbilities = {
+    'apprentice_riding',
     'arcane_torrent',
+    'archaeology',
+    'armor_skills',
     'auto_attack',
+    'avoidance',
+    'beast_slaying',
+    'broken_isles_pathfinder',
+    'cold_weather_flying',
+    'combat_ally',
+    'command_demon',
+    'cooking_fire',
+    'cooking',
+    'da_voodoo_shuffle',
+    'disenchant',
+    'draenor_pathfinder',
+    'enchanting',
+    'engineering',
+    'first_aid',
+    'fishing',
+    'flight_masters_license',
+    'garrison_ability',
+    'goblin_engineer',
+    'guild_mail',
+    'hasty_hearth',
     'honorable_medallion',
+    'languages',
+    'master_riding',
+    'mastery_chaotic_energies',
     'mobile_banking',
+    'mount_up',
     'path_of_the_black_ox',
     'path_of_the_jade_serpent',
     'path_of_the_mogu_king',
@@ -160,7 +121,11 @@ local blacklistedExportedAbilities = {
     'portal_stonard',
     'portal_thunder_bluff',
     'portal_undercity',
+    'quaking_palm',
+    'regeneration',
+    'revive_battle_pets',
     'shoot',
+    'survey',
     'teleport_dalaran__northrend',
     'teleport_orgrimmar',
     'teleport_shattrath',
@@ -168,10 +133,12 @@ local blacklistedExportedAbilities = {
     'teleport_stonard',
     'teleport_thunder_bluff',
     'teleport_undercity',
-    'quaking_palm',
-    'revive_battle_pets',
-    'zen_pilgrimage',
+    'the_codex_of_xerrath',
+    'the_quick_and_the_dead',
+    'weapon_skills',
+    'wisdom_of_the_four_winds',
     'zen_pilgrimage_return',
+    'zen_pilgrimage',
 }
 
 function TJ:DetectAbilitiesFromSpellBook()
@@ -179,37 +146,26 @@ function TJ:DetectAbilitiesFromSpellBook()
 
     -- Helper to work out the 'simulationcraft-ified' name for the spell
     -- Iterate over the spellbook, collecting all the abilities
-    for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePlayerSpells() do
-        if spellID and spellName then
-            abilities[slug(spellName)] = {
-                Name = spellName,
-                SpellIDs = { spellID },
-                KeyedSpellIDs = { [spellID] = true },
-                SpellBookSubtext = spellSubText,
-                SpellBookItem = spellBookItem,
-                IsTalent = spellIsTalent,
-                SpellBookSpellID = spellID,
-                Icon = spellIcon,
-                SpellBookCaster = 'player'
-            }
+    local function RetrieveSpells(bookType, caster)
+        for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IterateSpellbook(bookType) do
+            if spellID and spellName then
+                abilities[slug(spellName)] = {
+                    Name = spellName,
+                    SpellIDs = { spellID },
+                    KeyedSpellIDs = { [spellID] = true },
+                    SpellBookSubtext = spellSubText,
+                    SpellBookItem = spellBookItem,
+                    IsTalent = spellIsTalent,
+                    SpellBookSpellID = spellID,
+                    Icon = spellIcon,
+                    SpellBookCaster = caster
+                }
+            end
         end
     end
 
-    for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon in IteratePetSpells() do
-        if spellID and spellName then
-            abilities[slug(spellName)] = {
-                Name = spellName,
-                SpellIDs = { spellID },
-                KeyedSpellIDs = { [spellID] = true },
-                SpellBookSubtext = spellSubText,
-                SpellBookItem = spellBookItem,
-                IsTalent = spellIsTalent,
-                SpellBookSpellID = spellID,
-                Icon = spellIcon,
-                SpellBookCaster = 'pet'
-            }
-        end
-    end
+    RetrieveSpells(BOOKTYPE_SPELL, 'player')
+    RetrieveSpells(BOOKTYPE_PET, 'pet')
 
     -- Detect talents, update values accordingly
     for tier=1,7 do
@@ -269,8 +225,20 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         lastExportedSpecialisation = specID
     end
 
+    local function Detect()
+        TJ:DetectAbilitiesFromSpellBook()
+        co_yield()
+        TJ:DetectAbilitiesFromSpellBook()
+        TJ:QueueProfileReload(true)
+        co_yield()
+    end
+
     self:ExecuteFuncAsCoroutine(function()
         local canceled = false
+
+        -- Start off by detecting the initial set with current talent loadout
+        Detect()
+
         -- Swap all talents to generate all spell information
         if runAllPossibleCombinations then
             local allPermutations = GeneratePermutations({1,2,3}, GetMaxTalentTier())
@@ -278,11 +246,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                 for i=1,GetMaxTalentTier() do
                     LearnTalent(GetTalentInfoBySpecialization(specID, i, allPermutations[perm][i]))
                 end
-                TJ:DetectAbilitiesFromSpellBook()
-                co_yield()
-                TJ:DetectAbilitiesFromSpellBook()
-                TJ:QueueProfileReload(true)
-                co_yield()
+                Detect()
 
                 if IsRightShiftKeyDown() and IsRightControlKeyDown() and IsRightAltKeyDown() then
                     canceled = true
@@ -294,11 +258,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
                 for column=1,3 do
                     if column ~= talents[row] then
                         LearnTalent(GetTalentInfoBySpecialization(specID, row, column))
-                        TJ:DetectAbilitiesFromSpellBook()
-                        co_yield()
-                        TJ:DetectAbilitiesFromSpellBook()
-                        TJ:QueueProfileReload(true)
-                        co_yield()
+                        Detect()
                     end
                 end
 
@@ -312,11 +272,7 @@ function TJ:ExportAbilitiesFromSpellBook(runAllPossibleCombinations)
         -- Restore original talents
         for row=1,GetMaxTalentTier() do
             LearnTalent(GetTalentInfoBySpecialization(specID, row, talents[row]))
-            TJ:DetectAbilitiesFromSpellBook()
-            co_yield()
-            TJ:DetectAbilitiesFromSpellBook()
-            TJ:QueueProfileReload(true)
-            co_yield()
+            Detect()
         end
 
         -- Show the spell export window
