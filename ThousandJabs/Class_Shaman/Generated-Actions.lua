@@ -5,7 +5,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 TJ:RegisterActionProfileList('simc::shaman::elemental', 'Simulationcraft Shaman Profile: Elemental', 7, 1, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/totem_mastery
@@ -105,8 +105,8 @@ actions+=/run_action_list,name=single_lr,if=level<100
 
 TJ:RegisterActionProfileList('simc::shaman::enhancement', 'Simulationcraft Shaman Profile: Enhancement', 7, 2, [[
 actions.precombat=flask
-actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/lightning_shield

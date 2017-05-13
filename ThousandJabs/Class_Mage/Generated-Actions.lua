@@ -5,7 +5,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 TJ:RegisterActionProfileList('simc::mage::arcane', 'Simulationcraft Mage Profile: Arcane', 8, 1, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/summon_arcane_familiar
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image
@@ -73,7 +73,7 @@ actions.rop_phase+=/arcane_barrage
 TJ:RegisterActionProfileList('simc::mage::fire', 'Simulationcraft Mage Profile: Fire', 8, 2, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image
 actions.precombat+=/potion
@@ -134,7 +134,7 @@ actions.standard_rotation+=/fireball
 TJ:RegisterActionProfileList('simc::mage::frost', 'Simulationcraft Mage Profile: Frost', 8, 3, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/water_elemental
 actions.precombat+=/snapshot_stats
 actions.precombat+=/mirror_image

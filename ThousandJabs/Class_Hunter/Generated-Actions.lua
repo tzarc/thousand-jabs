@@ -4,7 +4,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::hunter::beast_mastery', 'Simulationcraft Hunter Profile: Beast Mastery', 3, 1, [[
 actions.precombat=flask
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/food
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
@@ -33,7 +33,7 @@ actions+=/cobra_shot,if=(cooldown.kill_command.remains>focus.time_to_max&cooldow
 
 TJ:RegisterActionProfileList('simc::hunter::marksmanship', 'Simulationcraft Hunter Profile: Marksmanship', 3, 2, [[
 actions.precombat=flask
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/food
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
@@ -107,7 +107,7 @@ actions.targetdie+=/sidewinders
 
 TJ:RegisterActionProfileList('simc::hunter::survival', 'Simulationcraft Hunter Profile: Survival', 3, 3, [[
 actions.precombat=flask
-actions.precombat+=/augmentation,type=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/food
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
