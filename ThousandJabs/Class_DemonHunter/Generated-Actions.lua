@@ -3,12 +3,12 @@ if select(3, UnitClass('player')) ~= 12 then return end
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
-actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=lavish_suramar_feast,if=!equipped.majordomos_dinner_bell
+actions.precombat=flask
+actions.precombat+=/augmentation
+actions.precombat+=/food,if=!equipped.majordomos_dinner_bell
 actions.precombat+=/food,type=nightborne_delicacy_platter,if=equipped.majordomos_dinner_bell
-actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=old_war
+actions.precombat+=/potion
 actions.precombat+=/metamorphosis,if=!(talent.demon_reborn.enabled&talent.demonic.enabled)
 actions=auto_attack
 actions+=/variable,name=waiting_for_nemesis,value=!(!talent.nemesis.enabled|cooldown.nemesis.ready|cooldown.nemesis.remains>target.time_to_die|cooldown.nemesis.remains>60)
@@ -26,7 +26,7 @@ actions.cooldown+=/metamorphosis,if=talent.demonic.enabled&buff.metamorphosis.up
 actions.cooldown+=/nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&(active_enemies>desired_targets|raid_event.adds.in>60)
 actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(buff.chaos_blades.up|buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains<20|target.time_to_die<=60)
 actions.cooldown+=/chaos_blades,if=buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains>60|target.time_to_die<=12
-actions.cooldown+=/potion,name=old_war,if=buff.metamorphosis.remains>25|target.time_to_die<30
+actions.cooldown+=/potion,if=buff.metamorphosis.remains>25|target.time_to_die<30
 actions.demonic=pick_up_fragment,if=fury.deficit>=35&cooldown.eye_beam.remains>5
 actions.demonic+=/vengeful_retreat,if=(talent.prepared.enabled|talent.momentum.enabled)&buff.prepared.down&buff.momentum.down
 actions.demonic+=/fel_rush,if=(talent.momentum.enabled|talent.fel_mastery.enabled)&(!talent.momentum.enabled|(charges=2|cooldown.vengeful_retreat.remains>4)&buff.momentum.down)&(charges=2|(raid_event.movement.in>10&raid_event.adds.in>10))
@@ -75,11 +75,11 @@ actions.normal+=/throw_glaive,if=!talent.bloodlet.enabled
 ]])
 
 TJ:RegisterActionProfileList('simc::demonhunter::vengeance', 'Simulationcraft Demon Hunter Profile: Vengeance', 12, 2, [[
-actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=lavish_suramar_feast
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/augmentation
+actions.precombat+=/food
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=unbending_potion
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/consume_magic
 actions+=/fiery_brand,if=buff.demon_spikes.down&buff.metamorphosis.down

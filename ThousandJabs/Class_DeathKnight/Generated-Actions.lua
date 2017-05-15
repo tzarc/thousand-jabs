@@ -43,7 +43,7 @@ actions.aoe+=/heart_strike
 TJ:RegisterActionProfileList('simc::deathknight::blood', 'Simulationcraft Death Knight Profile: Blood', 6, 1, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,name=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions=auto_attack
@@ -69,7 +69,7 @@ actions.gs_ticking=empower_rune_weapon
 TJ:RegisterActionProfileList('simc::deathknight::frost', 'Simulationcraft Death Knight Profile: Frost', 6, 2, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,name=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions=auto_attack
@@ -157,7 +157,7 @@ actions.gs_ticking+=/empower_rune_weapon
 TJ:RegisterActionProfileList('simc::deathknight::unholy', 'Simulationcraft Death Knight Profile: Unholy', 6, 3, [[
 actions.precombat=flask
 actions.precombat+=/food
-actions.precombat+=/augmentation,name=defiled
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/raise_dead

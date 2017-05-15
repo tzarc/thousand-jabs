@@ -24,6 +24,7 @@ TJ.Generated.EquippedMapping.mantle_of_the_master_assassin = { 144236, }
 TJ.Generated.EquippedMapping.sephuzs_secret = { 132452, }
 TJ.Generated.EquippedMapping.shadow_satyrs_walk = { 137032, }
 TJ.Generated.EquippedMapping.shivarran_symmetry = { 141321, }
+TJ.Generated.EquippedMapping.soul_of_the_shadowblade = { 150936, }
 TJ.Generated.EquippedMapping.the_emerald_dreamcatcher = { 137062, }
 TJ.Generated.EquippedMapping.the_emperors_capacitor = { 144239, }
 TJ.Generated.EquippedMapping.the_mantle_of_command = { 144326, 17569, 23317, 23319, 77647, 77801, }
