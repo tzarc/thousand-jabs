@@ -11,7 +11,6 @@ actions.precombat+=/apply_poison
 actions.precombat+=/stealth
 actions.precombat+=/potion
 actions.precombat+=/marked_for_death,if=raid_event.adds.in>40
-actions.precombat+=/variable,name=vigor_active,value=talent.vigor.enabled|equipped.soul_of_the_shadowblade
 actions=variable,name=energy_regen_combined,value=energy.regen+poisoned_bleeds*(7+talent.venom_rush.enabled*3)%2
 actions+=/variable,name=energy_time_to_max_combined,value=energy.deficit%variable.energy_regen_combined
 actions+=/call_action_list,name=cds
@@ -53,6 +52,8 @@ actions.maintain+=/rupture,cycle_targets=1,if=combo_points>=4&refreshable&(pmult
 actions.maintain+=/call_action_list,name=kb,if=combo_points.deficit>=1+(mantle_duration>=gcd.remains+0.2)
 actions.maintain+=/pool_resource,for_next=1
 actions.maintain+=/garrote,cycle_targets=1,if=(!talent.subterfuge.enabled|!(cooldown.vanish.up&cooldown.vendetta.remains<=4))&combo_points.deficit>=1&refreshable&(pmultiplier<=1|remains<=tick_time)&(!exsanguinated|remains<=tick_time*2)&target.time_to_die-remains>4
+actions.maintain+=/pool_resource,for_next=1
+actions.maintain+=/toxic_blade,if=combo_points.deficit>=1+(mantle_duration>=gcd.remains+0.2)&dot.kingsbane.remains<11&dot.rupture.remains>8
 ]])
 
 TJ:RegisterActionProfileList('simc::rogue::outlaw', 'Simulationcraft Rogue Profile: Outlaw', 4, 2, [[
@@ -63,9 +64,10 @@ actions.precombat+=/snapshot_stats
 actions.precombat+=/stealth
 actions.precombat+=/potion
 actions.precombat+=/marked_for_death,if=raid_event.adds.in>40
-actions.precombat+=/variable,name=vigor_active,value=talent.vigor.enabled|equipped.soul_of_the_shadowblade
 actions.precombat+=/roll_the_bones,if=!talent.slice_and_dice.enabled
-actions=variable,name=rtb_reroll,value=!talent.slice_and_dice.enabled&(rtb_buffs<=2&!rtb_list.any.6)
+actions=variable,name=rtb_reroll_ptr,value=!talent.slice_and_dice.enabled&rtb_buffs<2&!rtb_list.any.1
+actions+=/variable,name=rtb_reroll_live,value=!talent.slice_and_dice.enabled&(rtb_buffs<=2&!rtb_list.any.6)
+actions+=/variable,name=rtb_reroll,value=(ptr&variable.rtb_reroll_ptr)|(!ptr&variable.rtb_reroll_live)
 actions+=/variable,name=ss_useable_noreroll,value=(combo_points<5+talent.deeper_stratagem.enabled-(buff.broadsides.up|buff.jolly_roger.up)-(talent.alacrity.enabled&buff.alacrity.stack<=4))
 actions+=/variable,name=ss_useable,value=(talent.anticipation.enabled&combo_points<4)|(!talent.anticipation.enabled&((variable.rtb_reroll&combo_points<4+talent.deeper_stratagem.enabled)|(!variable.rtb_reroll&variable.ss_useable_noreroll)))
 actions+=/call_action_list,name=bf
@@ -110,9 +112,8 @@ actions.precombat+=/snapshot_stats
 actions.precombat+=/stealth
 actions.precombat+=/potion
 actions.precombat+=/marked_for_death,if=raid_event.adds.in>40
-actions.precombat+=/variable,name=vigor_active,value=talent.vigor.enabled|equipped.soul_of_the_shadowblade
 actions.precombat+=/variable,name=ssw_refund,value=equipped.shadow_satyrs_walk*(6+ssw_refund_offset)
-actions.precombat+=/variable,name=stealth_threshold,value=(15+variable.vigor_active*35+talent.master_of_shadows.enabled*(25+ptr*15)+variable.ssw_refund)
+actions.precombat+=/variable,name=stealth_threshold,value=(15+talent.vigor.enabled*35+talent.master_of_shadows.enabled*(25+ptr*15)+variable.ssw_refund)
 actions.precombat+=/variable,name=shd_fractionnal,value=ptr*(1.725+0.6*talent.enveloping_shadows.enabled)+(1-ptr)*2.45
 actions.precombat+=/enveloping_shadows,if=combo_points>=5&ptr=0
 actions.precombat+=/shadow_dance,if=talent.subterfuge.enabled&bugs
@@ -130,7 +131,7 @@ actions+=/call_action_list,name=build,if=energy.deficit<=variable.stealth_thresh
 actions.build=shuriken_storm,if=spell_targets.shuriken_storm>=2
 actions.build+=/gloomblade
 actions.build+=/backstab
-actions.cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
+actions.cds=potion,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
 actions.cds+=/blood_fury,if=stealthed.rogue
 actions.cds+=/berserking,if=stealthed.rogue
 actions.cds+=/arcane_torrent,if=stealthed.rogue&energy.deficit>70
@@ -146,19 +147,19 @@ actions.finish+=/eviscerate
 actions.ptr_build=shuriken_storm,if=spell_targets.shuriken_storm>=2
 actions.ptr_build+=/gloomblade
 actions.ptr_build+=/backstab
-actions.ptr_cds=potion,name=old_war,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
-actions.ptr_cds+=/use_item,name=draught_of_souls,if=!stealthed.rogue&energy.deficit>30+variable.vigor_active*10
+actions.ptr_cds=potion,if=buff.bloodlust.react|target.time_to_die<=25|buff.shadow_blades.up
+actions.ptr_cds+=/use_item,name=draught_of_souls,if=!stealthed.rogue&energy.deficit>30+talent.vigor.enabled*10
 actions.ptr_cds+=/blood_fury,if=stealthed.rogue
 actions.ptr_cds+=/berserking,if=stealthed.rogue
 actions.ptr_cds+=/arcane_torrent,if=stealthed.rogue&energy.deficit>70
 actions.ptr_cds+=/symbols_of_death,if=!stealthed.all
 actions.ptr_cds+=/shadow_blades,if=combo_points.deficit>=2+stealthed.all-equipped.mantle_of_the_master_assassin
-actions.ptr_cds+=/goremaws_bite,if=!stealthed.all&cooldown.shadow_dance.charges_fractional<=variable.shd_fractionnal&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+variable.vigor_active*25-(time>=10)*15)|(combo_points.deficit>=1&target.time_to_die<8))
+actions.ptr_cds+=/goremaws_bite,if=!stealthed.all&cooldown.shadow_dance.charges_fractional<=variable.shd_fractionnal&((combo_points.deficit>=4-(time<10)*2&energy.deficit>50+talent.vigor.enabled*25-(time>=10)*15)|(combo_points.deficit>=1&target.time_to_die<8))
 actions.ptr_cds+=/marked_for_death,target_if=min:target.time_to_die,if=target.time_to_die<combo_points.deficit|(raid_event.adds.in>40&combo_points.deficit>=cp_max_spend)
 actions.ptr_default=call_action_list,name=ptr_cds
 actions.ptr_default+=/run_action_list,name=ptr_stealthed,if=stealthed.all
 actions.ptr_default+=/nightblade,if=target.time_to_die>8&remains<gcd.max&combo_points>=4
-actions.ptr_default+=/call_action_list,name=ptr_stealth_als,if=(combo_points.deficit>=2+talent.premeditation.enabled|cooldown.shadow_dance.charges_fractional>=2.9)
+actions.ptr_default+=/call_action_list,name=ptr_stealth_als,if=(combo_points.deficit>=3|cooldown.shadow_dance.charges_fractional>=2.9)
 actions.ptr_default+=/call_action_list,name=ptr_finish,if=combo_points>=5|(combo_points>=4&combo_points.deficit<=2&spell_targets.shuriken_storm>=3&spell_targets.shuriken_storm<=4)
 actions.ptr_default+=/call_action_list,name=ptr_build,if=energy.deficit<=variable.stealth_threshold
 actions.ptr_finish=death_from_above,if=spell_targets.death_from_above>=5
@@ -176,9 +177,9 @@ actions.ptr_stealth_cds+=/shadow_dance,if=charges_fractional>=variable.shd_fract
 actions.ptr_stealth_cds+=/pool_resource,for_next=1,extra_amount=40
 actions.ptr_stealth_cds+=/shadowmeld,if=energy>=40&energy.deficit>=10+variable.ssw_refund
 actions.ptr_stealth_cds+=/shadow_dance,if=combo_points.deficit>=2+(buff.shadowstrike.up|talent.subterfuge.enabled)*2
-actions.ptr_stealthed=call_action_list,name=ptr_finish,if=combo_points>=5&(spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk|(mantle_duration<=1.3&mantle_duration-gcd.remains>=0.3))
-actions.ptr_stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk)|(combo_points.deficit>=1+buff.shadow_blades.up&buff.the_dreadlords_deceit.stack>=29))
-actions.ptr_stealthed+=/call_action_list,name=ptr_finish,if=combo_points>=5&combo_points.deficit<2+talent.premeditation.enabled+buff.shadow_blades.up-equipped.mantle_of_the_master_assassin
+actions.ptr_stealthed=call_action_list,name=ptr_finish,if=combo_points>=5&(spell_targets.shuriken_storm>=3+equipped.shadow_satyrs_walk|(mantle_duration<=1.3&mantle_duration-gcd.remains>=0.3))
+actions.ptr_stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=3+equipped.shadow_satyrs_walk)|(combo_points.deficit>=1+buff.shadow_blades.up&buff.the_dreadlords_deceit.stack>=29))
+actions.ptr_stealthed+=/call_action_list,name=ptr_finish,if=combo_points>=5&combo_points.deficit<3+buff.shadow_blades.up-equipped.mantle_of_the_master_assassin
 actions.ptr_stealthed+=/shadowstrike
 actions.sprinted=cancel_autoattack
 actions.sprinted+=/use_item,name=draught_of_souls
@@ -191,7 +192,7 @@ actions.stealth_cds=vanish,if=mantle_duration=0&cooldown.shadow_dance.charges_fr
 actions.stealth_cds+=/shadow_dance,if=charges_fractional>=variable.shd_fractionnal
 actions.stealth_cds+=/pool_resource,for_next=1,extra_amount=40
 actions.stealth_cds+=/shadowmeld,if=energy>=40&energy.deficit>=10+variable.ssw_refund
-actions.stealth_cds+=/shadow_dance,if=combo_points.deficit>=5-variable.vigor_active
+actions.stealth_cds+=/shadow_dance,if=combo_points.deficit>=5-talent.vigor.enabled
 actions.stealthed=symbols_of_death,if=buff.symbols_of_death.remains<target.time_to_die&buff.symbols_of_death.remains<=buff.symbols_of_death.duration*0.3&(mantle_duration=0|buff.symbols_of_death.remains<=mantle_duration)
 actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5&(spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk|(mantle_duration<=1.3&mantle_duration-gcd.remains>=0.3))
 actions.stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.deficit>=3&spell_targets.shuriken_storm>=2+talent.premeditation.enabled+equipped.shadow_satyrs_walk)|(combo_points.deficit>=1+buff.shadow_blades.up&buff.the_dreadlords_deceit.stack>=29))

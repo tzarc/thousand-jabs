@@ -43,10 +43,11 @@ actions.aoe+=/expel_harm,if=charges=3&variable.heal_threshold
 ]])
 
 TJ:RegisterActionProfileList('simc::monk::brewmaster', 'Simulationcraft Monk Profile: Brewmaster', 10, 1, [[
-actions.precombat=flask,type=greater_draenic_agility_flask
-actions.precombat+=/food,type=sleeper_sushi
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=draenic_agility
+actions.precombat+=/potion
 actions.precombat+=/dampen_harm
 actions.precombat+=/chi_burst
 actions.precombat+=/chi_wave
@@ -63,15 +64,17 @@ actions.st+=/tiger_palm
 ]])
 
 TJ:RegisterActionProfileList('simc::monk::windwalker', 'Simulationcraft Monk Profile: Windwalker', 10, 3, [[
-actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=lavish_suramar
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=prolonged_power
+actions.precombat+=/potion
+actions.precombat+=/chi_burst
+actions.precombat+=/chi_wave
 actions=auto_attack
 actions+=/spear_hand_strike,if=target.debuff.casting.react
 actions+=/touch_of_karma,interval=90,pct_health=0.5
-actions+=/potion,name=prolonged_power,if=buff.serenity.up|buff.storm_earth_and_fire.up|(!talent.serenity.enabled&trinket.proc.agility.react)|buff.bloodlust.react|target.time_to_die<=60
+actions+=/potion,if=buff.serenity.up|buff.storm_earth_and_fire.up|(!talent.serenity.enabled&trinket.proc.agility.react)|buff.bloodlust.react|target.time_to_die<=60
 actions+=/touch_of_death,if=target.time_to_die<=9
 actions+=/call_action_list,name=serenity,if=(talent.serenity.enabled&cooldown.serenity.remains<=0)|buff.serenity.up
 actions+=/call_action_list,name=sef,if=!talent.serenity.enabled&(buff.storm_earth_and_fire.up|cooldown.storm_earth_and_fire.charges=2)
@@ -81,6 +84,7 @@ actions+=/call_action_list,name=st
 actions.cd=invoke_xuen
 actions.cd+=/blood_fury
 actions.cd+=/berserking
+actions.cd+=/arcane_torrent,if=chi.max-chi>=1&energy.time_to_max>=0.5
 actions.cd+=/touch_of_death,cycle_targets=1,max_cycle_targets=2,if=!artifact.gale_burst.enabled&equipped.hidden_masters_forbidden_touch&!prev_gcd.1.touch_of_death
 actions.cd+=/touch_of_death,if=!artifact.gale_burst.enabled&!equipped.hidden_masters_forbidden_touch
 actions.cd+=/touch_of_death,cycle_targets=1,max_cycle_targets=2,if=artifact.gale_burst.enabled&((talent.serenity.enabled&cooldown.serenity.remains<=1)|chi>=2)&(cooldown.strike_of_the_windlord.remains<8|cooldown.fists_of_fury.remains<=4)&cooldown.rising_sun_kick.remains<7&!prev_gcd.1.touch_of_death
