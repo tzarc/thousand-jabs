@@ -160,7 +160,7 @@ actions.fillers+=/raptor_strike,if=(talent.way_of_the_moknathal.enabled&buff.mok
 actions.fillers+=/raptor_strike,if=focus>((25-focus.regen*gcd)+55)
 actions.mokMaintain=raptor_strike,if=buff.moknathal_tactics.remains<gcd
 actions.mokMaintain+=/raptor_strike,if=buff.moknathal_tactics.stack<2
-actions.preBitePhase=flanking_strike
+actions.preBitePhase=flanking_strike,if=cooldown.mongoose_bite.charges<3
 actions.preBitePhase+=/spitting_cobra
 actions.preBitePhase+=/lacerate,if=!dot.lacerate.ticking
 actions.preBitePhase+=/raptor_strike,if=active_enemies=1&talent.serpent_sting.enabled&!dot.serpent_sting.ticking
