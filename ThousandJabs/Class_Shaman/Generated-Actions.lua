@@ -50,7 +50,6 @@ actions.single_asc+=/lava_burst,if=dot.flame_shock.remains>cast_time&(cooldown_r
 actions.single_asc+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_if=refreshable
 actions.single_asc+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_asc+=/totem_mastery,if=buff.resonance_totem.remains<10|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
-actions.single_asc+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
 actions.single_asc+=/lava_beam,if=active_enemies>1&spell_targets.lava_beam>1
 actions.single_asc+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_asc+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1
@@ -60,11 +59,11 @@ actions.single_asc+=/earth_shock,moving=1
 actions.single_asc+=/flame_shock,moving=1,if=movement.distance>6
 actions.single_if=flame_shock,if=!ticking|dot.flame_shock.remains<=gcd
 actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up&maelstrom>=86
-actions.single_if+=/frost_shock,if=buff.icefury.up&maelstrom>=111
+actions.single_if+=/frost_shock,if=buff.icefury.up&maelstrom>=111&!buff.ascendance.up
 actions.single_if+=/elemental_blast
 actions.single_if+=/earth_shock,if=maelstrom>=117|!artifact.swelling_maelstrom.enabled&maelstrom>=92
 actions.single_if+=/stormkeeper,if=raid_event.adds.count<3|raid_event.adds.in>50
-actions.single_if+=/icefury,if=raid_event.movement.in<5|maelstrom<=101
+actions.single_if+=/icefury,if=(raid_event.movement.in<5|maelstrom<=101)&!buff.ascendance.up
 actions.single_if+=/liquid_magma_totem,if=raid_event.adds.count<3|raid_event.adds.in>50
 actions.single_if+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&buff.stormkeeper.up&spell_targets.chain_lightning<3
 actions.single_if+=/lava_burst,if=dot.flame_shock.remains>cast_time&cooldown_react
@@ -73,7 +72,7 @@ actions.single_if+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_
 actions.single_if+=/frost_shock,moving=1,if=buff.icefury.up
 actions.single_if+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_if+=/totem_mastery,if=buff.resonance_totem.remains<10
-actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
+actions.single_if+=/earthquake,if=buff.echoes_of_the_great_sundering.up
 actions.single_if+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_if+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1
 actions.single_if+=/lightning_bolt
@@ -81,8 +80,8 @@ actions.single_if+=/flame_shock,moving=1,target_if=refreshable
 actions.single_if+=/earth_shock,moving=1
 actions.single_if+=/flame_shock,moving=1,if=movement.distance>6
 actions.single_lr=flame_shock,if=!ticking|dot.flame_shock.remains<=gcd
-actions.single_lr+=/earthquake,if=buff.echoes_of_the_great_sundering.up&maelstrom>=86
 actions.single_lr+=/elemental_blast
+actions.single_lr+=/earthquake,if=buff.echoes_of_the_great_sundering.up
 actions.single_lr+=/earth_shock,if=maelstrom>=117|!artifact.swelling_maelstrom.enabled&maelstrom>=92
 actions.single_lr+=/stormkeeper,if=raid_event.adds.count<3|raid_event.adds.in>50
 actions.single_lr+=/liquid_magma_totem,if=raid_event.adds.count<3|raid_event.adds.in>50
@@ -90,7 +89,6 @@ actions.single_lr+=/lava_burst,if=dot.flame_shock.remains>cast_time&cooldown_rea
 actions.single_lr+=/flame_shock,if=maelstrom>=20&buff.elemental_focus.up,target_if=refreshable
 actions.single_lr+=/earth_shock,if=maelstrom>=111|!artifact.swelling_maelstrom.enabled&maelstrom>=86
 actions.single_lr+=/totem_mastery,if=buff.resonance_totem.remains<10|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
-actions.single_lr+=/earthquake,if=buff.echoes_of_the_great_sundering.up|artifact.seismic_storm.enabled&((active_enemies>1&spell_targets.chain_lightning>1)|spell_haste<=0.66&!(buff.bloodlust.up&buff.bloodlust.remains<5))
 actions.single_lr+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3,target_if=debuff.lightning_rod.down
 actions.single_lr+=/lightning_bolt,if=buff.power_of_the_maelstrom.up&spell_targets.chain_lightning<3
 actions.single_lr+=/chain_lightning,if=active_enemies>1&spell_targets.chain_lightning>1,target_if=debuff.lightning_rod.down
@@ -119,8 +117,6 @@ actions+=/use_items
 actions+=/berserking,if=buff.ascendance.up|(feral_spirit.remains>5)|level<100
 actions+=/blood_fury,if=buff.ascendance.up|(feral_spirit.remains>5)|level<100
 actions+=/potion,if=feral_spirit.remains>5|target.time_to_die<=60
-actions+=/boulderfist,if=buff.boulderfist.remains<gcd|(maelstrom<=50&active_enemies>=3)
-actions+=/boulderfist,if=buff.boulderfist.remains<gcd|(charges_fractional>1.75&maelstrom<=100&active_enemies<=2)
 actions+=/rockbiter,if=talent.landslide.enabled&buff.landslide.remains<gcd
 actions+=/fury_of_air,if=!ticking&maelstrom>22
 actions+=/frostbrand,if=talent.hailstorm.enabled&buff.frostbrand.remains<gcd&((!talent.fury_of_air.enabled)|(talent.fury_of_air.enabled&maelstrom>25))
@@ -154,6 +150,5 @@ actions+=/lava_lash,if=(!set_bonus.tier19_4pc&maelstrom>=120)|(!talent.fury_of_a
 actions+=/flametongue,if=buff.flametongue.remains<4.8
 actions+=/rockbiter
 actions+=/flametongue
-actions+=/boulderfist
 ]])
 
