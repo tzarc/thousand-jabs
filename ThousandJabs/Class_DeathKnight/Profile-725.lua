@@ -33,6 +33,7 @@ local blood_abilities_exported = {
     deaths_caress = { SpellIDs = { 195292 }, },
     foul_bulwark = { TalentID = 19232, },
     gorefiends_grasp = { SpellIDs = { 108199 }, },
+    heart_of_ice = { TalentID = 19219, },
     heart_strike = { SpellIDs = { 206930 }, },
     heartbreaker = { TalentID = 19166, },
     icebound_fortitude = { SpellIDs = { 48792 }, },
@@ -48,7 +49,6 @@ local blood_abilities_exported = {
     red_thirst = { TalentID = 22014, },
     rune_tap = { SpellIDs = { 194679 }, TalentID = 19231, },
     runeforging = { SpellIDs = { 53428 }, },
-    soulgorge = { SpellIDs = { 212744 }, TalentID = 19219, },
     spectral_deflection = { TalentID = 19220, },
     tightening_grasp = { TalentID = 19227, },
     tombstone = { SpellIDs = { 219809 }, TalentID = 22015, },
@@ -120,6 +120,7 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- When exporting for Unholy, summon the pet then run /tj _esd
+-- Make sure to run this twice, both with Sludge Belcher active and inactive.
 
 -- exported with /tj _esd
 local unholy_abilities_exported = {
@@ -132,6 +133,7 @@ local unholy_abilities_exported = {
     bursting_sores = { TalentID = 22025, },
     castigator = { TalentID = 22518, },
     chains_of_ice = { SpellIDs = { 45524 }, },
+    claw = { SpellIDs = { 47468 }, },
     clawing_shadows = { SpellIDs = { 207311 }, TalentID = 22520, },
     cleaver = { SpellIDs = { 212333 }, },
     control_undead = { SpellIDs = { 111673 }, },
@@ -149,9 +151,12 @@ local unholy_abilities_exported = {
     ebon_fever = { TalentID = 22026, },
     epidemic = { SpellIDs = { 207317 }, TalentID = 22027, },
     festering_strike = { SpellIDs = { 85948 }, },
+    gnaw = { SpellIDs = { 47481 }, },
     hook = { SpellIDs = { 212468 }, },
+    huddle = { SpellIDs = { 47484 }, },
     icebound_fortitude = { SpellIDs = { 48792 }, },
     infected_claws = { TalentID = 22536, },
+    leap = { SpellIDs = { 47482 }, },
     lingering_apparition = { TalentID = 22022, },
     mind_freeze = { SpellIDs = { 47528 }, },
     necrosis = { TalentID = 22534, },

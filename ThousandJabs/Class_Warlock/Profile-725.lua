@@ -87,7 +87,7 @@ local destruction_abilities_exported = {
     torch_magic = { SpellIDs = { 171021 }, },
     unending_breath = { SpellIDs = { 5697 }, },
     unending_resolve = { SpellIDs = { 104773 }, },
-    whiplash = { SpellIDs = { 6360, 119909 }, },
+    whiplash = { SpellIDs = { 6360 }, },
     wreak_havoc = { TalentID = 22481, },
 }
 

@@ -13,6 +13,8 @@ local mmax = math.max
 -- Frost profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
+-- When exporting Frost, ensure that the Water Elemental is out before running /tj _esd.
+
 -- exported with /tj _esd
 local frost_abilities_exported = {
     arctic_gale = { TalentID = 22473, },

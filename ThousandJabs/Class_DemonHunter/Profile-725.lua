@@ -56,7 +56,7 @@ local vengeance_abilities_exported = {
     soul_cleave = { SpellIDs = { 228477 }, },
     soul_rending = { TalentID = 22770, },
     spectral_sight = { SpellIDs = { 188501 }, },
-    spirit_bomb = { SpellIDs = { 218679 }, TalentID = 22768, },
+    spirit_bomb = { SpellIDs = { 247454 }, TalentID = 22768, },
     throw_glaive = { SpellIDs = { 204157 }, },
     torment = { SpellIDs = { 185245 }, },
 }
@@ -238,7 +238,7 @@ local havoc_abilities_exported = {
     blind_fury = { TalentID = 22416, },
     bloodlet = { TalentID = 21862, },
     blur = { SpellIDs = { 198589 }, },
-    chaos_blades = { SpellIDs = { 211048 }, TalentID = 21900, },
+    chaos_blades = { SpellIDs = { 247938 }, TalentID = 21900, },
     chaos_cleave = { TalentID = 22909, },
     chaos_nova = { SpellIDs = { 179057 }, },
     chaos_strike = { SpellIDs = { 162794 }, },

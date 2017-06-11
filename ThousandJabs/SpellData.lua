@@ -41,37 +41,143 @@ Core:Safety()
 
 local IterateSpellbook
 do
-    local function isOffspec(idx)
+    local function CollectInfoForSpell(spellID, spellBookSlotID, bookType, isOffSpec)
+        local ok, _
+        if not spellBookSlotID then
+            ok, spellBookSlotID = pcall(FindSpellBookSlotBySpellID, spellID)
+        end
+
+        local ok, spellName, _, icon, castTime, _, _, spellID = pcall(GetSpellInfo, spellID)
+        if not ok then return nil end
+
+        local spellSubtext, isTalent = '', false
+        if spellBookSlotID then
+            ok, _, spellSubtext = pcall(GetSpellBookItemName, spellBookSlotID, bookType)
+            if not ok then return nil end
+
+            ok, isTalent = pcall(IsTalentSpell, spellBookSlotID, bookType)
+            if not ok then return nil end
+        end
+
+        local ok, isPassive = pcall(IsPassiveSpell, spellID)
+        if not ok then return nil end
+
+        local ok, isPlayerSpell = pcall(IsPlayerSpell, spellID)
+        if not ok then return nil end
+
+        local e = TableCache:Acquire()
+        e.bookType, e.spellID, e.spellName, e.spellSubtext, e.spellBookSlotID, e.isTalent, e.icon, e.castTime, e.isPassive, e.isOffSpec, e.isMainSpec, e.isPlayerSpell
+        = bookType, spellID, spellName, spellSubtext, spellBookSlotID, isTalent and true or false, icon, castTime, isPassive and true or false, isOffSpec, not isOffSpec, isPlayerSpell
+        return e
+    end
+
+    local function CollectPlayerSpells(filter)
+        local allSpells = TableCache:Acquire()
         local numTabs = GetNumSpellTabs()
         for i=1,numTabs do
-            local name,texture,offset,numSpells,isGuild,offSpec = GetSpellTabInfo(i)
-            if offset <= idx and idx < offset+numSpells then
-                return (offSpec ~= 0) and true or false
+            local ok, _, _, offset, numSpells, _, offSpecID = pcall(GetSpellTabInfo, i)
+            if ok then
+                local first = offset+1
+                local last = offset+numSpells
+                local isOffSpec = (offSpecID ~= 0)
+                for j=first,last do
+                    local ok, skillType, spellBookID = pcall(GetSpellBookItemInfo, j, BOOKTYPE_SPELL)
+                    if not skillType then break end
+                    if ok then
+                        if skillType == "SPELL" then
+                            local ok, link = pcall(GetSpellLink, j, BOOKTYPE_SPELL)
+                            if link then
+                                local spellID = tonumber(link:match('Hspell:(%d+)')) or -1
+                                if spellID and spellID >= 0 then
+                                    local e = CollectInfoForSpell(spellID, j, BOOKTYPE_SPELL, isOffSpec)
+                                    if e then
+                                        if not filter or filter(e) then
+                                            allSpells[1+#allSpells] = e
+                                        else
+                                            TableCache:Release(e)
+                                        end
+                                    end
+                                end
+                            end
+                        elseif skillType == "FLYOUT" then
+                            local ok, _, _, numSlots = pcall(GetFlyoutInfo, spellBookID)
+                            if ok then
+                                for k=1,numSlots do
+                                    local ok, spellID = pcall(GetFlyoutSlotInfo, spellBookID, k)
+                                    if ok then
+                                        local e = CollectInfoForSpell(spellID, nil, BOOKTYPE_SPELL, isOffSpec)
+                                        if e then
+                                            if not filter or filter(e) then
+                                                allSpells[1+#allSpells] = e
+                                            else
+                                                TableCache:Release(e)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
-        return false
+        return allSpells
+    end
+
+    local function CollectPetSpells(filter)
+        if not HasPetSpells() or not PetHasSpellbook() then
+            return nil
+        end
+
+        local allSpells = TableCache:Acquire()
+        for i=1,100 do
+            local ok, skillType, spellBookID = pcall(GetSpellBookItemInfo, i, BOOKTYPE_PET)
+            if not skillType then break end
+            if ok and skillType == "PETACTION" then
+                local ok, link = pcall(GetSpellLink, i, BOOKTYPE_PET)
+                if link then
+                    local spellID = tonumber(link:match('Hspell:(%d+)')) or -1
+                    if spellID and spellID >= 0 then
+                        local e = CollectInfoForSpell(spellID, i, BOOKTYPE_PET, false)
+                        if e then
+                            if not filter or filter(e) then
+                                allSpells[1+#allSpells] = e
+                            else
+                                TableCache:Release(e)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return allSpells
+    end
+
+    local function CollectSpells(bookType, filter)
+        if bookType == BOOKTYPE_SPELL then
+            return CollectPlayerSpells(filter)
+        elseif bookType == BOOKTYPE_PET then
+            return CollectPetSpells(filter)
+        end
     end
 
     local function dispatch(state)
         while true do
-            state.idx = state.idx + 1
-            local skillType = GetSpellBookItemInfo(state.idx, state.bookType)
-            if not skillType then return nil end
-            local spellID = tonumber((GetSpellLink(state.idx, state.bookType) or ''):match('Hspell:(%d+)') or '-1')
-            if spellID and spellID >= 0 and (state.bookType == BOOKTYPE_PET or not isOffspec(state.idx)) then
-                local spellName, _, icon, castTime, _, _, spellID = GetSpellInfo(spellID)
-                local _, spellSubtext = GetSpellBookItemName(state.idx, state.bookType)
-                local isPassive = IsPassiveSpell(spellID) and true or false
-                local isTalent = IsTalentSpell(state.idx, state.bookType) and true or false
-                return spellID, spellName, spellSubtext, state.idx, isTalent, icon, castTime, isPassive
+            state.index = state.index + 1
+            if not state.allSpells then return nil end
+            local e = state.allSpells[state.index]
+            if not e then
+                TableCache:Release(state)
+                return nil
             end
+            return e.spellID, e.spellName, e.spellSubtext, e.spellBookSlotID, e.isTalent, e.icon, e.castTime, e.isPassive, e.isOffSpec
         end
     end
 
-    IterateSpellbook = function(bookType)
-        local state = {}
-        state.idx = 0
-        state.bookType = bookType
+    IterateSpellbook = function(bookType, filter)
+        local state = TableCache:Acquire()
+        state.allSpells = CollectSpells(bookType, filter)
+        state.index = 0
         return dispatch, state
     end
 end
@@ -174,11 +280,21 @@ local blacklistedExportedAbilities = {
 function TJ:DetectAbilitiesFromSpellBook()
     local abilities = {}
 
+    local filter = function(e)
+        local ok = (not e.isOffSpec) and (not e.isPassive) and (e.spellBookSlotID or e.isPlayerSpell) -- Dodgy comparison - DH's don't seem to think IsPlayerSpell is valid for things like sigils, when Concentrated Sigils is selected.
+        --[[
+        local c1 = ok and '|cFF00FF00' or '|cFFFF0000'
+        local c2 = ok and '|cFF99FF99' or '|cFFFF9999'
+        print(("%s%d %s -- %s%s | spellBookSlotID = %s | isPlayerSpell = %s|r"):format(c1, e.spellID, GetSpellLink(e.spellID), c2, e.spellName, tostring(e.spellBookSlotID), tostring(e.isPlayerSpell)))
+        --]]
+        return ok
+    end
+
     -- Helper to work out the 'simulationcraft-ified' name for the spell
     -- Iterate over the spellbook, collecting all the abilities
     local function RetrieveSpells(bookType, caster)
-        for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon, castTime, isPassive in IterateSpellbook(bookType) do
-            if spellID and spellName and not isPassive then
+        for spellID, spellName, spellSubText, spellBookItem, spellIsTalent, spellIcon, castTime, isPassive in IterateSpellbook(bookType, filter) do
+            if spellID and spellName then
                 abilities[slug(spellName)] = {
                     Name = spellName,
                     SpellIDs = { spellID },

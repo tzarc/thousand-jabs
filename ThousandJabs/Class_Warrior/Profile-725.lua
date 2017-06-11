@@ -15,8 +15,7 @@ local mmin = math.min
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local arms_abilities_exported = {}
-arms_abilities_exported = {
+local arms_abilities_exported = {
     anger_management = { TalentID = 21204, },
     avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
     battle_cry = { SpellIDs = { 1719 }, },
@@ -33,12 +32,12 @@ arms_abilities_exported = {
     die_by_the_sword = { SpellIDs = { 118038 }, },
     double_time = { TalentID = 22409, },
     execute = { SpellIDs = { 163201 }, },
-    fervor_of_battle = { TalentID = 22380, },
-    focused_rage = { SpellIDs = { 207982 }, TalentID = 22800, },
+    fervor_of_battle = { TalentID = 22383, },
+    focused_rage = { SpellIDs = { 207982 }, TalentID = 22399, },
     hamstring = { SpellIDs = { 1715 }, },
     heroic_leap = { SpellIDs = { 6544 }, },
     heroic_throw = { SpellIDs = { 57755 }, },
-    in_for_the_kill = { TalentID = 22383, },
+    in_for_the_kill = { TalentID = 22397, },
     intimidating_shout = { SpellIDs = { 5246 }, },
     mortal_combo = { TalentID = 22393, },
     mortal_strike = { SpellIDs = { 12294 }, },
@@ -53,8 +52,8 @@ arms_abilities_exported = {
     storm_bolt = { SpellIDs = { 107570 }, TalentID = 22625, },
     sweeping_strikes = { TalentID = 22371, },
     taunt = { SpellIDs = { 355 }, },
-    titanic_might = { TalentID = 22399, },
-    trauma = { TalentID = 22397, },
+    titanic_might = { TalentID = 22800, },
+    trauma = { TalentID = 22380, },
     victory_rush = { SpellIDs = { 34428 }, },
     warbreaker = { SpellIDs = { 209577 }, },
     whirlwind = { SpellIDs = { 1680 }, },
@@ -204,8 +203,7 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local protection_abilities_exported = {}
-protection_abilities_exported = {
+local protection_abilities_exported = {
     anger_management = { TalentID = 21204, },
     avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
     battle_cry = { SpellIDs = { 1719 }, },
