@@ -67,6 +67,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword == "charges_fractional" then keyword = "spell.THIS_SPELL.charges_fractional" end
     if keyword == "max_charges" then keyword = "spell.THIS_SPELL.max_charges" end
     if keyword == "recharge_time" then keyword = "spell.THIS_SPELL.recharge_time" end
+    if keyword == "execute_time" then keyword = "spell.THIS_SPELL.execute_time" end
     if keyword == "level" then keyword = "level.curr" end
     if keyword == "mana" then keyword = "mana.curr" end
     if keyword == "energy" then keyword = "energy.curr" end
@@ -235,6 +236,9 @@ local function addMissingFields(action)
 
         if not rawget(action, 'spell_cast_time') then
             action.spell_cast_time = function(spell, env) return TJ.currentGCD end
+        end
+        if not rawget(action, 'spell_execute_time') then -- TODO: Is this right?
+            action.spell_execute_time = function(spell, env) return action.spell_cast_time(spell, env) end
         end
 
         if not rawget(action, 'talent_enabled') then action.talent_enabled = false end

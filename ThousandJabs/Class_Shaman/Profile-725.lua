@@ -10,9 +10,10 @@ if not Core:MatchesBuild('7.2.5', '7.2.5') then return end
 local mmin = math.min
 local mmax = math.max
 
+-- When exporting Ele shaman, run a normal export, then select Ascendance and re-run '/tj _esd' a second time.
+
 -- exported with /tj _esd
-local elemental_abilities_exported = {}
-elemental_abilities_exported = {
+local elemental_abilities_exported = {
     aftershock = { TalentID = 19271, },
     ancestral_guidance = { SpellIDs = { 108281 }, TalentID = 22139, },
     ancestral_spirit = { SpellIDs = { 2008 }, },
@@ -70,6 +71,7 @@ local function DecrementUpdateElementalFocus(env)
         if env.elemental_focus.aura_stack == 0 then
             env.elemental_focus.expirationTime = 0
         end
+        --Core:Debug("env.elemental_focus.aura_stack = " .. env.elemental_focus.aura_stack)
     end
 end
 
@@ -104,12 +106,17 @@ local elemental_base_overrides = {
         AuraApplyLength = 120,
         aura_duration = 15,
         cost_type = 'maelstrom',
-        spell_refreshable = function(spell, env) return spell.aura_up end,
+        spell_refreshable = function(spell, env)
+            if spell.aura_down then return true end
+            local tick_time = 2 -- TODO
+            if spell.aura_remains <= tick_time then return true end
+            return false
+        end,
         maelstrom_cost = function(spell, env)
             return mmax(0, mmin(20, env.maelstrom.curr))
         end,
         PerformCast = function(spell, env)
-            spell.expirationTime = env.currentTime + 15 -- Next reset it'll fix up the duration, don't bother about the cost
+            spell.expirationTime = env.currentTime + 30 -- Next reset it'll fix up the duration, don't bother about the cost
             DecrementUpdateElementalFocus(env)
         end,
     },
@@ -160,13 +167,15 @@ local elemental_base_overrides = {
         spell_cast_time = function(spell, env)
             -- Insta-cast when Lava Surge is up
             if env.lava_surge.aura_up then
-                env.lava_surge.expirationTime = 0
                 return 0.01
             end
             return spell.base_cast_time
         end,
         PerformCast = function(spell, env)
             env.maelstrom.gained = env.maelstrom.gained + 12
+            if env.lava_surge.aura_up then
+                env.lava_surge.expirationTime = 0
+            end
             DecrementUpdateElementalFocus(env)
         end,
     },
@@ -238,6 +247,11 @@ local elemental_artifact_abilities = {
             return Config:GetSpec("swelling_maelstrom_selected") and true or false
         end,
     },
+    seismic_storm = {
+        artifact_enabled = function(spell,env)
+            return Config:GetSpec("seismic_storm_selected") and true or false
+        end,
+    },
 }
 
 local elemental_legendary_overrides = {
@@ -269,5 +283,6 @@ TJ:RegisterPlayerClass({
     },
     config_checkboxes = {
         swelling_maelstrom_selected = false,
+        seismic_storm_selected = false,
     },
 })

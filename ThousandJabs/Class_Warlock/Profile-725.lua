@@ -7,18 +7,23 @@ local Config = TJ:GetModule('Config')
 
 if not Core:MatchesBuild('7.2.5', '7.2.5') then return end
 
+-- When exporting Warlock, summon each pet then re-run /tj _esd
+-- Do this for both with and without Grimoire of Supremacy.
+-- Only bother copy/pasting here once all pet abilities have been collected.
+
 -- exported with /tj _esd
-local destruction_abilities_exported = {}
-destruction_abilities_exported = {
+local destruction_abilities_exported = {
     backdraft = { TalentID = 22039, },
     banish = { SpellIDs = { 710 }, },
     berserking = { SpellIDs = { 26297 }, },
     burning_presence = { SpellIDs = { 171011 }, },
     burning_rush = { SpellIDs = { 111400 }, TalentID = 19291, },
     cataclysm = { SpellIDs = { 152108 }, TalentID = 22480, },
+    cauterize_master = { SpellIDs = { 119899 }, },
     channel_demonfire = { SpellIDs = { 196447 }, TalentID = 22482, },
     chaos_bolt = { SpellIDs = { 116858 }, },
     conflagrate = { SpellIDs = { 17962 }, },
+    consuming_shadows = { SpellIDs = { 3716 }, },
     create_healthstone = { SpellIDs = { 6201 }, },
     create_soulwell = { SpellIDs = { 29893 }, },
     cripple = { SpellIDs = { 170995 }, },
@@ -26,6 +31,7 @@ destruction_abilities_exported = {
     demon_skin = { TalentID = 22047, },
     demonic_circle = { SpellIDs = { 48018 }, TalentID = 19280, },
     demonic_gateway = { SpellIDs = { 111771 }, },
+    devour_magic = { SpellIDs = { 19505 }, },
     dimensional_rift = { SpellIDs = { 196586 }, },
     doom_bolt = { SpellIDs = { 85692 }, },
     drain_life = { SpellIDs = { 234153 }, },
@@ -35,6 +41,8 @@ destruction_abilities_exported = {
     eye_of_kilrogg = { SpellIDs = { 126 }, },
     fear = { SpellIDs = { 5782 }, },
     fire_and_brimstone = { TalentID = 22043, },
+    firebolt = { SpellIDs = { 3110 }, },
+    flee = { SpellIDs = { 89792 }, },
     grimoire_felhunter = { SpellIDs = { 111897 }, },
     grimoire_imp = { SpellIDs = { 111859 }, },
     grimoire_of_sacrifice = { SpellIDs = { 108503 }, TalentID = 19295, },
@@ -46,6 +54,8 @@ destruction_abilities_exported = {
     health_funnel = { SpellIDs = { 755 }, },
     immolate = { SpellIDs = { 348 }, },
     incinerate = { SpellIDs = { 29722 }, },
+    lash_of_pain = { SpellIDs = { 7814 }, },
+    lesser_invisibility = { SpellIDs = { 7870 }, },
     life_tap = { SpellIDs = { 1454 }, },
     meteor_strike = { SpellIDs = { 171017 }, },
     mortal_coil = { SpellIDs = { 6789 }, TalentID = 19285, },
@@ -53,22 +63,31 @@ destruction_abilities_exported = {
     reverse_entropy = { TalentID = 21181, },
     ritual_of_summoning = { SpellIDs = { 698 }, },
     roaring_blaze = { TalentID = 22048, },
+    seduction = { SpellIDs = { 6358 }, },
     seethe = { SpellIDs = { 171014 }, },
+    shadow_bite = { SpellIDs = { 54049 }, },
+    shadow_bulwark = { SpellIDs = { 17767 }, },
     shadow_lock = { SpellIDs = { 171138 }, },
+    shadow_shield = { SpellIDs = { 115232 }, },
     shadowburn = { SpellIDs = { 17877 }, TalentID = 22052, },
     shadowfury = { SpellIDs = { 30283 }, TalentID = 19286, },
+    singe_magic = { SpellIDs = { 89808 }, },
     soul_conduit = { TalentID = 19293, },
     soul_harvest = { SpellIDs = { 196098 }, TalentID = 22046, },
     soulstone = { SpellIDs = { 20707 }, },
+    spell_lock = { SpellIDs = { 19647 }, },
+    suffering = { SpellIDs = { 17735 }, },
     summon_doomguard = { SpellIDs = { 18540, 157757 }, },
     summon_felhunter = { SpellIDs = { 691 }, },
     summon_imp = { SpellIDs = { 688 }, },
     summon_infernal = { SpellIDs = { 1122, 157898 }, },
     summon_succubus = { SpellIDs = { 712 }, },
     summon_voidwalker = { SpellIDs = { 697 }, },
+    threatening_presence = { SpellIDs = { 112042 }, },
     torch_magic = { SpellIDs = { 171021 }, },
     unending_breath = { SpellIDs = { 5697 }, },
     unending_resolve = { SpellIDs = { 104773 }, },
+    whiplash = { SpellIDs = { 6360, 119909 }, },
     wreak_havoc = { TalentID = 22481, },
 }
 
@@ -155,11 +174,14 @@ local destruction_base_overrides = {
     },
     havoc = {
         expirationTime = 0,
+        aura_duration = function(spell, env)
+            return env.wreak_havoc.talent_enabled and 20 or 8
+        end,
         aura_remains = function(spell, env)
             return math.max(0, spell.expirationTime - env.currentTime)
         end,
         PerformCast = function(spell, env)
-            spell.expirationTime = env.currentTime + (env.wreak_havoc.talent_enabled and 20 or 8)
+            spell.expirationTime = env.currentTime + spell.aura_duration
         end,
     },
     embrace_chaos = { -- T19 2P bonus
@@ -290,6 +312,7 @@ TJ:RegisterPlayerClass({
         conflagration_of_chaos_selected = false,
     },
     conditional_substitutions = {
+        { "active_havoc", "havoc" },
         { "soul_shard", "soul_shards" },
         { "soul_shardss", "soul_shards" },
     }

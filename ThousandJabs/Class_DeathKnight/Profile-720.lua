@@ -462,6 +462,12 @@ local frost_base_abilities = {
         AuraMine = true,
         AuraUnit = "player",
     },
+    horn_of_winter = {
+        PerformCast = function(spell, env)
+            env.rune.gained = env.rune.gained + 2
+            env.runic_power.gained = env.runic_power.gained + 20
+        end,
+    }
 }
 
 local frost_talent_overrides = {
@@ -493,6 +499,8 @@ local frost_hooks = {
         OnPredictActionAtOffset = function(env)
         --[[
         Core:Debug({
+        remaining = env.rune.all_remains,
+        available = env.rune.curr,
         env_obliterate_rune_cost = env.obliterate.rune_cost,
         env_obliterate_spell_can_cast = env.obliterate.spell_can_cast,
         })

@@ -400,6 +400,7 @@ local havoc_base_overrides = {
                 return spell.cooldown_remains
             end
         end,
+        aura_extended_by_demonic = false, -- TODO
     },
     bloodlet = {
         AuraID = 207690,

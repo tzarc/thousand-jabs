@@ -231,6 +231,11 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     env.abilitiesUsed = nil
     env.set_bonus = nil
 
+    env._mceil = nil
+    env._mfloor = nil
+    env._mmax = nil
+    env._mmin = nil
+
     self.numTargets = targetCount or self.numTargets
     self.seenTargets = seenTargets or 1
 
@@ -364,6 +369,12 @@ local function StateResetPrototype(self, targetCount, seenTargets)
 
     -- Set the combat start time
     env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
+
+    -- Fix up math funcs
+    env._mceil = math.ceil
+    env._mfloor = math.floor
+    env._mmax = math.max
+    env._mmin = math.min
 
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit

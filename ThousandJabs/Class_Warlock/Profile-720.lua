@@ -174,11 +174,14 @@ local destruction_base_overrides = {
     },
     havoc = {
         expirationTime = 0,
+        aura_duration = function(spell, env)
+            return env.wreak_havoc.talent_enabled and 20 or 8
+        end,
         aura_remains = function(spell, env)
             return math.max(0, spell.expirationTime - env.currentTime)
         end,
         PerformCast = function(spell, env)
-            spell.expirationTime = env.currentTime + (env.wreak_havoc.talent_enabled and 20 or 8)
+            spell.expirationTime = env.currentTime + spell.aura_duration
         end,
     },
     embrace_chaos = { -- T19 2P bonus
@@ -309,6 +312,7 @@ TJ:RegisterPlayerClass({
         conflagration_of_chaos_selected = false,
     },
     conditional_substitutions = {
+        { "active_havoc", "havoc" },
         { "soul_shard", "soul_shards" },
         { "soul_shardss", "soul_shards" },
     }

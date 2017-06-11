@@ -8,7 +8,12 @@ local GetRuneCooldown = GetRuneCooldown
 local GetSpecialization = GetSpecialization
 local GetTime = GetTime
 local mfloor = math.floor
+local mmax = math.max
+local mmin = math.min
 local select = select
+local tinsert = table.insert
+local tremove = table.remove
+local tsort = table.sort
 local SPELL_POWER_CHI = SPELL_POWER_CHI
 local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
 local SPELL_POWER_FURY = SPELL_POWER_FURY
@@ -119,7 +124,43 @@ Core.Environment.common = {
     },
     proc = {
         trinket_any_react = false, -- TODO (do we actually care?)
+        trinket_any_remains = 0, -- TODO (do we actually care?)
         trinket_agility_react = false, -- TODO (do we actually care?)
+        trinket_agility_remains = 0, -- TODO (do we actually care?)
+        trinket_intellect_react = false, -- TODO (do we actually care?)
+        trinket_intellect_remains = 0, -- TODO (do we actually care?)
+        trinket_strength_react = false, -- TODO (do we actually care?)
+        trinket_strength_remains = 0, -- TODO (do we actually care?)
+        trinket_spell_power_react = false, -- TODO (do we actually care?)
+        trinket_spell_power_remains = 0, -- TODO (do we actually care?)
+        trinket_haste_react = false, -- TODO (do we actually care?)
+        trinket_haste_remains = 0, -- TODO (do we actually care?)
+        trinket_crit_react = false, -- TODO (do we actually care?)
+        trinket_crit_remains = 0, -- TODO (do we actually care?)
+        trinket_mastery_react = false, -- TODO (do we actually care?)
+        trinket_mastery_remains = 0, -- TODO (do we actually care?)
+        trinket_versatility_react = false, -- TODO (do we actually care?)
+        trinket_versatility_remains = 0, -- TODO (do we actually care?)
+    },
+    stacking_proc = {
+        trinket_any_react = false, -- TODO (do we actually care?)
+        trinket_any_remains = 0, -- TODO (do we actually care?)
+        trinket_agility_react = false, -- TODO (do we actually care?)
+        trinket_agility_remains = 0, -- TODO (do we actually care?)
+        trinket_intellect_react = false, -- TODO (do we actually care?)
+        trinket_intellect_remains = 0, -- TODO (do we actually care?)
+        trinket_strength_react = false, -- TODO (do we actually care?)
+        trinket_strength_remains = 0, -- TODO (do we actually care?)
+        trinket_spell_power_react = false, -- TODO (do we actually care?)
+        trinket_spell_power_remains = 0, -- TODO (do we actually care?)
+        trinket_haste_react = false, -- TODO (do we actually care?)
+        trinket_haste_remains = 0, -- TODO (do we actually care?)
+        trinket_crit_react = false, -- TODO (do we actually care?)
+        trinket_crit_remains = 0, -- TODO (do we actually care?)
+        trinket_mastery_react = false, -- TODO (do we actually care?)
+        trinket_mastery_remains = 0, -- TODO (do we actually care?)
+        trinket_versatility_react = false, -- TODO (do we actually care?)
+        trinket_versatility_remains = 0, -- TODO (do we actually care?)
     },
     bloodlust = {
         AuraID = {
@@ -129,6 +170,18 @@ Core.Environment.common = {
             90355, -- Ancient Hysteria
             160452, -- Netherwinds
             178207, -- Drums of Fury
+        },
+        AuraUnit = 'player',
+        AuraMine = false,
+    },
+    sated = {
+        AuraID = {
+            57724, -- Bloodlust/Sated
+            57723, -- Heroism/Exhaustion
+            80354, -- Time Warp/Temporal Displacement
+            95809, -- Ancient Hysteria/Insanity
+            160455, -- Netherwinds/Fatigued
+        -- ?????, -- Drums of Fury/TBD
         },
         AuraUnit = 'player',
         AuraMine = false,
@@ -143,8 +196,13 @@ Core.Environment.common = {
             return (env.movement.distance > 5) and true or false
         end,
     },
-
+    concordance_of_the_legionfall = {
+        AuraID = { 242583, 242584, 242586, 243096 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
+Core.Environment.common.exhaustion = Core.Environment.common.sated
 
 local function generic_can_spend(power, env, action, costType, costAmount)
     -- If the profile has a hook present for the action cost, execute that first
@@ -310,30 +368,55 @@ Core.Environment.resources = {
         gained = 0,
         spent = 0,
         skipped = 0,
+
         curr = function(power,env)
-            local r = power.sampled + power.gained - power.spent
-            --[[
-            local tx = { string.format("actual = %.2f, calculated = %.2f", GetTime(), env.currentTime) }
+            local all_remains = power.sample
+
+            -- Count the ready runes
+            local count = 0
             for i=1,6 do
-            local s,d,r = GetRuneCooldown(i)
-            local remaining = math.max(0, s + d - env.currentTime)
-            table.insert(tx, remaining > 0 and remaining or true)
+                if all_remains[i] == 0 then
+                    count = count + 1
+                end
             end
-            table.insert(tx, r)
-            DevTools_Dump{tx=tx}
-            ]]
-            return r
+
+            return count
         end,
 
-        sampled = function(power,env)
-            local count = 0
+        all_remains = {},
+        sample = function(power,env)
+            power.all_remains = power.all_remains or {}
+            local all_remains = power.all_remains
             for i=1,6 do
                 local s, d = GetRuneCooldown(i)
                 s, d = (s or 0), (d or 0)
-                if env.currentTime >= (s + d) then count = count + 1 end
+                local remaining = mmax(0, s + d - env.currentTime)
+                all_remains[i] = remaining
             end
-            return count
+            tsort(all_remains)
+
+            -- Insert '0' at the front to allow for gained runes
+            for i=1,power.gained do
+                tinsert(all_remains, 1, 0)
+            end
+            while #all_remains > 6 do tremove(all_remains, 7) end
+
+            -- Replace the end of the array for any spent runes
+            for i=1,mmin(6,power.spent) do
+                all_remains[7-i] = mmax(15, all_remains[7-i])
+            end
+
+            tsort(all_remains)
+            return all_remains
         end,
+
+        time_to_1 = function(power,env) return power.sample[1] end,
+        time_to_2 = function(power,env) return power.sample[2] end,
+        time_to_3 = function(power,env) return power.sample[3] end,
+        time_to_4 = function(power,env) return power.sample[4] end,
+        time_to_5 = function(power,env) return power.sample[5] end,
+        time_to_6 = function(power,env) return power.sample[6] end,
+
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },

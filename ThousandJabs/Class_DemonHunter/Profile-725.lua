@@ -15,9 +15,10 @@ local mfloor = math.floor
 -- Vengeance profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
+-- When exporting Vengeance DH, run '/tj _esd' for both with and without the Meta buff applied. Need to retrieve Shear/Sever.
+
 -- exported with /tj _esd
-local vengeance_abilities_exported = {}
-vengeance_abilities_exported = {
+local vengeance_abilities_exported = {
     abyssal_strike = { TalentID = 22502, },
     agonizing_flames = { TalentID = 22503, },
     blade_turning = { TalentID = 22513, },
@@ -46,7 +47,7 @@ vengeance_abilities_exported = {
     razor_spikes = { TalentID = 22504, },
     sever = { SpellIDs = { 235964 }, },
     shear = { SpellIDs = { 203782 }, },
-    sigil_of_chains = { SpellIDs = { 202138, 207665 }, TalentID = 22510, },
+    sigil_of_chains = { SpellIDs = { 202138 }, TalentID = 22510, },
     sigil_of_flame = { SpellIDs = { 204513, 204596 }, },
     sigil_of_misery = { SpellIDs = { 202140, 207684 }, },
     sigil_of_silence = { SpellIDs = { 202137, 207682 }, },
@@ -228,9 +229,10 @@ TJ:RegisterPlayerClass({
 -- Havoc profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
+-- When exporting Havoc DH, run '/tj _esd' for both with and without the Meta buff applied. Need to retrieve Annihilation/Chaos Strike/Blade Dance/Death Sweep.
+
 -- exported with /tj _esd
-local havoc_abilities_exported = {}
-havoc_abilities_exported = {
+local havoc_abilities_exported = {
     annihilation = { SpellIDs = { 201427 }, },
     blade_dance = { SpellIDs = { 188499 }, },
     blind_fury = { TalentID = 22416, },
@@ -333,6 +335,11 @@ local havoc_base_overrides = {
             return 0
         end,
     },
+    blade_dance = {
+        Icon = function(spell,env)
+            return select(3, GetSpellInfo(188499)) -- For some reason, Death Sweep overrides this and it doesn't get restored after Meta finishes.
+        end,
+    },
     annihilation = {
         CanCast = function(spell,env)
             return env.melee.in_range
@@ -393,6 +400,7 @@ local havoc_base_overrides = {
                 return spell.cooldown_remains
             end
         end,
+        aura_extended_by_demonic = false, -- TODO
     },
     bloodlet = {
         AuraID = 207690,

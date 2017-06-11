@@ -12,8 +12,7 @@ if not Core:MatchesBuild('7.2.5', '7.2.5') then return end
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local brewmaster_abilities_exported = {}
-brewmaster_abilities_exported = {
+local brewmaster_abilities_exported = {
     black_ox_brew = { SpellIDs = { 115399 }, TalentID = 22097, },
     blackout_combo = { TalentID = 22104, },
     blackout_strike = { SpellIDs = { 205523 }, },
@@ -206,8 +205,7 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-local windwalker_abilities_exported = {}
-windwalker_abilities_exported = {
+local windwalker_abilities_exported = {
     ascension = { TalentID = 19771, },
     blackout_kick = { SpellIDs = { 100784 }, },
     celerity = { TalentID = 19302, },
@@ -370,9 +368,9 @@ local windwalker_legendaries = {
 }
 
 local windwalker_tiersets = {
-    rising_fist = {
-        AuraID = -1, -- TBD!
-        AuraUnit = 'target',
+    pressure_point = {
+        AuraID = { 246331, 247255 },
+        AuraUnit = 'player',
         AuraMine = true,
     }
 }

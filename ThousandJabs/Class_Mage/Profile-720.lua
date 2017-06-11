@@ -34,7 +34,7 @@ local frost_abilities_exported = {
     frozen_orb = { SpellIDs = { 84714 }, },
     frozen_touch = { TalentID = 22466, },
     glacial_insulation = { TalentID = 16025, },
-    glacial_spike = { TalentID = 22309, },
+    glacial_spike = { SpellIDs = { 199786, 228600 }, TalentID = 22309, },
     ice_barrier = { SpellIDs = { 11426 }, },
     ice_block = { SpellIDs = { 45438 }, },
     ice_floes = { SpellIDs = { 108839 }, TalentID = 22903, },
@@ -122,6 +122,10 @@ local frost_base_abilities = {
         AuraMine = true,
     },
     glacial_spike = {
+        spell_travel_time = function(spell, env)
+            local velocity = 40 -- yd/sec, from simc allspells.txt
+            return mmax(0.1, (env.movement.distance or 0) / velocity)
+        end,
         CanCast = function(spell, env)
             return env.icicles.aura_stack == 5 and true or false
         end,
@@ -152,6 +156,11 @@ local frost_base_abilities = {
     },
     zannesu_journey = {
         AuraID = 206397,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    frozen_mass = {
+        AuraID = 242253,
         AuraUnit = 'player',
         AuraMine = true,
     },

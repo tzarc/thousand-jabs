@@ -368,9 +368,9 @@ local windwalker_legendaries = {
 }
 
 local windwalker_tiersets = {
-    rising_fist = {
-        AuraID = -1, -- TBD!
-        AuraUnit = 'target',
+    pressure_point = {
+        AuraID = { 246331, 247255 },
+        AuraUnit = 'player',
         AuraMine = true,
     }
 }

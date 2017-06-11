@@ -285,9 +285,9 @@ end
 local simcExpressionRenderer
 do
     local equivalentLuaOperators = {
-        ['abs'] = 'math.abs',
-        ['ceil'] = 'math.ceil',
-        ['floor'] = 'math.floor',
+        ['abs'] = '_mabs',
+        ['ceil'] = '_mceil',
+        ['floor'] = '_mfloor',
         ['and'] = 'and',
         ['or'] = 'or',
         ['not'] = 'not',

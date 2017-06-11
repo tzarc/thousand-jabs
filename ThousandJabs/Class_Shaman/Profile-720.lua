@@ -71,6 +71,7 @@ local function DecrementUpdateElementalFocus(env)
         if env.elemental_focus.aura_stack == 0 then
             env.elemental_focus.expirationTime = 0
         end
+        --Core:Debug("env.elemental_focus.aura_stack = " .. env.elemental_focus.aura_stack)
     end
 end
 
@@ -105,12 +106,17 @@ local elemental_base_overrides = {
         AuraApplyLength = 120,
         aura_duration = 15,
         cost_type = 'maelstrom',
-        spell_refreshable = function(spell, env) return spell.aura_up end,
+        spell_refreshable = function(spell, env)
+            if spell.aura_down then return true end
+            local tick_time = 2 -- TODO
+            if spell.aura_remains <= tick_time then return true end
+            return false
+        end,
         maelstrom_cost = function(spell, env)
             return mmax(0, mmin(20, env.maelstrom.curr))
         end,
         PerformCast = function(spell, env)
-            spell.expirationTime = env.currentTime + 15 -- Next reset it'll fix up the duration, don't bother about the cost
+            spell.expirationTime = env.currentTime + 30 -- Next reset it'll fix up the duration, don't bother about the cost
             DecrementUpdateElementalFocus(env)
         end,
     },
@@ -161,13 +167,15 @@ local elemental_base_overrides = {
         spell_cast_time = function(spell, env)
             -- Insta-cast when Lava Surge is up
             if env.lava_surge.aura_up then
-                env.lava_surge.expirationTime = 0
                 return 0.01
             end
             return spell.base_cast_time
         end,
         PerformCast = function(spell, env)
             env.maelstrom.gained = env.maelstrom.gained + 12
+            if env.lava_surge.aura_up then
+                env.lava_surge.expirationTime = 0
+            end
             DecrementUpdateElementalFocus(env)
         end,
     },
