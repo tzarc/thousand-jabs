@@ -435,7 +435,9 @@ else
     if #lines > 0 then
         result = simcAplParser(lines, function(str)
             str = str:gsub('%.in$', '["in"]') -- 'in' is a lua keyword, so we change it to array indexing
-            str = str:gsub('([^%d])%.([%d]+)', '%1[%2]') -- any trailing digit selectors (i.e.  something.1) we change to array indexing
+            str = str:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
+            str = str:gsub('([^%d])%.([%d]+)%.', '%1[%2].') -- any trailing digit selectors with following field (i.e.  something.1.field) we change to array indexing
+            str = str:gsub('([^%d])%.(%d.+)', '%1[\"%2\"]') -- any trailing digit selectors with following text (i.e.  something.1name) we change to string indexing
             return str
         end)
 

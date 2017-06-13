@@ -32,8 +32,10 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
 
     local before = keyword
 
-    -- Any trailing digit selectors (i.e.  something.1) we change to array indexing
-    keyword = keyword:gsub('([^%d])%.([%d]+)', '%1[%2]')
+    -- Selectors starting with a digit...
+    keyword = keyword:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
+    keyword = keyword:gsub('([^%d])%.([%d]+)%.', '%1[%2].') -- any trailing digit selectors with following field (i.e.  something.1.field) we change to array indexing
+    keyword = keyword:gsub('([^%d])%.(%d.+)', '%1[\"%2\"]') -- any digit selectors starting with a digit but having trailing text (i.e.  something.111name) we change to string indexing
 
     -- Min/max modifiers (ignored)
     keyword = keyword:gsub("^min:", "")
