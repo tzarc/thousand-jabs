@@ -104,7 +104,7 @@ actions.precombat+=/food,type=lavish_suramar_feast
 actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/regrowth,if=talent.bloodtalons.enabled
 actions.precombat+=/variable,name=rake_refresh,op=set,value=7
-actions.precombat+=/variable,name=rake_refresh,op=set,value=3,if=equipped.ailuro_pouncers|talent.soul_of_the_forest.enabled
+actions.precombat+=/variable,name=rake_refresh,op=set,value=3,if=equipped.ailuro_pouncers
 actions.precombat+=/variable,name=pooling,op=set,value=3
 actions.precombat+=/variable,name=pooling,op=set,value=10,if=equipped.chatoyant_signet
 actions.precombat+=/variable,name=pooling,op=set,value=3,if=equipped.the_wildshapers_clutch&!equipped.chatoyant_signet
@@ -123,6 +123,7 @@ actions+=/auto_attack
 actions+=/skull_bash
 actions+=/berserk,if=buff.tigers_fury.up
 actions+=/incarnation,if=cooldown.tigers_fury.remains<gcd
+actions+=/use_items
 actions+=/potion,name=old_war,if=((buff.berserk.remains>10|buff.incarnation.remains>20)&(target.time_to_die<180|(trinket.proc.all.react&target.health.pct<25)))|target.time_to_die<=40
 actions+=/tigers_fury,if=(!buff.clearcasting.react&energy.deficit>=60)|energy.deficit>=80|(t18_class_trinket&buff.berserk.up&buff.tigers_fury.down)
 actions+=/incarnation,if=energy.time_to_max>1&energy>=35

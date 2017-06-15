@@ -144,6 +144,11 @@ local vengeance_talent_overrides = {
             env.pain.gained = env.pain.gained + 20
         end,
     },
+    fracture = {
+        PerformCast = function(spell, env)
+            env.soul_fragments.gained = env.soul_fragments.gained + 2
+        end,
+    },
     spirit_bomb = {
         AuraApplied = 'frailty',
         AuraApplyLength = 20,
@@ -152,11 +157,11 @@ local vengeance_talent_overrides = {
             return env.soul_fragments.curr >= 1
         end,
         PerformCast = function(spell, env)
-            env.soul_fragments.spent = env.soul_fragments.spent + 1
+            env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
         end,
     },
     frailty = { -- Spirit bomb debuff
-        AuraID = 224509,
+        AuraID = { 224509, 247456 },
         AuraUnit = 'target',
         AuraMine = true,
     },
