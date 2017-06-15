@@ -24,6 +24,7 @@ local UI = TJ:NewModule('UI')
 Core.devMode = devMode
 Core.Stats = {}
 Core.Environment = {}
+Core.Loader = {}
 if Core.devMode then _G['tj'] = TJ end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -601,11 +602,16 @@ function Core:GenerateDebuggingInformation()
                 released = totalReleased,
                 used = totalAcquired - totalReleased
             },
-            --            patterns = {
-            --                power = Core.PowerPatterns,
-            --                cooldown = Core.CooldownPatterns,
-            --                recharge = Core.RechargePatterns,
-            --            },
+            -- patterns = {
+            --     power = Core.PowerPatterns,
+            --     cooldown = Core.CooldownPatterns,
+            --     recharge = Core.RechargePatterns,
+            --     globals = {
+            --         ['DECIMAL_SEPERATOR'] = DECIMAL_SEPERATOR,
+            --         ['LARGE_NUMBER_SEPERATOR'] = LARGE_NUMBER_SEPERATOR
+            --     }
+            -- },
+            -- loader = Core.Loader,
             localCopies = copiesExport(),
         },
     }

@@ -203,7 +203,7 @@ local unholy_base_abilities = {
         -- This needs to be manually specified - if there's a profile reload while sudden doom is up, then there's no cost associated with it
         cost_type = 'runic_power',
         runic_power_cost = function(spell, env)
-            return env.sudden_doom.aura_up and 0 or 35
+            return env.sudden_doom.aura_up and 0 or 45
         end,
         PerformCast = function(spell, env)
             if env.sudden_doom.aura_up then

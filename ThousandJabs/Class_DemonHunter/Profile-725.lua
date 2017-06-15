@@ -159,6 +159,11 @@ local vengeance_talent_overrides = {
         AuraID = 224509,
         AuraUnit = 'target',
         AuraMine = true,
+    },
+    demonic_infusion = {
+        PerformCast = function(spell, env)
+            env.pain.gained = env.pain.gained + 60
+        end,
     }
 }
 
@@ -327,7 +332,7 @@ local havoc_base_overrides = {
         -- ... Generates additional 1-14 fury (i.e. actually 1-8, see below)
         -- ... Upper range value modified by Demon Blades by -6 (see simc dump, allspells.txt, id=208827)
         aothg_min = 1,
-        aothg_max = 8,
+        aothg_max = 6,
         aothg_estimate = function(spell,env)
             if env.equipped[137038] then
                 return mfloor(spell.aothg_min + (((spell.aothg_max-spell.aothg_min)/2)*env.demon_blades.chance))
