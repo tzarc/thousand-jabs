@@ -515,6 +515,7 @@ local function IsGreen(colour) -- work out if it's increased by haste
     return colour[1] == 0 and colour[2] == 255 and colour[3] == 0 and true
 end
 
+local RegexPatterns = setmetatable({ ['.'] = '%.', [' '] = '%s' }, { __index = function(tbl,idx) return idx end })
 local PowerTypes = { 'mana', 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power', 'rage', 'soul_shards', 'maelstrom' }
 local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
 local PowerPatterns = {}
@@ -524,7 +525,7 @@ for _,v in pairs(PowerTypes) do
         if real_G[b] then
             local t = real_G[b]
             t = t:gsub('%%s', '([.,%%d]+)')
-            t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(LARGE_NUMBER_SEPERATOR, '') or t
+            t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or t
 
             local placeholder = '____PLACEHOLDER____'
             local A, B
@@ -552,7 +553,7 @@ for _,v in pairs(DurationChecks) do
     if real_G[b] then
         local t = real_G[b]
         t = t:gsub('%%.3g', '([.,%%d]+)')
-        t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(LARGE_NUMBER_SEPERATOR, '') or t
+        t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or t
 
         local placeholder = '____PLACEHOLDER____'
         local A, B
@@ -571,7 +572,7 @@ for _,v in pairs(DurationChecks) do
     if real_G[b] then
         local t = real_G[b]
         t = t:gsub('%%.3g', '([.,%%d]+)')
-        t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(LARGE_NUMBER_SEPERATOR, '') or t
+        t = LARGE_NUMBER_SEPERATOR:len() > 0 and t:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or t
 
         local placeholder = '____PLACEHOLDER____'
         local A, B
@@ -594,7 +595,7 @@ function TJ:GetSpellCost(spellID)
     local entries = self:GetTooltipEntries(Core:Format('|cff71d5ff|Hspell:%d|h[spell%d]|h|r', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(PowerPatterns) do
-            local f = LARGE_NUMBER_SEPERATOR:len() > 0 and e.t:gsub(LARGE_NUMBER_SEPERATOR, '') or e.t
+            local f = LARGE_NUMBER_SEPERATOR:len() > 0 and e.t:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or e.t
             local a, b, c = f:match(v[2])
             -- strip non-digit and convert to number
             if a then a = a:gsub('%D', '') + 0 end
@@ -627,8 +628,8 @@ end
 
 local function extract_number(str)
     local str = str:gsub('[^,%.%d]', '')
-    local vals = split(str, DECIMAL_SEPERATOR)
-    vals[1] = LARGE_NUMBER_SEPERATOR:len() > 0 and vals[1]:gsub(LARGE_NUMBER_SEPERATOR, '') or vals[1]
+    local vals = split(str, RegexPatterns[DECIMAL_SEPERATOR])
+    vals[1] = LARGE_NUMBER_SEPERATOR:len() > 0 and vals[1]:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or vals[1]
     vals[2] = '0.' .. (vals[2] or '0')
     local out = tonumber(vals[1]) + tonumber(vals[2])
     Core.Loader[1+#Core.Loader] = LSD({str=str,vals=vals,out=out}):gsub('[%s\n]','')
@@ -640,7 +641,7 @@ local function get_spell_cooldown_or_recharge(spellID, patterns)
     local entries = TJ:GetTooltipEntries(Core:Format('spell:%d', spellID))
     for _,e in pairs(entries) do
         for k,v in pairs(patterns) do
-            local f = LARGE_NUMBER_SEPERATOR:len() > 0 and e.t:gsub(LARGE_NUMBER_SEPERATOR, '') or e.t
+            local f = LARGE_NUMBER_SEPERATOR:len() > 0 and e.t:gsub(RegexPatterns[LARGE_NUMBER_SEPERATOR], '') or e.t
             local r = f:match(v[2])
             if r then
                 local isGreen = IsGreen(e.cb)
