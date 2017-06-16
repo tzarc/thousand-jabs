@@ -44,6 +44,8 @@ do
     local operators = {
         { 'ceil(', 'ceil' },
         { 'floor(', 'floor' },
+        { 'min(', 'min' },
+        { 'max(', 'max' },
         { '(', 'lparen' },
         { ')', 'rparen' },
         { '&&', 'and' },
@@ -146,8 +148,10 @@ do
     local precedences = {
         ['lparen'] = 1000,
         ['rparen'] = 1000,
-        ['ceil'] = 999,
-        ['floor'] = 999,
+        ['min'] = 999,
+        ['max'] = 999,
+        ['ceil'] = 998,
+        ['floor'] = 998,
         ['primary'] = 1,
     }
 
@@ -155,6 +159,8 @@ do
         ['primary'] = createPrimaryExpression,
         ['lparen'] = createParenthesesExpression,
         ['rparen'] = nil, -- terminates the lparen ParseExpression() call
+        ['min'] = createInvokeExpression,
+        ['max'] = createInvokeExpression,
         ['ceil'] = createInvokeExpression,
         ['floor'] = createInvokeExpression,
     }
@@ -285,9 +291,11 @@ end
 local simcExpressionRenderer
 do
     local equivalentLuaOperators = {
-        ['abs'] = '_mabs',
-        ['ceil'] = '_mceil',
-        ['floor'] = '_mfloor',
+        ['abs'] = 'math.abs',
+        ['ceil'] = 'math.ceil',
+        ['floor'] = 'math.floor',
+        ['min'] = 'math.min',
+        ['max'] = 'math.max',
         ['and'] = 'and',
         ['or'] = 'or',
         ['not'] = 'not',
@@ -397,8 +405,8 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 if IsLoadedByWoW then
-    local function splitnewlines(str)
-        local t = {}
+    local function splitnewlines(str, tbl)
+        local t = tbl or {}
         local function helper(line) tinsert(t, line) return "" end
         helper(str:gsub("(.-)\r?\n", helper))
         return t

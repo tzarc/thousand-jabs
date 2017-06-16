@@ -231,6 +231,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     env.abilitiesUsed = nil
     env.set_bonus = nil
 
+    env._mabs = nil
     env._mceil = nil
     env._mfloor = nil
     env._mmax = nil
@@ -371,6 +372,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
 
     -- Fix up math funcs
+    env._mabs = math.abs
     env._mceil = math.ceil
     env._mfloor = math.floor
     env._mmax = math.max
