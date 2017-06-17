@@ -260,13 +260,6 @@ local elemental_legendary_overrides = {
     }
 }
 
-local elemental_hooks = {
-    hooks = {
-        OnStateInit = function(env)
-        end,
-    }
-}
-
 TJ:RegisterPlayerClass({
     name = 'Elemental',
     class_id = 7,
@@ -279,7 +272,6 @@ TJ:RegisterPlayerClass({
         elemental_talent_overrides,
         elemental_artifact_abilities,
         elemental_legendary_overrides,
-        elemental_hooks,
     },
     config_checkboxes = {
         swelling_maelstrom_selected = false,

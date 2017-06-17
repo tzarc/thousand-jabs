@@ -34,6 +34,7 @@ if Core.devMode then _G['tj'] = TJ end
 
 local LSD = LibStub("LibSerpentDump")
 local LSM = LibStub('LibSharedMedia-3.0')
+local SpellData = LibStub('LibSpellData')
 
 local ct = function() return TableCache:Acquire() end
 local rt = function(tbl) TableCache:Release(tbl) end
@@ -50,6 +51,7 @@ local GetBuildInfo = GetBuildInfo
 local GetInventoryItemLink = GetInventoryItemLink
 local GetInventorySlotInfo = GetInventorySlotInfo
 local GetLocale = GetLocale
+local getmetatable = getmetatable
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
 local GetTalentInfoBySpecialization = GetTalentInfoBySpecialization
@@ -60,6 +62,7 @@ local loadstring = loadstring
 local pairs = pairs
 local pcall = pcall
 local print = print
+local rawget = rawget
 local select = select
 local setmetatable = setmetatable
 local strgmatch = string.gmatch
@@ -94,7 +97,7 @@ local tableNames = {}
 
 local real_G = _G
 local fake_G = setmetatable({}, {
-    __index = function(tbl,key)
+    __index = function(tbl, key)
         local val = real_G[key]
         if tContains(globalExcludes, key) then return val end
         if not Core.devMode and val ~= nil then return val end
@@ -105,14 +108,14 @@ local fake_G = setmetatable({}, {
         local filename = strmatch(firstLine, '(.-):')
         local thisstack = ('Global read of "%s": %s'):format(tostring(key), firstLine);
         local found = false
-        for k,v in pairs(entry.stacks) do
+        for k, v in pairs(entry.stacks) do
             if v == thisstack then
                 found = true
                 break
             end
         end
         if not found then
-            entry.stacks[1+#entry.stacks] = thisstack
+            entry.stacks[1 + #entry.stacks] = thisstack
             tsort(entry.stacks)
             Core:Error(thisstack)
             localCopies[filename] = localCopies[filename] or {}
@@ -121,7 +124,7 @@ local fake_G = setmetatable({}, {
         if Core.devMode and val ~= nil then return val end
         return nil
     end,
-    __newindex = function(tbl,key,val)
+    __newindex = function(tbl, key, val)
         real_G[key] = val
         if tContains(globalExcludes, key) then return val end
         globalWrites[key] = globalWrites[key] or {}
@@ -130,14 +133,14 @@ local fake_G = setmetatable({}, {
         local firstLine = strgmatch(debugstack(2), '(.-)\n()')()
         local thisstack = ('Global write of "%s": %s'):format(tostring(key), firstLine);
         local found = false
-        for k,v in pairs(entry.stacks) do
+        for k, v in pairs(entry.stacks) do
             if v == thisstack then
                 found = true
                 break
             end
         end
         if not found then
-            entry.stacks[1+#entry.stacks] = thisstack
+            entry.stacks[1 + #entry.stacks] = thisstack
             tsort(entry.stacks)
             Core:Error(thisstack)
         end
@@ -157,7 +160,14 @@ end
 Core:Safety()
 
 ------------------------------------------------------------------------------------------------------------------------
--- Printing functions
+-- Local definitions
+------------------------------------------------------------------------------------------------------------------------
+
+local printedOnce = {}
+local tableNames = {}
+
+------------------------------------------------------------------------------------------------------------------------
+-- Printing and debug functions
 ------------------------------------------------------------------------------------------------------------------------
 
 function Core:Print(...)
@@ -177,12 +187,41 @@ function Core:DevPrint(...)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Helpers
+------------------------------------------------------------------------------------------------------------------------
+
+function Core:LoadFunctionString(funcStr, name)
+    local loader, errStr = loadstring('return (' .. funcStr .. ')', name)
+    if errStr then
+        Core:Error(Core:Format('Error loading function for %s:\n%s', name, errStr))
+    else
+        local success, retval = pcall(assert(loader))
+        if success then
+            return retval
+        else
+            Core:Error(Core:Format('Error creating function for %s:\n%s', name, tostring(retval)))
+        end
+    end
+end
+
+function Core:MatchesBuild(tripletFrom, tripletTo)
+    tripletTo = tripletTo or tripletFrom
+    local f1, f2, f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
+    local f = tonumber(f1) * 10000000000 + tonumber(f2) * 100000000 + tonumber(f3) * 1000000
+    local t1, t2, t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
+    local t = tonumber(t1) * 10000000000 + tonumber(t2) * 100000000 + tonumber(t3) * 1000000
+    local c1, c2, c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
+    local c = tonumber(c1) * 10000000000 + tonumber(c2) * 100000000 + tonumber(c3) * 1000000
+    return (f <= c and c <= t) and true or false
+end
+
+------------------------------------------------------------------------------------------------------------------------
 -- Error handling
 ------------------------------------------------------------------------------------------------------------------------
 
 function Core:Error(fulltxt)
     if not tContains(otherErrors, fulltxt) then
-        otherErrors[1+#otherErrors] = fulltxt
+        otherErrors[1 + #otherErrors] = fulltxt
         if not Core.errorThrown then
             print('|cFFFF0000Well, this is problematic. It seems Thousand Jabs has encountered an error:|r')
             print('|cFFFF9900Please raise a ticket on the project page on curseforge, and paste the output from the command: |cFFFFFF00/tj ticket|r')
@@ -197,10 +236,10 @@ end
 
 function Core:MergeTables(...)
     local target = {}
-    for i=1,select('#', ...) do
+    for i = 1, select('#', ...) do
         local t = select(i, ...)
         if t then
-            for k,v in pairs(t) do
+            for k, v in pairs(t) do
                 if type(target[k]) == 'table' and type(v) == 'table' then
                     target[k] = Core:MergeTables(target[k], v)
                 elseif not target[k] then
@@ -220,22 +259,28 @@ function Core:Format(f, ...)
     return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '')
 end
 
-function Core:OrderedPairs(t, f)
-    local a = ct()
-    for n in pairs(t) do tinsert(a, n) end
-    tsort(a, f)
-    local i = 0
-    local iter = function ()
-        i = i + 1
-        local k = a[i]
+do
+    local orderedPairsDispatch = function(state)
+        state.idx = state.idx + 1
+        local k = state.keys[state.idx]
         if k == nil then
-            rt(a)
+            state.tbl = nil
+            rt(state)
             return nil
         else
-            return k, t[k]
+            return k, state.tbl[k]
         end
     end
-    return iter
+
+    function Core:OrderedPairs(tbl, f)
+        local state = ct()
+        state.keys = ct()
+        state.tbl = tbl
+        state.idx = 0
+        for n in pairs(tbl) do tinsert(state.keys, n) end
+        tsort(state.keys, f)
+        return orderedPairsDispatch, state
+    end
 end
 
 function Core:IntersectionCount(tbl1, tbl2)
@@ -243,10 +288,10 @@ function Core:IntersectionCount(tbl1, tbl2)
     local b = (#tbl1 < #tbl2) and tbl2 or tbl1
     local cnt = 0
     local i = ct()
-    for n=1,#a do
+    for n = 1, #a do
         i[a[n]] = true
     end
-    for n=1,#b do
+    for n = 1, #b do
         if i[b[n]] then cnt = cnt + 1 end
     end
     rt(i)
@@ -269,12 +314,12 @@ end
 
 function Core:MatchesBuild(tripletFrom, tripletTo)
     tripletTo = tripletTo or tripletFrom
-    local f1,f2,f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
-    local f = tonumber(f1)*10000000000 + tonumber(f2)*100000000 + tonumber(f3)*1000000
-    local t1,t2,t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
-    local t = tonumber(t1)*10000000000 + tonumber(t2)*100000000 + tonumber(t3)*1000000
-    local c1,c2,c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
-    local c = tonumber(c1)*10000000000 + tonumber(c2)*100000000 + tonumber(c3)*1000000
+    local f1, f2, f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
+    local f = tonumber(f1) * 10000000000 + tonumber(f2) * 100000000 + tonumber(f3) * 1000000
+    local t1, t2, t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
+    local t = tonumber(t1) * 10000000000 + tonumber(t2) * 100000000 + tonumber(t3) * 1000000
+    local c1, c2, c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
+    local c = tonumber(c1) * 10000000000 + tonumber(c2) * 100000000 + tonumber(c3) * 1000000
     return (f <= c and c <= t) and true or false
 end
 
@@ -308,7 +353,7 @@ local missingFieldMetatable = {
 function Core:MissingFieldTable(tableName, tbl)
     tableNames[tbl] = tableName
     setmetatable(tbl, { __index = missingFieldMetatable.__index, __name = tableName })
-    for k,v in pairs(tbl) do
+    for k, v in pairs(tbl) do
         if type(v) == 'table' then
             tbl[k] = Core:MissingFieldTable(targetFieldName(tableName, k), v)
         end
@@ -325,9 +370,9 @@ function Core:Debug(...)
         if #debugLines == 0 then debugLines[1] = Core:Format("|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):") end
         local a = ...
         if type(a) == 'table' and select('#', ...) == 1 then
-            debugLines[1+#debugLines] = Core:Format('|cFFFFFF99%s|r', LSD(a))
+            debugLines[1 + #debugLines] = Core:Format('|cFFFFFF99%s|r', LSD(a))
         else
-            debugLines[1+#debugLines] = Core:Format(...)
+            debugLines[1 + #debugLines] = Core:Format(...)
         end
     end
 end
@@ -344,7 +389,7 @@ function Core:OpenDebugWindow(title, data)
     LoadAddOn("ThousandJabs_Config") -- Ensure AceGUI has been loaded
     local GUI = LibStub("AceGUI-3.0")
     local f = GUI:Create("Frame")
-    f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
+    f:SetCallback("OnClose", function(widget) GUI:Release(widget) end)
     f:SetTitle(title)
     f:SetLayout("Fill")
 
@@ -363,13 +408,13 @@ function Core:ShowLoggingFrame()
     if not self.log_frame then
         self.log_frame = CreateFrame("Frame", "ThousandJabsLog", UIParent)
         self.log_frame:ClearAllPoints()
-        self.log_frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 550, -20)
-        self.log_frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -20, 20)
+        self.log_frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 550, - 20)
+        self.log_frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", - 20, 20)
         self.log_frame.text = self.log_frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         self.log_frame.text:SetJustifyH("LEFT")
         self.log_frame.text:SetJustifyV("TOP")
-        self.log_frame.text:SetPoint("TOPLEFT", 8, -8)
-        self.log_frame.text:SetPoint("BOTTOMRIGHT", -8, 8)
+        self.log_frame.text:SetPoint("TOPLEFT", 8, - 8)
+        self.log_frame.text:SetPoint("BOTTOMRIGHT", - 8, 8)
         self.log_frame.text:SetTextColor(0.7, 0.7, 0.7, 1.0)
     end
 
@@ -438,8 +483,8 @@ function Core:UpdateUsageStatistics()
                     local delta = curr - prev
                     Core:Debug("           Memory usage: %12.3f kB", curr)
                     Core:Debug("           Memory delta: %12.3f kB", delta)
-                    Core:Debug("           Memory delta: %12.3f kB/sec (over last %d secs)", delta/dt, statUpdateSpeed)
-                    Broker.dataObj.text = Core:Format("Thousand Jabs: Memory: %d bytes/sec", 1024*delta/dt)
+                    Core:Debug("           Memory delta: %12.3f kB/sec (over last %d secs)", delta / dt, statUpdateSpeed)
+                    Broker.dataObj.text = Core:Format("Thousand Jabs: Memory: %d bytes/sec", 1024 * delta / dt)
                 end
                 if Stats.lastCpuAmount and Stats.lastCpuAmount > 0 then
                     local curr = Stats.currCpuAmount
@@ -447,9 +492,9 @@ function Core:UpdateUsageStatistics()
                     local delta = curr - prev
                     Core:Debug("              CPU usage: %12.3f ms", curr)
                     Core:Debug("              CPU delta: %12.3f ms", delta)
-                    Core:Debug("              CPU delta: %12.3f ms/sec (over last %d secs)", delta/dt, statUpdateSpeed)
-                    Core:Debug("              CPU usage: %10.1f%%", 100*(delta/dt)/1000.0)
-                    Broker.dataObj.text = Broker.dataObj.text .. Core:Format(", CPU: %.1f%% (%.3fms)", 100*(delta/dt)/1000.0, delta/dt)
+                    Core:Debug("              CPU delta: %12.3f ms/sec (over last %d secs)", delta / dt, statUpdateSpeed)
+                    Core:Debug("              CPU usage: %10.1f%%", 100 * (delta / dt) / 1000.0)
+                    Broker.dataObj.text = Broker.dataObj.text .. Core:Format(", CPU: %.1f%% (%.3fms)", 100 * (delta / dt) / 1000.0, delta / dt)
                 end
             end
         else
@@ -465,7 +510,7 @@ end
 local function tierSelections()
     local specID = GetSpecialization()
     local talents = {}
-    for k=1,7 do
+    for k = 1, 7 do
         talents[k] = select(10, GetTalentInfoBySpecialization(specID, k, 1)) and 1
             or select(10, GetTalentInfoBySpecialization(specID, k, 2)) and 2
             or select(10, GetTalentInfoBySpecialization(specID, k, 3)) and 3
@@ -477,16 +522,16 @@ end
 local inventorySlots = { "AmmoSlot", "BackSlot", "ChestSlot", "FeetSlot", "Finger0Slot", "Finger1Slot", "HandsSlot", "HeadSlot", "LegsSlot", "MainHandSlot", "NeckSlot", "RangedSlot", "SecondaryHandSlot", "ShirtSlot", "ShoulderSlot", "TabardSlot", "Trinket0Slot", "Trinket1Slot", "WaistSlot", "WristSlot" }
 local function equippedItems()
     local slotlinks = {}
-    for _,slot in pairs(inventorySlots) do
+    for _, slot in pairs(inventorySlots) do
         local ok, inventoryID = pcall(GetInventorySlotInfo, slot)
-        if ok and inventoryID then slotlinks[slot] = (GetInventoryItemLink("player", inventoryID) or ''):gsub('|','||') end
+        if ok and inventoryID then slotlinks[slot] = (GetInventoryItemLink("player", inventoryID) or ''):gsub('|', '||') end
     end
     return slotlinks
 end
 
 local function bindings()
     local binds = {}
-    for i=1,120 do
+    for i = 1, 120 do
         local _, spellID
         local actionType, actionID = GetActionInfo(i)
         if actionType == "macro" then
@@ -502,9 +547,9 @@ end
 local function copiesExport()
     if not Core.devMode then return nil end
     local s = ''
-    for filename,list in Core:OrderedPairs(localCopies) do
+    for filename, list in Core:OrderedPairs(localCopies) do
         s = s .. Core:Format('\n-- %s\n', filename)
-        for k,v in Core:OrderedPairs(list) do
+        for k, v in Core:OrderedPairs(list) do
             s = s .. Core:Format("local %s = %s\n", k, k)
         end
     end
@@ -546,15 +591,7 @@ function Core:GenerateDebuggingInformation()
                 released = totalReleased,
                 used = totalAcquired - totalReleased
             },
-            -- patterns = {
-            --     power = Core.PowerPatterns,
-            --     cooldown = Core.CooldownPatterns,
-            --     recharge = Core.RechargePatterns,
-            --     globals = {
-            --         ['DECIMAL_SEPERATOR'] = DECIMAL_SEPERATOR,
-            --         ['LARGE_NUMBER_SEPERATOR'] = LARGE_NUMBER_SEPERATOR
-            --     }
-            -- },
+            -- patterns = SpellData.Patterns,
             -- loader = Core.Loader,
             localCopies = copiesExport(),
         },
@@ -572,4 +609,172 @@ function Core:ExportDebuggingInformation()
         local export = Core:GenerateDebuggingInformation()
         Core:OpenDebugWindow('ThousandJabs Diagnostic Information', Core:Format("ThousandJabs Diagnostic Information:\n%s", LSD(export)))
     end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Fallback table registration
+------------------------------------------------------------------------------------------------------------------------
+
+Core.NextFallback = '!!EXECUTE_NEXT_FALLBACK!!' -- handlers can return this for the ability to skip the current handler and continue executing other fallbacks
+local registeredFallbackTables = {}
+Core.RegisterFallbackTable = function(self, name, table)
+    registeredFallbackTables[name] = table
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Fallback table creation
+------------------------------------------------------------------------------------------------------------------------
+
+local skipFunctionEvaluation = {
+    'can_spend',
+    'perform_spend',
+}
+
+local function fallbackTable__indexPrototype(tbl, idx)
+    -- Allow predefined functions
+    local functions = getmetatable(tbl).__functions
+    local f = functions[idx]
+    if f then return f end
+
+    -- Run through the fallbacks
+    local fallbacks = getmetatable(tbl).__fallbacks
+    for _, fallback in pairs(fallbacks) do
+        local entry = rawget(fallback, idx)
+        if type(entry) ~= 'nil' then
+            if type(entry) == 'function' then
+                if tContains(skipFunctionEvaluation, idx) then return entry end
+                local ok, res = pcall(entry, tbl, getmetatable(tbl).__env)
+                if not ok then Core:Error(res) end
+                if res ~= Core.NextFallback then
+                    return res
+                end
+            else
+                if entry ~= Core.NextFallback then
+                    return entry
+                end
+            end
+        end
+    end
+    -- None of the fallbacks had the field present, trigger the missing field table instead
+    return getmetatable(tbl).__missing[idx]
+end
+
+local function fallbackTableFunction__AddFunction(tbl, name, func)
+    local functions = getmetatable(tbl).__functions
+    if not functions[name] then
+        functions[name] = func
+    end
+end
+
+local function getFallbackTable(input)
+    if type(input) == 'table' then
+        local found = false
+        for k, v in pairs(input) do found = true break end
+        if found then
+            return input
+        end
+    elseif type(input) == 'string' then
+        return registeredFallbackTables[input]
+    end
+end
+
+local function fallbackTableFunction__PrependFallbackPrototype(tbl, fallback)
+    local t = getFallbackTable(fallback)
+    if t then
+        local fallbacks = getmetatable(tbl).__fallbacks
+        if not tContains(fallbacks, t) then
+            tinsert(fallbacks, 1, t)
+        end
+    end
+end
+
+local function fallbackTableFunction__AppendFallbackPrototype(tbl, fallback)
+    local t = getFallbackTable(fallback)
+    if t then
+        local fallbacks = getmetatable(tbl).__fallbacks
+        if not tContains(fallbacks, t) then
+            tinsert(fallbacks, t)
+        end
+    end
+end
+
+local function insertKeys(tblSearch, tblOut)
+    for k, v in pairs(tblSearch) do
+        if not tContains(tblOut, k) then tinsert(tblOut, k) end
+    end
+end
+
+local function fallbackTableFunction__GetKeysPrototype(tbl, target)
+    local keys = target or {}
+    wipe(keys)
+    insertKeys(tbl, keys)
+    for _, fallback in pairs(getmetatable(tbl).__fallbacks) do
+        insertKeys(fallback, keys)
+    end
+    tsort(keys)
+    return keys
+end
+
+local function fallbackTableFunction__HasKey(tbl, key)
+    local keys = ct()
+    tbl:GetKeys(keys)
+    local r = tContains(keys, key)
+    rt(keys)
+    return r and true or false
+end
+
+local function fallbackTableFunction__EvaluatePrototype(tbl, target)
+    local keys = ct()
+    tbl:GetKeys(keys)
+    local data = target or {}
+    wipe(data)
+    for _, k in pairs(keys) do
+        data[k] = tbl[k]
+    end
+    rt(keys)
+    return data
+end
+
+local function fallbackTableFunction__Merge(tbl, otherTbl)
+    tbl:AppendFallback(otherTbl)
+    local otherMt = getmetatable(otherTbl)
+    if not otherMt then return end
+    if otherMt.__functions then
+        for k, v in pairs(otherMt.__functions) do
+            tbl:AddFunction(k, v)
+        end
+    end
+    if otherMt.__fallbacks then
+        for k, v in pairs(otherMt.__fallbacks) do
+            tbl:AppendFallback(v)
+        end
+    end
+end
+
+Core.BuildFallbackTable = function(self, name, ...) -- ... is the list of tables to use as fallbacks, in order of precedence
+    local fallbacks = {}
+
+    -- Loop through the supplied fallback tables, and append them to the list of fallbacks
+    for i = 1, select('#', ...) do
+        local t = getFallbackTable(select(i, ...))
+        if t then
+            fallbacks[1 + #fallbacks] = t
+        end
+    end
+
+    return setmetatable({}, {
+        __name = name,
+        __index = fallbackTable__indexPrototype,
+        __fallbacks = fallbacks,
+        __missing = Core:MissingFieldTable(name, {}),
+        __functions = {
+            AddFunction = fallbackTableFunction__AddFunction,
+            PrependFallback = fallbackTableFunction__PrependFallbackPrototype,
+            AppendFallback = fallbackTableFunction__AppendFallbackPrototype,
+            GetKeys = fallbackTableFunction__GetKeysPrototype,
+            HasKey = fallbackTableFunction__HasKey,
+            Evaluate = fallbackTableFunction__EvaluatePrototype,
+            Merge = fallbackTableFunction__Merge,
+        },
+    })
 end

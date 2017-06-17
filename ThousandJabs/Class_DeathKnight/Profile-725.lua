@@ -500,40 +500,38 @@ local frost_legendaries = {
 }
 
 local frost_hooks = {
-    hooks = {
-        OnPredictActionAtOffset = function(env)
-        --[[
-        Core:Debug({
-        remaining = env.rune.all_remains,
-        available = env.rune.curr,
-        env_obliterate_rune_cost = env.obliterate.rune_cost,
-        env_obliterate_spell_can_cast = env.obliterate.spell_can_cast,
-        })
-        --]]
-        end,
-        perform_spend = function(spell, env, action, origCostType, origCostAmount)
-            -- One-less-rune for Obliterate when Obliteration is active
-            if env.obliteration.aura_up and action == 'obliterate' then
-                return origCostType, origCostAmount-1
-            end
-            -- Howling Blast is free when Rime is active
-            if env.rime.aura_up and action == 'howling_blast' then
-                return 'none'
-            end
-            return origCostType, origCostAmount
-        end,
-        can_spend = function(spell, env, action, origCostType, origCostAmount)
-            -- One-less-rune for Obliterate when Obliteration is active
-            if env.obliteration.aura_up and action == 'obliterate' then
-                return origCostType, origCostAmount-1
-            end
-            -- Howling Blast is free when Rime is active
-            if env.rime.aura_up and action == 'howling_blast' then
-                return 'none'
-            end
-            return origCostType, origCostAmount
-        end,
-    }
+    OnPredictActionAtOffset = function(env)
+    --[[
+    Core:Debug({
+    remaining = env.rune.all_remains,
+    available = env.rune.curr,
+    env_obliterate_rune_cost = env.obliterate.rune_cost,
+    env_obliterate_spell_can_cast = env.obliterate.spell_can_cast,
+    })
+    --]]
+    end,
+    perform_spend = function(spell, env, action, origCostType, origCostAmount)
+        -- One-less-rune for Obliterate when Obliteration is active
+        if env.obliteration.aura_up and action == 'obliterate' then
+            return origCostType, origCostAmount-1
+        end
+        -- Howling Blast is free when Rime is active
+        if env.rime.aura_up and action == 'howling_blast' then
+            return 'none'
+        end
+        return origCostType, origCostAmount
+    end,
+    can_spend = function(spell, env, action, origCostType, origCostAmount)
+        -- One-less-rune for Obliterate when Obliteration is active
+        if env.obliteration.aura_up and action == 'obliterate' then
+            return origCostType, origCostAmount-1
+        end
+        -- Howling Blast is free when Rime is active
+        if env.rime.aura_up and action == 'howling_blast' then
+            return 'none'
+        end
+        return origCostType, origCostAmount
+    end,
 }
 
 TJ:RegisterPlayerClass({
@@ -547,7 +545,7 @@ TJ:RegisterPlayerClass({
         frost_base_abilities,
         frost_talent_overrides,
         frost_legendaries,
-        frost_hooks,
     },
+    hooks = frost_hooks,
     blacklisted = {},
 })

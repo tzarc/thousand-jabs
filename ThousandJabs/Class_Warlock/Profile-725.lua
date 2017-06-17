@@ -268,19 +268,17 @@ local destruction_events = {
 }
 
 local destruction_hooks = {
-    hooks = {
-        OnStateInit = function(env)
-            local havocLength = env.wreak_havoc.talent_enabled and 20 or 8
-            env.havoc.expirationTime = (havocTarget.timeApplied > 0)
-                and havocTarget.timeApplied + havocLength
-                or 0
+    OnStateInit = function(env)
+        local havocLength = env.wreak_havoc.talent_enabled and 20 or 8
+        env.havoc.expirationTime = (havocTarget.timeApplied > 0)
+            and havocTarget.timeApplied + havocLength
+            or 0
 
-            env.roaring_blaze.roaringBlazeStacks = {}
-            for k,v in pairs(roaringBlazeStacks) do
-                env.roaring_blaze.roaringBlazeStacks[k] = roaringBlazeStacks[k]
-            end
-        end,
-    },
+        env.roaring_blaze.roaringBlazeStacks = {}
+        for k,v in pairs(roaringBlazeStacks) do
+            env.roaring_blaze.roaringBlazeStacks[k] = roaringBlazeStacks[k]
+        end
+    end,
 }
 
 TJ:RegisterPlayerClass({
@@ -295,8 +293,8 @@ TJ:RegisterPlayerClass({
         destruction_base_overrides,
         destruction_talent_overrides,
         destruction_legendaries,
-        destruction_hooks,
     },
+    hooks = destruction_hooks,
     blacklisted = {
         'summon_pet',
         'summon_doomguard',

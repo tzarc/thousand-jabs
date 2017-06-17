@@ -376,18 +376,16 @@ local windwalker_tiersets = {
 }
 
 local windwalker_hooks = {
-    hooks = {
-        perform_spend = function(spell, env, action, origCostType, origCostAmount)
-            if origCostType == 'chi' then
-                if env.serenity.aura_remains > 0 then -- if serenity is active, then no chi costs (still need appropriate amount of chi!)
-                    return 'none'
-                elseif action == 'blackout_kick' and env.bok_proc.aura_remains > 0 then -- no spend for BoK when there's a proc
-                    return 'none'
-                end
+    perform_spend = function(spell, env, action, origCostType, origCostAmount)
+        if origCostType == 'chi' then
+            if env.serenity.aura_remains > 0 then -- if serenity is active, then no chi costs (still need appropriate amount of chi!)
+                return 'none'
+            elseif action == 'blackout_kick' and env.bok_proc.aura_remains > 0 then -- no spend for BoK when there's a proc
+                return 'none'
             end
-            return origCostType, origCostAmount
-        end,
-    },
+        end
+        return origCostType, origCostAmount
+    end,
 }
 
 TJ:RegisterPlayerClass({
@@ -403,8 +401,8 @@ TJ:RegisterPlayerClass({
         windwalker_artifact_overrides,
         windwalker_legendaries,
         windwalker_tiersets,
-        windwalker_hooks,
     },
+    hooks = windwalker_hooks,
     blacklisted = {
         'spear_hand_strike',
     },

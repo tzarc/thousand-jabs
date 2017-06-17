@@ -5,6 +5,7 @@ local Profiling = TJ:GetModule('Profiling')
 local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 
+local LSD = LibStub('LibSerpentDump')
 local SpellData = LibStub('LibSpellData')
 
 local ct = function() return TableCache:Acquire() end
@@ -42,16 +43,6 @@ local wipe = wipe
 
 Core:Safety()
 
-local safeTableEntries = {
-    'type',
-    'tostring',
-    'hooks',
-    'can_spend',
-    'perform_spend',
-    'OnStateInit',
-    'OnPredictActionAtOffset'
-}
-
 local function convertToNumber(n)
     if type(n) == 'number' then
         return n
@@ -72,329 +63,198 @@ local function convertToBoolean(n)
 end
 
 local stateResetDefaults = {
-    type = type,
-    tostring = tostring,
     N = convertToNumber,
     B = convertToBoolean,
+    _mabs = mabs,
+    _mceil = mceil,
+    _mfloor = mfloor,
+    _mmax = mmax,
+    _mmin = mmin,
 }
 
-local function CreateStateEnvTable(state, profile)
-    -- Set up an environment table for calling the condition functions
-    local env_base = {}
-    for k,v in pairs(Core.Environment.base) do
-        env_base[k] = v
-    end
-    env_base = Core:MissingFieldTable(getmetatable(state).__name..".env", env_base)
+local function StateResetPrototype(state, targetCount, seenTargets)
+    local env = state.env
 
-    -- Set up a proxy table which correctly calls functions to retrieve data instead
-    local env = setmetatable({}, {
-        __env_base = env_base,
-        __index = function(tbl, idx)
-            local env_base = getmetatable(tbl).__env_base
-            -- Handle incoming damage queries
-            local dmgprefix = "incoming_damage_over_"
-            if idx:match(dmgprefix) then
-                local val = 0
-                local length = tonumber(idx:sub(dmgprefix:len()+1))
-                if length >= tbl.time_since_incoming_damage then
-                    val = TJ:GetIncomingDamage(GetTime(), length/1000) -- use GetTime() here, as future prediction will change the accumulation window
-                end
-                return val
-            end
-            -- Forward to the base table
-            local e = env_base[idx]
-            if type(e) == 'function' then
-                local res = e(tbl, tbl)
-                return res
-            else
-                return e
-            end
-            return rawget(tbl,idx)
-        end
-    })
-
-    -- Set up fallback tables for each of the abilities
-    for k, v in pairs(profile.actions) do
-        if type(v) == 'table' then
-            env[k] = setmetatable({}, {
-                __env = env,
-                __action = v,
-                __index = function(tbl, idx)
-                    local env = getmetatable(tbl).__env
-                    local action = getmetatable(tbl).__action
-                    -- Allow raw access to the safe entries, without throwing faults
-                    if tContains(safeTableEntries, idx) then
-                        return rawget(action, idx)
-                    end
-                    -- Forward to the profile table
-                    local e = action[idx]
-                    if type(e) == 'function' then
-                        local res = e(tbl, env)
-                        return res
-                    else
-                        return e
-                    end
-                    return rawget(tbl,idx)
-                end
-            })
-        end
+    -- Sort out target counts
+    do
+        state.numTargets = targetCount or state.numTargets
+        state.seenTargets = seenTargets or 1
     end
 
-    return env
-end
+    -- Rebuild the env table
+    do
+        -- Clear the environment
+        --wipe(env)
 
-local function PrevGcdTableIndexerPrototype(tbl, idx)
-    local gcdcount = getmetatable(tbl).__gcd
-    local env = getmetatable(tbl).__env
-    local profile = getmetatable(tbl).__profile
-    local abilityQueue = ct()
-    for k,v in Core:OrderedPairs(env.abilitiesUsed, function(a,b) return b < a end) do
-        local t = rawget(env, v)
-        if t and (t.spell_cast_time or TJ.currentGCD) > 0.2 then
-            abilityQueue[1+#abilityQueue] = v
+        -- Copy across defaults
+        for k,v in pairs(stateResetDefaults) do
+            env[k] = v
         end
-    end
-    local prev_gcd_ability = abilityQueue[gcdcount] or nil
-    rt(abilityQueue)
-    return prev_gcd_ability and prev_gcd_ability == idx and true or false
-end
 
-local function CreatePrevGcdTable(state, profile)
-    local prev_gcd = {}
-    for i=1,10 do
-        prev_gcd[i] = setmetatable({}, { __gcd = i, __env = state.env, __profile = profile, __index = PrevGcdTableIndexerPrototype, })
-    end
-    return prev_gcd
-end
-
-local function CreatePrevOffGcdTable(state, profile)
-    local prev_off_gcd = setmetatable({}, {
-        __state = state,
-        __index = function(tbl, idx)
-            local castsOffGCD = getmetatable(tbl).__state.castsOffGCD
-            return castsOffGCD[idx] and true or false
-        end,
-    })
-    return prev_off_gcd
-end
-
-local function CreateEquippedTable(state, profile)
-    local equipped = setmetatable({}, {
-        __state = state,
-        __env = state.env,
-        __profile = profile,
-        __index = function(tbl,idx)
-            local ae = getmetatable(tbl).__state.actuallyEquipped
-            if type(idx) == "number" then
-                if tContains(ae, idx) then return true end
-            elseif type(idx) == "string" then
-                local l = TJ.Generated.EquippedMapping[idx]
-                if l then
-                    for i=1,#l do
-                        if tContains(ae, l[i]) then return true end
-                    end
-                end
-            end
-            return false
-        end,
-    })
-    return equipped
-end
-
-local function CreateSetBonusTable(state, profile)
-    local checks = {}
-    for k,v in pairs(TJ.Generated.ItemSets) do
-        -- Check that we match all the items in the set, if there's no suffix
-        checks[k] = function()
-            return (Core:IntersectionCount(v, state.actuallyEquipped) >= #v) and true or false
-        end
-        -- Loop through and create _2pc to _8pc
-        if #v > 2 then
-            for c=2,8 do
-                if #v >= c then
-                    checks[Core:Format("%s_%dpc", k, c)] = function(spell, env)
-                        return (Core:IntersectionCount(v, state.actuallyEquipped) >= c) and true or false
-                    end
+        -- Copy across all the actions
+        for k,v in pairs(state.profile.actions) do
+            env[k] = v
+            if type(v) == 'table' then
+                wipe(v)
+                local mt = getmetatable(v)
+                if mt and mt.__fallbacks then
+                    mt.__profile = state.profile
+                    mt.__state = state
+                    mt.__env = env
                 end
             end
         end
     end
 
-    local set_bonus = setmetatable({}, {
-        __checks = checks,
-        __index = function(tbl,idx)
-            return checks[idx] and checks[idx]() or false
-        end,
-    })
-
-    return set_bonus
-end
-
--- Helper for cleaning a state
-local function StateResetPrototype(self, targetCount, seenTargets)
-    local env = self.env
-    env.prev_gcd = nil
-    env.prev_off_gcd = nil
-    env.equipped = nil
-    env.lastCastTimes = nil
-    env.abilitiesUsed = nil
-    env.set_bonus = nil
-
-    env._mabs = nil
-    env._mceil = nil
-    env._mfloor = nil
-    env._mmax = nil
-    env._mmin = nil
-
-    self.numTargets = targetCount or self.numTargets
-    self.seenTargets = seenTargets or 1
+    -- Re-detect the equipped items
+    do
+        local actuallyEquipped = state.actuallyEquipped
+        wipe(actuallyEquipped)
+        for i=1,30 do
+            local ok, itemid = pcall(GetInventoryItemID, 'player', i)
+            if ok and itemid then
+                actuallyEquipped[1+#actuallyEquipped] = itemid
+            end
+        end
+        tsort(actuallyEquipped)
+        state.actuallyEquipped = actuallyEquipped
+    end
 
     -- Deep copy over the last cast times for the state so that we're not writing to the global state instead
-    wipe(self.abilitiesUsed)
-    for k,v in pairs(TJ.abilitiesUsed) do
-        self.abilitiesUsed[k] = v
-    end
-    wipe(self.lastCastTimes)
-    for k,v in pairs(TJ.lastCastTimes) do
-        self.lastCastTimes[k] = v
-    end
-    wipe(self.castsOffGCD)
-    for k,v in pairs(TJ.castsOffGCD) do
-        self.castsOffGCD[k] = v
-    end
-
-    -- Work out which items are actually equipped
-    wipe(self.actuallyEquipped)
-    for i=1,30 do
-        local ok, itemid = pcall(GetInventoryItemID, 'player', i)
-        if ok and itemid then
-            self.actuallyEquipped[1+#self.actuallyEquipped] = itemid
+    do
+        local abilitiesUsed = state.abilitiesUsed
+        wipe(state.abilitiesUsed)
+        for k,v in pairs(TJ.abilitiesUsed) do
+            state.abilitiesUsed[k] = v
         end
-    end
-    tsort(self.actuallyEquipped)
 
-    -- Clear out the environment and reset to initial values
-    for k,v in pairs(env) do
-        if type(v) == 'table' then
-            -- Wipe the environment table
-            wipe(v)
-
-            -- Get the equivalent profile entry for this table
-            local entry = self.profile.actions[k]
-            local abilityID = rawget(entry, 'AbilityID')
-
-            -- Add data if we're checking auras for this entry
-            if rawget(entry, 'AuraID') then
-                local aura = UnitCache:GetAura(entry.AuraUnit, entry.AuraID, entry.AuraMine)
-                v.expirationTime = aura and aura.expires or 0
-                if aura and v.expirationTime == 0 then v.expirationTime = GetTime() + 99999 end -- Handle no-timer auras that are present
-                v.auraCount = aura and aura.count or 0
-            end
-
-            -- Add data if we're checking cooldowns for this entry
-            if rawget(entry, 'CooldownTime') then
-                if abilityID then
-                    v.cooldownStart, v.cooldownDuration = GetSpellCooldown(abilityID)
-                else
-                    v.cooldownStart, v.cooldownDuration = env.currentTime, v.CooldownTime
-                end
-            end
-
-            -- Add data if we're checking charges for this entry
-            if rawget(entry, 'RechargeTime') then
-                local charges, maxCharges, start, duration
-                if abilityID then
-                    charges, maxCharges, start, duration = GetSpellCharges(abilityID)
-                end
-                v.rechargeSampled = charges or 0
-                v.rechargeMax = maxCharges or 0
-                v.rechargeStartTime = start or 0
-                v.rechargeDuration = duration or 0
-                v.rechargeSpent = 0
-            end
-
-            -- Add data if we're using GetSpellCount to get the number of charges for this ability
-            if rawget(entry, 'ChargesUseSpellCount') then
-                local charges
-                if abilityID then
-                    charges = GetSpellCount(abilityID)
-                end
-                v.rechargeSampled = charges or 0
-                v.rechargeMax = 999
-                v.rechargeStartTime = 0
-                v.rechargeDuration = 0
-                v.rechargeSpent = 0
-            end
-        else
-            env[k] = nil
+        local lastCastTimes = state.lastCastTimes
+        wipe(state.lastCastTimes)
+        for k,v in pairs(TJ.lastCastTimes) do
+            state.lastCastTimes[k] = v
         end
-    end
 
-    -- Reset the defaults for the state
-    for k,v in pairs(stateResetDefaults) do
-        env[k] = v
+        local castsOffGCD = state.castsOffGCD
+        wipe(state.castsOffGCD)
+        for k,v in pairs(TJ.castsOffGCD) do
+            state.castsOffGCD[k] = v
+        end
     end
 
     -- Set the initial parameters
-    env.ptr = Core:MatchesBuild('7.2.5')
-    env.sampleTime = GetTime()
-    env.active_enemies = self.numTargets
-    env.spell_targets = self.numTargets
-    env.desired_targets = 1
-    env.seen_targets = self.seenTargets
-    env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
-    env.player_level = UnitLevel('player')
-    env.movement.distance = UnitCache:UnitRange('target')
-    env.gcd = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
-    env.gcd_max = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
-    env.in_combat = (TJ.combatStart ~= 0) and true or false
+    do
+        env.ptr = Core:MatchesBuild('7.2.5')
+        env.sampleTime = GetTime()
+        env.active_enemies = state.numTargets
+        env.spell_targets = state.numTargets
+        env.desired_targets = 1
+        env.seen_targets = state.seenTargets
+        env.playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
+        env.player_level = UnitLevel('player')
+        env.movement.distance = UnitCache:UnitRange('target')
+        env.gcd = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
+        env.gcd_max = mmax(1, TJ.currentGCD * env.playerHasteMultiplier)
+        env.in_combat = (TJ.combatStart ~= 0) and true or false
 
-    -- Haste
-    env.spell_haste = env.playerHasteMultiplier
+        -- Haste
+        env.spell_haste = env.playerHasteMultiplier
 
-    -- Determine if player/target are casting things
-    local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
-    local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
-    local tName = (UnitCastingInfo("target") or UnitChannelInfo("target"))
-    local tInterruptible = (tName and not (select(9,UnitCastingInfo("target")) or select(8,UnitChannelInfo("target")))) and true or false
-    local mName = (UnitCastingInfo("pet") or UnitChannelInfo("pet"))
-    local mInterruptible = (mName and not (select(9,UnitCastingInfo("pet")) or select(8,UnitChannelInfo("pet")))) and true or false
-    env.player.is_casting = pName and true or false
-    env.player.casting_spell = pName
-    env.player.is_interruptible = pInterruptible
-    env.target.is_casting = tName and true or false
-    env.target.is_interruptible = tInterruptible
-    env.target.casting_spell = tName
-    env.pet.is_casting = mName and true or false
-    env.pet.is_interruptible = mInterruptible
-    env.pet.casting_spell = mName
+        -- Determine if player/target are casting things
+        local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
+        local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
+        local tName = (UnitCastingInfo("target") or UnitChannelInfo("target"))
+        local tInterruptible = (tName and not (select(9,UnitCastingInfo("target")) or select(8,UnitChannelInfo("target")))) and true or false
+        local mName = (UnitCastingInfo("pet") or UnitChannelInfo("pet"))
+        local mInterruptible = (mName and not (select(9,UnitCastingInfo("pet")) or select(8,UnitChannelInfo("pet")))) and true or false
+        env.player.is_casting = pName and true or false
+        env.player.casting_spell = pName
+        env.player.is_interruptible = pInterruptible
+        env.target.is_casting = tName and true or false
+        env.target.is_interruptible = tInterruptible
+        env.target.casting_spell = tName
+        env.pet.is_casting = mName and true or false
+        env.pet.is_interruptible = mInterruptible
+        env.pet.casting_spell = mName
 
-    -- Reset the prev_gcd/equipped tables
-    env.prev_gcd = self.prev_gcd
-    env.prev_off_gcd = self.prev_off_gcd
-    env.equipped = self.equipped
-    env.lastCastTimes = self.lastCastTimes
-    env.abilitiesUsed = self.abilitiesUsed
-    env.set_bonus = self.set_bonus
+        env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
 
-    -- Set the combat start time
-    env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
+        env.prev_gcd = state.prev_gcd
+        env.prev_off_gcd = state.prev_off_gcd
+        env.equipped = state.equipped
+        env.set_bonus = state.set_bonus
 
-    -- Fix up math funcs
-    env._mabs = mabs
-    env._mceil = mceil
-    env._mfloor = mfloor
-    env._mmax = mmax
-    env._mmin = mmin
+        env.abilitiesUsed = state.abilitiesUsed
+        env.lastCastTimes = state.lastCastTimes
+    end
+
+    -- Update action-specific data
+    do
+        for k,v in pairs(env) do
+            local mt = getmetatable(v)
+            if mt and mt.__fallbacks then
+                if type(v.HasKey) ~= 'function' then
+                    if not _G['zzz'] then
+                        _G['zzz'] = true
+                        Core:OpenDebugWindow('zzz', LSD(mt))
+                    end
+                end
+                local abilityID = v:HasKey('AbilityID') and v.AbilityID or nil
+
+                -- Update aura information
+                if v:HasKey('AuraID') then
+                    local aura = UnitCache:GetAura(v.AuraUnit, v.AuraID, v.AuraMine)
+                    v.aura = aura
+                    v.expirationTime = aura and aura.expires or 0
+                    if aura and v.expirationTime == 0 then v.expirationTime = GetTime() + 99999 end -- Handle no-timer auras that are present
+                    v.auraCount = aura and aura.count or 0
+                end
+
+                -- Update cooldown information
+                if v:HasKey('CooldownTime') then
+                    if abilityID then
+                        v.cooldownStart, v.cooldownDuration = GetSpellCooldown(abilityID)
+                    else
+                        v.cooldownStart, v.cooldownDuration = env.currentTime, v.CooldownTime
+                    end
+                end
+
+                -- Update cooldown information
+                if v:HasKey('RechargeTime') then
+                    local charges, maxCharges, start, duration
+                    if abilityID then
+                        charges, maxCharges, start, duration = GetSpellCharges(abilityID)
+                    end
+                    v.rechargeSampled = charges or 0
+                    v.rechargeMax = maxCharges or 0
+                    v.rechargeStartTime = start or 0
+                    v.rechargeDuration = duration or 0
+                    v.rechargeSpent = 0
+                end
+
+                -- Add data if we're using GetSpellCount to get the number of charges for this ability
+                if v:HasKey('ChargesUseSpellCount') then
+                    local charges
+                    if abilityID then
+                        charges = GetSpellCount(abilityID)
+                    end
+                    v.rechargeSampled = charges or 0
+                    v.rechargeMax = 999
+                    v.rechargeStartTime = 0
+                    v.rechargeDuration = 0
+                    v.rechargeSpent = 0
+                end
+            end
+        end
+    end
 
     -- Call the current profile's state initialisation function
-    local initFunc = env.hooks.OnStateInit
+    local initFunc = state.profile.config.hooks and state.profile.config.hooks.OnStateInit
     if initFunc then initFunc(env) end
 end
 
 -- Base action prediction for the current time, or just after the current cast finishes
-local function StatePredictNextActionPrototype(self)
-    local env = self.env
+local function StatePredictNextActionPrototype(state)
+    local env = state.env
 
     -- Attempt to work out when we can next cast something, based off the gcd
     local start, duration = GetSpellCooldown(61304)
@@ -415,54 +275,58 @@ local function StatePredictNextActionPrototype(self)
     -- Find the sampling offset
     local predictionOffset = mmax(0, (start and duration) and (start + duration - GetTime()) or 0)
     -- Predict at the specific offset
-    return self:PredictActionAtOffset(predictionOffset, performPostCastAction and spellCastID or nil)
+    return state:PredictActionAtOffset(predictionOffset, performPostCastAction and spellCastID or nil)
 end
 
 -- Prediction of the action following the one specified, mocing the prediction time accordingly
-local function StatePredictActionFollowingPrototype(self, action)
-    local env = self.env
+local function StatePredictActionFollowingPrototype(state, action)
+    local env = state.env
     local act = env[action]
     if act then
         if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
             -- Pretend we just casted the supplied action, update the last cast time for this ability
-            self.lastCastTimes[act.AbilityID] = env.currentTime
-            self.abilitiesUsed[env.currentTime] = action
+            state.lastCastTimes[act.AbilityID] = env.currentTime
+            state.abilitiesUsed[env.currentTime] = action
         end
+
         -- Perform the cast of the supplied action
-        self.profile.actions[action].perform_cast(act, env)
+        local r = state.env[action].perform_cast --(act, env)
+
         -- Work out the new prediction offset given its cast time
         local newOffset = env.predictionOffset + act.spell_cast_time
+
         -- Predict the next action
-        return self:PredictActionAtOffset(newOffset)
+        return state:PredictActionAtOffset(newOffset)
     end
     return nil
 end
 
 -- Prediction at the supplied time offset
-local function StatePredictActionAtOffsetPrototype(self, predictionOffset, performPostCastSpellID)
-    local env = self.env
+local function StatePredictActionAtOffsetPrototype(state, predictionOffset, performPostCastSpellID)
+    local env = state.env
     env.predictionOffset = predictionOffset
 
     if performPostCastSpellID ~= nil then
         Core:Debug("Handling cast of %s", tostring(performPostCastSpellID))
-        local action = self.profile:FindActionForSpellID(performPostCastSpellID)
+        local action = state.profile:FindActionForSpellID(performPostCastSpellID)
         if action then
             Core:Debug("Handling cast of %s", action)
             local act = env[action]
             if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
                 -- Pretend we just casted the supplied action, update the last cast time for this ability
-                self.lastCastTimes[act.AbilityID] = env.currentTime
-                self.abilitiesUsed[env.currentTime] = action
+                state.lastCastTimes[act.AbilityID] = env.currentTime
+                state.abilitiesUsed[env.currentTime] = action
             end
+
             -- Perform the cast of the supplied action
-            self.profile.actions[action].perform_cast(act, env)
+            local r = state.env[action].perform_cast --(act, env)
 
             -- If we have a cast time, then assume we're going to invoke the GCD, wipe out the castsOffGCD table
             if act.spell_cast_time > 0.1 then
-                wipe(self.castsOffGCD)
+                wipe(state.castsOffGCD)
             else
                 -- Otherwise, add it to the castsOffGCD table
-                self.castsOffGCD[action] = true
+                state.castsOffGCD[action] = true
             end
         end
     end
@@ -472,24 +336,24 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
     Core:Debug("|cFFFFFFFFRange: <= %d yd|r", env.movement.distance)
 
     -- Call the current profile's state initialisation function
-    local func = env.hooks.OnPredictActionAtOffset
+    local func = state.profile.config.hooks and state.profile.config.hooks.OnPredictActionAtOffset
     if func then func(env) end
 
     if not TJ.inCombat then
-        return self:ExecuteActionProfileList("precombat")
-            or self:ExecuteActionProfileList("default")
+        return state:ExecuteActionProfileList("precombat")
+            or state:ExecuteActionProfileList("default")
             or nil
     end
 
-    return self:ExecuteActionProfileList("default")
+    return state:ExecuteActionProfileList("default")
 end
 
 -- Execute an action profile list and get the resulting action
-local function StateExecuteActionProfileListPrototype(self, listname)
-    local env = self.env
+local function StateExecuteActionProfileListPrototype(state, listname)
+    local env = state.env
 
     -- Get the requested action list to execute
-    local actionList = self.profile.parsedActions[listname]
+    local actionList = state.profile.parsedActions[listname]
     if not actionList or #actionList == 0 then
         return nil
     end
@@ -498,7 +362,7 @@ local function StateExecuteActionProfileListPrototype(self, listname)
     for i=1,#actionList do
         -- Get the action under consideration
         local action = actionList[i]
-        if not tContains(self.profile.blacklisted, action.action) then
+        if not tContains(state.profile.blacklisted, action.action) then
             -- Show debug information if requested
             if action.params.debug then
                 if not action.keywords_printer then
@@ -548,7 +412,7 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                     if action.action == 'call_action_list' or action.action == 'run_action_list' then
                         -- ...we're running another action list, so run that recursively
                         Core:Debug("|cFF99FFFF%s ==> '|cFF00DDFF%s|cFF99FFFF': %s|r", action.key, action.params.name, action.fullconditionfuncsrc)
-                        local action = self:ExecuteActionProfileList(action.params.name)
+                        local action = state:ExecuteActionProfileList(action.params.name)
                         if action then
                             return action
                         end
@@ -569,42 +433,25 @@ local function StateExecuteActionProfileListPrototype(self, listname)
     end
 end
 
--- Export the actions table
-local function exportActionVisitor(env, ctx, t)
-    local out = {}
-    for k,v in pairs(t) do
-        local key = ctx and ctx:len() > 0 and Core:Format("%s.%s", ctx, k) or k
-        if type(v) == "table" then
-            out[k] = exportActionVisitor(env, key, v)
-        elseif type(v) == "function" then
-            local funcsrc = Core:Format("function() return %s end", key)
-            local func = Core:LoadFunctionString(funcsrc, key)
-            setfenv(func, env)
-            local ok, ret = pcall(func)
-            out[k] = (not ok) and { error = ret } or ret
-        else
-            out[k] = v
+local function StateExportActionsTablePrototype(state)
+    local output = state.env:Evaluate()
+    for k,v in pairs(state.env) do
+        if type(v) == 'table' then
+            local mt = getmetatable(v)
+            if mt and mt.__fallbacks then
+                output[k] = v:Evaluate()
+            else
+                output[k] = v
+            end
         end
     end
-
-    if out.AbilityID then
-        out.AbilityTooltipEntries = {}
-        for text, _, _, hexColour in SpellData.IterateSpellTooltip(out.AbilityID) do
-            tinsert(out.AbilityTooltipEntries, {text, hexColour})
-        end
-    end
-    return out
-end
-local function StateExportActionsTablePrototype(self)
-    local env = self.env
-    local output = exportActionVisitor(env, nil, self.profile.actions)
     return output
 end
 
-local function StateExportParsedTablePrototype(self)
+local function StateExportParsedTablePrototype(state)
     local cache = {}
-    local env = self.env
-    local copy = Core:MergeTables({}, self.profile.parsedActions)
+    local env = state.env
+    local copy = Core:MergeTables({}, state.profile.parsedActions)
     for list,listactions in Core:OrderedPairs(copy) do
         for _,action in pairs(listactions) do
             local checked_tables = { 'condition_converted', 'target_if_converted', 'value_converted' }
@@ -640,25 +487,111 @@ local function StateExportParsedTablePrototype(self)
     return copy
 end
 
+local function PrevGcdTableIndexerPrototype(tbl, idx)
+    local gcdcount = getmetatable(tbl).__gcd
+    local env = getmetatable(tbl).__env
+    local profile = getmetatable(tbl).__profile
+    local abilityQueue = ct()
+    for k,v in Core:OrderedPairs(env.abilitiesUsed, function(a,b) return b < a end) do
+        local t = rawget(env, v)
+        if t and (t.spell_cast_time or TJ.currentGCD) > 0.2 then
+            abilityQueue[1+#abilityQueue] = v
+        end
+    end
+    local prev_gcd_ability = abilityQueue[gcdcount] or nil
+    rt(abilityQueue)
+    return prev_gcd_ability and prev_gcd_ability == idx and true or false
+end
+
+local function CreatePrevGcdTable(state, profile)
+    local prev_gcd = {}
+    for i=1,10 do
+        prev_gcd[i] = setmetatable({}, { __gcd = i, __env = state.env, __profile = profile, __index = PrevGcdTableIndexerPrototype, })
+    end
+    return prev_gcd
+end
+
+local function PrevOffGcdTableIndexerPrototype(tbl, idx)
+    local castsOffGCD = getmetatable(tbl).__state.castsOffGCD
+    return castsOffGCD[idx] and true or false
+end
+
+local function CreatePrevOffGcdTable(state, profile)
+    local prev_off_gcd = setmetatable({}, {
+        __state = state,
+        __index = PrevOffGcdTableIndexerPrototype,
+    })
+    return prev_off_gcd
+end
+
+local function EquippedTableIndexerPrototype(tbl, idx)
+    local ae = getmetatable(tbl).__state.actuallyEquipped
+    if type(idx) == "number" then
+        if tContains(ae, idx) then return true end
+    elseif type(idx) == "string" then
+        local l = TJ.Generated.EquippedMapping[idx]
+        if l then
+            for i=1,#l do
+                if tContains(ae, l[i]) then return true end
+            end
+        end
+    end
+    return false
+end
+
+local function CreateEquippedTable(state, profile)
+    local equipped = setmetatable({}, {
+        __state = state,
+        __env = state.env,
+        __profile = profile,
+        __index = EquippedTableIndexerPrototype,
+    })
+    return equipped
+end
+
+local function CreateSetBonusTable(state, profile)
+    local checks = {}
+    for k,v in pairs(TJ.Generated.ItemSets) do
+        -- Check that we match all the items in the set, if there's no suffix
+        checks[k] = function()
+            return (Core:IntersectionCount(v, state.actuallyEquipped) >= #v) and true or false
+        end
+        -- Loop through and create _2pc to _8pc
+        if #v > 2 then
+            for c=2,8 do
+                if #v >= c then
+                    checks[Core:Format("%s_%dpc", k, c)] = function(spell, env)
+                        return (Core:IntersectionCount(v, state.actuallyEquipped) >= c) and true or false
+                    end
+                end
+            end
+        end
+    end
+
+    local set_bonus = setmetatable({}, {
+        __checks = checks,
+        __index = function(tbl,idx)
+            return checks[idx] and checks[idx]() or false
+        end,
+    })
+
+    return set_bonus
+end
+
 function TJ:CreateNewState(numTargets)
 
     local profile = TJ:GetActiveProfile()
     if not profile then return end
 
-    -- Set up the state and associate a profile with it
-    local state = Core:MissingFieldTable("state{"..profile.name.."}", {
-        numTargets = numTargets,
-    })
-
-    -- Keep track of the profile, last cast times
+    local state = Core:BuildFallbackTable(Core:Format('state{%s}', profile.name))
     state.profile = profile
+    state.env = Core:BuildFallbackTable(Core:Format('state{%s}.env', profile.name), Core.Environment.base)
+
+    state.actuallyEquipped = {}
     state.abilitiesUsed = {}
     state.lastCastTimes = {}
     state.castsOffGCD = {}
-    state.actuallyEquipped = {}
 
-    -- Set up proxy tables
-    state.env = CreateStateEnvTable(state, profile)
     state.prev_gcd = CreatePrevGcdTable(state, profile)
     state.prev_off_gcd = CreatePrevOffGcdTable(state, profile)
     state.equipped = CreateEquippedTable(state, profile)

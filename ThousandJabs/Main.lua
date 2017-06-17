@@ -32,6 +32,13 @@ local UnitSpellHaste = UnitSpellHaste
 Core:Safety()
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Addon initialisation
+------------------------------------------------------------------------------------------------------------------------
+
+Profiling:EnableProfiling(Core.devMode)
+Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
+
+------------------------------------------------------------------------------------------------------------------------
 -- Locals
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -155,11 +162,11 @@ function TJ:PerformUpdate()
     nextScreenUpdateExpiry = nil
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
 
-    -- Clear out any errors for the last screen update
-    Core:DebugReset()
-
     -- Update stats
     Core:UpdateUsageStatistics()
+
+    -- Clear out any errors for the last screen update
+    Core:DebugReset()
 
     -- Purge any old cast times
     local expiryTime = 10 * (TJ.currentGCD or 1)
@@ -326,11 +333,10 @@ Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 function TJ:ExportCurrentProfile()
     if TJ.currentProfile and self.state then
-        local actionsTable = self.state:ExportActionsTable()
         local dbg = Core:GenerateDebuggingInformation()
         Core:OpenDebugWindow('ThousandJabs Current profile', 'zzzz='..LSD({
             ['!dbg'] = dbg,
-            ['actions'] = actionsTable,
+            ['actions'] = self.state:ExportActionsTable(),
             ['parsed'] = self.state:ExportParsedTable(),
         }):gsub('|', '||'))
     end
@@ -573,6 +579,8 @@ function TJ:ConsoleCommand(args)
         if TJ.currentProfile then
             TJ.needExportCurrentProfile = true
         end
+    elseif argv[1] == '_eap' then
+        Core:OpenDebugWindow('Thousand Jabs All Profiles Export', LSD(TJ:GetActiveProfile()))
     else
         Core:Print('Thousand Jabs chat commands:')
         Core:Print("     |cFFFF6600/tj cfg|r - Opens the configuration dialog.")

@@ -178,6 +178,16 @@ local frost_base_abilities = {
             return (not UnitExists("pet"))
         end
     },
+    ice_floes = {
+        AuraID = 108839,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    frost_bomb = {
+        AuraID = 112948,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
 }
 
 local frost_artifact_overrides = {

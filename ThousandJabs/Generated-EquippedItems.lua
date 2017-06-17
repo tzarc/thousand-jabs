@@ -4,7 +4,6 @@ TJ.Generated = TJ.Generated or {}
 TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}
 
 TJ.Generated.EquippedMapping.ailuro_pouncers = { 137024, }
-TJ.Generated.EquippedMapping.archavons_heavy_hand = { 137060, }
 TJ.Generated.EquippedMapping.chatoyant_signet = { 137040, }
 TJ.Generated.EquippedMapping.convergence_of_fates = { 140806, }
 TJ.Generated.EquippedMapping.draught_of_souls = { 140808, }
@@ -35,4 +34,3 @@ TJ.Generated.EquippedMapping.the_great_storms_eye = { 151823, }
 TJ.Generated.EquippedMapping.the_wildshapers_clutch = { 137094, }
 TJ.Generated.EquippedMapping.thraxis_tricksy_treads = { 137031, }
 TJ.Generated.EquippedMapping.umbral_moonglaives = { 147012, }
-TJ.Generated.EquippedMapping.weight_of_the_earth = { 137077, }

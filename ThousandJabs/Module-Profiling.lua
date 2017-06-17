@@ -30,28 +30,6 @@ local do_mem = (addon_count < 10) and true or false
 --do_mem = false
 
 ------------------------------------------------------------------------------------------------------------------------
--- Miscellaneous functions
-------------------------------------------------------------------------------------------------------------------------
-
-local function orderedpairs(t, f)
-    local a = ct()
-    for n in pairs(t) do tinsert(a, n) end
-    tsort(a, f)
-    local i = 0
-    local iter = function ()
-        i = i + 1
-        local k = a[i]
-        if k == nil then
-            rt(a)
-            return nil
-        else
-            return k, t[k]
-        end
-    end
-    return iter
-end
-
-------------------------------------------------------------------------------------------------------------------------
 -- Profiling functions
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -74,12 +52,12 @@ function Profiling:ProfilingEpilog(...)
     local mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
     local e = self.profiling.stack[#self.profiling.stack]
     self.profiling.stack[#self.profiling.stack] = nil
-    if not self.profiling.data[e.func] then
-        local t = ct()
-        t.count, t.timeSpent, t.memGain = 0, 0, 0
-        self.profiling.data[e.func] = t
-    end
     local d = self.profiling.data[e.func]
+    if not d then
+        d = ct()
+        d.count, d.timeSpent, d.memGain = 0, 0, 0
+        self.profiling.data[e.func] = d
+    end
     d.count = d.count + 1
     d.timeSpent = d.timeSpent + (now - e.start) - e.innerTime
     d.memGain = d.memGain + (mem - e.mem) - e.innerMem
@@ -110,7 +88,7 @@ function Profiling:GetProfilingString()
     if not self.profiling.enabled then return 'Profiling disabled.' end
     local l = ct()
     l[1+#l] = 'Profiling data:'
-    for k,v in orderedpairs(self.profiling.data) do
+    for k,v in Core:OrderedPairs(self.profiling.data) do
         if type(v) == 'table' then
             l[1+#l] = do_mem
                 and Core:Format('%5dx %9.3fms/ea, %13.3fms/tot: %-40s | mem=%9.3fkB/ea, %12.3fkB/tot', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)

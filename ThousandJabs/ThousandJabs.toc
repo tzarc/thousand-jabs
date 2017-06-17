@@ -29,7 +29,6 @@ Module-Profiling.lua
 Module-TableCache.lua
 Module-UnitCache.lua
 
-Base.lua
 Main.lua
 SpellData.lua
 Events.lua
@@ -38,9 +37,9 @@ Module-UI.lua
 
 Simc-Expressions.lua
 Profile-Base.lua
-Profile-Common.lua
 Profile-State.lua
 
+Generated-Common.xml
 Generated-EquippedItems.lua
 Generated-ItemSets.lua
 Generated-Actions.xml

@@ -20,6 +20,7 @@ local mfloor = math.floor
 local mmax = math.max
 local mmin = math.min
 local pairs = pairs
+local getmetatable = getmetatable
 local rawget = rawget
 local select = select
 local tonumber = tonumber
@@ -41,13 +42,6 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
     keyword = keyword:gsub('([^%d])%.([%d]+)%.', '%1[%2].') -- any trailing digit selectors with following field (i.e.  something.1.field) we change to array indexing
     keyword = keyword:gsub('([^%d])%.(%d.+)', '%1[\"%2\"]') -- any digit selectors starting with a digit but having trailing text (i.e.  something.111name) we change to string indexing
-
-    -- Min/max modifiers (function calls)
-    keyword = keyword:gsub("math%.abs", "_mabs")
-    keyword = keyword:gsub("math%.ceil", "_mceil")
-    keyword = keyword:gsub("math%.floor", "_mfloor")
-    keyword = keyword:gsub("math%.min", "_mmin")
-    keyword = keyword:gsub("math%.max", "_mmax")
 
     -- Min/max modifiers (ignored)
     keyword = keyword:gsub("^min:", "")
@@ -116,11 +110,11 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub('^equipped%.([%a_]+)', 'equipped["%1"]')
 
     -- Incoming damage
-    keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)*1000) end)
+    keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a) * 1000) end)
     keyword = keyword:gsub('^incoming_damage_([%d]+)ms', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)) end)
 
     -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
-    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a,b,c) return Core:Format("%s.%s_%s", b, a, c:gsub("%.","_")) end)
+    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a, b, c) return Core:Format("%s.%s_%s", b, a, c:gsub("%.", "_")) end)
 
     -- Percentage consolidation
     keyword = keyword:gsub("_pct$", "_percent")
@@ -134,7 +128,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
 
     -- Handle any profile-specific substitutions
     if profileSubstitutions then
-        for _,e in pairs(profileSubstitutions) do
+        for _, e in pairs(profileSubstitutions) do
             keyword = keyword:gsub(e[1], e[2])
         end
     end
@@ -142,172 +136,283 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     return keyword
 end
 
-local function addActionTalentFields(action)
-    -- Add the 'talent_enabled' entry if there are talent IDs present
-    if type(action) == 'table' then
-        if rawget(action, 'TalentID') then
-            action.talent_enabled = function(spell, env)
-                return select(10, GetTalentInfoByID(spell.TalentID)) and true or false
-            end
-        end
-    end
+local function fixMathFuncs(expr)
+    -- Min/max modifiers (function calls)
+    expr = expr:gsub("math%.abs%(", "_mabs(")
+    expr = expr:gsub("math%.ceil%(", "_mceil(")
+    expr = expr:gsub("math%.floor%(", "_mfloor(")
+    expr = expr:gsub("math%.min%(", "_mmin(")
+    expr = expr:gsub("math%.max%(", "_mmax(")
+    return expr
 end
 
-local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffectedByHaste)
-    if type(action) == 'table' then
-        action.FullCooldownSecs = fullCooldownSecs
-        action.IsCooldownAffectedByHaste = isCooldownAffectedByHaste
-        if fullCooldownSecs and fullCooldownSecs > 0 then
-            if isCooldownAffectedByHaste then
-                action.CooldownTime = function(spell,env) return env.playerHasteMultiplier * fullCooldownSecs end
-            else
-                action.CooldownTime = fullCooldownSecs
-            end
-
-            action.spell_cooldown = function(spell, env) return spell.CooldownTime end
-            action.spell_recharge_time = function(spell, env) return spell.CooldownTime end
-
-            action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
-            action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
-
-            action.cooldown_remains = function(spell, env) return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
-            action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
-            action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
-            action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
-            action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
-            action.spell_charges = function(spell, env) return spell.cooldown_ready and 1 or 0 end
-        end
-    end
+local function profile__ClearActionsPrototype(self)
+    if self.parsedActions then rt(self.parsedActions) end
+    self.parsedActions = nil
 end
 
-local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
-    if type(action) == 'table' then
-        action.FullRechargeSecs = fullRechargeSecs
-        action.IsRechargeAffectedByHaste = isRechargeAffectedByHaste
-        action.UsesSpellCountForCharges = usesSpellCountForCharges
-        if fullRechargeSecs and fullRechargeSecs > 0 then
-            if isRechargeAffectedByHaste then
-                action.RechargeTime = function(spell,env) return env.playerHasteMultiplier * fullRechargeSecs end
-            else
-                action.RechargeTime = fullRechargeSecs
-            end
+local function profile__LoadActionsPrototype(self)
+    local config = self.config
 
-            action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.spell_charges > 0)'
-            action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.rechargeSpent = spell.rechargeSpent + 1'
+    if Core.devMode then self:ClearActions() end
 
-            if usesSpellCountForCharges then
-                action.spell_max_charges = 999
-                action.spell_charges_fractional = function(spell, env)
-                    return (spell.blacklisted and 0) or (spell.rechargeSampled - spell.rechargeSpent)
+    if not self.parsedActions then
+        local converted = ct()
+        -- Handler for performing string replacements for all of the detected keywords in each of the APL lines
+        local function primaryModifier(str)
+            if converted[str] then return converted[str] end
+            local res = expressionPrimaryModifier(str, config.conditional_substitutions)
+            converted[str] = res
+            return res
+        end
+
+        -- Update the parsed actions
+        local aplID = Config:GetSpecGeneric("aplID") or self.defaultActionProfile
+        local aplDef = TJ.profileDefinitions[aplID] or TJ.profileDefinitions[self.defaultActionProfile]
+        if aplDef.classID == config.class_id and aplDef.specID == config.spec_id then
+            self.parsedActions = Core:ExpressionParser(aplDef.aplData, primaryModifier)
+        else
+            Core:Error(Core:Format("Mismatching class/spec IDs: APL expects %s/%s, character is %s/%s.", aplDef.classID, aplDef.specID, config.class_id, config.spec_id))
+            TJ:DeactivateProfile()
+            rt(converted)
+            return
+        end
+
+        -- Create the condition functions for each action
+        local counts = ct()
+        for listName, listTable in pairs(self.parsedActions) do
+            counts[listName] = counts[listName] or ct()
+            -- Loop through each entry in each named action list
+            for _, entry in pairs(listTable) do
+                -- Update the action count
+                counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
+
+                -- Work out the key
+                entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
+                    and Core:Format("%s:%s[%s]", listName, entry.action, entry.params.name)
+                    or Core:Format("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
+
+                -- Create a default prcondition, based on whether the spell is castable
+                local is_chained_list = (entry.action == "run_action_list" or entry.action == "call_action_list") and true or false
+                entry.precondition = is_chained_list and "true" or Core:Format("%s.spell_can_cast", entry.action)
+
+                -- If the 'sync' flag is set, then add appropriate conditions to match
+                if type(entry.params.sync) ~= "nil" then
+                    entry.precondition = Core:Format("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.params.sync, entry.params.sync, entry.params.sync)
                 end
-            else
-                action.spell_max_charges = function(spell, env) return spell.rechargeMax end
-                action.spell_charges_fractional = function(spell, env)
-                    local f = (spell.rechargeSampled == spell.rechargeMax)
-                        and spell.rechargeMax - spell.rechargeSpent
-                        or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
-                    return (spell.blacklisted and 0) or mmin(f, spell.rechargeMax)
+
+                -- Create the condition function
+                if type(entry.condition_func) == "nil" then
+                    if type(entry.params.condition_converted) ~= "nil" or type(entry.params.target_if_converted) ~= "nil" then
+                        local cond = entry.params.condition_converted or entry.params.target_if_converted
+                        entry.fullconditionfuncsrc = Core:Format("((%s) and (%s))", entry.precondition, cond.expression:gsub('THIS_SPELL', entry.action))
+                    else
+                        entry.fullconditionfuncsrc = entry.precondition
+                    end
+                    entry.condition_func = Core:LoadFunctionString(Core:Format("function() return ((%s) and true or false) end", fixMathFuncs(entry.fullconditionfuncsrc)), Core:Format("cond:%s", entry.key))
+                end
+
+                -- Create the variable result function
+                if type(entry.value_func) == "nil" and type(entry.params.value_converted) ~= "nil" then
+                    entry.fullvaluefuncsrc = entry.params.value_converted.expression
+                    entry.value_func = Core:LoadFunctionString(Core:Format("function() return (%s) end", fixMathFuncs(entry.fullvaluefuncsrc)), Core:Format("var:%s", entry.key))
                 end
             end
+        end
+        rt(counts)
+        rt(converted)
+    end
+end
 
-            action.spell_charges = function(spell, env) return mfloor(spell.spell_charges_fractional+0.001) end
-
-            action.spell_recharge_time = function(spell, env)
-                local remains = (spell.blacklisted and 999) or (spell.rechargeStartTime + spell.rechargeDuration - env.currentTime)
-                return (spell.spell_charges > 0) and 0 or remains
-            end
-
-            action.cooldown_remains = function(spell,env) return mmax(0, spell.spell_recharge_time) end
-            action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
-            action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
-            action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
-            action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
-            action.cooldown_charges_fractional = function(spell, env) return spell.spell_charges_fractional end
-            action.cooldown_charges = function(spell, env) return spell.spell_charges end
+local function addChildActions(inputActions, outputActions)
+    for k,v in pairs(inputActions) do
+        if type(v) == 'table' then
+            local action = outputActions[k] or Core:BuildFallbackTable(k)
+            action:Merge(v)
+            outputActions[k] = action
+        else
+            outputActions[k] = v
         end
     end
 end
 
-local function addActionAuraFields(action)
-    if type(action) == 'table' then
-        if rawget(action, 'AuraID') then
-            action.aura_remains = rawget(action, 'aura_remains') or function(spell, env)
-                return mmax(0, spell.expirationTime - env.currentTime)
+local function profile__ActivatePrototype(self)
+    Core:DevPrint("Activating profile: %s", self.name)
+
+    -- Load the actions table
+    self:LoadActions()
+
+    -- Scan the spellbook for actions
+    self.guessed = TJ:DetectAbilitiesFromSpellBook()
+
+    -- Build the actions tables
+    addChildActions(self.definedActions, self.actions)
+    addChildActions(self.guessed, self.actions)
+    addChildActions(self.resources, self.actions)
+    addChildActions(Core.Environment.common, self.actions)
+
+    -- Construct the blacklisted actions table
+    local blacklisted = self.blacklisted
+    wipe(blacklisted)
+    for k,v in pairs(Core.Environment.globalBlacklist) do
+        blacklisted[1+#blacklisted] = v
+    end
+    if self.config.blacklisted then
+        for k,v in pairs(self.config.blacklisted) do
+            blacklisted[1+#blacklisted] = v
+        end
+    end
+
+    -- We need to work out the non-hasted cast times, GetSpellBaseCooldown is iffy for some reason. Do it ourselves.
+    local playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
+
+    -- Update all the actions with live data
+    for k,v in pairs(self.actions) do
+        if type(v) == 'table' then
+            local defaults = { ActionName = k, AbilityID = (v:HasKey('SpellBookItem') and v.SpellBookSpellID or nil) }
+            v:PrependFallback(defaults)
+
+            if (v:HasKey('AbilityID') and v.AbilityID) and (v:HasKey('IsPassive') and not v.IsPassive) then
+                -- Add the castable fields
+                v:AppendFallback('castable')
+
+                -- Start constructing the spell_can_cast() and perform_cast() functions
+                defaults.spell_can_cast_funcsrc = Core:Format('(not spell.blacklisted) and (env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
+                defaults.perform_cast_funcsrc = ''
+
+                -- Get the resource cost -- TODO: Cost per time
+                local costType, costBase, costPerTime, cost3 = SpellData.GetSpellCost(v.AbilityID)
+
+                -- If this action has an associated cost, add the correct value to the table and update the functions accordingly
+                costType = costType or (v:HasKey('cost_type') and v.cost_type)
+                if costType then
+                    if not v:HasKey(costType..'_cost') then
+                        defaults[costType..'_cost'] = costBase
+                    end
+                    defaults.spell_can_cast_funcsrc = defaults.spell_can_cast_funcsrc .. Core:Format(' and (env.%s:can_spend(env, \'%s\', \'%s\', spell.%s_cost))', costType, k, costType, costType)
+                    defaults.perform_cast_funcsrc = defaults.perform_cast_funcsrc .. Core:Format('; env.%s:perform_spend(env, \'%s\', \'%s\', spell.%s_cost)', costType, k, costType, costType)
+                end
+
+                -- Add any fields required for cooldowns
+                local cooldownSecs, isCooldownAffectedByHaste = SpellData.GetSpellCooldown(v.AbilityID)
+                defaults.FullCooldownSecs = cooldownSecs and (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or nil
+                defaults.IsCooldownAffectedByHaste = isCooldownAffectedByHaste
+                if defaults.FullCooldownSecs and defaults.FullCooldownSecs > 0 then
+                    defaults.spell_can_cast_funcsrc = defaults.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
+                    defaults.perform_cast_funcsrc = defaults.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
+                    v:AppendFallback('action_cooldown')
+                end
+
+                -- Get the recharge time
+                local rechargeSecs, isRechargeAffectedByHaste = SpellData.GetSpellRechargeTime(v.AbilityID)
+                defaults.FullRechargeSecs = rechargeSecs and (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or nil
+                defaults.IsRechargeAffectedByHaste = isRechargeAffectedByHaste
+                if defaults.FullRechargeSecs and defaults.FullRechargeSecs > 0 then
+                    defaults.spell_can_cast_funcsrc = defaults.spell_can_cast_funcsrc .. ' and (spell.spell_charges > 0)'
+                    defaults.perform_cast_funcsrc = defaults.perform_cast_funcsrc .. '; spell.rechargeSpent = spell.rechargeSpent + 1'
+                    v:AppendFallback('action_charges')
+                end
+
+                -- Check if this has charges that use GetSpellCount()
+                defaults.UsesSpellCountForCharges = v:HasKey('ChargesUseSpellCount') and v.ChargesUseSpellCount and true or false
+                if defaults.UsesSpellCountForCharges then
+                    defaults.FullRechargeSecs = 99999
+                    defaults.IsRechargeAffectedByHaste = false
+                    v:AppendFallback('action_charges')
+                end
+
+                -- Update the spell_can_cast function if talents are specified
+                if v:HasKey('TalentID') then
+                    defaults.spell_can_cast_funcsrc = defaults.spell_can_cast_funcsrc .. ' and (spell.talent_enabled)'
+                end
+
+                -- Update the spell_can_cast function if there's a spell-specific function in the supplied table
+                if v:HasKey('CanCast') then
+                    defaults.spell_can_cast_funcsrc = defaults.spell_can_cast_funcsrc .. ' and (spell.CanCast)'
+                end
+
+                -- Update the perform_cast function if an aura is supposed to be applied
+                if v:HasKey('AuraApplied') then
+                    defaults.perform_cast_funcsrc = defaults.perform_cast_funcsrc .. Core:Format('; env.%s.expirationTime = env.currentTime + %d', v.AuraApplied, v.AuraApplyLength)
+                end
+
+                -- Update the perform_cast function if there's a spell-specific function in the supplied table
+                if v:HasKey('PerformCast') then
+                    defaults.perform_cast_funcsrc = defaults.perform_cast_funcsrc .. '; local r = spell.PerformCast'
+                end
+
+                -- Load the spell_can_cast function
+                defaults.spell_can_cast_funcsrc = Core:Format('function(spell, env) return ((%s) and true or false) end', defaults.spell_can_cast_funcsrc:gsub('^ and ', ''))
+                defaults.spell_can_cast = Core:LoadFunctionString(fixMathFuncs(defaults.spell_can_cast_funcsrc), k..':spell_can_cast')
+
+                -- Load the perform_cast function
+                defaults.perform_cast_funcsrc = Core:Format('function(spell, env) %s end', defaults.perform_cast_funcsrc:gsub('^; ', ''))
+                defaults.perform_cast = Core:LoadFunctionString(fixMathFuncs(defaults.perform_cast_funcsrc), k..':perform_cast')
             end
-            action.aura_up = function(spell, env) return (spell.aura_remains > 0) and true or false end
-            action.aura_down = function(spell, env) return (not spell.aura_up) and true or false end
-            action.aura_ticking = function(spell, env) return spell.aura_up and true or false end
-            action.aura_react = function(spell, env) return spell.aura_up and true or false end
-            action.aura_stack = function(spell, env) return spell.auraCount or 0 end
+
+            -- Ensure talent-specific fields are available
+            if v:HasKey('TalentID') then
+                v:AppendFallback('talent')
+            end
+
+            -- Add the aura fields
+            if v:HasKey('AuraID') and v.AuraID then
+                v:AppendFallback('aura')
+            end
+
+            -- Set up the final fallback for all actions with default values
+            local mt = getmetatable(v)
+            if mt and mt.__fallbacks then
+                v:AppendFallback('action_final_fallback')
+            end
+        end
+    end
+
+    -- Update the mapping from the detected actions from spellbook to match what simc APLs expect
+    if self.config.simc_mapping then
+        for k,v in pairs(self.config.simc_mapping) do
+            if self.actions[v] then
+                self.actions[k] = self.actions[v]
+            end
         end
     end
 end
 
-local function addMissingFields(action)
-    if type(action) == 'table' then
-        if not rawget(action, 'last_cast') then action.time_since_last_cast = 0 end
-        if not rawget(action, 'time_since_last_cast') then action.time_since_last_cast = 99999 end
+local function profile__DeactivatePrototype(self)
+    Core:DevPrint("Deactivating profile: %s", self.name)
+end
 
-        if not rawget(action, 'spell_cast_time') then
-            action.spell_cast_time = function(spell, env) return TJ.currentGCD end
-        end
-        if not rawget(action, 'spell_execute_time') then -- TODO: Is this right?
-            action.spell_execute_time = function(spell, env) return action.spell_cast_time(spell, env) end
-        end
-
-        if not rawget(action, 'talent_enabled') then action.talent_enabled = false end
-
-        if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
-        if not rawget(action, 'spell_cooldown') then action.spell_cooldown = 99999 end
-
-        if not rawget(action, 'cooldown_remains') then action.cooldown_remains = 99999 end
-        if not rawget(action, 'cooldown_ready') then action.cooldown_ready = false end
-        if not rawget(action, 'cooldown_up') then action.cooldown_up = false end
-        if not rawget(action, 'cooldown_down') then action.cooldown_down = false end
-        if not rawget(action, 'cooldown_react') then action.cooldown_react = false end
-        if not rawget(action, 'cooldown_charges') then action.cooldown_charges = 0 end
-        if not rawget(action, 'cooldown_charges_fractional') then action.cooldown_charges_fractional = 0 end
-
-        if not rawget(action, 'spell_charges') then action.spell_charges = 0 end
-        if not rawget(action, 'spell_charges_fractional') then action.spell_charges_fractional = 0 end
-        if not rawget(action, 'spell_max_charges') then action.spell_max_charges = 0 end
-        if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 0 end
-
-        if not rawget(action, 'aura_remains') then action.aura_remains = 0 end
-        if not rawget(action, 'aura_up') then action.aura_up = false end
-        if not rawget(action, 'aura_down') then action.aura_down = true end
-        if not rawget(action, 'aura_ticking') then action.aura_ticking = false end
-        if not rawget(action, 'aura_react') then action.aura_react = false end
-        if not rawget(action, 'aura_stack') then action.aura_stack = 0 end
-
-        if not rawget(action, 'OverlayTitle') then
-            action.OverlayTitle = Config:GetSpecOverlay(action.ActionName) or ''
-        end
-
-        if rawget(action, 'OverallSpellID') then
-            local overallSpellID = action.OverallSpellID
-            if not rawget(action, 'Name') then action.Name = select(1, GetSpellInfo(overallSpellID)) end
-            if not rawget(action, 'Icon') then action.Icon = select(3, GetSpellInfo(overallSpellID)) end
+local function profile__FindActionForSpellID(self, spellID)
+    if self.spellIDactionMapping[spellID] then return self.spellIDactionMapping[spellID] end
+    for k,v in pairs(self.actions) do
+        local spellIDs = v:HasKey('SpellIDs') and v.SpellIDs or nil
+        if spellIDs then
+            for k2,v2 in pairs(spellIDs) do
+                if v2 == spellID then
+                    self.spellIDactionMapping[spellID] = k
+                    return k
+                end
+            end
         end
     end
 end
 
 function TJ:RegisterPlayerClass(config)
-
-    local config = config
-    local blacklisted = {}
-
     -- Copy out the resources requested for this class
     local resources = {}
-    for k,v in pairs(config.resources) do resources[v] = Core.Environment.resources[v] end
+    for k, v in pairs(config.resources) do resources[v] = Core.Environment.resources[v] end
 
     -- Set up the profile table
     local profile = {
         defaultActionProfile = config.default_action_profile,
         name = config.name,
+        events = config.events,
         config = config,
-        blacklisted = blacklisted,
+        blacklisted = {},
         configCheckboxes = config.config_checkboxes or {},
+        actions = {},
+        definedActions = Core:MergeTables(unpack(config.actions)),
+        resources = resources,
         spellIDactionMapping = {},
     }
 
@@ -316,324 +421,12 @@ function TJ:RegisterPlayerClass(config)
     self.profiles[config.class_id] = self.profiles[config.class_id] or {}
     self.profiles[config.class_id][config.spec_id] = profile
 
-    -- Set up any event handlers specified by the profile
-    if config.events then
-        for k,v in pairs(config.events) do
-            profile[k] = v
-        end
-    end
-
-    function profile:ResetActions()
-        if self.parsedActions then rt(self.parsedActions) end
-        self.parsedActions = nil
-    end
-
-    function profile:LoadActions()
-        if Core.devMode or not self.parsedActions then
-            local converted = ct()
-            -- Parse the action profile
-            local function primaryModifier(str)
-                if converted[str] then return converted[str] end
-                local res = expressionPrimaryModifier(str, config.conditional_substitutions)
-                converted[str] = res
-                return res
-            end
-
-            -- Update the parsed actions
-            if not self.parsedActions then
-                local aplID = Config:GetSpecGeneric("aplID") or self.defaultActionProfile
-                local aplDef = TJ.profileDefinitions[aplID] or TJ.profileDefinitions[self.defaultActionProfile]
-                if aplDef.classID == config.class_id and aplDef.specID == config.spec_id then
-                    if self.parsedActions then rt(self.parsedActions) end
-                    self.parsedActions = Core:ExpressionParser(aplDef.aplData, primaryModifier)
-                else
-                    Core:Error(Core:Format("Mismatching class/spec IDs: APL expects %s/%s, character is %s/%s.", aplDef.classID, aplDef.specID, config.class_id, config.spec_id))
-                    TJ:DeactivateProfile()
-                    rt(converted)
-                    return
-                end
-            end
-
-            -- Create the condition functions for each action
-            local counts = ct()
-            for listName,listTable in pairs(self.parsedActions) do
-                counts[listName] = counts[listName] or ct()
-                -- Loop through each entry in each named action list
-                for _,entry in pairs(listTable) do
-                    counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
-                    entry.key = (entry.action == "run_action_list" or entry.action == "call_action_list")
-                        and Core:Format("%s:%s[%s]", listName, entry.action, entry.params.name)
-                        or Core:Format("%s:%s[%s]", listName, entry.action, counts[listName][entry.action])
-
-                    -- Create a default prcondition, based on whether the spell is castable
-                    entry.precondition = (entry.action == "run_action_list" or entry.action == "call_action_list")
-                        and "true"
-                        or Core:Format("%s.spell_can_cast", entry.action)
-                    if type(entry.params.sync) ~= "nil" then
-                        entry.precondition = Core:Format("(%s) and (%s.spell_can_cast or %s.cooldown_up or %s.aura_remains > 0)", entry.precondition, entry.params.sync, entry.params.sync, entry.params.sync)
-                    end
-
-                    -- Create the condition function
-                    if type(entry.condition_func) == "nil" then
-                        if type(entry.params.condition_converted) ~= "nil" or type(entry.params.target_if_converted) ~= "nil" then
-                            local cond = entry.params.condition_converted or entry.params.target_if_converted
-                            entry.fullconditionfuncsrc = Core:Format("((%s) and (%s))", entry.precondition, cond.expression:gsub('THIS_SPELL', entry.action))
-                        else
-                            entry.fullconditionfuncsrc = entry.precondition
-                        end
-                        entry.condition_func = Core:LoadFunctionString(Core:Format("function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), Core:Format("cond:%s", entry.key))
-                    end
-
-                    -- Create the variable result function
-                    if type(entry.value_func) == "nil" and type(entry.params.value_converted) ~= "nil" then
-                        entry.fullvaluefuncsrc = entry.params.value_converted.expression
-                        entry.value_func = Core:LoadFunctionString(Core:Format("function() return (%s) end", entry.fullvaluefuncsrc), Core:Format("var:%s", entry.key))
-                    end
-                end
-            end
-            rt(counts)
-            rt(converted)
-        end
-    end
-
-    function profile:FindActionForSpellID(spellID)
-        if self.spellIDactionMapping[spellID] then return self.spellIDactionMapping[spellID] end
-        for k,v in pairs(profile.actions) do
-            local spellIDs = rawget(v, 'SpellIDs')
-            if spellIDs then
-                for k2,v2 in pairs(spellIDs) do
-                    if v2 == spellID then
-                        self.spellIDactionMapping[spellID] = k
-                        return k
-                    end
-                end
-            end
-        end
-    end
-
-    function profile:Activate()
-        Core:DevPrint("Activating profile: %s", profile.name)
-
-        -- Construct the total actions table, including resources and base actions
-        profile.actions = Core:MergeTables(Core.Environment.common, resources, unpack(config.actions))
-        local actions = profile.actions
-
-        -- Load the actions table
-        self:LoadActions()
-
-        -- Merge the detected abilities from spellbook and the supplied ones from the class configuration
-        profile.guessed = TJ:DetectAbilitiesFromSpellBook()
-        local guessed = profile.guessed
-
-        -- Loop through each of the guessed abilities, and attempt to match up the AbilityID or the TalentID
-        for k1,v1 in pairs(guessed) do
-            for k2,v2 in pairs(actions) do
-                local match = false
-                -- Match against ability
-                local a1, a2 = v1.SpellIDs, rawget(v2, 'SpellIDs')
-                if a1 and a2 then
-                    for k3,v3 in pairs(a1) do
-                        for k4,v4 in pairs(a2) do
-                            if v3 == v4 then
-                                match = true
-                            end
-                        end
-                    end
-                end
-                -- Match against talents
-                a1, a2 = v1.TalentID, rawget(v2, 'TalentID')
-                if type(a1) == 'number' and type(a2) == 'number' and a1 == a2 then
-                    match = true
-                end
-                -- We got a match, merge the tables
-                if match then
-                    actions[k2] = Core:MergeTables(v2, v1)
-                    actions[k2].in_spellbook = v1.SpellBookSpellID and true or false
-                    actions[k2].AbilityID = v1.SpellBookSpellID or nil
-                end
-            end
-        end
-
-        -- Set up the hooks table so that we don't log errors if they're not present in the profile
-        if not actions.hooks then actions.hooks = {} end
-
-        -- Show errors if we're missing anything...
-        actions = Core:MissingFieldTable(profile.name, actions)
-
-        -- Construct the blacklisted
-        wipe(blacklisted)
-        for k,v in pairs(Core.Environment.globalBlacklist) do
-            blacklisted[1+#blacklisted] = v
-        end
-        if config.blacklisted then
-            for k,v in pairs(config.blacklisted) do
-                blacklisted[1+#blacklisted] = v
-            end
-        end
-
-        -- We need to work out the non-hasted cast times, GetSpellBaseCooldown is iffy for some reason. Do it ourselves.
-        local playerHasteMultiplier = ( 100 / ( 100 + UnitSpellHaste('player') ) )
-
-        -- Update each of the actions with any detected/generated data
-        for k,v in pairs(actions) do
-            v.ActionName = k
-
-            local spellIDs = rawget(v, 'SpellIDs')
-            local auraIDs = rawget(v, 'AuraID')
-            local talentID = rawget(v, 'TalentID')
-            v.OverallSpellID = spellIDs and (type(spellIDs) == "table" and rawget(spellIDs, 1) or spellIDs)
-                or auraIDs and (type(auraIDs) == "table" and rawget(auraIDs, 1) or auraIDs)
-                or talentID and select(6, GetTalentInfoByID(talentID))
-
-            addActionTalentFields(v)
-
-            -- If there's no ability ID, then we can't cast it.
-            if type(v) == 'table' and not rawget(v, 'AbilityID') then
-                v.spell_can_cast = function(spell, env) return false end
-                v.in_range = rawget(v, 'in_range') or function(spell, env) return false end
-                v.cooldown_remains = 99999
-            end
-
-            -- Determine the ability-specific information, if we can cast the current action
-            if type(v) == 'table' and rawget(v, 'AbilityID') then
-
-                -- If we have an AbilityID specified, but in_spellbook isn't set, then make sure it's set to false (i.e. it's defined in the profile, but it's not in the current spellbook)
-                if not rawget(v, 'in_spellbook') then
-                    v.in_spellbook = false
-                end
-
-                -- Set up a function to check if the ability is in range
-                if rawget(v, 'SpellBookItem') then
-                    v.in_range = function(spell,env)
-                        if not v.in_spellbook then return false end
-                        local r = IsSpellInRange(spell.SpellBookItem, spell.SpellBookCaster == "pet" and BOOKTYPE_PET or BOOKTYPE_SPELL, 'target')
-                        r = (not r or r ~= 1) and true or false
-                        return (not r)
-                    end
-                end
-
-                -- Set up function for last cast time
-                v.last_cast = function(spell, env)
-                    local latest = 0
-                    if rawget(v, 'SpellIDs') then
-                        for _,spellID in pairs(v.SpellIDs) do
-                            local cast = env.lastCastTimes[spellID]
-                            if cast and cast > latest then latest = cast end
-                        end
-                    end
-                    return latest
-                end
-                v.time_since_last_cast = function(spell, env)
-                    return env.currentTime - spell.last_cast
-                end
-
-                -- Set up a function to check to see if an ability is blacklisted
-                v.blacklisted = function(spell, env)
-                    return Config:GetSpecBlacklist(k) and true or false
-                end
-
-                -- Start constructing the spell_can_cast() and perform_cast() functions
-                v.spell_can_cast_funcsrc = Core:Format('(not spell.blacklisted) and (env.player_level >= %d) and (spell.in_spellbook)', GetSpellLevelLearned(v.AbilityID))
-                v.perform_cast_funcsrc = ''
-
-                -- Work out the cast time based off the spell info, or the GCD
-                local castTime = select(4, GetSpellInfo(v.AbilityID))
-                if castTime and castTime > 0 then
-                    v.base_cast_time = function(spell, env)
-                        return select(4, GetSpellInfo(v.AbilityID)) / 1000.0
-                    end
-                else
-                    v.base_cast_time = function(spell, env)
-                        local gcd = TJ.currentGCD * env.playerHasteMultiplier
-                        return (gcd > 1) and gcd or 1
-                    end
-                end
-                if not rawget(v, 'spell_cast_time') then
-                    v.spell_cast_time = function(spell, env)
-                        return spell.base_cast_time
-                    end
-                end
-
-                -- Get the resource cost
-                local costType, costBase, costPerTime, cost3 = SpellData.GetSpellCost(v.AbilityID)
-
-                -- If this action has an associated cost, add the correct value to the table and update the functions accordingly
-                costType = costType or rawget(v, 'cost_type')
-                if costType then
-                    if not rawget(v, costType..'_cost') then
-                        v[costType..'_cost'] = costBase
-                    end
-                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. Core:Format(' and (env.%s.can_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost))', costType, costType, k, costType, costType)
-                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. Core:Format('; env.%s.perform_spend(env.%s, env, \'%s\', \'%s\', spell.%s_cost)', costType, costType, k, costType, costType)
-                end
-
-                -- Add any fields required for cooldowns
-                local cooldownSecs, isCooldownAffectedByHaste = SpellData.GetSpellCooldown(v.AbilityID)
-                v.cooldown_tt_secs = type(cooldownSecs) ~= 'nil' and cooldownSecs or 'nil'
-                local fullCooldownSecs = (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or 0
-                addActionCooldownFields(v, fullCooldownSecs, isCooldownAffectedByHaste)
-
-                -- Get the recharge time
-                local rechargeSecs, isRechargeAffectedByHaste = SpellData.GetSpellRechargeTime(v.AbilityID)
-                v.recharge_tt_secs = type(rechargeSecs) ~= 'nil' and rechargeSecs or 'nil'
-                local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
-                -- Check if this has charges that use GetSpellCount()
-                local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount') and true or false
-                if usesSpellCountForCharges then
-                    fullRechargeSecs = 999
-                    isRechargeAffectedByHaste = false
-                end
-                addActionChargesFields(v, fullRechargeSecs, isRechargeAffectedByHaste, usesSpellCountForCharges)
-
-                -- Update the spell_can_cast function if talents are specified
-                if rawget(v, 'TalentID') then
-                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. ' and (spell.talent_enabled)'
-                end
-
-                -- Update the spell_can_cast function if there's a spell-specific function in the supplied table
-                if rawget(v, 'CanCast') then
-                    v.spell_can_cast_funcsrc = v.spell_can_cast_funcsrc .. ' and (spell.CanCast)'
-                end
-
-                -- Update the perform_cast function if an aura is supposed to be applied
-                if rawget(v, 'AuraApplied') then
-                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. Core:Format('; env.%s.expirationTime = env.currentTime + %d', v.AuraApplied, v.AuraApplyLength)
-                end
-
-                -- Update the perform_cast function if there's a spell-specific function in the supplied table
-                if rawget(v, 'PerformCast') then
-                    v.perform_cast_funcsrc = v.perform_cast_funcsrc .. '; local r = spell.PerformCast'
-                end
-
-                -- Load the spell_can_cast function
-                v.spell_can_cast_funcsrc = Core:Format('function(spell, env) return ((%s) and true or false) end', v.spell_can_cast_funcsrc:gsub('^ and ', ''))
-                v.spell_can_cast = Core:LoadFunctionString(v.spell_can_cast_funcsrc, k..':spell_can_cast')
-
-                -- Load the perform_cast function
-                v.perform_cast_funcsrc = Core:Format('function(spell, env) %s end', v.perform_cast_funcsrc:gsub('^; ', ''))
-                v.perform_cast = Core:LoadFunctionString(v.perform_cast_funcsrc, k..':perform_cast')
-            end
-
-            -- Add aura-specific functions
-            addActionAuraFields(v)
-
-            -- Deal with anything missing
-            addMissingFields(v)
-
-        end
-
-        -- Update the mapping from the detected actions from spellbook to match what simc APLs expect
-        if config.simc_mapping then
-            for k,v in pairs(config.simc_mapping) do
-                if rawget(actions, v) then
-                    actions[k] = actions[v]
-                end
-            end
-        end
-    end
-
-    function profile:Deactivate()
-    end
+    -- Add the prototype functions
+    profile.ClearActions = profile__ClearActionsPrototype
+    profile.LoadActions = profile__LoadActionsPrototype
+    profile.Activate = profile__ActivatePrototype
+    profile.Deactivate = profile__DeactivatePrototype
+    profile.FindActionForSpellID = profile__FindActionForSpellID
 
     -- If someone decides to load-on-demand their class module, then queue up a full profile reload.
     TJ:QueueProfileReload()
@@ -650,7 +443,7 @@ function TJ:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
     TJ.availableProfiles[classID] = TJ.availableProfiles[classID] or {}
     TJ.availableProfiles[classID][specID] = TJ.availableProfiles[classID][specID] or {}
     local t = TJ.availableProfiles[classID][specID]
-    t[1+#t] = aplID
+    t[1 + #t] = aplID
     tsort(t)
 end
 

@@ -461,17 +461,15 @@ local havoc_base_overrides = {
 }
 
 local havoc_hooks = {
-    hooks = {
-        OnStateInit = function(env)
-            -- we need to override the range after resetting the state, otherwise we get 'wait' and other inconsistencies
-            if env.prev_gcd.vengeful_retreat then
-                env.movement.distance = Config:GetSpec("ignore_fr_vr_range") and 5 or 20
-            end
-            if env.prev_gcd.fel_rush then
-                env.movement.distance = 5
-            end
-        end,
-    }
+    OnStateInit = function(env)
+        -- we need to override the range after resetting the state, otherwise we get 'wait' and other inconsistencies
+        if env.prev_gcd.vengeful_retreat then
+            env.movement.distance = Config:GetSpec("ignore_fr_vr_range") and 5 or 20
+        end
+        if env.prev_gcd.fel_rush then
+            env.movement.distance = 5
+        end
+    end,
 }
 
 TJ:RegisterPlayerClass({
@@ -483,8 +481,8 @@ TJ:RegisterPlayerClass({
     actions = {
         havoc_abilities_exported,
         havoc_base_overrides,
-        havoc_hooks,
     },
+    hooks = havoc_hooks,
     blacklisted = {
         'pick_up_fragment',
     },
