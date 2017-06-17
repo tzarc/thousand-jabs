@@ -202,7 +202,7 @@ do
     end
 
     local tmpState = {}
-    IterateSpellBook = function(bookType, tstate)
+    IterateSpellBook = function(bookType, tstate) -- use tstate if you need to call iterations in parallel - supply a temporary/disposable table
         local st = tstate or tmpState
         wipe(st)
         st.Tab = 1
@@ -219,13 +219,11 @@ end
 -- Tooltip Scanning
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local tts = CreateFrame('GameTooltip', 'LibSpellDataTooltipScanner')
-local ttsl1 = tts:CreateFontString('$parentTextLeft1', nil, "GameTooltipText")
-local ttsr1 = tts:CreateFontString('$parentTextRight1', nil, "GameTooltipText")
-tts:AddFontStrings(ttsl1, ttsr1)
-tts:SetOwner(UIParent, "ANCHOR_NONE")
-
 do
+    local tts = CreateFrame('GameTooltip', 'LibSpellDataTooltipScanner')
+    tts:AddFontStrings(tts:CreateFontString('$parentTextLeft1', nil, "GameTooltipText"), tts:CreateFontString('$parentTextRight1', nil, "GameTooltipText"))
+    tts:SetOwner(UIParent, "ANCHOR_NONE")
+
     local function tooltipIteratorDispatch(state)
         if state.Side == "Right" then
             state.Line = state.Line + 1
@@ -256,7 +254,7 @@ do
     end
 
     local tmpState = {}
-    IterateLinkTooltip = function(link, tstate)
+    IterateLinkTooltip = function(link, tstate) -- use tstate if you need to call iterations in parallel - supply a temporary/disposable table
         tts:SetOwner(UIParent, "ANCHOR_NONE")
         tts:ClearLines()
         tts:SetHyperlink(link)
@@ -373,7 +371,6 @@ do
                 end
             end
         end
-        return 0
     end
 
     local GetSpellCooldown = function(spellID)

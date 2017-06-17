@@ -220,22 +220,28 @@ function Core:Format(f, ...)
     return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '')
 end
 
-function Core:OrderedPairs(t, f)
-    local a = ct()
-    for n in pairs(t) do tinsert(a, n) end
-    tsort(a, f)
-    local i = 0
-    local iter = function ()
-        i = i + 1
-        local k = a[i]
+do
+    local orderedPairsDispatch = function(state)
+        state.idx = state.idx + 1
+        local k = state.keys[state.idx]
         if k == nil then
-            rt(a)
+            state.tbl = nil
+            rt(state)
             return nil
         else
-            return k, t[k]
+            return k, state.tbl[k]
         end
     end
-    return iter
+
+    function Core:OrderedPairs(tbl, f)
+        local state = ct()
+        state.keys = ct()
+        state.tbl = tbl
+        state.idx = 0
+        for n in pairs(tbl) do tinsert(state.keys, n) end
+        tsort(state.keys, f)
+        return orderedPairsDispatch, state
+    end
 end
 
 function Core:IntersectionCount(tbl1, tbl2)

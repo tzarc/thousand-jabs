@@ -142,6 +142,16 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     return keyword
 end
 
+local function fixMathFuncs(expr)
+    -- Min/max modifiers (function calls)
+    expr = expr:gsub("math%.abs%(", "_mabs(")
+    expr = expr:gsub("math%.ceil%(", "_mceil(")
+    expr = expr:gsub("math%.floor%(", "_mfloor(")
+    expr = expr:gsub("math%.min%(", "_mmin(")
+    expr = expr:gsub("math%.max%(", "_mmax(")
+    return expr
+end
+
 local function addActionTalentFields(action)
     -- Add the 'talent_enabled' entry if there are talent IDs present
     if type(action) == 'table' then
@@ -381,13 +391,13 @@ function TJ:RegisterPlayerClass(config)
                         else
                             entry.fullconditionfuncsrc = entry.precondition
                         end
-                        entry.condition_func = Core:LoadFunctionString(Core:Format("function() return ((%s) and true or false) end", entry.fullconditionfuncsrc), Core:Format("cond:%s", entry.key))
+                        entry.condition_func = Core:LoadFunctionString(Core:Format("function() return ((%s) and true or false) end", fixMathFuncs(entry.fullconditionfuncsrc)), Core:Format("cond:%s", entry.key))
                     end
 
                     -- Create the variable result function
                     if type(entry.value_func) == "nil" and type(entry.params.value_converted) ~= "nil" then
                         entry.fullvaluefuncsrc = entry.params.value_converted.expression
-                        entry.value_func = Core:LoadFunctionString(Core:Format("function() return (%s) end", entry.fullvaluefuncsrc), Core:Format("var:%s", entry.key))
+                        entry.value_func = Core:LoadFunctionString(Core:Format("function() return (%s) end", fixMathFuncs(entry.fullvaluefuncsrc)), Core:Format("var:%s", entry.key))
                     end
                 end
             end
@@ -607,11 +617,11 @@ function TJ:RegisterPlayerClass(config)
 
                 -- Load the spell_can_cast function
                 v.spell_can_cast_funcsrc = Core:Format('function(spell, env) return ((%s) and true or false) end', v.spell_can_cast_funcsrc:gsub('^ and ', ''))
-                v.spell_can_cast = Core:LoadFunctionString(v.spell_can_cast_funcsrc, k..':spell_can_cast')
+                v.spell_can_cast = Core:LoadFunctionString(fixMathFuncs(v.spell_can_cast_funcsrc), k..':spell_can_cast')
 
                 -- Load the perform_cast function
                 v.perform_cast_funcsrc = Core:Format('function(spell, env) %s end', v.perform_cast_funcsrc:gsub('^; ', ''))
-                v.perform_cast = Core:LoadFunctionString(v.perform_cast_funcsrc, k..':perform_cast')
+                v.perform_cast = Core:LoadFunctionString(fixMathFuncs(v.perform_cast_funcsrc), k..':perform_cast')
             end
 
             -- Add aura-specific functions

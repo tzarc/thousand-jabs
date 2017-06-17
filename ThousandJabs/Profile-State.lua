@@ -76,6 +76,11 @@ local stateResetDefaults = {
     tostring = tostring,
     N = convertToNumber,
     B = convertToBoolean,
+    _mabs = mabs,
+    _mceil = mceil,
+    _mfloor = mfloor,
+    _mmax = mmax,
+    _mmin = mmin,
 }
 
 local function CreateStateEnvTable(state, profile)

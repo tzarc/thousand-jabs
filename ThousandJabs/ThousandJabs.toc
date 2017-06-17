@@ -29,7 +29,6 @@ Module-Profiling.lua
 Module-TableCache.lua
 Module-UnitCache.lua
 
-Base.lua
 Main.lua
 SpellData.lua
 Events.lua
