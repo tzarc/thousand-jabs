@@ -3,6 +3,7 @@
 ------------------------------------------------------------------------------------------------------------------------
 
 local TJ, Core, Debug, fmt
+local ct, rt -- create table, release table
 
 local pairs = pairs
 local setmetatable = setmetatable
@@ -12,10 +13,14 @@ local tsort = table.sort
 
 local IsLoadedByWoW = _G.GetSpellInfo and true or false
 if IsLoadedByWoW then
+    local LibStub = LibStub
     TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
     Core = TJ:GetModule('Core')
     Debug = function(...) Core:Debug(...) end
     fmt = function(...) Core:Format(...) end
+    TableCache = TJ:GetModule('TableCache')
+    ct = function() return TableCache:Acquire() end
+    rt = function(tbl) TableCache:Release(tbl) end
     Core:Safety()
 else
     TJ = { Core = {} }
@@ -33,6 +38,8 @@ else
         end
         return nil;
     end
+    ct = function() return {} end
+    rt = function(tbl) end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -68,7 +75,9 @@ do
     }
 
     local function appendToken(tbl, op, str)
-        tbl[1+#tbl] = { operator = op, value = str }
+        local t = ct()
+        t.operator, t.value = op, str
+        tbl[1+#tbl] = t
     end
 
     local function appendPrimary(tbl, str)
@@ -79,7 +88,7 @@ do
     end
 
     function simcExpressionLexer(str)
-        local tokens = {}
+        local tokens = ct()
         local idx = 1
         local arg = ""
         while idx <= str:len() do
@@ -122,7 +131,9 @@ do
     end
 
     local function createPrimaryExpression(parser, token)
-        return { token = "primary", value = token.value }
+        local t = ct()
+        t.token, t.value = "primary", token.value
+        return t
     end
 
     local function createParenthesesExpression(parser, token)
@@ -142,7 +153,9 @@ do
             return nil
         elseif rparen.operator ~= 'rparen' then
         end
-        return { token = "invoke", operator = token.operator, inner = inner }
+        local t = ct()
+        t.token, t.operator, t.inner = "invoke", token.operator, inner
+        return t
     end
 
     local precedences = {
@@ -198,7 +211,9 @@ do
 
         local function createPrefixExpression(parser, token)
             local rhs = parser:ParseExpression(precedence)
-            return { token = "prefix", operator = token.operator, rhs = rhs }
+            local t = ct()
+            t.token, t.operator, t.rhs = "prefix", token.operator, rhs
+            return t
         end
 
         prefixParsers[token] = createPrefixExpression
@@ -209,7 +224,9 @@ do
 
         local function createLeftAssocExpression(parser, lhs, token)
             local rhs = parser:ParseExpression(precedence)
-            return { token = "infix", operator = token.operator, lhs = lhs, rhs = rhs }
+            local t = ct()
+            t.token, t.operator, t.lhs, t.rhs = "infix", token.operator, lhs, rhs
+            return t
         end
 
         infixParsers[token] = createLeftAssocExpression
@@ -220,7 +237,9 @@ do
 
         local function createRightAssocExpression(parser, lhs, token)
             local rhs = parser:ParseExpression(precedence - 1)
-            return { token = "infix", operator = token.operator, lhs = lhs, rhs = rhs }
+            local t = ct()
+            t.token, t.operator, t.lhs, t.rhs = "infix", token.operator, lhs, rhs
+            return t
         end
 
         infixParsers[token] = createRightAssocExpression
@@ -255,7 +274,9 @@ do
     simcExpressionParser_mt.__index = simcExpressionParser_mt
 
     function simcExpressionParser(tokens)
-        local parser = setmetatable({ tokens = tokens, nextIndex = 1 }, simcExpressionParser_mt)
+        local t = ct()
+        t.tokens, t.nextIndex = tokens, 1
+        local parser = setmetatable(t, simcExpressionParser_mt)
         parser.result = parser:ParseExpression(0)
         if parser.nextIndex <= #parser.tokens then
             parser:ThrowError('Did not consume entire string')
@@ -356,7 +377,7 @@ do
     function simcExpressionRenderer(str, primaryModifier)
         local tokens = simcExpressionLexer(str)
         local parsed = simcExpressionParser(tokens)
-        local keywords = {}
+        local keywords = ct()
         for _,v in pairs(tokens) do
             if v.operator == "primary" and not tContains(keywords, v.value) then
                 if not v.value:match("^([%d%.]+)$") then -- skip numbers
@@ -365,7 +386,9 @@ do
             end
         end
         tsort(keywords)
-        return { expression = render(parsed, primaryModifier), keywords = keywords }
+        local t = ct()
+        t.expression, t.keywords = render(parsed, primaryModifier), keywords
+        return t
     end
 end
 
@@ -375,25 +398,26 @@ end
 
 local simcAplParser
 do
-    function simcAplParser(lines, primaryModifier)
-        local allEntries = {}
+    function simcAplParser(lines, primaryModifier, tbl)
+        local allEntries = tbl or ct()
         for _,l in pairs(lines) do
             local list, action, params = l:match("^actions%.?([%a_]*)%+?=/?([^,]+),?(.*)")
             if list and action then
                 list = list:len() == 0 and "default" or list
-                local res = { line = l, action = action, params = {} }
+                local t = ct()
+                t.line, t.action, t.params = l, action, ct()
                 local paramName, paramValue, p = params:match("([^=]+)=([^,]+),?(.*)")
                 while paramName do
                     if paramName == "if" then paramName = "condition" end
-                    res.params[paramName] = paramValue
-                    if (paramName == "condition") or (paramName == "target_if") or (res.action == "variable" and paramName == "value") then
-                        res.params[paramName.."_converted"] = simcExpressionRenderer(paramValue, primaryModifier)
+                    t.params[paramName] = paramValue
+                    if (paramName == "condition") or (paramName == "target_if") or (t.action == "variable" and paramName == "value") then
+                        t.params[paramName.."_converted"] = simcExpressionRenderer(paramValue, primaryModifier)
                     end
                     paramName, paramValue, p = p:match("([^=]+)=([^,]+),?(.*)")
                 end
-                allEntries[list] = allEntries[list] or {}
-                local thisList = allEntries[list];
-                thisList[1+#thisList] = res
+                allEntries[list] = allEntries[list] or ct()
+                local thisList = allEntries[list]
+                thisList[1+#thisList] = t
             end
         end
         return allEntries
@@ -406,15 +430,18 @@ end
 
 if IsLoadedByWoW then
     local function splitnewlines(str, tbl)
-        local t = tbl or {}
+        local t = tbl or ct()
         local function helper(line) tinsert(t, line) return "" end
         helper(str:gsub("(.-)\r?\n", helper))
         return t
     end
 
     function Core:ExpressionParser(str, primaryModifier)
-        local lines = splitnewlines(str)
-        return simcAplParser(lines, primaryModifier)
+        local tmp = ct()
+        local lines = splitnewlines(str, tmp)
+        local ret = simcAplParser(lines, primaryModifier)
+        rt(tmp)
+        return ret
     end
 else
     local function LoadFunctionString(funcStr)

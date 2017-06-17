@@ -4,6 +4,7 @@ local devMode = false
 -- Addon definition
 ------------------------------------------------------------------------------------------------------------------------
 
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):NewAddon('ThousandJabs', 'AceConsole-3.0', 'AceEvent-3.0')
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -31,9 +32,11 @@ if Core.devMode then _G['tj'] = TJ end
 -- Locals
 ------------------------------------------------------------------------------------------------------------------------
 
-local LibStub = LibStub
 local LSD = LibStub("LibSerpentDump")
 local LSM = LibStub('LibSharedMedia-3.0')
+
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
 
 local _G = _G
 local assert = assert
@@ -88,25 +91,6 @@ local tableNames = {}
 ------------------------------------------------------------------------------------------------------------------------
 -- Global read/write logging
 ------------------------------------------------------------------------------------------------------------------------
-
-local function split(str, delim)
-    local result, pattern, lastPos = {}, "(.-)" .. delim .. "()", 1
-    for part, pos in strgmatch(str, pattern) do
-        tinsert(result, part)
-        lastPos = pos
-    end
-    tinsert(result, strsub(str, lastPos))
-    return result
-end
-local function where(tbl, pattern)
-    local result = {}
-    for k,v in pairs(tbl) do
-        if strmatch(v, pattern) then
-            tinsert(result, v)
-        end
-    end
-    return result
-end
 
 local real_G = _G
 local fake_G = setmetatable({}, {
@@ -237,7 +221,7 @@ function Core:Format(f, ...)
 end
 
 function Core:OrderedPairs(t, f)
-    local a = TableCache:Acquire()
+    local a = ct()
     for n in pairs(t) do tinsert(a, n) end
     tsort(a, f)
     local i = 0
@@ -245,7 +229,7 @@ function Core:OrderedPairs(t, f)
         i = i + 1
         local k = a[i]
         if k == nil then
-            TableCache:Release(a)
+            rt(a)
             return nil
         else
             return k, t[k]
@@ -258,55 +242,15 @@ function Core:IntersectionCount(tbl1, tbl2)
     local a = (#tbl1 < #tbl2) and tbl1 or tbl2 -- Make 'a' the smallest of the two arrays
     local b = (#tbl1 < #tbl2) and tbl2 or tbl1
     local cnt = 0
-    local i = TableCache:Acquire()
+    local i = ct()
     for n=1,#a do
         i[a[n]] = true
     end
     for n=1,#b do
         if i[b[n]] then cnt = cnt + 1 end
     end
-    TableCache:Release(i)
+    rt(i)
     return cnt
-end
-
-local function scope_exit(self, f)
-    local e = TableCache:Acquire()
-    e.type = "exit"
-    e.func = f
-    self[1+#self] = e
-end
-
-local function scope_success(self, f)
-    local e = TableCache:Acquire()
-    e.type = "success"
-    e.func = f
-    self[1+#self] = e
-end
-
-local function scope_fail(self, f)
-    local e = TableCache:Acquire()
-    e.type = "fail"
-    e.func = f
-    self[1+#self] = e
-end
-
-local function scope_finalise(scope, success, ...)
-    for i = #scope,1,-1 do
-        if (scope[i].type == "exit") or (scope[i].type == "success" and success) or (scope[i].type == "fail" and not success) then
-            pcall(scope[i].func)
-        end
-    end
-    TableCache:Release(scope)
-    if not success then error(...) end
-    return ...
-end
-
-function Core:Scope(f, ...)
-    local scope = TableCache:Acquire()
-    scope.exit = scope_exit
-    scope.success = scope_success
-    scope.fail = scope_fail
-    return scope_finalise(scope, pcall(f, scope, ...))
 end
 
 function Core:LoadFunctionString(funcStr, name)
@@ -495,7 +439,7 @@ function Core:UpdateUsageStatistics()
                     Core:Debug("           Memory usage: %12.3f kB", curr)
                     Core:Debug("           Memory delta: %12.3f kB", delta)
                     Core:Debug("           Memory delta: %12.3f kB/sec (over last %d secs)", delta/dt, statUpdateSpeed)
-                    Broker.dataObj.text = Core:Format("Thousand Jabs: Memory: %dkB/sec", delta/dt)
+                    Broker.dataObj.text = Core:Format("Thousand Jabs: Memory: %d bytes/sec", 1024*delta/dt)
                 end
                 if Stats.lastCpuAmount and Stats.lastCpuAmount > 0 then
                     local curr = Stats.currCpuAmount

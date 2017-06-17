@@ -21,6 +21,7 @@ Libs\LibSharedMedia-3.0\lib.xml
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 Libs\LibSerpentDump.lua
+Libs\LibSpellData.lua
 
 Module-Core.lua
 Module-Config.lua

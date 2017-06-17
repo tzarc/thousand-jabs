@@ -1,3 +1,4 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
@@ -6,14 +7,14 @@ local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
 local UI = TJ:GetModule('UI')
 
+local LSD = LibStub('LibSerpentDump')
+
 local assert = assert
 local debugprofilestop = debugprofilestop
 local GetBuildInfo = GetBuildInfo
 local loadstring = loadstring
 local pcall = pcall
 local tonumber = tonumber
-
-local LSD = LibStub('LibSerpentDump')
 
 Core:Safety()
 
@@ -117,36 +118,4 @@ function TJ:MissingFieldTable(tableName, tbl)
         end
     end
     return tbl
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Merge multiple tables together
-------------------------------------------------------------------------------------------------------------------------
-
-function TJ:MergeTables(...)
-    local target = {}
-    for i=1,select('#', ...) do
-        local t = select(i, ...)
-        if t then
-            for k,v in pairs(t) do
-                if type(target[k]) == 'table' and type(v) == 'table' then
-                    target[k] = self:MergeTables(target[k], v)
-                elseif not target[k] then
-                    target[k] = v
-                end
-            end
-        end
-    end
-    return target
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Console command
-------------------------------------------------------------------------------------------------------------------------
-
-local function splitargv(str,sep)
-    local sep, fields = sep or ":", {}
-    local pattern = ("([^%s]+)"):format(sep)
-    str:gsub(pattern, function(c) fields[#fields+1] = c end)
-    return fields
 end

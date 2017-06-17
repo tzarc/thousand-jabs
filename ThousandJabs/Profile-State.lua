@@ -1,8 +1,14 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Profiling = TJ:GetModule('Profiling')
 local TableCache = TJ:GetModule('TableCache')
 local UnitCache = TJ:GetModule('UnitCache')
+
+local SpellData = LibStub('LibSpellData')
+
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
 
 local GetInventoryItemID = GetInventoryItemID
 local getmetatable = getmetatable
@@ -10,6 +16,9 @@ local GetSpellCharges = GetSpellCharges
 local GetSpellCooldown = GetSpellCooldown
 local GetSpellCount = GetSpellCount
 local GetTime = GetTime
+local mabs = math.abs
+local mceil = math.ceil
+local mfloor = math.floor
 local mmax = math.max
 local mmin = math.min
 local pairs = pairs
@@ -138,7 +147,7 @@ local function PrevGcdTableIndexerPrototype(tbl, idx)
     local gcdcount = getmetatable(tbl).__gcd
     local env = getmetatable(tbl).__env
     local profile = getmetatable(tbl).__profile
-    local abilityQueue = TableCache:Acquire()
+    local abilityQueue = ct()
     for k,v in Core:OrderedPairs(env.abilitiesUsed, function(a,b) return b < a end) do
         local t = rawget(env, v)
         if t and (t.spell_cast_time or TJ.currentGCD) > 0.2 then
@@ -146,7 +155,7 @@ local function PrevGcdTableIndexerPrototype(tbl, idx)
         end
     end
     local prev_gcd_ability = abilityQueue[gcdcount] or nil
-    TableCache:Release(abilityQueue)
+    rt(abilityQueue)
     return prev_gcd_ability and prev_gcd_ability == idx and true or false
 end
 
@@ -372,11 +381,11 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     env.combatStart = (TJ.combatStart ~= 0) and TJ.combatStart or GetTime()
 
     -- Fix up math funcs
-    env._mabs = math.abs
-    env._mceil = math.ceil
-    env._mfloor = math.floor
-    env._mmax = math.max
-    env._mmin = math.min
+    env._mabs = mabs
+    env._mceil = mceil
+    env._mfloor = mfloor
+    env._mmax = mmax
+    env._mmin = mmin
 
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit
@@ -580,11 +589,9 @@ local function exportActionVisitor(env, ctx, t)
 
     if out.AbilityID then
         out.AbilityTooltipEntries = {}
-        local tooltip = TJ:GetTooltipEntries(Core:Format('spell:%d', out.AbilityID))
-        for k,v in pairs(tooltip) do
-            tinsert(out.AbilityTooltipEntries, v.t)
+        for text, _, _, hexColour in SpellData.IterateSpellTooltip(out.AbilityID) do
+            tinsert(out.AbilityTooltipEntries, {text, hexColour})
         end
-        TableCache:Release(tooltip)
     end
     return out
 end

@@ -1,7 +1,11 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Profiling = TJ:GetModule('Profiling')
 local TableCache = TJ:GetModule('TableCache')
+
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
 
 local debugprofilestop = debugprofilestop
 local format = string.format
@@ -30,7 +34,7 @@ local do_mem = (addon_count < 10) and true or false
 ------------------------------------------------------------------------------------------------------------------------
 
 local function orderedpairs(t, f)
-    local a = TableCache:Acquire()
+    local a = ct()
     for n in pairs(t) do tinsert(a, n) end
     tsort(a, f)
     local i = 0
@@ -38,7 +42,7 @@ local function orderedpairs(t, f)
         i = i + 1
         local k = a[i]
         if k == nil then
-            TableCache:Release(a)
+            rt(a)
             return nil
         else
             return k, t[k]
@@ -53,7 +57,7 @@ end
 
 function Profiling:ProfilingProlog(...)
     if not self.profiling.enabled then return end
-    local e = TableCache:Acquire()
+    local e = ct()
     e.innerTime = 0
     e.innerMem = 0
     e.func = Core:Format(...)
@@ -63,14 +67,18 @@ function Profiling:ProfilingProlog(...)
     e.start = debugprofilestop()
 end
 
-function Profiling:ProfilingEpilog()
+function Profiling:ProfilingEpilog(...)
     local now = debugprofilestop()
     if not self.profiling.enabled or #self.profiling.stack == 0 then return end
     if do_mem then UpdateAddOnMemoryUsage() end
     local mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
     local e = self.profiling.stack[#self.profiling.stack]
     self.profiling.stack[#self.profiling.stack] = nil
-    self.profiling.data[e.func] = self.profiling.data[e.func] or { count = 0, timeSpent = 0, memGain = 0 }
+    if not self.profiling.data[e.func] then
+        local t = ct()
+        t.count, t.timeSpent, t.memGain = 0, 0, 0
+        self.profiling.data[e.func] = t
+    end
     local d = self.profiling.data[e.func]
     d.count = d.count + 1
     d.timeSpent = d.timeSpent + (now - e.start) - e.innerTime
@@ -80,7 +88,8 @@ function Profiling:ProfilingEpilog()
         p.innerTime = (now - e.start) + e.innerTime
         p.innerMem = (mem - e.mem) + e.innerMem
     end
-    TableCache:Release(e)
+    rt(e)
+    return ...
 end
 
 function Profiling:EnableProfiling(v)
@@ -99,7 +108,7 @@ end
 
 function Profiling:GetProfilingString()
     if not self.profiling.enabled then return 'Profiling disabled.' end
-    local l = TableCache:Acquire()
+    local l = ct()
     l[1+#l] = 'Profiling data:'
     for k,v in orderedpairs(self.profiling.data) do
         if type(v) == 'table' then
@@ -109,7 +118,7 @@ function Profiling:GetProfilingString()
         end
     end
     local s = tconcat(l, '\n  ')
-    TableCache:Release(l)
+    rt(l)
     return s
 end
 
@@ -124,9 +133,7 @@ function Profiling:ProfileFunction(a, b, c)
         local oldfunc = self[a]
         local newfunc = function(...)
             this:ProfilingProlog(b or a)
-            local ret = {oldfunc(...)}
-            this:ProfilingEpilog()
-            return unpack(ret)
+            return this:ProfilingEpilog(oldfunc(...))
         end
         unembeds[1+#unembeds] = function()
             self[a] = oldfunc
@@ -139,9 +146,7 @@ function Profiling:ProfileFunction(a, b, c)
         local oldfunc = a[b]
         local newfunc = function(...)
             this:ProfilingProlog(c)
-            local ret = {oldfunc(...)}
-            this:ProfilingEpilog()
-            return unpack(ret)
+            return this:ProfilingEpilog(oldfunc(...))
         end
         unembeds[1+#unembeds] = function()
             a[b] = oldfunc
@@ -154,9 +159,7 @@ function Profiling:ProfileFunction(a, b, c)
         local oldfunc = b
         local newfunc = function(...)
             this:ProfilingProlog(c)
-            local ret = {oldfunc(...)}
-            this:ProfilingEpilog()
-            return unpack(ret)
+            return this:ProfilingEpilog(oldfunc(...))
         end
         unembeds[1+#unembeds] = function()
         -- can't do anything here.

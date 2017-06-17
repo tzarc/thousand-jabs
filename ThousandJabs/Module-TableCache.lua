@@ -1,3 +1,4 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local TableCache = TJ:GetModule('TableCache')

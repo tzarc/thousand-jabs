@@ -1,8 +1,12 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local TableCache = TJ:GetModule('TableCache')
 local Profiling = TJ:GetModule('Profiling')
 local UnitCache = TJ:GetModule('UnitCache')
+
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
 
 local CheckInteractDistance = CheckInteractDistance
 local CreateFrame = CreateFrame
@@ -69,14 +73,14 @@ end
 
 local function GetAuraValues(unit, idx, filter)
     local _
-    local v = TableCache:Acquire()
+    local v = ct()
     v.name, v.rank, v.icon, v.count, v.dispelType, v.duration, v.expires, v.caster, v.isStealable, v.nameplateShowPersonal, v.spellID, v.canApplyAura, v.isBossDebuff, _, v.nameplateShowAll, v.timeMod, v.value1, v.value2, v.value3 = UnitAura(unit, idx, filter, filter)
     v.unit = unit
     v.unitGUID = UnitGUID(unit)
     v.unitCasterGUID = v.caster and UnitGUID(v.caster) or nil
     v.mine = (v.caster and v.caster == 'player') and true or false
     if v.spellID then return v end
-    TableCache:Release(v)
+    rt(v)
 end
 
 local function RetrieveActiveAuras(unitID)
@@ -84,7 +88,7 @@ local function RetrieveActiveAuras(unitID)
         return
     end
 
-    local auras = TableCache:Acquire()
+    local auras = ct()
     local blankDone, helpDone, harmDone = false, false, false
     for i=1,40 do
         if blankDone == false then
@@ -144,8 +148,8 @@ function UnitCache:UpdateUnitCache(unitID, forceUpdate)
     if UnitExists(unitID) then
         local theGUID = UnitGUID(unitID)
         if forceUpdate or not unitCache[theGUID] then
-            unitCache[theGUID] = unitCache[theGUID] or TableCache:Acquire()
-            if unitCache[theGUID].auras then TableCache:Release(unitCache[theGUID].auras) end
+            unitCache[theGUID] = unitCache[theGUID] or ct()
+            if unitCache[theGUID].auras then rt(unitCache[theGUID].auras) end
             unitCache[theGUID].auras = RetrieveActiveAuras(unitID)
             unitCache[theGUID].lastSeen = GetTime()
         end
@@ -161,7 +165,7 @@ function UnitCache:PurgeExpiredUnitCaches()
     local now = GetTime()
     for k, v in pairs(unitCache) do
         if v.lastSeen and (v.lastSeen + purgeTime) <= now then
-            TableCache:Release(unitCache[k])
+            rt(unitCache[k])
             unitCache[k] = nil
         end
     end
@@ -172,7 +176,7 @@ function UnitCache:UpdateTimeToDie(unitID)
     local theGUID = UnitGUID(unitID)
     if not theGUID then return end
     if not unitCache[theGUID] then return end
-    unitCache[theGUID].ttdData = unitCache[theGUID].ttdData or TableCache:Acquire()
+    unitCache[theGUID].ttdData = unitCache[theGUID].ttdData or ct()
     local currHealth, currTime = UnitHealth(unitID), GetTime()
     local ttdData = unitCache[theGUID].ttdData
 

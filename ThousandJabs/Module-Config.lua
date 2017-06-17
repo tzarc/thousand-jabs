@@ -1,3 +1,4 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
@@ -7,8 +8,6 @@ local LoadAddOn = LoadAddOn
 local select = select
 local type = type
 local UnitClass = UnitClass
-
-local LibStub = LibStub
 
 Core:Safety()
 

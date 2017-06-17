@@ -1,3 +1,4 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
@@ -8,11 +9,12 @@ local UI = TJ:GetModule('UI')
 
 local LSD = LibStub('LibSerpentDump')
 
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
+
 local co_create = coroutine.create
 local co_resume = coroutine.resume
 local co_status = coroutine.status
-local GetAddOnInfo = GetAddOnInfo
-local GetNumAddOns = GetNumAddOns
 local GetSpecialization = GetSpecialization
 local GetSpellBaseCooldown = GetSpellBaseCooldown
 local GetSpellCooldown = GetSpellCooldown
@@ -478,7 +480,7 @@ function TJ:TryDetectUpdateGlobalCooldown(lastCastSpellID)
 end
 
 function TJ:GetIncomingDamage(timestamp, secs)
-    local toDelete = TableCache:Acquire()
+    local toDelete = ct()
     local now = GetTime()
     local value = 0
     for entrytime, damage in pairs(self.damageTable) do
@@ -493,7 +495,7 @@ function TJ:GetIncomingDamage(timestamp, secs)
 
     -- Perform deletes
     for i=1, #toDelete do self.damageTable[toDelete[i]] = nil end
-    TableCache:Release(toDelete)
+    rt(toDelete)
     return value
 end
 

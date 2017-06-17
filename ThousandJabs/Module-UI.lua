@@ -1,9 +1,10 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local UI = TJ:GetModule('UI')
 
-Core.Broker = {}
+local LDB = LibStub("LibDataBroker-1.1")
 
 local CreateFrame = CreateFrame
 local InCombatLockdown = InCombatLockdown
@@ -14,10 +15,9 @@ local mceil = math.ceil
 local mpow = math.pow
 local real_G = _G
 
-local LibStub = LibStub
-local LDB = LibStub("LibDataBroker-1.1")
-
 Core:Safety()
+
+Core.Broker = {}
 
 UI.SINGLE_TARGET = 1
 UI.CLEAVE = 2

@@ -1,8 +1,13 @@
+local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
 local LSD = LibStub('LibSerpentDump')
+local SpellData = LibStub('LibSpellData')
+
+local ct = function() return TableCache:Acquire() end
+local rt = function(tbl) TableCache:Release(tbl) end
 
 local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
@@ -319,12 +324,13 @@ function TJ:RegisterPlayerClass(config)
     end
 
     function profile:ResetActions()
+        if self.parsedActions then rt(self.parsedActions) end
         self.parsedActions = nil
     end
 
     function profile:LoadActions()
         if Core.devMode or not self.parsedActions then
-            local converted = {}
+            local converted = ct()
             -- Parse the action profile
             local function primaryModifier(str)
                 if converted[str] then return converted[str] end
@@ -338,18 +344,20 @@ function TJ:RegisterPlayerClass(config)
                 local aplID = Config:GetSpecGeneric("aplID") or self.defaultActionProfile
                 local aplDef = TJ.profileDefinitions[aplID] or TJ.profileDefinitions[self.defaultActionProfile]
                 if aplDef.classID == config.class_id and aplDef.specID == config.spec_id then
+                    if self.parsedActions then rt(self.parsedActions) end
                     self.parsedActions = Core:ExpressionParser(aplDef.aplData, primaryModifier)
                 else
                     Core:Error(Core:Format("Mismatching class/spec IDs: APL expects %s/%s, character is %s/%s.", aplDef.classID, aplDef.specID, config.class_id, config.spec_id))
                     TJ:DeactivateProfile()
+                    rt(converted)
                     return
                 end
             end
 
             -- Create the condition functions for each action
-            local counts = {}
+            local counts = ct()
             for listName,listTable in pairs(self.parsedActions) do
-                counts[listName] = counts[listName] or {}
+                counts[listName] = counts[listName] or ct()
                 -- Loop through each entry in each named action list
                 for _,entry in pairs(listTable) do
                     counts[listName][entry.action] = (counts[listName][entry.action] or 0) + 1
@@ -383,6 +391,8 @@ function TJ:RegisterPlayerClass(config)
                     end
                 end
             end
+            rt(counts)
+            rt(converted)
         end
     end
 
@@ -545,8 +555,7 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Get the resource cost
-                local costType, costBase, costPerTime, cost3, matched = TJ:GetSpellCost(v.AbilityID)
-                v.cost_tt_match = matched
+                local costType, costBase, costPerTime, cost3 = SpellData.GetSpellCost(v.AbilityID)
 
                 -- If this action has an associated cost, add the correct value to the table and update the functions accordingly
                 costType = costType or rawget(v, 'cost_type')
@@ -559,14 +568,14 @@ function TJ:RegisterPlayerClass(config)
                 end
 
                 -- Add any fields required for cooldowns
-                local cooldownSecs, isCooldownAffectedByHaste, matched = TJ:GetSpellCooldown(v.AbilityID)
-                v.cooldown_tt_secs, v.cooldown_tt_match = type(cooldownSecs) ~= 'nil' and cooldownSecs or 'nil', matched
+                local cooldownSecs, isCooldownAffectedByHaste = SpellData.GetSpellCooldown(v.AbilityID)
+                v.cooldown_tt_secs = type(cooldownSecs) ~= 'nil' and cooldownSecs or 'nil'
                 local fullCooldownSecs = (isCooldownAffectedByHaste or false) and cooldownSecs/playerHasteMultiplier or cooldownSecs or 0
                 addActionCooldownFields(v, fullCooldownSecs, isCooldownAffectedByHaste)
 
                 -- Get the recharge time
-                local rechargeSecs, isRechargeAffectedByHaste, matched = TJ:GetSpellRechargeTime(v.AbilityID)
-                v.recharge_tt_secs, v.recharge_tt_match = type(rechargeSecs) ~= 'nil' and rechargeSecs or 'nil', matched
+                local rechargeSecs, isRechargeAffectedByHaste = SpellData.GetSpellRechargeTime(v.AbilityID)
+                v.recharge_tt_secs = type(rechargeSecs) ~= 'nil' and rechargeSecs or 'nil'
                 local fullRechargeSecs = (isRechargeAffectedByHaste or false) and rechargeSecs/playerHasteMultiplier or rechargeSecs or 0
                 -- Check if this has charges that use GetSpellCount()
                 local usesSpellCountForCharges = rawget(v, 'ChargesUseSpellCount') and true or false
