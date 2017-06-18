@@ -9,9 +9,12 @@ local rt = function(tbl) TableCache:Release(tbl) end
 
 local debugprofilestop = debugprofilestop
 local format = string.format
+local FormatLargeNumber = FormatLargeNumber
 local GetAddOnMemoryUsage = GetAddOnMemoryUsage
 local GetNumAddOns = GetNumAddOns
 local IsAddOnLoaded = IsAddOnLoaded
+local mfloor = math.floor
+local mmax = math.max
 local pairs = pairs
 local tconcat = table.concat
 local tinsert = table.insert
@@ -19,53 +22,76 @@ local tsort = table.sort
 local type = type
 local unpack = unpack
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
+local wipe = wipe
 
 Core:Safety()
 
-local addon_count = 0
-for i=1,GetNumAddOns() do
-    addon_count = addon_count + (IsAddOnLoaded(i) and 1 or 0)
-end
-local do_mem = (addon_count < 10) and true or false
---do_mem = false
+local do_mem = false
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Profiling functions
 ------------------------------------------------------------------------------------------------------------------------
 
+local function p_push(e)
+    Profiling.profiling.stack[1+#Profiling.profiling.stack] = e
+end
+
+local function p_pop()
+    local e = Profiling.profiling.stack[#Profiling.profiling.stack]
+    Profiling.profiling.stack[#Profiling.profiling.stack] = nil
+    return e
+end
+
+local function p_top()
+    return Profiling.profiling.stack[#Profiling.profiling.stack]
+end
+
+local function p_data(e)
+    local d = Profiling.profiling.data[e.func]
+    if not d then
+        d = ct()
+        d.count, d.timeSpent, d.memGain = 0, 0, 0
+        Profiling.profiling.data[e.func] = d
+    end
+    return d
+end
+
 function Profiling:ProfilingProlog(...)
     if not self.profiling.enabled then return end
     local e = ct()
-    e.innerTime = 0
-    e.innerMem = 0
-    e.func = Core:Format(...)
-    self.profiling.stack[1+#self.profiling.stack] = e
-    if do_mem then UpdateAddOnMemoryUsage() end
-    e.mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
+    e.innerTime, e.innerMem, e.mem, e.func = 0, 0, 0, Core:Format(...)
+
+    if do_mem then
+        UpdateAddOnMemoryUsage()
+        e.mem = GetAddOnMemoryUsage('ThousandJabs') or 0
+    end
+
+    p_push(e)
     e.start = debugprofilestop()
 end
 
 function Profiling:ProfilingEpilog(...)
     local now = debugprofilestop()
     if not self.profiling.enabled or #self.profiling.stack == 0 then return end
-    if do_mem then UpdateAddOnMemoryUsage() end
-    local mem = do_mem and GetAddOnMemoryUsage('ThousandJabs') or 0
-    local e = self.profiling.stack[#self.profiling.stack]
-    self.profiling.stack[#self.profiling.stack] = nil
-    local d = self.profiling.data[e.func]
-    if not d then
-        d = ct()
-        d.count, d.timeSpent, d.memGain = 0, 0, 0
-        self.profiling.data[e.func] = d
+
+    local mem = 0
+    if do_mem then
+        UpdateAddOnMemoryUsage()
+        mem = GetAddOnMemoryUsage('ThousandJabs') or 0
     end
+
+    local e = p_pop()
+    local d = p_data(e)
     d.count = d.count + 1
-    d.timeSpent = d.timeSpent + (now - e.start) - e.innerTime
-    d.memGain = d.memGain + (mem - e.mem) - e.innerMem
-    if #self.profiling.stack > 1 then
-        local p = self.profiling.stack[#self.profiling.stack-1]
-        p.innerTime = (now - e.start) + e.innerTime
-        p.innerMem = (mem - e.mem) + e.innerMem
+    d.timeSpent = d.timeSpent +  mmax(0, (now - e.start) - e.innerTime) -- filter out negative timing
+    d.memGain = d.memGain + mmax(0, (mem - e.mem) - e.innerMem) -- filter out internal gc's
+
+    local t = p_top()
+    if t then
+        t.innerTime = t.innerTime + mmax(0, (now - e.start) + e.innerTime)
+        t.innerMem = t.innerMem + mmax(0, (mem - e.mem) + e.innerMem)
     end
+
     rt(e)
     return ...
 end
@@ -84,6 +110,11 @@ function Profiling:ProfilingEnabled()
     return self.profiling and self.profiling.enabled and true or false
 end
 
+function Profiling:ResetMetrics()
+    wipe(self.profiling.stack)
+    wipe(self.profiling.data)
+end
+
 function Profiling:GetProfilingString()
     if not self.profiling.enabled then return 'Profiling disabled.' end
     local l = ct()
@@ -91,7 +122,7 @@ function Profiling:GetProfilingString()
     for k,v in Core:OrderedPairs(self.profiling.data) do
         if type(v) == 'table' then
             l[1+#l] = do_mem
-                and Core:Format('%5dx %9.3fms/ea, %13.3fms/tot: %-40s | mem=%9.3fkB/ea, %12.3fkB/tot', v.count, v.timeSpent/v.count, v.timeSpent, k, v.memGain/v.count, v.memGain)
+                and Core:Format('%5dx %9.3fms/ea, %13.3fms/tot: %-40s | mem=%11s bytes/ea, %15s bytes/tot', v.count, v.timeSpent/v.count, v.timeSpent, k, FormatLargeNumber(mfloor(1024*v.memGain/v.count)), FormatLargeNumber(mfloor(1024*v.memGain)))
                 or  Core:Format('%5dx %6.3fms/ea, %10.3fms/tot: %s', v.count, v.timeSpent/v.count, v.timeSpent, k)
         end
     end

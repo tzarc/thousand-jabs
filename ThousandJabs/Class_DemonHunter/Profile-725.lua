@@ -127,8 +127,8 @@ local vengeance_base_overrides = {
     },
     soul_cleave = {
         cost_type = 'pain',
-        pain_min = 30,
-        pain_max = 60,
+        pain_min = 25,
+        pain_max = 50,
         pain_cost = function(spell, env)
             return mmin(spell.pain_max, mmax(spell.pain_min, env.pain.curr))
         end,
@@ -145,19 +145,48 @@ local vengeance_talent_overrides = {
         end,
     },
     fracture = {
-        PerformCast = function(spell, env)
-            env.soul_fragments.gained = env.soul_fragments.gained + 2
+        fragment_delay = 2.1, -- Guessed from recorded video!
+        PerformCast = function(spell, env, state)
+            local targetTime = env.currentTime + spell.fragment_delay
+            state:Defer(targetTime, 'fracture', 'add_fragments', 2)
+        end,
+        HistoricalCast = function(spell, env, state, originalCastTime)
+            local delta = env.currentTime-originalCastTime
+            if delta < spell.fragment_delay then state:Defer(originalCastTime + spell.fragment_delay, 'fracture', 'add_fragments', 2) end
+        end,
+        Deferred = function(spell, env, state, triggerTime, ...)
+            local cmd, amount = ...
+            if cmd == 'add_fragments' then
+                local toAdd = mmin(5 - env.soul_fragments.curr, amount)
+                env.soul_fragments.gained = env.soul_fragments.gained + toAdd
+            end
         end,
     },
     spirit_bomb = {
-        AuraApplied = 'frailty',
+        frailty_delay = 2.1, -- TODO: Total guess!
         AuraApplyLength = 20,
+        ChargesUseSpellCount = true,
 
         CanCast = function(spell, env)
             return env.soul_fragments.curr >= 1
         end,
-        PerformCast = function(spell, env)
+        PerformCast = function(spell, env, state)
             env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
+            local targetTime = env.currentTime + spell.frailty_delay
+            state:Defer(targetTime, 'spirit_bomb', 'add_aura')
+        end,
+        HistoricalCast = function(spell, env, state, originalCastTime)
+            local targetTime = originalCastTime + spell.frailty_delay
+            if env.currentTime < targetTime then
+                env.soul_fragments.spent = env.soul_fragments.spent + env.soul_fragments.curr
+                state:Defer(targetTime, 'spirit_bomb', 'add_aura')
+            end
+        end,
+        Deferred = function(spell, env, state, triggerTime, ...)
+            local cmd = ...
+            if cmd == 'add_aura' then
+                env.frailty.expirationTime = env.currentTime + spell.AuraApplyLength
+            end
         end,
     },
     frailty = { -- Spirit bomb debuff
@@ -176,6 +205,26 @@ local vengeance_artifact_overrides = {
     fiery_demise = {
         artifact_enabled = function(spell,env)
             return Config:GetSpec("fiery_demise_selected") and true or false
+        end,
+    },
+    soul_carver = {
+        PerformCast = function(spell, env, state)
+            local targetTime = env.currentTime + 1 -- TODO: Total guess!
+            state:Defer(targetTime+0, 'soul_carver', 'add_fragments', 2)
+            state:Defer(targetTime+1, 'soul_carver', 'add_fragments', 1)
+            state:Defer(targetTime+2, 'soul_carver', 'add_fragments', 1)
+        end,
+        HistoricalCast = function(spell, env, state, originalCastTime)
+            local targetTime = originalCastTime + 1  -- TODO: Total guess!
+            if env.currentTime < targetTime+0 then state:Defer(targetTime+0, 'soul_carver', 'add_fragments', 2) end
+            if env.currentTime < targetTime+1 then state:Defer(targetTime+1, 'soul_carver', 'add_fragments', 1) end
+            if env.currentTime < targetTime+2 then state:Defer(targetTime+2, 'soul_carver', 'add_fragments', 1) end
+        end,
+        Deferred = function(spell, env, state, triggerTime, ...)
+            local cmd, amount = ...
+            if cmd == 'add_fragments' then
+                env.soul_fragments.gained = env.soul_fragments.gained + mmin(5 - env.soul_fragments.curr, amount)
+            end
         end,
     },
 }
@@ -211,6 +260,19 @@ local vengeance_sigil_overrides = {
     sigil_of_chains = sigilInitialiser(),
 }
 
+local vengeance_hooks = {
+    hooks = {
+    --[[
+    OnPredictActionAtOffset = function(env)
+    local state = getmetatable(env).__state
+    for k,v in pairs(state.castQueue) do
+    Core:Debug("|cFFFF6600%30s | %12.3f | %8.3f|r", v.ability, v.time, v.time - GetTime())
+    end
+    end,
+    --]]
+    }
+}
+
 TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
@@ -223,6 +285,7 @@ TJ:RegisterPlayerClass({
         vengeance_talent_overrides,
         vengeance_artifact_overrides,
         vengeance_sigil_overrides,
+        vengeance_hooks,
     },
     blacklisted = {},
     config_checkboxes = {

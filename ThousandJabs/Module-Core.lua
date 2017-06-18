@@ -176,6 +176,16 @@ function Core:DevPrint(...)
     if Core.devMode then Core:Print("%.3f: %s", debugprofilestop(), Core:Format(...)) end
 end
 
+function Core:DevPrintOnce(...)
+    if Core.devMode then
+        local text = Core:Format(...)
+        if not printedOnce[text] then
+            printedOnce[text] = true
+            Core:Print("%.3f: %s", debugprofilestop(), text)
+        end
+    end
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Error handling
 ------------------------------------------------------------------------------------------------------------------------
@@ -326,7 +336,9 @@ end
 -- Debugging
 ------------------------------------------------------------------------------------------------------------------------
 
+local disableDebugOutput = false
 function Core:Debug(...)
+    if disableDebugOutput then return end
     if Config:Get("do_debug") then
         if #debugLines == 0 then debugLines[1] = Core:Format("|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):") end
         local a = ...
@@ -343,7 +355,9 @@ function Core:DebugReset()
 end
 
 function Core:DebugString()
-    return tconcat(debugLines, '\n')
+    if Config:Get("do_debug") then
+        return tconcat(debugLines, '\n')
+    end
 end
 
 function Core:OpenDebugWindow(title, data)
@@ -392,7 +406,7 @@ function Core:HideLoggingFrame()
 end
 
 function Core:UpdateLog()
-    if Config:Get("do_debug") and self.log_frame then
+    if Config:Get("do_debug") and self.log_frame and self.log_frame:IsVisible() then
         if Profiling:ProfilingEnabled() then
             self.log_frame.text:SetText(Profiling:GetProfilingString() .. '\n\n' .. Core:DebugString())
         else

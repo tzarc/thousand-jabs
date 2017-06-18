@@ -32,12 +32,14 @@ local tContains = tContains
 local tinsert = table.insert
 local tonumber = tonumber
 local tostring = tostring
+local tremove = table.remove
 local tsort = table.sort
 local type = type
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 local UnitLevel = UnitLevel
 local UnitSpellHaste = UnitSpellHaste
+local unpack = unpack
 local wipe = wipe
 
 Core:Safety()
@@ -49,7 +51,8 @@ local safeTableEntries = {
     'can_spend',
     'perform_spend',
     'OnStateInit',
-    'OnPredictActionAtOffset'
+    'OnPredictActionAtOffset',
+    'Deferred'
 }
 
 local function convertToNumber(n)
@@ -83,6 +86,48 @@ local stateResetDefaults = {
     _mmin = mmin,
 }
 
+local function EnvTableIndexerPrototype(tbl, idx)
+    local env_base = getmetatable(tbl).__env_base
+    -- Handle incoming damage queries
+    local dmgprefix = "incoming_damage_over_"
+    if idx:match(dmgprefix) then
+        local val = 0
+        local length = tonumber(idx:sub(dmgprefix:len()+1))
+        if length >= tbl.time_since_incoming_damage then
+            val = TJ:GetIncomingDamage(GetTime(), length/1000) -- use GetTime() here, as future prediction will change the accumulation window
+        end
+        return val
+    end
+    -- Forward to the base table
+    local e = env_base[idx]
+    if type(e) == 'function' then
+        local res = e(tbl, tbl)
+        return res
+    else
+        return e
+    end
+    return rawget(tbl,idx)
+end
+
+local function EnvActionTableIndexerPrototype(tbl, idx)
+    local env = getmetatable(tbl).__env
+    local state = getmetatable(tbl).__state
+    local action = getmetatable(tbl).__action
+    -- Allow raw access to the safe entries, without throwing faults
+    if tContains(safeTableEntries, idx) then
+        return rawget(action, idx)
+    end
+    -- Forward to the profile table
+    local e = action[idx]
+    if type(e) == 'function' then
+        local res = e(tbl, env, state)
+        return res
+    else
+        return e
+    end
+    return rawget(tbl,idx)
+end
+
 local function CreateStateEnvTable(state, profile)
     -- Set up an environment table for calling the condition functions
     local env_base = {}
@@ -94,28 +139,8 @@ local function CreateStateEnvTable(state, profile)
     -- Set up a proxy table which correctly calls functions to retrieve data instead
     local env = setmetatable({}, {
         __env_base = env_base,
-        __index = function(tbl, idx)
-            local env_base = getmetatable(tbl).__env_base
-            -- Handle incoming damage queries
-            local dmgprefix = "incoming_damage_over_"
-            if idx:match(dmgprefix) then
-                local val = 0
-                local length = tonumber(idx:sub(dmgprefix:len()+1))
-                if length >= tbl.time_since_incoming_damage then
-                    val = TJ:GetIncomingDamage(GetTime(), length/1000) -- use GetTime() here, as future prediction will change the accumulation window
-                end
-                return val
-            end
-            -- Forward to the base table
-            local e = env_base[idx]
-            if type(e) == 'function' then
-                local res = e(tbl, tbl)
-                return res
-            else
-                return e
-            end
-            return rawget(tbl,idx)
-        end
+        __state = state,
+        __index = EnvTableIndexerPrototype
     })
 
     -- Set up fallback tables for each of the abilities
@@ -123,24 +148,9 @@ local function CreateStateEnvTable(state, profile)
         if type(v) == 'table' then
             env[k] = setmetatable({}, {
                 __env = env,
+                __state = state,
                 __action = v,
-                __index = function(tbl, idx)
-                    local env = getmetatable(tbl).__env
-                    local action = getmetatable(tbl).__action
-                    -- Allow raw access to the safe entries, without throwing faults
-                    if tContains(safeTableEntries, idx) then
-                        return rawget(action, idx)
-                    end
-                    -- Forward to the profile table
-                    local e = action[idx]
-                    if type(e) == 'function' then
-                        local res = e(tbl, env)
-                        return res
-                    else
-                        return e
-                    end
-                    return rawget(tbl,idx)
-                end
+                __index = EnvActionTableIndexerPrototype
             })
         end
     end
@@ -172,15 +182,32 @@ local function CreatePrevGcdTable(state, profile)
     return prev_gcd
 end
 
+local function PrevOffGcdTableIndexerPrototype(tbl, idx)
+    local castsOffGCD = getmetatable(tbl).__state.castsOffGCD
+    return castsOffGCD[idx] and true or false
+end
+
 local function CreatePrevOffGcdTable(state, profile)
     local prev_off_gcd = setmetatable({}, {
         __state = state,
-        __index = function(tbl, idx)
-            local castsOffGCD = getmetatable(tbl).__state.castsOffGCD
-            return castsOffGCD[idx] and true or false
-        end,
+        __index = PrevOffGcdTableIndexerPrototype,
     })
     return prev_off_gcd
+end
+
+local function EquippedTableIndexerPrototype(tbl, idx)
+    local ae = getmetatable(tbl).__state.actuallyEquipped
+    if type(idx) == "number" then
+        if tContains(ae, idx) then return true end
+    elseif type(idx) == "string" then
+        local l = TJ.Generated.EquippedMapping[idx]
+        if l then
+            for i=1,#l do
+                if tContains(ae, l[i]) then return true end
+            end
+        end
+    end
+    return false
 end
 
 local function CreateEquippedTable(state, profile)
@@ -188,22 +215,14 @@ local function CreateEquippedTable(state, profile)
         __state = state,
         __env = state.env,
         __profile = profile,
-        __index = function(tbl,idx)
-            local ae = getmetatable(tbl).__state.actuallyEquipped
-            if type(idx) == "number" then
-                if tContains(ae, idx) then return true end
-            elseif type(idx) == "string" then
-                local l = TJ.Generated.EquippedMapping[idx]
-                if l then
-                    for i=1,#l do
-                        if tContains(ae, l[i]) then return true end
-                    end
-                end
-            end
-            return false
-        end,
+        __index = EquippedTableIndexerPrototype,
     })
     return equipped
+end
+
+local function SetBonusTableIndexerPrototype(tbl, idx)
+    local check = getmetatable(tbl).__checks[idx]
+    return check and check() or false
 end
 
 local function CreateSetBonusTable(state, profile)
@@ -227,9 +246,7 @@ local function CreateSetBonusTable(state, profile)
 
     local set_bonus = setmetatable({}, {
         __checks = checks,
-        __index = function(tbl,idx)
-            return checks[idx] and checks[idx]() or false
-        end,
+        __index = SetBonusTableIndexerPrototype,
     })
 
     return set_bonus
@@ -267,6 +284,23 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     for k,v in pairs(TJ.castsOffGCD) do
         self.castsOffGCD[k] = v
     end
+
+    -- Rebuild the cast queue
+    rt(self.castQueue)
+    local castQueue = ct()
+    for k1,v1 in pairs(TJ.castQueue) do
+        local e = ct()
+        for k2,v2 in pairs(v1) do
+            e[k2] = v2
+        end
+        castQueue[1+#castQueue] = e
+    end
+    self.castQueue = castQueue
+
+    -- Rebuild the deferred actions
+    rt(self.deferred)
+    local deferred = ct()
+    self.deferred = deferred
 
     -- Work out which items are actually equipped
     wipe(self.actuallyEquipped)
@@ -395,6 +429,40 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     -- Call the current profile's state initialisation function
     local initFunc = env.hooks.OnStateInit
     if initFunc then initFunc(env) end
+
+    -- Call any historical cast functions for each ability
+    for k,v in pairs(self.castQueue) do
+        Core:Debug("cast queue #%d -- %s @ %.3f", k, v.ability, v.time)
+        local hc = self.profile.actions[v.ability] and rawget(self.profile.actions[v.ability], 'HistoricalCast') -- function(spell, env, state, originalCastTime)
+        if hc then
+            hc(env[v.ability], env, self, v.time)
+        end
+    end
+end
+
+local function StateDeferPrototype(self, time, action, ...)
+    local e = ct()
+    e.time = time
+    e.action = action
+    e.args = ct()
+    for i=1,select('#',...) do e.args[1+#e.args] = select(i, ...) end
+    self.deferred[1+#self.deferred] = e
+end
+
+local function StateCastActionPrototype(self, action)
+    local env = self.env
+    local act = env[action]
+    if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
+        -- Pretend we just casted the supplied action, update the last cast time for this ability
+        self.lastCastTimes[act.AbilityID] = env.currentTime
+        self.abilitiesUsed[env.currentTime] = action
+
+        local t = ct()
+        t.time, t.ability, t.caster, t.offGCD = env.currentTime, act.ActionName, act.SpellBookCaster, ((act.spell_cast_time < 0.1) and true or false)
+        self.castQueue[1+#self.castQueue] = t
+    end
+    -- Perform the cast of the supplied action
+    self.profile.actions[action].perform_cast(act, env)
 end
 
 -- Base action prediction for the current time, or just after the current cast finishes
@@ -428,13 +496,8 @@ local function StatePredictActionFollowingPrototype(self, action)
     local env = self.env
     local act = env[action]
     if act then
-        if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
-            -- Pretend we just casted the supplied action, update the last cast time for this ability
-            self.lastCastTimes[act.AbilityID] = env.currentTime
-            self.abilitiesUsed[env.currentTime] = action
-        end
         -- Perform the cast of the supplied action
-        self.profile.actions[action].perform_cast(act, env)
+        self:CastAction(action)
         -- Work out the new prediction offset given its cast time
         local newOffset = env.predictionOffset + act.spell_cast_time
         -- Predict the next action
@@ -448,20 +511,25 @@ local function StatePredictActionAtOffsetPrototype(self, predictionOffset, perfo
     local env = self.env
     env.predictionOffset = predictionOffset
 
+    local deferred = self.deferred
+    while #deferred > 0 and deferred[1].time < env.currentTime do
+        local e = deferred[1]
+        tremove(deferred, 1)
+        local dc = self.profile.actions[e.action] and rawget(self.profile.actions[e.action], 'Deferred') -- function(spell, env, state, triggerTime, ...)
+        if dc then
+            dc(env[e.action], env, self, e.time, unpack(e.args))
+        end
+        rt(e)
+    end
+
     if performPostCastSpellID ~= nil then
         Core:Debug("Handling cast of %s", tostring(performPostCastSpellID))
         local action = self.profile:FindActionForSpellID(performPostCastSpellID)
         if action then
             Core:Debug("Handling cast of %s", action)
             local act = env[action]
-            if act.AbilityID and act.AbilityID ~= 61304 then -- Don't count the 'wait' ability
-                -- Pretend we just casted the supplied action, update the last cast time for this ability
-                self.lastCastTimes[act.AbilityID] = env.currentTime
-                self.abilitiesUsed[env.currentTime] = action
-            end
             -- Perform the cast of the supplied action
-            self.profile.actions[action].perform_cast(act, env)
-
+            self:CastAction(action)
             -- If we have a cast time, then assume we're going to invoke the GCD, wipe out the castsOffGCD table
             if act.spell_cast_time > 0.1 then
                 wipe(self.castsOffGCD)
@@ -661,6 +729,8 @@ function TJ:CreateNewState(numTargets)
     state.lastCastTimes = {}
     state.castsOffGCD = {}
     state.actuallyEquipped = {}
+    state.castQueue = ct()
+    state.deferred = ct()
 
     -- Set up proxy tables
     state.env = CreateStateEnvTable(state, profile)
@@ -670,31 +740,37 @@ function TJ:CreateNewState(numTargets)
     state.set_bonus = CreateSetBonusTable(state, profile)
 
     state.Reset = StateResetPrototype
-    Profiling:ProfileFunction(state, 'Reset', 'state:Reset')
+    --Profiling:ProfileFunction(state, 'Reset', 'state:Reset')
+
+    state.Defer = StateDeferPrototype
+    --Profiling:ProfileFunction(state, 'Defer', 'state:Defer')
+
+    state.CastAction = StateCastActionPrototype
+    --Profiling:ProfileFunction(state, 'CastAction', 'state:CastAction')
 
     -- Base action prediction for the current time, or just after the current cast finishes
     state.PredictNextAction = StatePredictNextActionPrototype
-    Profiling:ProfileFunction(state, 'PredictNextAction', 'state:PredictNextAction')
+    --Profiling:ProfileFunction(state, 'PredictNextAction', 'state:PredictNextAction')
 
     -- Prediction of the action following the one specified, mocing the prediction time accordingly
     state.PredictActionFollowing = StatePredictActionFollowingPrototype
-    Profiling:ProfileFunction(state, 'PredictActionFollowing', 'state:PredictActionFollowing')
+    --Profiling:ProfileFunction(state, 'PredictActionFollowing', 'state:PredictActionFollowing')
 
     -- Prediction at the supplied time offset
     state.PredictActionAtOffset = StatePredictActionAtOffsetPrototype
-    Profiling:ProfileFunction(state, 'PredictActionAtOffset', 'state:PredictActionAtOffset')
+    --Profiling:ProfileFunction(state, 'PredictActionAtOffset', 'state:PredictActionAtOffset')
 
     -- Execute an action profile list and get the resulting action
     state.ExecuteActionProfileList = StateExecuteActionProfileListPrototype
-    Profiling:ProfileFunction(state, 'ExecuteActionProfileList', 'state:ExecuteActionProfileList')
+    --Profiling:ProfileFunction(state, 'ExecuteActionProfileList', 'state:ExecuteActionProfileList')
 
     -- Export the actions table
     state.ExportActionsTable = StateExportActionsTablePrototype
-    Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
+    --Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
 
     -- Export the parsed results table
     state.ExportParsedTable = StateExportParsedTablePrototype
-    Profiling:ProfileFunction(state, 'ExportParsedTable', 'state:ExportParsedTable')
+    --Profiling:ProfileFunction(state, 'ExportParsedTable', 'state:ExportParsedTable')
 
     -- Reset the state by default, populating with initial data
     state:Reset(1)

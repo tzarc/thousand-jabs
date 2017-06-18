@@ -40,33 +40,6 @@ local function updateGUIDs()
     if petGUID then specialGUIDs[1+#specialGUIDs] = petGUID end
 end
 
-local function updateCastsOffGCD(action)
-    -- If we're still casting, then assume an ability or something has been cast off-GCD
-    if UnitCastingInfo('player') or UnitChannelInfo('player') or GetSpellCooldown(61304) > 0 then
-        if action then
-            TJ.castsOffGCD[action] = true
-        end
-    else
-        -- Not casting any more, wipe the off-GCD casts table
-        wipe(TJ.castsOffGCD)
-
-        -- If our pet is currently channeling, then we need to re-add it
-        -- Match by name... for some reason Blizz doesn't want us to know the spellID
-        local n = UnitChannelInfo('pet')
-        if n then
-            for k,v in pairs(TJ.currentProfile.actions) do
-                if rawget(v, 'SpellBookCaster') == 'pet' then
-                    local n2 = rawget(v, 'Name')
-                    if n == n2 then
-                        TJ.castsOffGCD[k] = true
-                        return
-                    end
-                end
-            end
-        end
-    end
-end
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Events
 ------------------------------------------------------------------------------------------------------------------------
@@ -74,7 +47,7 @@ end
 function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     -- Update required info
     updateGUIDs()
-    updateCastsOffGCD()
+    TJ:UpdateCastsOffGCD()
 
     -- Notify the profile
     if TJ.currentProfile then
@@ -116,16 +89,9 @@ function TJ:UNIT_AURA(eventName, unitID, powerType)
 end
 
 function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
-    if unitID == 'player' then
+    if unitID == 'player' or unitID == 'pet' then
         local now = GetTime()
-        -- Keep track of the last cast made
-        TJ.lastCastTimes[spellID] = now
-        local ability = TJ.currentProfile:FindActionForSpellID(spellID)
-        if ability then
-            TJ.abilitiesUsed[now] = ability
-        end
-        -- Update the GCD amount if possible
-        TJ:TryDetectUpdateGlobalCooldown(spellID)
+        TJ:SpellCastSuccess(spellID, unitID)
         -- Notify the profile
         self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
     end
@@ -174,37 +140,6 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
 
     -- We only want to know if it's a spell, and it concerns either the player or the current target
     if tContains(specialGUIDs, sourceGUID) or tContains(specialGUIDs, destGUID) and combatEvent:find('SPELL_') == 1 then
-        -- Check if the player had a successful spellcast
-        if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-            local spellID = arg12
-            -- Keep track of the last cast made
-            self.lastCastTimes[spellID] = now
-            local ability = TJ.currentProfile:FindActionForSpellID(spellID)
-            if ability then
-                self.abilitiesUsed[now] = ability
-                updateCastsOffGCD(ability)
-            end
-            -- Update the GCD amount if possible
-            self:TryDetectUpdateGlobalCooldown(spellID)
-            -- Queue a screen update
-            self:QueueUpdate()
-        end
-
-        -- If our pet cast something, then we count it as off-GCD as well
-        if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-            local spellID = arg12
-            -- Keep track of the last cast made
-            self.lastCastTimes[spellID] = now
-            local ability = TJ.currentProfile:FindActionForSpellID(spellID)
-            if ability then
-                self.abilitiesUsed[now] = ability
-                self.castsOffGCD[ability] = true
-            end
-
-            -- Queue a screen update
-            self:QueueUpdate()
-        end
-
         -- Check if this event concerns the player
         if sourceGUID == playerGUID or destGUID == playerGUID then
             local targetedGUID, targetedName
@@ -213,6 +148,18 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
             if targetedGUID and targetedGUID ~= "" then
                 self.seenTargets[targetedGUID] = now
             end
+        end
+
+        -- Check if the player had a successful spellcast
+        if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+            local spellID = arg12
+            TJ:SpellCastSuccess(spellID, 'player')
+        end
+
+        -- If our pet cast something, then we count it as off-GCD as well
+        if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+            local spellID = arg12
+            TJ:SpellCastSuccess(spellID, 'pet')
         end
     end
 

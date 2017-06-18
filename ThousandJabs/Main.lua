@@ -25,9 +25,12 @@ local NewTicker = C_Timer.NewTicker
 local pairs = pairs
 local select = select
 local tconcat = table.concat
+local tremove = table.remove
+local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 local UnitClass = UnitClass
 local UnitSpellHaste = UnitSpellHaste
+local wipe = wipe
 
 Core:Safety()
 
@@ -45,6 +48,9 @@ local watchdogScreenUpdateExpiry = GetTime()
 -- Profile reload frequency
 local lastProfileReload = 0
 local profileReloadThrottle = 2 -- Seconds
+
+-- Casting constants
+local castQueuePurgeTime = 30
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Shared private variables
@@ -65,6 +71,7 @@ TJ.lastCastTimes = {}
 TJ.castsOffGCD = {}
 TJ.lastMainhandAttack = 0
 TJ.lastOffhandAttack = 0
+TJ.castQueue = {}
 
 -- Incoming damage tracking
 TJ.lastIncomingDamage = 0
@@ -125,7 +132,7 @@ function TJ:QueueUpdate()
 
     if not screenUpdateTimer then
         watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
-        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdate() end)
+        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdateTimerCheck() end)
     end
 
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
@@ -142,7 +149,7 @@ function TJ:QueueProfileReload(forceNow)
     TJ:QueueUpdate()
 end
 
-function TJ:PerformUpdate()
+function TJ:PerformUpdateTimerCheck()
     -- Drop out early if we're not needed yet
     local now = GetTime()
     if watchdogScreenUpdateExpiry > now then
@@ -150,10 +157,15 @@ function TJ:PerformUpdate()
             return
         end
     end
-
     -- Reset the expiry times
     nextScreenUpdateExpiry = nil
     watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
+    -- Actually perform the update
+    TJ:PerformUpdate()
+end
+
+function TJ:PerformUpdate()
+    local now = GetTime()
 
     -- Clear out any errors for the last screen update
     Core:DebugReset()
@@ -178,6 +190,11 @@ function TJ:PerformUpdate()
             TJ.seenTargets[k] = nil
         end
     end
+    while #TJ.castQueue > 0 and TJ.castQueue[1].time < now - castQueuePurgeTime do
+        local e = TJ.castQueue[1]
+        tremove(TJ.castQueue, 1)
+        rt(e)
+    end
 
     if TJ.needsProfileReload and lastProfileReload + profileReloadThrottle < now then
         TJ.needsProfileReload = nil
@@ -194,8 +211,8 @@ function TJ:PerformUpdate()
         UI:UpdateAlpha()
 
         -- Cache current player/target information if requested
-        UnitCache:UpdateUnitCache('player')
-        UnitCache:UpdateUnitCache('target')
+        UnitCache:UpdateUnitCache('player', true)
+        UnitCache:UpdateUnitCache('target', true)
 
         -- Perform the prediction...
         self:ExecuteAllActionProfiles()
@@ -221,8 +238,7 @@ function TJ:PerformUpdate()
     -- Run any commands in the queue
     self:RunFuncCoroutines()
 end
-
-Profiling:ProfileFunction(TJ, 'PerformUpdate')
+--Profiling:ProfileFunction(TJ, 'PerformUpdate')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Profile activation/deactivation
@@ -236,6 +252,9 @@ function TJ:GetActiveProfile()
 end
 
 function TJ:ActivateProfile()
+    -- Ensure logging has a separate line entry, and doesn't contribute to other metrics
+    --Profiling:ProfileFunction(Core, 'UpdateLog', 'Core:UpdateLog')
+
     -- Set up a base GCD, this will change during combat
     self.currentGCD = 1
 
@@ -278,8 +297,7 @@ function TJ:ActivateProfile()
 
     self:QueueUpdate()
 end
-
-Profiling:ProfileFunction(TJ, 'ActivateProfile')
+--Profiling:ProfileFunction(TJ, 'ActivateProfile')
 
 function TJ:DeactivateProfile()
     -- Clear the update timer
@@ -317,8 +335,7 @@ function TJ:DeactivateProfile()
 
     self:QueueUpdate()
 end
-
-Profiling:ProfileFunction(TJ, 'DeactivateProfile')
+--Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Queued profile actions
@@ -392,8 +409,7 @@ function TJ:ExecuteAllActionProfiles()
         end
     end
 end
-
-Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
+--Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon enable/disable handlers
@@ -465,6 +481,73 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- GCD detection, incoming damage tracking
 ------------------------------------------------------------------------------------------------------------------------
+
+local function currentlyInsideGCD()
+    return (UnitCastingInfo('player') or UnitChannelInfo('player') or GetSpellCooldown(61304) > 0) and true or false
+end
+
+function TJ:SpellCastSuccess(spellID, caster)
+    local now = GetTime()
+    -- Keep track of successful casts made
+    self.lastCastTimes[spellID] = now
+    local ability = TJ.currentProfile:FindActionForSpellID(spellID)
+    if ability then
+        self.abilitiesUsed[now] = ability
+        if caster == "pet" then
+            self.castsOffGCD[ability] = true
+        else
+            self:UpdateCastsOffGCD(ability)
+        end
+
+        local found = false
+        for k,v in pairs(TJ.castQueue) do
+            if v.time == now and v.ability == ability and v.caster == caster then
+                found = true
+                break
+            end
+        end
+
+        if not found then
+            local offGCD = (caster == 'pet' or currentlyInsideGCD()) and true or false
+            local t = ct()
+            t.time, t.ability, t.caster, t.offGCD = now, ability, caster, offGCD
+            TJ.castQueue[1+#TJ.castQueue] = t
+        end
+    end
+
+    -- Update the GCD amount if possible
+    self:TryDetectUpdateGlobalCooldown(spellID)
+
+    -- Queue a screen update
+    self:QueueUpdate()
+end
+
+function TJ:UpdateCastsOffGCD(action)
+    -- If we're still casting, then assume an ability or something has been cast off-GCD
+    if currentlyInsideGCD() then
+        if action then
+            TJ.castsOffGCD[action] = true
+        end
+    else
+        -- Not casting any more, wipe the off-GCD casts table
+        wipe(TJ.castsOffGCD)
+
+        -- If our pet is currently channeling, then we need to re-add it
+        -- Match by name... for some reason Blizz doesn't want us to know the spellID
+        local n = UnitChannelInfo('pet')
+        if n then
+            for k,v in pairs(TJ.currentProfile.actions) do
+                if rawget(v, 'SpellBookCaster') == 'pet' then
+                    local n2 = rawget(v, 'Name')
+                    if n == n2 then
+                        TJ.castsOffGCD[k] = true
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
 
 function TJ:TryDetectUpdateGlobalCooldown(lastCastSpellID)
     -- Work out the current GCD
@@ -540,6 +623,8 @@ function TJ:ConsoleCommand(args)
         end
     elseif argv[1] == '_rp' then
         self:QueueProfileReload()
+    elseif argv[1] == '_rm' then
+        Profiling:ResetMetrics()
     elseif argv[1] == "_dbg" then
         if Config:Get("do_debug") then
             Config:Set(false, "do_debug")
