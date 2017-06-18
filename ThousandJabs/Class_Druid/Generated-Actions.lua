@@ -3,13 +3,13 @@ if select(3, UnitClass('player')) ~= 11 then return end
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::druid::balance', 'Simulationcraft Druid Profile: Balance', 11, 1, [[
-actions.precombat=flask,type=flask_of_the_whispered_pact
-actions.precombat+=/food,type=lavish_suramar_feast
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/moonkin_form
 actions.precombat+=/blessing_of_elune
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=deadly_grace
+actions.precombat+=/potion
 actions.precombat+=/new_moon
 actions=potion,name=deadly_grace,if=buff.celestial_alignment.up|buff.incarnation.up
 actions+=/blessing_of_elune,if=active_enemies<=2&talent.blessing_of_the_ancients.enabled&buff.blessing_of_elune.down
@@ -99,9 +99,9 @@ actions.single_target+=/solar_wrath
 ]])
 
 TJ:RegisterActionProfileList('simc::druid::feral', 'Simulationcraft Druid Profile: Feral', 11, 2, [[
-actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=lavish_suramar_feast
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/regrowth,if=talent.bloodtalons.enabled
 actions.precombat+=/variable,name=rake_refresh,op=set,value=7
 actions.precombat+=/variable,name=rake_refresh,op=set,value=3,if=equipped.ailuro_pouncers
@@ -111,7 +111,7 @@ actions.precombat+=/variable,name=pooling,op=set,value=3,if=equipped.the_wildsha
 actions.precombat+=/cat_form
 actions.precombat+=/prowl
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=old_war
+actions.precombat+=/potion
 actions=dash,if=!buff.cat_form.up
 actions+=/cat_form
 actions+=/call_action_list,name=opener,if=!dot.rip.ticking&time<15&talent.savage_roar.enabled&talent.jagged_wounds.enabled&talent.bloodtalons.enabled&desired_targets<=1
@@ -175,11 +175,12 @@ actions.sbt_opener+=/tigers_fury,if=!dot.rip.ticking&combo_points=5
 ]])
 
 TJ:RegisterActionProfileList('simc::druid::guardian', 'Simulationcraft Druid Profile: Guardian', 11, 3, [[
-actions.precombat=flask,type=flask_of_the_seventh_demon
-actions.precombat+=/food,type=lavish_suramar_feast
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/bear_form
 actions.precombat+=/snapshot_stats
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/blood_fury
 actions+=/berserking
