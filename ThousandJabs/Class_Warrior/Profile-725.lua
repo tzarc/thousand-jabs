@@ -140,10 +140,6 @@ local arms_base_overrides = {
         AuraMine = true,
         spell_cast_time = 0.01, -- off GCD!
     },
-    warbreaker = {
-        AuraApplied = 'colossus_smash',
-        AuraApplyLength = 15,
-    },
     stone_heart = {
         AuraID = 225947,
         AuraUnit = 'player',
@@ -176,6 +172,18 @@ local arms_base_overrides = {
     },
 }
 
+local arms_artifact = {
+    warbreaker = {
+        AuraApplied = 'colossus_smash',
+        AuraApplyLength = 15,
+    },
+    executioners_precision = {
+        AuraID = { 238147, 242188 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
 local arms_legendaries = {
     corrupted_blood_of_zakajz = {
         AuraID = { 209566, 209567, 209569 },
@@ -194,6 +202,7 @@ TJ:RegisterPlayerClass({
         arms_abilities_exported,
         arms_base_overrides,
         arms_legendaries,
+        arms_artifact,
     },
     blacklisted = {},
 })

@@ -305,6 +305,14 @@ local unholy_base_abilities = {
     },
 }
 
+local unholy_legendaries = {
+    cold_heart = {
+        AuraID = 235599,
+        AuraMine = true,
+        AuraUnit = "player",
+    }
+}
+
 TJ:RegisterPlayerClass({
     name = 'Unholy',
     class_id = 6,
@@ -314,6 +322,7 @@ TJ:RegisterPlayerClass({
     actions = {
         unholy_abilities_exported,
         unholy_base_abilities,
+        unholy_legendaries,
     },
     blacklisted = {},
 })
@@ -496,7 +505,12 @@ local frost_legendaries = {
         AuraID = { 216059 },
         AuraUnit = 'target',
         AuraMine = true,
-    }
+    },
+    cold_heart = {
+        AuraID = 235599,
+        AuraMine = true,
+        AuraUnit = "player",
+    },
 }
 
 local frost_hooks = {
