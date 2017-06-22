@@ -6,6 +6,7 @@ TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}
 TJ.Generated.EquippedMapping.ailuro_pouncers = { 137024, }
 TJ.Generated.EquippedMapping.chatoyant_signet = { 137040, }
 TJ.Generated.EquippedMapping.convergence_of_fates = { 140806, }
+TJ.Generated.EquippedMapping.denial_of_the_halfgiants = { 137100, }
 TJ.Generated.EquippedMapping.draught_of_souls = { 140808, }
 TJ.Generated.EquippedMapping.drinking_horn_cover = { 137097, }
 TJ.Generated.EquippedMapping.duskwalkers_footpads = { 137030, }

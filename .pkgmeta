@@ -30,3 +30,4 @@ ignore:
     - tag-release.sh
     - tag-alpha.sh
     - update-generated-data.pl
+    - TJ5
