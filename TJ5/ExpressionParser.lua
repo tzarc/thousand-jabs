@@ -1,33 +1,25 @@
-------------------------------------------------------------------------------------------------------------------------
--- Detect if we're running inside or outside of WoW
-------------------------------------------------------------------------------------------------------------------------
-
-local TJ, Core, Debug, fmt
-local ct, rt -- create table, release table
-
+local assert = assert
+local GetSpellInfo = GetSpellInfo
 local pairs = pairs
 local setmetatable = setmetatable
 local tContains = tContains
 local tinsert = table.insert
 local tsort = table.sort
 
-local IsLoadedByWoW = _G.GetSpellInfo and true or false
+------------------------------------------------------------------------------------------------------------------------
+-- Detect if we're running inside or outside of WoW
+------------------------------------------------------------------------------------------------------------------------
+
+local IsLoadedByWoW = GetSpellInfo and true or false
 if IsLoadedByWoW then
-    local LibStub = LibStub
-    TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
-    Core = TJ:GetModule('Core')
-    Debug = function(...) Core:Debug(...) end
-    fmt = function(...) Core:Format(...) end
-    TableCache = TJ:GetModule('TableCache')
-    ct = function() return TableCache:Acquire() end
-    rt = function(tbl) TableCache:Release(tbl) end
-    Core:Safety()
+    local addonName = ...
+    LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+    TJ = _G['TJ']
 else
-    TJ = { Core = {} }
-    Core = TJ.Core
-    Core.Format = function(self, f, ...) return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '') end
-    Core.Debug = function(self, ...) print(Core:Format(...)) end
     LSD = require('Libs/LibSerpentDump')
+    TJ = { }
+    TJ.Format = function(self, f, ...) return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '') end
+    TJ.Debug = function(self, ...) print(TJ:Format(...)) end
     function tContains(table, item)
         local index = 1
         while table[index] do
@@ -38,8 +30,8 @@ else
         end
         return nil;
     end
-    ct = function() return {} end
-    rt = function(tbl) end
+    CT = function() return {} end
+    RT = function(tbl) end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -75,7 +67,7 @@ do
     }
 
     local function appendToken(tbl, op, str)
-        local t = ct()
+        local t = CT()
         t.operator, t.value = op, str
         tbl[1+#tbl] = t
     end
@@ -88,7 +80,7 @@ do
     end
 
     function simcExpressionLexer(str)
-        local tokens = ct()
+        local tokens = CT()
         local idx = 1
         local arg = ""
         while idx <= str:len() do
@@ -125,13 +117,13 @@ do
         local tok = parser.tokens[parser.nextIndex-1]
         local s = ''
         for i,t in pairs(parser.tokens) do
-            s = s..Core:Format("%s %5s: %9s = '%s'\n", (i==parser.nextIndex-1 and "==>" or "   "), Core:Format('#%d', i), t.operator, t.value)
+            s = s..TJ:Format("%s %5s: %9s = '%s'\n", (i==parser.nextIndex-1 and "==>" or "   "), TJ:Format('#%d', i), t.operator, t.value)
         end
-        error(Core:Format('Error parsing token index %d: %s. Got operator "%s", value "%s"\n%s', parser.nextIndex-1, reason, tok.operator, tok.value, s))
+        error(TJ:Format('Error parsing token index %d: %s. Got operator "%s", value "%s"\n%s', parser.nextIndex-1, reason, tok.operator, tok.value, s))
     end
 
     local function createPrimaryExpression(parser, token)
-        local t = ct()
+        local t = CT()
         t.token, t.value = "primary", token.value
         return t
     end
@@ -153,7 +145,7 @@ do
             return nil
         elseif rparen.operator ~= 'rparen' then
         end
-        local t = ct()
+        local t = CT()
         t.token, t.operator, t.inner = "invoke", token.operator, inner
         return t
     end
@@ -211,7 +203,7 @@ do
 
         local function createPrefixExpression(parser, token)
             local rhs = parser:ParseExpression(precedence)
-            local t = ct()
+            local t = CT()
             t.token, t.operator, t.rhs = "prefix", token.operator, rhs
             return t
         end
@@ -224,7 +216,7 @@ do
 
         local function createLeftAssocExpression(parser, lhs, token)
             local rhs = parser:ParseExpression(precedence)
-            local t = ct()
+            local t = CT()
             t.token, t.operator, t.lhs, t.rhs = "infix", token.operator, lhs, rhs
             return t
         end
@@ -237,7 +229,7 @@ do
 
         local function createRightAssocExpression(parser, lhs, token)
             local rhs = parser:ParseExpression(precedence - 1)
-            local t = ct()
+            local t = CT()
             t.token, t.operator, t.lhs, t.rhs = "infix", token.operator, lhs, rhs
             return t
         end
@@ -274,7 +266,7 @@ do
     simcExpressionParser_mt.__index = simcExpressionParser_mt
 
     function simcExpressionParser(tokens)
-        local t = ct()
+        local t = CT()
         t.tokens, t.nextIndex = tokens, 1
         local parser = setmetatable(t, simcExpressionParser_mt)
         local result = parser:ParseExpression(0)
@@ -353,32 +345,32 @@ do
             return (primaryModifier and primaryModifier(result.value) or result.value)
         elseif result.token == "prefix" then
             if tContains(convertPrefixArgToFunctionCall, result.operator) then
-                return Core:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return TJ:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
             elseif tContains(convertBoolean, result.operator) then
-                return Core:Format("(%s %s(%s))", equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
+                return TJ:Format("(%s %s(%s))", equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
             else
-                return Core:Format("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return TJ:Format("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
             end
         elseif result.token == "invoke" then
-            return Core:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
+            return TJ:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
         elseif result.token == "infix" then
             local lhs = render(result.lhs, primaryModifier)
             local rhs = render(result.rhs, primaryModifier)
             if tContains(convertNumbers, result.operator) then
-                if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', numConverter, lhs) end
-                if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', numConverter, rhs) end
+                if lhs:match("[^%d%.]") then lhs = TJ:Format('%s(%s)', numConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = TJ:Format('%s(%s)', numConverter, rhs) end
             elseif tContains(convertBoolean, result.operator) then
-                if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', boolConverter, lhs) end
-                if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', boolConverter, rhs) end
+                if lhs:match("[^%d%.]") then lhs = TJ:Format('%s(%s)', boolConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = TJ:Format('%s(%s)', boolConverter, rhs) end
             end
-            return Core:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            return TJ:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
         end
     end
 
     function simcExpressionRenderer(str, primaryModifier)
         local tokens = simcExpressionLexer(str)
         local parsed = simcExpressionParser(tokens)
-        local keywords = ct()
+        local keywords = CT()
         for _,v in pairs(tokens) do
             if v.operator == "primary" and not tContains(keywords, v.value) then
                 if not v.value:match("^([%d%.]+)$") then -- skip numbers
@@ -387,10 +379,10 @@ do
             end
         end
         tsort(keywords)
-        local t = ct()
+        local t = CT()
         t.expression, t.keywords = render(parsed, primaryModifier), keywords
-        rt(parsed)
-        rt(tokens)
+        RT(parsed)
+        RT(tokens)
         return t
     end
 end
@@ -402,13 +394,13 @@ end
 local simcAplParser
 do
     function simcAplParser(lines, primaryModifier, tbl)
-        local allEntries = tbl or ct()
+        local allEntries = tbl or CT()
         for _,l in pairs(lines) do
             local list, action, params = l:match("^actions%.?([%a_]*)%+?=/?([^,]+),?(.*)")
             if list and action then
                 list = list:len() == 0 and "default" or list
-                local t = ct()
-                t.line, t.action, t.params = l, action, ct()
+                local t = CT()
+                t.line, t.action, t.params = l, action, CT()
                 local paramName, paramValue, p = params:match("([^=]+)=([^,]+),?(.*)")
                 while paramName do
                     if paramName == "if" then paramName = "condition" end
@@ -418,7 +410,7 @@ do
                     end
                     paramName, paramValue, p = p:match("([^=]+)=([^,]+),?(.*)")
                 end
-                allEntries[list] = allEntries[list] or ct()
+                allEntries[list] = allEntries[list] or CT()
                 local thisList = allEntries[list]
                 thisList[1+#thisList] = t
             end
@@ -433,31 +425,31 @@ end
 
 if IsLoadedByWoW then
     local function splitnewlines(str, tbl)
-        local t = tbl and wipe(tbl) or ct()
+        local t = tbl and wipe(tbl) or CT()
         local function helper(line) tinsert(t, line) return "" end
         helper(str:gsub("(.-)\r?\n", helper))
         return t
     end
 
-    function Core:ExpressionParser(str, primaryModifier)
-        local tmp = ct()
+    function TJ:ExpressionParser(str, primaryModifier)
+        local tmp = CT()
         local lines = splitnewlines(str, tmp)
         local ret = simcAplParser(lines, primaryModifier)
-        rt(tmp)
+        RT(tmp)
         return ret
     end
 else
     local function LoadFunctionString(funcStr)
         local loader, errStr = loadstring('return (' .. funcStr .. ')', name)
         if errStr then
-            local err = Core:Format("Failed to load string:\n%s\n%s", funcStr, errStr)
+            local err = TJ:Format("Failed to load string:\n%s\n%s", funcStr, errStr)
             error(err)
         else
             local success, retVal = pcall(assert(loader))
             if success then
                 return retVal
             end
-            local err = Core:Format("Failed to load string:\n%s\n%s", funcStr, retVal)
+            local err = TJ:Format("Failed to load string:\n%s\n%s", funcStr, retVal)
             error(err)
         end
     end
@@ -483,12 +475,12 @@ else
         for list, actions in pairs(result) do
             for _, action in pairs(actions) do
                 if action.params.condition_converted then
-                    local loadFunc = Core:Format("function() return (%s) and true or false end", action.params.condition_converted.expression)
+                    local loadFunc = TJ:Format("function() return (%s) and true or false end", action.params.condition_converted.expression)
                     local retFunc = LoadFunctionString(loadFunc)
                     local success, retVal = pcall(retFunc)
                 end
                 if action.params.value_converted then
-                    local loadFunc = Core:Format("function() return (%s) and true or false end", action.params.value_converted.expression)
+                    local loadFunc = TJ:Format("function() return (%s) and true or false end", action.params.value_converted.expression)
                     local retFunc = LoadFunctionString(loadFunc)
                     local success, retVal = pcall(retFunc)
                 end
@@ -498,7 +490,7 @@ else
         result = simcAplParser({'actions=blah,if=-@5|@-5|-+5|!5|6!=5'})
     end
 
-    Core:Debug(LSD(result))
+    TJ:Debug(LSD(result))
 
     return function(str, primaryModifier)
         local lines = splitnewlines(str)
