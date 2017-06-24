@@ -355,6 +355,7 @@ function Core:DebugReset()
 end
 
 function Core:DebugString()
+    if disableDebugOutput then return '' end
     if Config:Get("do_debug") then
         return tconcat(debugLines, '\n')
     end

@@ -1,15 +1,13 @@
-local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
-local Core = TJ:GetModule('Core')
-local TableCache = TJ:GetModule('TableCache')
+local addonName = ...
 
 local pairs = pairs
 local setmetatable = setmetatable
 local type = type
 local wipe = wipe
-local noCaching = false
 
-Core:Safety()
+LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+
+local noCaching = false
 
 local function ensureTableCacheExists(m)
     m.TableCache = m.TableCache or {

@@ -8,13 +8,20 @@
 ## X-Repository: https://github.com/tzarc/thousand-jabs
 ## Version: @project-version@
 
-## OptionalDeps: LibStub, CallbackHandler-1.0, Ace3, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
+## OptionalDeps: LibStub, CallbackHandler-1.0, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
 
-## SavedVariables: ThousandJabsDB
+## SavedVariables: TJ5DB
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+
 Libs\LibSandbox.lua
+Libs\LibSerpentDump.lua
+Libs\LibSpellData.lua
 
 Core.lua
+Ticket.lua
+TableCache.lua
+Config.lua
 Main.lua
+UI.lua

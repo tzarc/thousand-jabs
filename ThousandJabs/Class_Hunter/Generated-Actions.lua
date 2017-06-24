@@ -11,16 +11,17 @@ actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions=auto_shot
 actions+=/counter_shot,if=target.debuff.casting.react
+actions+=/use_items
 actions+=/arcane_torrent,if=focus.deficit>=30
-actions+=/berserking
-actions+=/blood_fury
+actions+=/berserking,if=buff.bestial_wrath.remains>7
+actions+=/blood_fury,if=buff.bestial_wrath.remains>7
 actions+=/volley,toggle=on
-actions+=/potion,if=buff.bestial_wrath.remains|!cooldown.bestial_wrath.remains
-actions+=/a_murder_of_crows
+actions+=/potion,if=buff.bestial_wrath.up&buff.aspect_of_the_wild.up
+actions+=/a_murder_of_crows,if=cooldown.bestial_wrath.remains<3|cooldown.bestial_wrath.remains>30|target.time_to_die<16
 actions+=/stampede,if=buff.bloodlust.up|buff.bestial_wrath.up|cooldown.bestial_wrath.remains<=2|target.time_to_die<=14
 actions+=/dire_beast,if=cooldown.bestial_wrath.remains>3
 actions+=/dire_frenzy,if=(pet.cat.buff.dire_frenzy.remains<=gcd.max*1.2)|(charges_fractional>=1.8)|target.time_to_die<9
-actions+=/aspect_of_the_wild,if=buff.bestial_wrath.up|target.time_to_die<12
+actions+=/aspect_of_the_wild,if=buff.bestial_wrath.remains>7|target.time_to_die<12
 actions+=/barrage,if=spell_targets.barrage>1
 actions+=/bestial_wrath
 actions+=/titans_thunder,if=(talent.dire_frenzy.enabled&(buff.bestial_wrath.up|cooldown.bestial_wrath.remains>35))|cooldown.dire_beast.remains>=3|(buff.bestial_wrath.up&pet.dire_beast.active)
@@ -41,6 +42,7 @@ actions.precombat+=/potion
 actions.precombat+=/windburst
 actions=auto_shot
 actions+=/counter_shot,if=target.debuff.casting.react
+actions+=/use_items
 actions+=/volley,toggle=on
 actions+=/variable,name=pooling_for_piercing,value=talent.piercing_shot.enabled&cooldown.piercing_shot.remains<5&lowest_vuln_within.5>0&lowest_vuln_within.5>cooldown.piercing_shot.remains&(buff.trueshot.down|spell_targets=1)
 actions+=/variable,name=waiting_for_sentinel,value=talent.sentinel.enabled&(buff.marking_targets.up|buff.trueshot.up)&!cooldown.sentinel.up&((cooldown.sentinel.remains>54&cooldown.sentinel.remains<(54+gcd.max))|(cooldown.sentinel.remains>48&cooldown.sentinel.remains<(48+gcd.max))|(cooldown.sentinel.remains>42&cooldown.sentinel.remains<(42+gcd.max)))
@@ -88,7 +90,7 @@ actions.patient_sniper+=/barrage,if=spell_targets>2|(target.health.pct<20&buff.b
 actions.patient_sniper+=/aimed_shot,if=debuff.vulnerability.up&buff.lock_and_load.up&(!variable.pooling_for_piercing|lowest_vuln_within.5>gcd.max)
 actions.patient_sniper+=/aimed_shot,if=spell_targets.multishot>1&debuff.vulnerability.remains>execute_time&(!variable.pooling_for_piercing|(focus>100&lowest_vuln_within.5>(execute_time+gcd.max)))
 actions.patient_sniper+=/multishot,if=spell_targets>1&variable.can_gcd&focus+cast_regen+action.aimed_shot.cast_regen<focus.max&(!variable.pooling_for_piercing|lowest_vuln_within.5>gcd.max)
-actions.patient_sniper+=/arcane_shot,if=spell_targets.multishot=1&(!set_bonus.tier20_2pc|!buff.trueshot.up|buff.t20_2p_critical_aimed_damage.up)&variable.vuln_aim_casts>0&variable.can_gcd&focus+cast_regen+action.aimed_shot.cast_regen<focus.max&(!variable.pooling_for_piercing|lowest_vuln_within.5>gcd.max)
+actions.patient_sniper+=/arcane_shot,if=spell_targets.multishot=1&(!set_bonus.tier20_2pc|!action.aimed_shot.in_flight|buff.t20_2p_critical_aimed_damage.remains>action.aimed_shot.execute_time+gcd.max)&variable.vuln_aim_casts>0&variable.can_gcd&focus+cast_regen+action.aimed_shot.cast_regen<focus.max&(!variable.pooling_for_piercing|lowest_vuln_within.5>gcd.max)
 actions.patient_sniper+=/aimed_shot,if=talent.sidewinders.enabled&(debuff.vulnerability.remains>cast_time|(buff.lock_and_load.down&action.windburst.in_flight))&(variable.vuln_window-(execute_time*variable.vuln_aim_casts)<1|focus.deficit<25|buff.trueshot.up)&(spell_targets.multishot=1|focus>100)
 actions.patient_sniper+=/aimed_shot,if=!talent.sidewinders.enabled&debuff.vulnerability.remains>cast_time&(!variable.pooling_for_piercing|(focus>100&lowest_vuln_within.5>(execute_time+gcd.max)))
 actions.patient_sniper+=/marked_shot,if=!talent.sidewinders.enabled&!variable.pooling_for_piercing&!action.windburst.in_flight&(focus>65|buff.trueshot.up|(1%attack_haste)>1.171)
@@ -118,6 +120,7 @@ actions.precombat+=/dragonsfire_grenade
 actions.precombat+=/harpoon
 actions=auto_attack
 actions+=/muzzle,if=target.debuff.casting.react
+actions+=/use_items
 actions+=/call_action_list,name=mokMaintain,if=talent.way_of_the_moknathal.enabled
 actions+=/call_action_list,name=CDs,if=buff.moknathal_tactics.stack>=2|!talent.way_of_the_moknathal.enabled
 actions+=/call_action_list,name=preBitePhase,if=!buff.mongoose_fury.up
