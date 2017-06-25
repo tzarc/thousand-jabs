@@ -15,7 +15,6 @@ local IsLoadedByWoW = GetSpellInfo and true or false
 if IsLoadedByWoW then
     local addonName = ...
     LibStub('LibSandbox-5.0'):UseSandbox(addonName)
-    TJ = _G['TJ']
 else
     LSD = require('Libs/LibSerpentDump')
     TJ = { }

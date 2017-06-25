@@ -3,7 +3,7 @@ local addonName = ...
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
 
 local registeredFallbackTables = {}
-function TJ:RegisterFallbackTable(name, table)
+function Engine:RegisterFallbackTable(name, table)
     registeredFallbackTables[name] = table
 end
 
@@ -155,7 +155,7 @@ local function defaultsTablePrototype_Evaluate(self, tableFactory)
     return output
 end
 
-function TJ:CreateDefaultsTable(name, ...)
+function Engine:CreateDefaultsTable(name, ...)
     local tbl = setmetatable({}, {
         __index = defaultsTablePrototype__index,
         name = name,

@@ -30,11 +30,13 @@ local LibStub = LibStub
 local LibSandbox = LibStub('LibSandbox-5.0')
 local LSD = LibStub("LibSerpentDump")
 local LSM = LibStub('LibSharedMedia-3.0', true)
+local CBH = LibStub('CallbackHandler-1.0')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+local Engine = {}
 local TableCache = {}
 local Config = {}
 local UI = {}
@@ -51,11 +53,13 @@ local globalWrites = {}
 -- TJ sandboxing
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-LibSandbox:UseSandbox(LibSandbox:NewSandbox(addonName))
+LibSandbox:NewSandbox(addonName)
+LibSandbox:UseSandbox(addonName)
 LibSandbox:AllowPassthrough(addonName, 'TJ5DB', 'UIParent', 'SLASH_TJ1', 'SlashCmdList')
 
 -- Intentionally write to the sandbox before we attach observers - these should be available no matter what
 _G['TJ'] = TJ
+_G['Engine'] = Engine
 _G['TableCache'] = TableCache
 _G['Config'] = Config
 _G['UI'] = UI
@@ -101,6 +105,75 @@ do
     TJ.otherErrors, TJ.globalReadNames, TJ.globalReads, TJ.globalWrites = otherErrors, globalReadNames, globalReads, globalWrites
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Event handling
+------------------------------------------------------------------------------------------------------------------------
+
+do
+    local eventSystem = {}
+    local eventCallbacks = CBH:New(eventSystem, "Register", "Unregister", "UnregisterAll")
+    local eventFrame = CreateFrame("Frame", addonName..'_EventFrame')
+    eventFrame:SetScript("OnEvent", function(frame, eventName, ...) eventCallbacks:Fire(eventName, ...) end)
+
+    function TJ:RegisterEvent(eventName, ...)
+        eventFrame:RegisterEvent(eventName)
+        eventSystem.Register(self, eventName, ...)
+    end
+
+    function TJ:UnregisterEvent(...)
+        eventSystem.Unregister(self, ...)
+    end
+
+    function TJ:UnregisterAllEvents(...)
+        eventSystem.UnregisterAll(...)
+    end
+
+    local variablesLoaded = false
+    local enteredWorld = false
+    local function tryPerformLoginHandler()
+        if variablesLoaded and enteredWorld then
+            TJ:OnLogin()
+        end
+    end
+
+    TJ:RegisterEvent('VARIABLES_LOADED', function()
+        variablesLoaded = true
+        tryPerformLoginHandler()
+    end)
+
+    TJ:RegisterEvent('PLAYER_ENTERING_WORLD', function()
+        enteredWorld = true
+        tryPerformLoginHandler()
+    end)
+
+    eventFrame:Show()
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Message notifications
+------------------------------------------------------------------------------------------------------------------------
+
+do
+    local messageSystem = {}
+    local messageCallbacks = CBH:New(eventSystem, "Register", "Unregister", "UnregisterAll")
+
+    function TJ:SendMessage(messageName, ...)
+        messageCallbacks:Fire(messageName, ...)
+    end
+
+    function TJ:RegisterMessageHandler(eventName, ...)
+        messageSystem.Register(self, eventName, ...)
+    end
+
+    function TJ:UnregisterMessageHandler(...)
+        messageSystem.Unregister(self, ...)
+    end
+
+    function TJ:UnregisterAllMessageHandlers(...)
+        messageSystem.UnregisterAll(...)
+    end
+end
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Helpers
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -110,13 +183,14 @@ function TJ:Format(f, ...)
 end
 
 do
-    local orderedPairsDispatch = function(state, origTable)
+    local orderedPairsDispatch = function(state)
         state.idx = state.idx + 1
         local k = state.keys[state.idx]
         if k == nil then
+            state.tbl = nil
             return nil
         else
-            return k, origTable[k]
+            return k, state.tbl[k]
         end
     end
 
@@ -126,9 +200,10 @@ do
         local state = tmpTable and wipe(tmpTable) or tf()
         state.idx = 0
         state.keys = tf()
+        state.tbl = tbl
         for n in pairs(tbl) do tinsert(state.keys, n) end
         tsort(state.keys, f)
-        return orderedPairsDispatch, state, tbl
+        return orderedPairsDispatch, state
     end
 
     function TJ:OrderedPairsTC(tbl, tmpTableCreatedByCT, f) -- internally uses the TableCache system, requires a TableCache-created table to be supplied as the state table, so that it can be released externally
@@ -413,50 +488,4 @@ function TJ:UpdateUsageStatistics()
             Broker.dataObj.text = self:Format("%s: Statistics disabled, too much time used (%d ms)", addonName, Broker.updateTime)
         end
     end
-end
-
-------------------------------------------------------------------------------------------------------------------------
--- Event/timer callbacks
-------------------------------------------------------------------------------------------------------------------------
-
-do
-    local eventFrame = CreateFrame("Frame", addonName..'_EventFrame')
-    local timerCallbacks = {}
-    eventFrame:Show()
-
-    local eventsCB = function(frame, eventName, a0, b0, c0, d0, e0, f0, g0, h0, i0, j0, k0, l0, m0, n0, o0, p0, q0, r0, s0, t0, u0, v0, w0, v0, y0, z0, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, v1, y1, z1)
-        local cb = TJ[eventName]
-        if cb then
-            cb(TJ, a0, b0, c0, d0, e0, f0, g0, h0, i0, j0, k0, l0, m0, n0, o0, p0, q0, r0, s0, t0, u0, v0, w0, v0, y0, z0, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, v1, y1, z1)
-        end
-    end
-    eventFrame:SetScript("OnEvent", eventsCB)
-
-    function TJ:RegisterEvent(eventName)
-        eventFrame:RegisterEvent(eventName)
-    end
-
-    function TJ:UnregisterEvent(eventName)
-        eventFrame:UnregisterEvent(eventName)
-    end
-
-    local variablesLoaded = false
-    local enteredWorld = false
-    local function tryPerformLoginHandler()
-        if variablesLoaded and enteredWorld then
-            TJ:OnLogin()
-        end
-    end
-
-    function TJ:VARIABLES_LOADED()
-        variablesLoaded = true
-        tryPerformLoginHandler()
-    end
-    TJ:RegisterEvent('VARIABLES_LOADED')
-
-    function TJ:PLAYER_ENTERING_WORLD()
-        enteredWorld = true
-        tryPerformLoginHandler()
-    end
-    TJ:RegisterEvent('PLAYER_ENTERING_WORLD')
 end

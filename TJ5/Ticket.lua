@@ -24,8 +24,6 @@ local LSD = LibStub("LibSerpentDump")
 
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
 
-local TJ = TJ
-
 ------------------------------------------------------------------------------------------------------------------------
 -- Ticket information
 ------------------------------------------------------------------------------------------------------------------------
@@ -72,9 +70,11 @@ do
         if not devMode then return nil end
         local s = ''
         for filename,list in TJ:OrderedPairs(TJ.globalReadNames) do
-            s = s .. TJ:Format('\n-- %s\n', filename)
-            for k,v in TJ:OrderedPairs(list) do
-                s = s .. TJ:Format("local %s = %s\n", k, k)
+            if list then
+                s = s .. TJ:Format('\n-- %s\n', filename)
+                for k,v in TJ:OrderedPairs(list) do
+                    s = s .. TJ:Format("local %s = %s\n", k, k)
+                end
             end
         end
         return s:len() > 0 and (s..'\n') or s
