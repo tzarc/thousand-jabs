@@ -1,8 +1,9 @@
 -- /run LibStub('LibSandbox-5.0'):GetSandbox('TJ5').TJ:ExportDebuggingInformation()
-local LSD = LibStub("LibSerpentDump")
+local LSD = LibStub("LibSerpentDump-5.0")
 local TJ5 = LibStub('LibSandbox-5.0'):GetSandbox('TJ5')
 local TJ5_mt = getmetatable(TJ5)
 local TJ = TJ5.TJ
+local Engine = TJ5.Engine
 local start
 local function Metrics()
     local TC = TJ5.TableCache.TableCache
@@ -68,28 +69,33 @@ TJ5.TJ:DevPrint('--------------- post-assign/reset --------------- (dt=%dms)', d
 --]]
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Test message notifications
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--[[
+-- /run LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine:ActivateProfile()
+--Engine:ActivateProfile()
+--DevTools_Dump{profile=Engine.activeProfile or 'none'}
+--DevTools_Dump{eventHandlers=TJ5.TJ.eventSystem}
+TJ5.TJ:DevPrint('--------------- pre-notify --------------- ')
+UpdateAddOnMemoryUsage()
+start = debugprofilestop()
+local oldMem = GetAddOnMemoryUsage('TJ5')
+for i=1,10000 do TJ5.TJ:Notify('TempCallback', 8, 3) end
+UpdateAddOnMemoryUsage()
+local newMem = GetAddOnMemoryUsage('TJ5')
+TJ5.TJ:DevPrint('--------------- post-notify --------------- (dt=%dms)', debugprofilestop()-start)
+print("Diff:", newMem-oldMem)
+--]]
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Profile Testing
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Engine:RegisterActionProfileList('custom::mage::frost', 'Custom Mage Profile: Frost', 8, 3, [[
+]])
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Ensure we're not leaking tables
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Metrics()
 TJ5.TJ:DevPrint('--------------- checkpoint end --------------- (dt=%dms)', debugprofilestop()-beginRun)
-
--- /run LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine:ActivateProfile()
---TJ5.Engine:ActivateProfile()
---DevTools_Dump{profile=TJ5.Engine.activeProfile or 'none'}
---DevTools_Dump{callbacks=TJ5.Engine.callbacks}
---DevTools_Dump{eventHandlers=TJ5.TJ.eventSystem}
-
-local es = {}
-local esc = LibStub('CallbackHandler-1.0'):New(es, "RegisterEvent", "UnregisterEvent", "UnregisterAllEvents")
-
-local function registerEvent(self, eventName, ...)
-    es.RegisterEvent(self, eventName, ...)
-end
-
-local function unregisterEvent(self, ...)
-    es.UnregisterEvent(self, ...)
-end
-
-local t = {}
-registerEvent(t, 'COMBAT_LOG_EVENT_UNFILTERED', function(...) DevTools_Dump{...} end)
-esc:Fire('COMBAT_LOG_EVENT_UNFILTERED', 1, 2, 3, 4, 5, 6)

@@ -31,3 +31,8 @@ UI.lua
 Engine\Engine.lua
 Engine\DefaultsTable.lua
 Engine\Profiles.lua
+
+Generated-EquippedItems.lua
+Generated-ItemSets.lua
+Generated-Actions.xml
+Generated-Profiles.xml

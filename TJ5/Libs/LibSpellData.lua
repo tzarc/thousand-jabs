@@ -1,6 +1,6 @@
 local addonName = ...
 local LibStub = LibStub
-local lib, oldminor = LibStub:NewLibrary("LibSpellData", 1)
+local lib, oldminor = LibStub:NewLibrary("LibSpellData-5.0", 1)
 
 local _G = _G
 local BOOKTYPE_PET = BOOKTYPE_PET

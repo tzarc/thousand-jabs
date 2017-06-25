@@ -28,7 +28,7 @@ local wipe = wipe
 
 local LibStub = LibStub
 local LibSandbox = LibStub('LibSandbox-5.0')
-local LSD = LibStub("LibSerpentDump")
+local LSD = LibStub("LibSerpentDump-5.0")
 local LSM = LibStub('LibSharedMedia-3.0', true)
 local CBH = LibStub('CallbackHandler-1.0')
 
@@ -111,21 +111,20 @@ end
 
 do
     local eventSystem = {}
-    local eventCallbacks = CBH:New(eventSystem, "Register", "Unregister", "UnregisterAll")
+    local callbacks = CBH:New(eventSystem, "RegisterEvent", "UnregisterEvent", "UnregisterAllEvents")
+
     local eventFrame = CreateFrame("Frame", addonName..'_EventFrame')
-    eventFrame:SetScript("OnEvent", function(frame, eventName, ...) eventCallbacks:Fire(eventName, ...) end)
+    eventFrame:SetScript("OnEvent", function(frame, eventName, ...) callbacks:Fire(eventName, ...) end)
 
-    function TJ:RegisterEvent(eventName, ...)
+    TJ.RegisterEvent = eventSystem.RegisterEvent
+    TJ.UnregisterEvent = eventSystem.UnregisterEvent
+    TJ.UnregisterAllEvents = eventSystem.UnregisterAllEvents
+
+    function callbacks:OnUsed(_, eventName)
         eventFrame:RegisterEvent(eventName)
-        eventSystem.Register(self, eventName, ...)
     end
-
-    function TJ:UnregisterEvent(...)
-        eventSystem.Unregister(self, ...)
-    end
-
-    function TJ:UnregisterAllEvents(...)
-        eventSystem.UnregisterAll(...)
+    function callbacks:OnUnused(_, eventName)
+        eventFrame:UnregisterEvent(eventName)
     end
 
     local variablesLoaded = false
@@ -137,11 +136,13 @@ do
     end
 
     TJ:RegisterEvent('VARIABLES_LOADED', function()
+        TJ:UnregisterEvent('VARIABLES_LOADED')
         variablesLoaded = true
         tryPerformLoginHandler()
     end)
 
     TJ:RegisterEvent('PLAYER_ENTERING_WORLD', function()
+        TJ:UnregisterEvent('PLAYER_ENTERING_WORLD')
         enteredWorld = true
         tryPerformLoginHandler()
     end)
@@ -152,26 +153,14 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- Message notifications
 ------------------------------------------------------------------------------------------------------------------------
-
 do
-    local messageSystem = {}
-    local messageCallbacks = CBH:New(eventSystem, "Register", "Unregister", "UnregisterAll")
+    local callbackSystem = {}
+    local callbacks = CBH:New(callbackSystem, "RegisterCallback", "UnregisterCallback", "UnregisterAllCallbacks")
 
-    function TJ:SendMessage(messageName, ...)
-        messageCallbacks:Fire(messageName, ...)
-    end
-
-    function TJ:RegisterMessageHandler(eventName, ...)
-        messageSystem.Register(self, eventName, ...)
-    end
-
-    function TJ:UnregisterMessageHandler(...)
-        messageSystem.Unregister(self, ...)
-    end
-
-    function TJ:UnregisterAllMessageHandlers(...)
-        messageSystem.UnregisterAll(...)
-    end
+    TJ.RegisterCallback = callbackSystem.RegisterCallback
+    TJ.UnregisterCallback = callbackSystem.UnregisterCallback
+    TJ.UnregisterAllCallbacks = callbackSystem.UnregisterAllCallbacks
+    TJ.Notify = callbacks.Fire
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

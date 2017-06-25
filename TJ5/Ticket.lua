@@ -1,4 +1,4 @@
-local addonName = ...
+local addonName, addonTable = ...
 
 local GetAddOnMetadata = GetAddOnMetadata
 local GetBuildInfo = GetBuildInfo
@@ -20,7 +20,9 @@ local UnitClass = UnitClass
 local UnitEffectiveLevel = UnitEffectiveLevel
 local UnitLevel = UnitLevel
 
-local LSD = LibStub("LibSerpentDump")
+local LSD = LibStub("LibSerpentDump-5.0")
+
+local BugGrabber = BugGrabber
 
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
 
@@ -86,6 +88,7 @@ do
             ['!tj_version'] = GetAddOnMetadata(addonName, "Version"),
             ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
             ['!wow_locale'] = GetLocale(),
+            loaderErrors = devMode and BugGrabber and BugGrabber:GetDB() or nil,
             base = {
                 playerLevel = UnitLevel('player'),
                 playerEffectiveLevel = UnitEffectiveLevel('player'),

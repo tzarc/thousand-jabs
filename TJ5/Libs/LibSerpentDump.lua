@@ -137,7 +137,7 @@ block = function(a, opts) return s(a, merge({indent = '  ', sortkeys = true, com
 local function dump(value) return s(value, merge({compact = false, sortkeys = true, indent = '  ', sparse = true, nocode = true}, opts)) end
 local IsLoadedByWoW = GetSpellInfo and true or false
 if IsLoadedByWoW then
-    local lib, oldminor = LibStub:NewLibrary("LibSerpentDump", 1)
+    local lib, oldminor = LibStub:NewLibrary("LibSerpentDump-5.0", 1)
     function lib:Dump(value)
         return dump(value)
     end

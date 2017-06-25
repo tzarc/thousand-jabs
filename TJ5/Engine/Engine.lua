@@ -7,8 +7,6 @@ local select = select
 
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
 
-Engine.callbacks = TJ:AttachCallbackSystem(Engine)
-
 function Engine:CurrentProfile()
     local classID = select(3, UnitClass('player'))
     local specID = GetSpecialization()
@@ -22,10 +20,7 @@ function Engine:ActivateProfile()
     if profile then
         self.activeProfile = profile
         profile:Activate()
-
-        local className = select(1, GetClassInfo(profile.classID))
-        local specName = select(2, GetSpecializationInfo(profile.specID))
-        self:InvokeCallback('ProfileActivated', profile.classID, profile.specID)
+        TJ:Notify('ProfileActivated', profile.classID, profile.specID)
     end
 end
 
@@ -34,9 +29,6 @@ function Engine:DeactivateProfile()
     if profile then
         profile:Deactivate()
         self.activeProfile = nil
-
-        local className = select(1, GetClassInfo(profile.classID))
-        local specName = select(2, GetSpecializationInfo(profile.specID))
-        self:InvokeCallback('ProfileDeactivated', profile.classID, profile.specID)
+        TJ:Notify('ProfileDeactivated', profile.classID, profile.specID)
     end
 end
