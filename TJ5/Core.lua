@@ -10,10 +10,12 @@ local TJ = LibStub:NewLibrary(MAJOR, MINOR)
 local debugprofilestop = debugprofilestop
 local debugstack = debugstack
 local LoadAddOn = LoadAddOn
+local CreateFrame = CreateFrame
 local pairs = pairs
 local print = print
 local select = select
 local select = select
+local mfmod = math.fmod
 local tconcat = table.concat
 local tinsert = table.insert
 local tonumber = tonumber
@@ -108,24 +110,29 @@ function TJ:Format(f, ...)
 end
 
 do
-    local orderedPairsDispatch = function(state)
-        state._idx = state._idx + 1
-        local k = state[state._idx]
+    local orderedPairsDispatch = function(state, origTable)
+        state.idx = state.idx + 1
+        local k = state.keys[state.idx]
         if k == nil then
-            state._tbl = nil
             return nil
         else
-            return k, state._tbl[k]
+            return k, origTable[k]
         end
     end
 
-    function TJ:OrderedPairs(tbl, f, tmpTbl)
-        local state = tmpTbl and wipe(tmpTbl) or {}
-        for n in pairs(tbl) do tinsert(state, n) end
-        tsort(state, f)
-        state._idx = 0
-        state._tbl = tbl
-        return orderedPairsDispatch, state
+    local unspecifiedTableFactory = function() return {} end
+    function TJ:OrderedPairs(tbl, f, tmpTable, tableFactory)
+        local tf = tableFactory or unspecifiedTableFactory
+        local state = tmpTable and wipe(tmpTable) or tf()
+        state.idx = 0
+        state.keys = tf()
+        for n in pairs(tbl) do tinsert(state.keys, n) end
+        tsort(state.keys, f)
+        return orderedPairsDispatch, state, tbl
+    end
+
+    function TJ:OrderedPairsTC(tbl, tmpTableCreatedByCT, f) -- internally uses the TableCache system, requires a TableCache-created table to be supplied as the state table, so that it can be released externally
+        return self:OrderedPairs(tbl, f, tmpTableCreatedByCT, CT)
     end
 end
 
@@ -189,16 +196,16 @@ do
     end
 
     function TJ:ShowHelp()
-        self:Print('%s chat commands:', addonName)
+        self:Print('|cFFFF9900Chat commands:|r')
         for cmd,help in pairs(slashHelpText) do
             if cmd ~= '' and cmd:sub(1,1) ~= '_' then
-                self:Print("     |cFFFF6600%s %s %s|r - %s", slashCmd, cmd, slashCmdArgs[cmd], help)
+                self:Print("     |cFFFFCC00%s %s %s|r - %s", slashCmd, cmd, slashCmdArgs[cmd], help)
             end
         end
-        self:Print('%s debugging commands:', addonName)
+        self:Print('|cFFFF9900Debugging commands:|r')
         for cmd,help in pairs(slashHelpText) do
             if cmd:sub(1,1) == '_' then
-                self:Print("     |cFFFF6600%s %s %s|r - %s", slashCmd, cmd, slashCmdArgs[cmd], help)
+                self:Print("     |cFFFFCC00%s %s %s|r - %s", slashCmd, cmd, slashCmdArgs[cmd], help)
             end
         end
     end
@@ -213,7 +220,7 @@ end
 
 local printPrefix
 function TJ:Print(...)
-    printPrefix = printPrefix or self:Format('|cFF0099CC%s|r:', addonName)
+    printPrefix = printPrefix or self:Format('|cFFFF6600%s|r:', addonName)
     print(printPrefix, self:Format(...))
 end
 
@@ -226,7 +233,7 @@ function TJ:PrintOnce(...)
 end
 
 function TJ:DevPrint(...)
-    if devMode then self:Print("%.3f: %s", debugprofilestop(), self:Format(...)) end
+    if devMode then self:Print("|cFF999999%8.3f:|r %s", mfmod(debugprofilestop()/1000.0, 10000), self:Format(...)) end
 end
 
 function TJ:DevPrintOnce(...)
@@ -234,7 +241,7 @@ function TJ:DevPrintOnce(...)
         local text = self:Format(...)
         if not printedOnce[text] then
             printedOnce[text] = true
-            self:Print("%.3f: %s", debugprofilestop(), text)
+            self:Print("|cFF999999%8.3f:|r %s", mfmod(debugprofilestop()/1000.0, 10000), text)
         end
     end
 end
@@ -283,7 +290,7 @@ function TJ:DebugString()
 end
 
 function TJ:OpenDebugWindow(title, data)
-    LoadAddOn("ThousandJabs_Config") -- Ensure AceGUI has been loaded
+    LoadAddOn("ThousandJabs_Config") -- Ensure AceGUI has been loaded -- it's bundled with the config addon
     local GUI = LibStub("AceGUI-3.0")
     local f = GUI:Create("Frame")
     f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
@@ -406,4 +413,50 @@ function TJ:UpdateUsageStatistics()
             Broker.dataObj.text = self:Format("%s: Statistics disabled, too much time used (%d ms)", addonName, Broker.updateTime)
         end
     end
+end
+
+------------------------------------------------------------------------------------------------------------------------
+-- Event/timer callbacks
+------------------------------------------------------------------------------------------------------------------------
+
+do
+    local eventFrame = CreateFrame("Frame", addonName..'_EventFrame')
+    local timerCallbacks = {}
+    eventFrame:Show()
+
+    local eventsCB = function(frame, eventName, a0, b0, c0, d0, e0, f0, g0, h0, i0, j0, k0, l0, m0, n0, o0, p0, q0, r0, s0, t0, u0, v0, w0, v0, y0, z0, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, v1, y1, z1)
+        local cb = TJ[eventName]
+        if cb then
+            cb(TJ, a0, b0, c0, d0, e0, f0, g0, h0, i0, j0, k0, l0, m0, n0, o0, p0, q0, r0, s0, t0, u0, v0, w0, v0, y0, z0, a1, b1, c1, d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, v1, y1, z1)
+        end
+    end
+    eventFrame:SetScript("OnEvent", eventsCB)
+
+    function TJ:RegisterEvent(eventName)
+        eventFrame:RegisterEvent(eventName)
+    end
+
+    function TJ:UnregisterEvent(eventName)
+        eventFrame:UnregisterEvent(eventName)
+    end
+
+    local variablesLoaded = false
+    local enteredWorld = false
+    local function tryPerformLoginHandler()
+        if variablesLoaded and enteredWorld then
+            TJ:OnLogin()
+        end
+    end
+
+    function TJ:VARIABLES_LOADED()
+        variablesLoaded = true
+        tryPerformLoginHandler()
+    end
+    TJ:RegisterEvent('VARIABLES_LOADED')
+
+    function TJ:PLAYER_ENTERING_WORLD()
+        enteredWorld = true
+        tryPerformLoginHandler()
+    end
+    TJ:RegisterEvent('PLAYER_ENTERING_WORLD')
 end

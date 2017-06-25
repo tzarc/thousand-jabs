@@ -1,5 +1,6 @@
 local addonName = ...
 
+local error = error
 local pairs = pairs
 local setmetatable = setmetatable
 local type = type
@@ -20,6 +21,8 @@ local function ensureTableCacheExists(m)
     }
     return m.TableCache
 end
+
+ensureTableCacheExists(TableCache)
 
 local function recursiveFindChildTables(tc, t)
     for k,v in pairs(t) do
@@ -61,7 +64,8 @@ function TableCache:Release(tbl)
     recursiveFindChildTables(tc, tbl)
 
     for k,v in pairs(tc.TablesToRelease) do
-        if tc.InUseTables[k] then tc.InUseTables[k] = nil end
+        if type(tc.InUseTables[k]) == 'nil' then error("Attempted to release a table that the TableCache doesn't own.") end
+        tc.InUseTables[k] = nil
         wipe(k)
         setmetatable(k, nil)
         tc.FreeTables[k] = k

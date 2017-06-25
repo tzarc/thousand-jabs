@@ -5,6 +5,7 @@ local setmetatable = setmetatable
 local tContains = tContains
 local tinsert = table.insert
 local tsort = table.sort
+local wipe = wipe
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Detect if we're running inside or outside of WoW

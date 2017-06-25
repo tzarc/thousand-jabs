@@ -27,3 +27,6 @@ Callbacks.lua
 ExpressionParser.lua
 Main.lua
 UI.lua
+
+Common\DefaultsTable.lua
+Common\Base.lua
