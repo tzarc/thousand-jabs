@@ -91,8 +91,22 @@ print("Diff:", newMem-oldMem)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Profile Testing
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Engine:RegisterActionProfileList('custom::mage::frost', 'Custom Mage Profile: Frost', 8, 3, [[
-]])
+--[[
+DevTools_Dump{available={Engine:GetAvailableProfilesForSpec()}}
+DevTools_Dump{abilities=TJ:ExportAbilitiesFromSpellBook()}
+TJ:ExportAbilitiesFromSpellBook()
+--]]
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Stats Testing
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DevTools_Dump{Broker=TJ5.Broker}
+DevTools_Dump{Stats=TJ5.Stats}
+local env = { predictionOffset = 0, currentTime = GetTime() }
+Engine.resources.soul_fragments.expirationTime = 0
+Engine.resources.soul_fragments:SetEnv(env)
+Engine.resources.soul_fragments:SetState(env)
+DevTools_Dump{soul_fragments=Engine.resources.soul_fragments:Evaluate()}--, soul_fragments_mt=getmetatable(Engine.resources.soul_fragments)}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Ensure we're not leaking tables

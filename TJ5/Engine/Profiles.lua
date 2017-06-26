@@ -1,11 +1,16 @@
 local addonName = ...
 
+local tsort = table.sort
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
 local UnitClass = UnitClass
 local select = select
 
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Keyword modification
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local function expressionPrimaryModifier(keyword, profileSubstitutions)
     if keyword:match('^([%d%.]+)$') then return keyword end
@@ -117,14 +122,28 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     return keyword
 end
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Profile object functions
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 local function profilePrototype_Activate(self)
 end
 
 local function profilePrototype_Deactivate(self)
 end
 
-function Engine:RegisterPlayerClass(config)
+local function profilePrototype_AddActions(self, actions)
+    for k,v in pairs(actions) do
+    end
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Class Registration
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function Engine:RegisterClassProfile(config)
     -- config expects the following fields:
+    ---- config.name                 | string, name for the profile
     ---- config.classID              | int, class ID from select(3, UnitClass('player'))
     ---- config.specID               | int, spec ID from GetSpecialization()
     ---- config.defaultActionProfile | string, maps to the name of the registered action profile list
@@ -135,27 +154,79 @@ function Engine:RegisterPlayerClass(config)
     ---- config.settings             | key/value pairs, (key = name of setting entry), (value = true/false [checkbox]), or value = { default, minimum, maximum, step } [slider])
     ---- config.remap                | key/value pairs, (key = name of APL action name), (value = TJ-defined action name) -- when APLs use different terminology for the same thing
 
-    local profile = {
-        -- Functions
-        Activate = profilePrototype_Activate,
-        Deactivate = profilePrototype_Deactivate,
+    local profile = Engine:CreateDefaultsTable(config.name, {
         -- Fields
         classID = config.classID,
         specID = config.specID,
         defaultActionProfile = config.defaultActionProfile,
-    }
+    })
+    profile:SetFunction('Activate', profilePrototype_Activate)
+    profile:SetFunction('Deactivate', profilePrototype_Deactivate)
+    profile:SetFunction('AddActions', profilePrototype_AddActions)
 
-    Engine.allProfiles = Engine.allProfiles or {}
-    Engine.allProfiles[config.classID] = Engine.allProfiles[config.classID] or {}
-    Engine.allProfiles[config.classID][config.specID] = profile
+    self.allProfiles = self.allProfiles or {}
+    self.allProfiles[config.classID] = self.allProfiles[config.classID] or {}
+    self.allProfiles[config.classID][config.specID] = profile
+
+    return profile
 end
 
-----------------------------
--- Dummy
-local frostMageConfig = {
-    classID = 8,
-    specID = 3,
-    defaultActionProfile = 'simc::mage::frost',
-    resources = { 'mana' },
-}
-Engine:RegisterPlayerClass(frostMageConfig)
+function Engine:CurrentProfile()
+    local classID = select(3, UnitClass('player'))
+    local specID = GetSpecialization()
+    return self.allProfiles and self.allProfiles[classID] and self.allProfiles[classID][specID]
+end
+
+function Engine:ActivateProfile()
+    self:DeactivateProfile()
+
+    local profile = self:CurrentProfile()
+    if profile then
+        self.activeProfile = profile
+        profile:Activate()
+        TJ:Notify('ProfileActivated', profile.classID, profile.specID)
+    end
+end
+
+function Engine:DeactivateProfile()
+    local profile = self.activeProfile
+    if profile then
+        profile:Deactivate()
+        self.activeProfile = nil
+        TJ:Notify('ProfileDeactivated', profile.classID, profile.specID)
+    end
+end
+
+function Engine:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
+    self.profileDefinitions = self.profileDefinitions or {}
+    self.profileDefinitions[aplID] = {
+        classID = classID,
+        specID = specID,
+        aplName = aplName,
+        aplData = aplData
+    }
+
+    self.availableProfiles = self.availableProfiles or {}
+    self.availableProfiles[classID] = self.availableProfiles[classID] or {}
+    self.availableProfiles[classID][specID] = self.availableProfiles[classID][specID] or {}
+    local t = self.availableProfiles[classID][specID]
+    t[1+#t] = aplID
+    tsort(t)
+end
+
+local dummy = {}
+function Engine:GetAvailableProfilesForSpec(classID, specID)
+    local classID = classID or select(3, UnitClass('player'))
+    local specID = specID or GetSpecialization()
+    local available = self.availableProfiles
+        and self.availableProfiles[classID]
+        and self.availableProfiles[classID][specID]
+        or wipe(dummy)
+
+    local defaultProfile = self.profiles
+        and self.allProfiles[classID]
+        and self.allProfiles[classID][specID]
+        and self.allProfiles[classID][specID].defaultActionProfile
+
+    return available, defaultProfile
+end

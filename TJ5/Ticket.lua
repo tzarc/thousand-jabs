@@ -88,7 +88,7 @@ do
             ['!tj_version'] = GetAddOnMetadata(addonName, "Version"),
             ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
             ['!wow_locale'] = GetLocale(),
-            loaderErrors = devMode and BugGrabber and BugGrabber:GetDB() or nil,
+            bugGrabber = devMode and BugGrabber and BugGrabber:GetDB() or nil,
             base = {
                 playerLevel = UnitLevel('player'),
                 playerEffectiveLevel = UnitEffectiveLevel('player'),

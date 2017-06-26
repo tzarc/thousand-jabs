@@ -1,10 +1,19 @@
 local addonName = ...
 
+local getmetatable = getmetatable
+local pairs = pairs
+local select = select
+local setmetatable = setmetatable
+local type = type
+local wipe = wipe
+
 LibStub('LibSandbox-5.0'):UseSandbox(addonName)
 
 local registeredFallbackTables = {}
-function Engine:RegisterFallbackTable(name, table)
-    registeredFallbackTables[name] = table
+function Engine:RegisterFallbackTable(name, ...)
+    local tbl = Engine:CreateStateEnvTable(name, ...)
+    registeredFallbackTables[name] = tbl
+    return tbl
 end
 
 local function getDefaultsTable(input)
@@ -161,8 +170,6 @@ function Engine:CreateDefaultsTable(name, ...)
         name = name,
         functions = {
             Reset = defaultsTablePrototype_Reset,
-            SetEnv = defaultsTablePrototype_SetEnv,
-            SetState = defaultsTablePrototype_SetState,
             SetFunction = defaultsTablePrototype_SetFunction,
             SetDefaults = defaultsTablePrototype_SetDefaults,
             Evaluate = defaultsTablePrototype_Evaluate,
@@ -171,7 +178,7 @@ function Engine:CreateDefaultsTable(name, ...)
     })
 
     for i=1,select('#', ...) do
-        local defaults = select(i, ...) --getDefaultsTable(select(i, ...))
+        local defaults = getDefaultsTable(select(i, ...))
         if type(defaults) == 'table' then
             tbl:SetDefaults(defaults)
         end
@@ -179,5 +186,12 @@ function Engine:CreateDefaultsTable(name, ...)
 
     tbl:Reset()
 
+    return tbl
+end
+
+function Engine:CreateStateEnvTable(name, ...)
+    local tbl = self:CreateDefaultsTable(name, ...)
+    tbl:SetFunction('SetEnv', defaultsTablePrototype_SetEnv)
+    tbl:SetFunction('SetState', defaultsTablePrototype_SetState)
     return tbl
 end
