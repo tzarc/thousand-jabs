@@ -1,7 +1,5 @@
-local addonName = ...
 if select(3, UnitClass('player')) ~= 6 then return end
-local TJ = LibStub('LibSandbox-5.0'):GetSandbox(addonName).TJ
-local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine
+local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
 Engine:RegisterActionProfileList('custom::deathknight::blood', 'Thousand Jabs Custom Death Knight Profile: Blood', 6, 1, [[
 actions=auto_attack

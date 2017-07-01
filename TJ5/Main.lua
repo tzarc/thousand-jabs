@@ -12,7 +12,7 @@ local UnitClass = UnitClass
 
 local LSD = LibStub("LibSerpentDump-5.0")
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 function TJ:OnLogin()
     self:Notify('OnLogin')

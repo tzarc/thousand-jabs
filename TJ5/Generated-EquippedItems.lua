@@ -1,6 +1,4 @@
-local addonName = ...
-
-local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine
+local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
 Engine.Generated = Engine.Generated or {}
 Engine.Generated.EquippedMapping = Engine.Generated.EquippedMapping or {}

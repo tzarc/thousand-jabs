@@ -24,7 +24,7 @@ local LSD = LibStub("LibSerpentDump-5.0")
 
 local BugGrabber = BugGrabber
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Ticket information

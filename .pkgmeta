@@ -30,4 +30,6 @@ ignore:
     - tag-release.sh
     - tag-alpha.sh
     - update-generated-data.pl
+    - update-generated-data-TJ5.pl
     - TJ5
+    - Test-Harness

@@ -2,8 +2,17 @@ local addonName = ...
 
 local mmax = math.max
 local mmin = math.min
+local SPELL_POWER_CHI = SPELL_POWER_CHI
+local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
+local SPELL_POWER_FURY = SPELL_POWER_FURY
+local SPELL_POWER_MAELSTROM = SPELL_POWER_MAELSTROM
+local SPELL_POWER_MANA = SPELL_POWER_MANA
+local SPELL_POWER_PAIN = SPELL_POWER_PAIN
+local SPELL_POWER_RAGE = SPELL_POWER_RAGE
+local SPELL_POWER_SOUL_SHARDS = SPELL_POWER_SOUL_SHARDS
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Base Tables

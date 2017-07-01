@@ -3,7 +3,7 @@ local addonName = ...
 local LDB = LibStub("LibDataBroker-1.1", true)
 if not LDB then return end
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local broker_OnClick = function(_, button)
     if button == "LeftButton" then

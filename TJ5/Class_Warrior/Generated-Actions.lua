@@ -1,7 +1,5 @@
-local addonName = ...
 if select(3, UnitClass('player')) ~= 1 then return end
-local TJ = LibStub('LibSandbox-5.0'):GetSandbox(addonName).TJ
-local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine
+local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
 Engine:RegisterActionProfileList('simc::warrior::arms', 'Simulationcraft Warrior Profile: Arms', 1, 1, [[
 actions.precombat=flask,type=countless_armies

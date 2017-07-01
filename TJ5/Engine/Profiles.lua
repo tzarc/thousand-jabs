@@ -6,7 +6,7 @@ local GetSpecializationInfo = GetSpecializationInfo
 local UnitClass = UnitClass
 local select = select
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Keyword modification

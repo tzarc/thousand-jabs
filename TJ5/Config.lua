@@ -8,7 +8,7 @@ local UnitClass = UnitClass
 
 local LibStub = LibStub
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local TJ = TJ
 local Config = Config

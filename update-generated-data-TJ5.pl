@@ -125,6 +125,26 @@ sub update {
     common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
 }
 
+package repos;
+
+sub get_test_prereqs {
+    if(!-d "${cfg::script_dir}/Temp/LibStub") {
+        common::exec("svn checkout https://repos.wowace.com/wow/libstub/trunk \"${cfg::script_dir}/Temp/LibStub\"");
+    }
+
+    if(!-f "${cfg::script_dir}/Temp/LibStub.lua") {
+        common::exec("cp \"${cfg::script_dir}/Temp/LibStub/LibStub.lua\" \"${cfg::script_dir}/Temp/LibStub.lua\"");
+    }
+
+    if(!-d "${cfg::script_dir}/Temp/CallbackHandler") {
+        common::exec("svn checkout https://repos.wowace.com/wow/callbackhandler/trunk \"${cfg::script_dir}/Temp/CallbackHandler\"");
+    }
+
+    if(!-f "${cfg::script_dir}/Temp/CallbackHandler.lua") {
+        common::exec("cp \"${cfg::script_dir}/Temp/CallbackHandler/CallbackHandler-1.0/CallbackHandler-1.0.lua\" \"${cfg::script_dir}/Temp/CallbackHandler.lua\"");
+    }
+}
+
 package generator;
 
 use File::Basename;
@@ -319,10 +339,8 @@ sub create_action_lists {
 
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
-        print {$outfile} "local addonName = ...\n";
         print {$outfile} "if select(3, UnitClass('player')) ~= ${classID} then return end\n";
-        print {$outfile} "local TJ = LibStub('LibSandbox-5.0'):GetSandbox(addonName).TJ\n";
-        print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine\n\n";
+        print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine\n\n";
         close($outfile);
     }
 
@@ -428,7 +446,7 @@ sub validate_actions_files {
         my $tn = $file;
         $tn =~ s/\//_/g;
         print(" - ${dn}/${bn}\n");
-        common::exec("{ cd '${cfg::script_dir}/TJ5/' && lua ExpressionParser.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
+        common::exec("{ cd '${cfg::script_dir}/TJ5/' && lua Engine/ExpressionParser.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
         unlink("${cfg::script_dir}/Temp/${tn}.errors") if -z "${cfg::script_dir}/Temp/${tn}.errors";
         if(-f "${cfg::script_dir}/Temp/${tn}.errors") {
             common::exec("cat '${cfg::script_dir}/Temp/${tn}.errors'");
@@ -442,8 +460,7 @@ sub create_equipped_mapping {
     common::header("Generating equipped item mapping:");
     my $equipped_file = "${cfg::script_dir}/TJ5/Generated-EquippedItems.lua";
     open(my $outfile, ">", $equipped_file);
-    print {$outfile} "local addonName = ...\n\n";
-    print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine\n\n";
+    print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine\n\n";
     print {$outfile} "Engine.Generated = Engine.Generated or {}\n";
     print {$outfile} "Engine.Generated.EquippedMapping = Engine.Generated.EquippedMapping or {}\n\n";
 
@@ -487,8 +504,7 @@ sub create_itemset_bonuses {
     common::header("Generating set bonus listing:");
     my $setbonus_file = "${cfg::script_dir}/TJ5/Generated-ItemSets.lua";
     open(my $outfile, ">", $setbonus_file);
-    print {$outfile} "local addonName = ...\n\n";
-    print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine\n\n";
+    print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine\n\n";
     print {$outfile} "Engine.Generated = Engine.Generated or {}\n";
     print {$outfile} "Engine.Generated.ItemSets = Engine.Generated.ItemSets or {}\n\n";
 
@@ -569,11 +585,13 @@ sub create_xml_wrapper {
 
 package main;
 
+repos::get_test_prereqs();
 simc::update();
 generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
-generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
-generator::validate_actions_files("${cfg::script_dir}/TJ5/Class_*/Generated-Actions.lua");
+
+#generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
+#generator::validate_actions_files("${cfg::script_dir}/TJ5/Class_*/Generated-Actions.lua");
 generator::create_xml_wrapper("${cfg::script_dir}/TJ5/Generated-Actions.xml",  "${cfg::script_dir}/TJ5/Class_*/Generated-Actions.lua");
 generator::create_xml_wrapper("${cfg::script_dir}/TJ5/Generated-Profiles.xml", "${cfg::script_dir}/TJ5/Class_*/Profile*.lua");

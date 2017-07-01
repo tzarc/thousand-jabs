@@ -27,7 +27,7 @@ local tconcat = table.concat
 local tContains = tContains
 local tinsert = table.insert
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Retrieve all abilities from the spellbook

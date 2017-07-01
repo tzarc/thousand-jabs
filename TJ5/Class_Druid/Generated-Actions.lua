@@ -1,7 +1,5 @@
-local addonName = ...
 if select(3, UnitClass('player')) ~= 11 then return end
-local TJ = LibStub('LibSandbox-5.0'):GetSandbox(addonName).TJ
-local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine
+local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
 Engine:RegisterActionProfileList('simc::druid::balance', 'Simulationcraft Druid Profile: Balance', 11, 1, [[
 actions.precombat=flask
@@ -12,7 +10,7 @@ actions.precombat+=/blessing_of_elune
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/new_moon
-actions=potion,name=deadly_grace,if=buff.celestial_alignment.up|buff.incarnation.up
+actions=potion,name=potion_of_prolonged_power,if=buff.celestial_alignment.up|buff.incarnation.up
 actions+=/blessing_of_elune,if=active_enemies<=2&talent.blessing_of_the_ancients.enabled&buff.blessing_of_elune.down
 actions+=/blessing_of_elune,if=active_enemies>=3&talent.blessing_of_the_ancients.enabled&buff.blessing_of_anshe.down
 actions+=/blood_fury,if=buff.celestial_alignment.up|buff.incarnation.up

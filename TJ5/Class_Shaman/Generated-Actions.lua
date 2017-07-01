@@ -1,7 +1,5 @@
-local addonName = ...
 if select(3, UnitClass('player')) ~= 7 then return end
-local TJ = LibStub('LibSandbox-5.0'):GetSandbox(addonName).TJ
-local Engine = LibStub('LibSandbox-5.0'):GetSandbox(addonName).Engine
+local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
 Engine:RegisterActionProfileList('simc::shaman::elemental', 'Simulationcraft Shaman Profile: Elemental', 7, 1, [[
 actions.precombat=flask

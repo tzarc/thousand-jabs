@@ -1,6 +1,6 @@
 local addonName = ...
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local Frost = Engine:RegisterClassProfile({
     classID = 8,

@@ -1,5 +1,6 @@
+local addonName = ...
+
 local assert = assert
-local GetSpellInfo = GetSpellInfo
 local pairs = pairs
 local setmetatable = setmetatable
 local tContains = tContains
@@ -11,28 +12,7 @@ local wipe = wipe
 -- Detect if we're running inside or outside of WoW
 ------------------------------------------------------------------------------------------------------------------------
 
-local IsLoadedByWoW = GetSpellInfo and true or false
-if IsLoadedByWoW then
-    local addonName = ...
-    LibStub('LibSandbox-5.0'):UseSandbox(addonName)
-else
-    LSD = require('Libs/LibSerpentDump')
-    TJ = { }
-    TJ.Format = function(self, f, ...) return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '') end
-    TJ.Debug = function(self, ...) print(TJ:Format(...)) end
-    function tContains(table, item)
-        local index = 1
-        while table[index] do
-            if item == table[index] then
-                return 1
-            end
-            index = index + 1
-        end
-        return nil;
-    end
-    CT = function() return {} end
-    RT = function(tbl) end
-end
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Expression lexer implementation
@@ -117,9 +97,9 @@ do
         local tok = parser.tokens[parser.nextIndex-1]
         local s = ''
         for i,t in pairs(parser.tokens) do
-            s = s..TJ:Format("%s %5s: %9s = '%s'\n", (i==parser.nextIndex-1 and "==>" or "   "), TJ:Format('#%d', i), t.operator, t.value)
+            s = s..("%s %5s: %9s = '%s'\n"):format((i==parser.nextIndex-1 and "==>" or "   "), ('#%d'):format(i), t.operator, t.value)
         end
-        error(TJ:Format('Error parsing token index %d: %s. Got operator "%s", value "%s"\n%s', parser.nextIndex-1, reason, tok.operator, tok.value, s))
+        error(('Error parsing token index %d: %s. Got operator "%s", value "%s"\n%s'):format(parser.nextIndex-1, reason, tok.operator, tok.value, s))
     end
 
     local function createPrimaryExpression(parser, token)
@@ -345,25 +325,25 @@ do
             return (primaryModifier and primaryModifier(result.value) or result.value)
         elseif result.token == "prefix" then
             if tContains(convertPrefixArgToFunctionCall, result.operator) then
-                return TJ:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
             elseif tContains(convertBoolean, result.operator) then
-                return TJ:Format("(%s %s(%s))", equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
+                return ("(%s %s(%s))"):format(equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
             else
-                return TJ:Format("(%s %s)", equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return ("(%s %s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
             end
         elseif result.token == "invoke" then
-            return TJ:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
+            return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
         elseif result.token == "infix" then
             local lhs = render(result.lhs, primaryModifier)
             local rhs = render(result.rhs, primaryModifier)
             if tContains(convertNumbers, result.operator) then
-                if lhs:match("[^%d%.]") then lhs = TJ:Format('%s(%s)', numConverter, lhs) end
-                if rhs:match("[^%d%.]") then rhs = TJ:Format('%s(%s)', numConverter, rhs) end
+                if lhs:match("[^%d%.]") then lhs = ('%s(%s)'):format(numConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = ('%s(%s)'):format(numConverter, rhs) end
             elseif tContains(convertBoolean, result.operator) then
-                if lhs:match("[^%d%.]") then lhs = TJ:Format('%s(%s)', boolConverter, lhs) end
-                if rhs:match("[^%d%.]") then rhs = TJ:Format('%s(%s)', boolConverter, rhs) end
+                if lhs:match("[^%d%.]") then lhs = ('%s(%s)'):format(boolConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = ('%s(%s)'):format(boolConverter, rhs) end
             end
-            return TJ:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            return ("(%s %s %s)"):format(lhs, equivalentLuaOperators[result.operator], rhs)
         end
     end
 
@@ -423,77 +403,17 @@ end
 -- Expression parser export
 ------------------------------------------------------------------------------------------------------------------------
 
-if IsLoadedByWoW then
-    local function splitnewlines(str, tbl)
-        local t = tbl and wipe(tbl) or CT()
-        local function helper(line) tinsert(t, line) return "" end
-        helper(str:gsub("(.-)\r?\n", helper))
-        return t
-    end
+local function splitnewlines(str, tbl)
+    local t = tbl and wipe(tbl) or CT()
+    local function helper(line) tinsert(t, line) return "" end
+    helper(str:gsub("(.-)\r?\n", helper))
+    return t
+end
 
-    function TJ:ExpressionParser(str, primaryModifier)
-        local tmp = CT()
-        local lines = splitnewlines(str, tmp)
-        local ret = simcAplParser(lines, primaryModifier)
-        RT(tmp)
-        return ret
-    end
-else
-    local function LoadFunctionString(funcStr)
-        local loader, errStr = loadstring('return (' .. funcStr .. ')', name)
-        if errStr then
-            local err = TJ:Format("Failed to load string:\n%s\n%s", funcStr, errStr)
-            error(err)
-        else
-            local success, retVal = pcall(assert(loader))
-            if success then
-                return retVal
-            end
-            local err = TJ:Format("Failed to load string:\n%s\n%s", funcStr, retVal)
-            error(err)
-        end
-    end
-
-    local lines = {}
-    for line in io.lines() do
-        if line:len() > 0 then
-            lines[1+#lines] = line
-        end
-    end
-
-    local result
-    if #lines > 0 then
-        result = simcAplParser(lines, function(str)
-            str = str:gsub('%.in$', '["in"]') -- 'in' is a lua keyword, so we change it to array indexing
-            str = str:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
-            str = str:gsub('([^%d])%.([%d]+)%.', '%1[%2].') -- any trailing digit selectors with following field (i.e.  something.1.field) we change to array indexing
-            str = str:gsub('([^%d])%.(%d.+)', '%1[\"%2\"]') -- any trailing digit selectors with following text (i.e.  something.1name) we change to string indexing
-            return str
-        end)
-
-        -- Validate that each of the conditions is compilable
-        for list, actions in pairs(result) do
-            for _, action in pairs(actions) do
-                if action.params.condition_converted then
-                    local loadFunc = TJ:Format("function() return (%s) and true or false end", action.params.condition_converted.expression)
-                    local retFunc = LoadFunctionString(loadFunc)
-                    local success, retVal = pcall(retFunc)
-                end
-                if action.params.value_converted then
-                    local loadFunc = TJ:Format("function() return (%s) and true or false end", action.params.value_converted.expression)
-                    local retFunc = LoadFunctionString(loadFunc)
-                    local success, retVal = pcall(retFunc)
-                end
-            end
-        end
-    else
-        result = simcAplParser({'actions=blah,if=-@5|@-5|-+5|!5|6!=5'})
-    end
-
-    TJ:Debug(LSD(result))
-
-    return function(str, primaryModifier)
-        local lines = splitnewlines(str)
-        return simcAplParser(lines, primaryModifier)
-    end
+function Engine:ExpressionParser(str, primaryModifier)
+    local tmp = CT()
+    local lines = splitnewlines(str, tmp)
+    local ret = simcAplParser(lines, primaryModifier)
+    RT(tmp)
+    return ret
 end

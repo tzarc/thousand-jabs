@@ -6,7 +6,7 @@ local setmetatable = setmetatable
 local type = type
 local wipe = wipe
 
-LibStub('LibSandbox-5.0'):UseSandbox(addonName)
+LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local noCaching = false
 
