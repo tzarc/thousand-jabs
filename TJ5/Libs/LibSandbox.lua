@@ -29,7 +29,7 @@ local sandboxEnv__index = function(tbl, key)
     local getters = mt.getterObservers
     if getters then
         for _,getter in pairs(getters) do
-            getter(key)
+            getter(key, mt.passThrough and real_G[key])
         end
     end
 

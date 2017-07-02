@@ -1,4 +1,4 @@
--- Save args, ARGV[1] = className, ARGV[2] = classID
+-- Save args, ARGV[1] = className, ARGV[2] = classID, ARGV[3] = specID
 ARGV=arg
 
 -- Base libs
@@ -27,6 +27,7 @@ LibSandbox:NewSandbox('TJ5')
 LibSandbox:UseSandbox('TJ5')
 
 -- Globals
+_G['MockData'] = {}
 _G['Engine'] = {}
 _G['TableCache'] = {}
 
@@ -42,12 +43,12 @@ local globalWrites = {}
 
 -- Unknown field sandbox getter/setter observers
 do
-    local function globalReadObserver(key)
+    local function globalReadObserver(key, passThroughValue)
         local stack = debugstack(3)
         local file, line = stack:match('(.-):(.-):')
         local tableKey = ('%s:%s:%d'):format(key, file, tonumber(line))
         if not globalReads[tableKey] then
-            globalReads[tableKey] = { stack = stack, key = tostring(key), keyType = type(key) }
+            globalReads[tableKey] = { stack = stack, file = file, line = tonumber(line), key = tostring(key), keyType = type(key) }
         end
         globalReadNames[file] = globalReadNames[file] or {}
         globalReadNames[file][key] = true
@@ -57,8 +58,9 @@ do
         local stack = debugstack(3)
         local file, line = stack:match('(.-):(.-):')
         local tableKey = ('%s:%s:%d'):format(key, file, tonumber(line))
-        if not globalWrites[tableKey] then
-            globalWrites[tableKey] = { stack = stack, key = tostring(key), keyType = type(key), value = tostring(val), valueType = type(val) }
+        globalWrites[file] = globalWrites[file] or {}
+        if not globalWrites[file][tableKey] then
+            globalWrites[file][tableKey] = { stack = stack, file = file, line = tonumber(line), key = tostring(key), keyType = type(key), value = tostring(val), valueType = type(val) }
         end
     end
 
@@ -71,24 +73,42 @@ require('TJ5/Engine/Engine')
 require('TJ5/Engine/Profiles')
 require('TJ5/Engine/ExpressionParser')
 
--- Test runner
-local LSD = require('TJ5/Libs/LibSerpentDump')
+require('TJ5/Generated-EquippedItems')
+require('TJ5/Generated-ItemSets')
 
-print(LSD({Engine=Engine,UnitClass={UnitClass('player')}}))
-print(LSD({globalReads=globalReads,globalWrites=globalWrites,globalReadNames=globalReadNames}))
+do
+    local found = false
+    for k,v in pairs(globalReadNames) do found = true break end
+    if found then
+        print('----------------------------------------------------------------------------------------------')
+        print('-- Global reads needing local caching:')
+        for filename,list in orderedpairs(globalReadNames) do
+            if list then
+                print(('\n-- %s'):format(filename))
+                for k,v in orderedpairs(list) do
+                    print(("local %s = %s"):format(k, k))
+                end
+            end
+        end
+        print('')
+    end
+end
 
-local function copiesExport()
-    local s = ''
-    for filename,list in orderedpairs(globalReadNames) do
-        print(LSD({list=list}))
-        if list then
-            s = s .. ('\n-- %s\n'):format(filename)
-            for k,v in orderedpairs(list) do
-                s = s .. ("local %s = %s\n"):format(k, k)
+do
+    local found = false
+    for k,v in pairs(globalWrites) do found = true break end
+    if found then
+        print('----------------------------------------------------------------------------------------------')
+        print('-- Global writes needing refactoring:')
+        for filename,filedata in orderedpairs(globalWrites) do
+            print(("File: %s"):format(filename))
+            for _,v in orderedpairs(filedata) do
+                print(("%15s: %s = %s"):format(('line %d'):format(v.line), tostring(v.key), tostring(v.value)))
             end
         end
     end
-    return s:len() > 0 and (s..'\n') or s
 end
 
-print(LSD(copiesExport()))
+print(GetTime())
+print(debugprofilestop())
+print(GetTime())

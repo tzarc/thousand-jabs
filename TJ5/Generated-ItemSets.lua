@@ -1,17 +1,18 @@
 local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine
 
-Engine.Generated = Engine.Generated or {}
-Engine.Generated.ItemSets = Engine.Generated.ItemSets or {}
+Engine.Data = Engine.Data or {}
+Engine.Data.Generated = Engine.Data.Generated or {}
+Engine.Data.Generated.ItemSets = Engine.Data.Generated.ItemSets or {}
 
-Engine.Generated.ItemSets.journey_through_time = {
+Engine.Data.Generated.ItemSets['journey_through_time'] = {
     137419, 137487,
 }
 
-Engine.Generated.ItemSets.march_of_the_legion = {
+Engine.Data.Generated.ItemSets['march_of_the_legion'] = {
     134529, 134533,
 }
 
-Engine.Generated.ItemSets.pvp = {
+Engine.Data.Generated.ItemSets['pvp'] = {
     127049, 127050, 127051, 127052, 127053, 127054, 127055, 127063, 127064, 127065,
     127066, 127071, 127072, 127073, 127074, 127075, 127076, 127077, 127078, 127079,
     127080, 127081, 127082, 127083, 127084, 127085, 127086, 127087, 127088, 127089,
@@ -20,7 +21,7 @@ Engine.Generated.ItemSets.pvp = {
     127110, 127111, 127112, 127113, 127114,
 }
 
-Engine.Generated.ItemSets.tier17 = {
+Engine.Data.Generated.ItemSets['tier17'] = {
     115535, 115536, 115537, 115538, 115539, 115540, 115541, 115542, 115543, 115544,
     115545, 115546, 115547, 115548, 115549, 115550, 115551, 115552, 115553, 115554,
     115555, 115556, 115557, 115558, 115559, 115560, 115561, 115562, 115563, 115564,
@@ -29,13 +30,13 @@ Engine.Generated.ItemSets.tier17 = {
     115585, 115586, 115587, 115588, 115589,
 }
 
-Engine.Generated.ItemSets.tier17lfr = {
+Engine.Data.Generated.ItemSets['tier17lfr'] = {
     120373, 120374, 120375, 120376, 120377, 120378, 120379, 120380, 120381, 120382,
     120383, 120384, 120385, 120386, 120387, 120388, 120389, 120390, 120391, 120392,
     120393, 120394, 120395, 120396,
 }
 
-Engine.Generated.ItemSets.tier18 = {
+Engine.Data.Generated.ItemSets['tier18'] = {
     124154, 124155, 124156, 124160, 124161, 124162, 124165, 124166, 124167, 124171,
     124172, 124173, 124177, 124178, 124179, 124246, 124247, 124248, 124255, 124256,
     124257, 124261, 124262, 124263, 124267, 124268, 124269, 124272, 124273, 124274,
@@ -44,13 +45,13 @@ Engine.Generated.ItemSets.tier18 = {
     124339, 124340, 124344, 124345, 124346,
 }
 
-Engine.Generated.ItemSets.tier18lfr = {
+Engine.Data.Generated.ItemSets['tier18lfr'] = {
     128032, 128052, 128054, 128080, 128120, 128121, 128122, 128123, 128124, 128125,
     128126, 128127, 128128, 128129, 128130, 128131, 128132, 128133, 128134, 128135,
     128136, 128137, 128138, 128139,
 }
 
-Engine.Generated.ItemSets.tier19 = {
+Engine.Data.Generated.ItemSets['tier19'] = {
     138309, 138310, 138311, 138312, 138313, 138314, 138315, 138316, 138317, 138318,
     138319, 138320, 138321, 138322, 138323, 138324, 138325, 138326, 138327, 138328,
     138329, 138330, 138331, 138332, 138333, 138334, 138335, 138336, 138337, 138338,
@@ -61,7 +62,7 @@ Engine.Generated.ItemSets.tier19 = {
     138379, 138380,
 }
 
-Engine.Generated.ItemSets.tier19oh = {
+Engine.Data.Generated.ItemSets['tier19oh'] = {
     139673, 139674, 139675, 139676, 139677, 139678, 139679, 139680, 139681, 139682,
     139683, 139684, 139685, 139686, 139687, 139688, 139690, 139691, 139692, 139693,
     139694, 139695, 139696, 139697, 139698, 139699, 139700, 139701, 139702, 139703,
@@ -74,23 +75,23 @@ Engine.Generated.ItemSets.tier19oh = {
     139765, 139766, 139767, 139768, 139769, 139770,
 }
 
-Engine.Generated.ItemSets.tier19p_cloth = {
+Engine.Data.Generated.ItemSets['tier19p_cloth'] = {
     134424, 134432,
 }
 
-Engine.Generated.ItemSets.tier19p_leather = {
+Engine.Data.Generated.ItemSets['tier19p_leather'] = {
     137397, 137480,
 }
 
-Engine.Generated.ItemSets.tier19p_mail = {
+Engine.Data.Generated.ItemSets['tier19p_mail'] = {
     134480, 137405,
 }
 
-Engine.Generated.ItemSets.tier19p_plate = {
+Engine.Data.Generated.ItemSets['tier19p_plate'] = {
     134503, 134518,
 }
 
-Engine.Generated.ItemSets.tier20 = {
+Engine.Data.Generated.ItemSets['tier20'] = {
     147121, 147122, 147123, 147124, 147125, 147126, 147127, 147128, 147129, 147130,
     147131, 147132, 147133, 147134, 147135, 147136, 147137, 147138, 147139, 147140,
     147141, 147142, 147143, 147144, 147145, 147146, 147147, 147148, 147149, 147150,

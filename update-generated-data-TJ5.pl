@@ -461,8 +461,9 @@ sub create_equipped_mapping {
     my $equipped_file = "${cfg::script_dir}/TJ5/Generated-EquippedItems.lua";
     open(my $outfile, ">", $equipped_file);
     print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine\n\n";
-    print {$outfile} "Engine.Generated = Engine.Generated or {}\n";
-    print {$outfile} "Engine.Generated.EquippedMapping = Engine.Generated.EquippedMapping or {}\n\n";
+    print {$outfile} "Engine.Data = Engine.Data or {}\n";
+    print {$outfile} "Engine.Data.Generated = Engine.Data.Generated or {}\n";
+    print {$outfile} "Engine.Data.Generated.EquippedMapping = Engine.Data.Generated.EquippedMapping or {}\n\n";
 
     my @files = <"${cfg::script_dir}/TJ5/Class_*/Generated-Actions.lua">;
     my %items;
@@ -489,7 +490,7 @@ sub create_equipped_mapping {
             $itemids{$1} = 1;
         }
 
-        print {$outfile} "Engine.Generated.EquippedMapping.${item} = { ";
+        print {$outfile} "Engine.Data.Generated.EquippedMapping['${item}'] = { ";
         for my $itemid (sort keys %itemids) {
             print "       ID: $itemid\n";
             print {$outfile} "$itemid, ";
@@ -505,8 +506,9 @@ sub create_itemset_bonuses {
     my $setbonus_file = "${cfg::script_dir}/TJ5/Generated-ItemSets.lua";
     open(my $outfile, ">", $setbonus_file);
     print {$outfile} "local Engine = LibStub('LibSandbox-5.0'):GetSandbox('TJ5').Engine\n\n";
-    print {$outfile} "Engine.Generated = Engine.Generated or {}\n";
-    print {$outfile} "Engine.Generated.ItemSets = Engine.Generated.ItemSets or {}\n\n";
+    print {$outfile} "Engine.Data = Engine.Data or {}\n";
+    print {$outfile} "Engine.Data.Generated = Engine.Data.Generated or {}\n";
+    print {$outfile} "Engine.Data.Generated.ItemSets = Engine.Data.Generated.ItemSets or {}\n\n";
 
     open(my $infile, "<", "${simc::directory}/dbc_extract3/dbc/generator.py");
     my $mode = 0;
@@ -535,7 +537,7 @@ sub create_itemset_bonuses {
     for my $bonus (sort { $a->{name} cmp $b->{name} } @{$bonuses}) {
         print " - $bonus->{name}\n";
 
-        print {$outfile} "Engine.Generated.ItemSets.$bonus->{name} = {\n   ";
+        print {$outfile} "Engine.Data.Generated.ItemSets['$bonus->{name}'] = {\n   ";
 
         my %items;
         for my $itemset (sort @{ $bonus->{bonuses} }) {

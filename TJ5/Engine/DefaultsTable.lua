@@ -11,7 +11,7 @@ LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local registeredFallbackTables = {}
 function Engine:RegisterFallbackTable(name, ...)
-    local tbl = Engine:CreateStateEnvTable(name, ...)
+    local tbl = self:CreateStateEnvTable(name, ...)
     registeredFallbackTables[name] = tbl
     return tbl
 end
@@ -39,6 +39,12 @@ local function defaultsTablePrototype__index(self, key)
 
     -- Fall back to just returning the value
     return v
+end
+
+local function defaultsTablePrototype_HasKey(self, key)
+    if type(rawget(self, key)) ~= 'nil' then return true end
+    if type(rawget(getmetatable(self).defaults, key)) ~= 'nil' then return true end
+    return false
 end
 
 local function defaultsTablePrototype_Reset(self)
@@ -126,41 +132,52 @@ local function defaultsTablePrototype_SetDefaults(self, defaults, override)
     end
 end
 
-local unsuppliedTableFactory = function() return {} end
-local function defaultsTablePrototype_Evaluate(self, tableFactory)
-    local tf = tableFactory or unsuppliedTableFactory
-    local output = tf()
+local function defaultsTablePrototype_Evaluate(self)
+    -- WARNING: Do not do this on the critical code path - it does NOT use table caching. Use for debugging only.
 
-    -- Evaluate any of the values directly in the table
-    for k,v in pairs(self) do
-        if type(v) == 'table' then
-            if type(v.Evaluate) == 'function' then
-                output[k] = v:Evaluate(tf)
-            else
-                output[k] = tf()
-                output[k].__unevaluated = true
-            end
-        else
-            output[k] = v
-        end
-    end
+    -- Function to wrap  safe evaluation of the table entries
+    local function evaluator()
+        local tf = tableFactory or unsuppliedTableFactory
+        local output = {}
 
-    -- Then iterate through the defaults, assuming that there was no entry previously evaluated
-    for k,v in pairs(getmetatable(self).defaults) do
-        if type(output[k]) == 'nil' then
+        -- Evaluate any of the values directly in the table
+        for k,v in pairs(self) do
             if type(v) == 'table' then
                 if type(v.Evaluate) == 'function' then
-                    output[k] = self[k]:Evaluate(tf)
+                    output[k] = v:Evaluate()
                 else
-                    output[k] = tf()
-                    output[k].__unevaluated = true
+                    output[k] = { __unevaluated_no_Evaluate_function = true }
                 end
             else
-                output[k] = self[k]
+                output[k] = v
             end
         end
+
+        -- Then iterate through the defaults, assuming that there was no entry previously evaluated
+        for k,v in pairs(getmetatable(self).defaults) do
+            if type(output[k]) == 'nil' then
+                if type(v) == 'table' then
+                    if type(v.Evaluate) == 'function' then
+                        output[k] = self[k]:Evaluate()
+                    else
+                        output[k] = { __unevaluated_no_Evaluate_function = true }
+                    end
+                else
+                    output[k] = self[k]
+                end
+            end
+        end
+
+        return output
     end
 
+    -- Set the environment that the table is evaluated under
+    setfenv(evaluator, getmetatable(self).env)
+
+    -- Invoke the evaluation function
+    local ok, output = pcall(evaluator)
+
+    if not ok then error(output) end
     return output
 end
 
@@ -169,6 +186,7 @@ function Engine:CreateDefaultsTable(name, ...)
         __index = defaultsTablePrototype__index,
         name = name,
         functions = {
+            HasKey = defaultsTablePrototype_HasKey,
             Reset = defaultsTablePrototype_Reset,
             SetFunction = defaultsTablePrototype_SetFunction,
             SetDefaults = defaultsTablePrototype_SetDefaults,

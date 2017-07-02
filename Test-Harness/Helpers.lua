@@ -14,14 +14,6 @@ function trim(s)
     return s:match'^()%s*$' and '' or s:match'^%s*(.*%S)'
 end
 
-function debugstack(count)
-    local stack = debug.traceback()
-    local stackLines = splitlines(stack)
-    for i=1,count+1 do tremove(stackLines,1) end
-    for k,v in pairs(stackLines) do stackLines[k] = trim(v) end
-    return tconcat(stackLines, '\n')
-end
-
 local orderedPairsDispatch = function(state)
     state.idx = state.idx + 1
     local k = state.keys[state.idx]

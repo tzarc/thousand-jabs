@@ -1,5 +1,3 @@
-local addonName = ...
-
 local tsort = table.sort
 local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
@@ -132,11 +130,6 @@ end
 local function profilePrototype_Deactivate(self)
 end
 
-local function profilePrototype_AddActions(self, actions)
-    for k,v in pairs(actions) do
-    end
-end
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Class Registration
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -156,60 +149,62 @@ function Engine:RegisterClassProfile(config)
 
     local profile = Engine:CreateDefaultsTable(config.name, {
         -- Fields
-        classID = config.classID,
-        specID = config.specID,
-        defaultActionProfile = config.defaultActionProfile,
+        ClassID = config.ClassID,
+        SpecID = config.SpecID,
+        DefaultActionProfile = config.DefaultActionProfile,
     })
     profile:SetFunction('Activate', profilePrototype_Activate)
     profile:SetFunction('Deactivate', profilePrototype_Deactivate)
-    profile:SetFunction('AddActions', profilePrototype_AddActions)
 
-    self.allProfiles = self.allProfiles or {}
-    self.allProfiles[config.classID] = self.allProfiles[config.classID] or {}
-    self.allProfiles[config.classID][config.specID] = profile
+    self.Data = self.Data or {}
+    self.Data.AllProfiles = self.Data.AllProfiles or {}
+    self.Data.AllProfiles[config.ClassID] = self.Data.AllProfiles[config.ClassID] or {}
+    self.Data.AllProfiles[config.ClassID][config.SpecID] = profile
 
     return profile
 end
 
-function Engine:CurrentProfile()
+function Engine:GetProfileForCurrentSpec()
     local classID = select(3, UnitClass('player'))
     local specID = GetSpecialization()
-    return self.allProfiles and self.allProfiles[classID] and self.allProfiles[classID][specID]
+    return self.Data.AllProfiles and self.Data.AllProfiles[classID] and self.Data.AllProfiles[classID][specID]
 end
 
 function Engine:ActivateProfile()
     self:DeactivateProfile()
 
-    local profile = self:CurrentProfile()
+    local profile = self:GetProfileForCurrentSpec()
     if profile then
-        self.activeProfile = profile
+        self.Runtime = self.Runtime or {}
+        self.Runtime.ActiveProfile = profile
         profile:Activate()
-        TJ:Notify('ProfileActivated', profile.classID, profile.specID)
+        Engine:Notify('ProfileActivated', profile.ClassID, profile.SpecID)
     end
 end
 
 function Engine:DeactivateProfile()
-    local profile = self.activeProfile
+    local profile = self.Runtime and self.Runtime.ActiveProfile
     if profile then
         profile:Deactivate()
-        self.activeProfile = nil
-        TJ:Notify('ProfileDeactivated', profile.classID, profile.specID)
+        self.Runtime.ActiveProfile = nil
+        Engine:Notify('ProfileDeactivated', profile.ClassID, profile.SpecID)
     end
 end
 
 function Engine:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
-    self.profileDefinitions = self.profileDefinitions or {}
-    self.profileDefinitions[aplID] = {
-        classID = classID,
-        specID = specID,
-        aplName = aplName,
-        aplData = aplData
+    self.Data = self.Data or {}
+    self.Data.ProfileDefinitions = self.Data.ProfileDefinitions or {}
+    self.Data.ProfileDefinitions[aplID] = {
+        AplName = aplName,
+        ClassID = classID,
+        SpecID = specID,
+        AplData = aplData
     }
 
-    self.availableProfiles = self.availableProfiles or {}
-    self.availableProfiles[classID] = self.availableProfiles[classID] or {}
-    self.availableProfiles[classID][specID] = self.availableProfiles[classID][specID] or {}
-    local t = self.availableProfiles[classID][specID]
+    self.Data.AvailableProfiles = self.Data.AvailableProfiles or {}
+    self.Data.AvailableProfiles[classID] = self.Data.AvailableProfiles[classID] or {}
+    self.Data.AvailableProfiles[classID][specID] = self.Data.AvailableProfiles[classID][specID] or {}
+    local t = self.Data.AvailableProfiles[classID][specID]
     t[1+#t] = aplID
     tsort(t)
 end
@@ -218,15 +213,17 @@ local dummy = {}
 function Engine:GetAvailableProfilesForSpec(classID, specID)
     local classID = classID or select(3, UnitClass('player'))
     local specID = specID or GetSpecialization()
-    local available = self.availableProfiles
-        and self.availableProfiles[classID]
-        and self.availableProfiles[classID][specID]
+    local available = self.Data
+        and self.Data.AvailableProfiles
+        and self.Data.AvailableProfiles[classID]
+        and self.Data.AvailableProfiles[classID][specID]
         or wipe(dummy)
 
-    local defaultProfile = self.profiles
-        and self.allProfiles[classID]
-        and self.allProfiles[classID][specID]
-        and self.allProfiles[classID][specID].defaultActionProfile
+    local defaultProfile = self.Data
+        and self.Data.AllProfiles
+        and self.Data.AllProfiles[classID]
+        and self.Data.AllProfiles[classID][specID]
+        and self.Data.AllProfiles[classID][specID].DefaultActionProfile
 
     return available, defaultProfile
 end
