@@ -1,5 +1,3 @@
-local tconcat = table.concat
-local tremove = table.remove
 local tinsert = table.insert
 local tsort = table.sort
 

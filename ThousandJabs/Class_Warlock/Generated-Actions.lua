@@ -133,9 +133,8 @@ actions.precombat+=/augmentation,type=defiled
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion,name=prolonged_power
 actions.precombat+=/demonic_empowerment
-actions.precombat+=/call_dreadstalkers,if=!equipped.132369
-actions.precombat+=/demonbolt,if=equipped.132369
-actions.precombat+=/shadow_bolt,if=equipped.132369
+actions.precombat+=/demonbolt
+actions.precombat+=/shadow_bolt
 actions=implosion,if=wild_imp_remaining_duration<=action.shadow_bolt.execute_time&(buff.demonic_synergy.remains|talent.soul_conduit.enabled|(!talent.soul_conduit.enabled&spell_targets.implosion>1)|wild_imp_count<=4)
 actions+=/variable,name=3min,value=doomguard_no_de>0|infernal_no_de>0
 actions+=/variable,name=no_de1,value=dreadstalker_no_de>0|darkglare_no_de>0|doomguard_no_de>0|infernal_no_de>0|service_no_de>0
@@ -222,7 +221,7 @@ actions+=/chaos_bolt,if=active_enemies<4&buff.active_havoc.remains>cast_time
 actions+=/channel_demonfire,if=dot.immolate.remains>cast_time&(active_enemies=1|buff.active_havoc.remains<action.chaos_bolt.cast_time)
 actions+=/rain_of_fire,if=active_enemies>=3
 actions+=/rain_of_fire,if=active_enemies>=6&talent.wreak_havoc.enabled
-actions+=/dimensional_rift,if=target.time_to_die<=32|!equipped.144369|charges>1|((!talent.grimoire_of_service.enabled|recharge_time<cooldown.service_pet.remains)&(!talent.soul_harvest.enabled|recharge_time<cooldown.soul_harvest.remains)&(!talent.grimoire_of_supremacy.enabled|recharge_time<cooldown.summon_doomguard.remains))
+actions+=/dimensional_rift,if=target.time_to_die<=32|!equipped.144369|charges>1|(!equipped.144369&(!talent.grimoire_of_service.enabled|recharge_time<cooldown.service_pet.remains)&(!talent.soul_harvest.enabled|recharge_time<cooldown.soul_harvest.remains)&(!talent.grimoire_of_supremacy.enabled|recharge_time<cooldown.summon_doomguard.remains))
 actions+=/life_tap,if=talent.empowered_life_tap.enabled&buff.empowered_life_tap.remains<duration*0.3
 actions+=/cataclysm
 actions+=/chaos_bolt,if=active_enemies<3&target.time_to_die<=10
@@ -231,7 +230,7 @@ actions+=/chaos_bolt,if=active_enemies<3&(cooldown.havoc.remains>12&cooldown.hav
 actions+=/chaos_bolt,if=active_enemies<3&(cooldown.havoc.remains>12&cooldown.havoc.remains|active_enemies=1|soul_shard>=5-spell_targets.infernal_awakening*0.5)&(trinket.stacking_proc.mastery.react&trinket.stacking_proc.mastery.remains>cast_time|trinket.stacking_proc.crit.react&trinket.stacking_proc.crit.remains>cast_time|trinket.stacking_proc.versatility.react&trinket.stacking_proc.versatility.remains>cast_time|trinket.stacking_proc.intellect.react&trinket.stacking_proc.intellect.remains>cast_time|trinket.stacking_proc.spell_power.react&trinket.stacking_proc.spell_power.remains>cast_time)
 actions+=/shadowburn
 actions+=/conflagrate,if=!talent.roaring_blaze.enabled&buff.backdraft.stack<3
-actions+=/immolate,if=(active_enemies<5|!talent.fire_and_brimstone.enabled)&(!talent.cataclysm.enabled|cooldown.cataclysm.remains>=action.immolate.cast_time*active_enemies)&!talent.roaring_blaze.enabled&remains<=duration*0.3
+actions+=/immolate,cycle_targets=1,if=(active_enemies<5|!talent.fire_and_brimstone.enabled)&(!talent.cataclysm.enabled|cooldown.cataclysm.remains>=action.immolate.cast_time*active_enemies)&!talent.roaring_blaze.enabled&remains<=duration*0.3
 actions+=/incinerate
 actions+=/life_tap
 ]])

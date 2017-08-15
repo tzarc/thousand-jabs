@@ -320,22 +320,23 @@ do
     local numConverter = 'N'
     local boolConverter = 'B'
 
-    local function render(result, primaryModifier)
+    local function render(result, actionName, primaryModifier, ...)
         if result.token == "primary" then
-            return (primaryModifier and primaryModifier(result.value) or result.value)
+            local res = (primaryModifier and primaryModifier(result.value, ...) or result.value)
+            return res:gsub('THIS_SPELL', actionName)
         elseif result.token == "prefix" then
             if tContains(convertPrefixArgToFunctionCall, result.operator) then
-                return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, actionName, primaryModifier, ...))
             elseif tContains(convertBoolean, result.operator) then
-                return ("(%s %s(%s))"):format(equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, primaryModifier))
+                return ("(%s %s(%s))"):format(equivalentLuaOperators[result.operator], boolConverter, render(result.rhs, actionName, primaryModifier, ...))
             else
-                return ("(%s %s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, primaryModifier))
+                return ("(%s %s)"):format(equivalentLuaOperators[result.operator], render(result.rhs, actionName, primaryModifier, ...))
             end
         elseif result.token == "invoke" then
-            return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
+            return ("%s(%s)"):format(equivalentLuaOperators[result.operator], render(result.inner, actionName, primaryModifier, ...))
         elseif result.token == "infix" then
-            local lhs = render(result.lhs, primaryModifier)
-            local rhs = render(result.rhs, primaryModifier)
+            local lhs = render(result.lhs, actionName, primaryModifier, ...)
+            local rhs = render(result.rhs, actionName, primaryModifier, ...)
             if tContains(convertNumbers, result.operator) then
                 if lhs:match("[^%d%.]") then lhs = ('%s(%s)'):format(numConverter, lhs) end
                 if rhs:match("[^%d%.]") then rhs = ('%s(%s)'):format(numConverter, rhs) end
@@ -347,20 +348,21 @@ do
         end
     end
 
-    function simcExpressionRenderer(str, primaryModifier)
+    function simcExpressionRenderer(str, actionName, primaryModifier, ...)
         local tokens = simcExpressionLexer(str)
         local parsed = simcExpressionParser(tokens)
         local keywords = CT()
         for _,v in pairs(tokens) do
-            if v.operator == "primary" and not tContains(keywords, v.value) then
-                if not v.value:match("^([%d%.]+)$") then -- skip numbers
-                    keywords[1+#keywords] = (primaryModifier and primaryModifier(v.value) or v.value)
+            if v.operator == "primary" and not v.value:match("^([%d%.]+)$") then -- only interested in non-numeric primary expressions
+                local x = (primaryModifier and primaryModifier(v.value, ...) or v.value):gsub('THIS_SPELL', actionName)
+                if not tContains(keywords, x) then -- skip duplicates
+                    keywords[1+#keywords] = x
                 end
             end
         end
         tsort(keywords)
         local t = CT()
-        t.expression, t.keywords = render(parsed, primaryModifier), keywords
+        t.expression, t.keywords = render(parsed, actionName, primaryModifier, ...), keywords
         RT(parsed)
         RT(tokens)
         return t
@@ -371,32 +373,29 @@ end
 -- Expression parser implementation
 ------------------------------------------------------------------------------------------------------------------------
 
-local simcAplParser
-do
-    function simcAplParser(lines, primaryModifier, tbl)
-        local allEntries = tbl or CT()
-        for _,l in pairs(lines) do
-            local list, action, params = l:match("^actions%.?([%a_]*)%+?=/?([^,]+),?(.*)")
-            if list and action then
-                list = list:len() == 0 and "default" or list
-                local t = CT()
-                t.line, t.action, t.params = l, action, CT()
-                local paramName, paramValue, p = params:match("([^=]+)=([^,]+),?(.*)")
-                while paramName do
-                    if paramName == "if" then paramName = "condition" end
-                    t.params[paramName] = paramValue
-                    if (paramName == "condition") or (paramName == "target_if") or (t.action == "variable" and paramName == "value") then
-                        t.params[paramName.."_converted"] = simcExpressionRenderer(paramValue, primaryModifier)
-                    end
-                    paramName, paramValue, p = p:match("([^=]+)=([^,]+),?(.*)")
+local function simcAplParser(lines, primaryModifier, ...)
+    local allEntries = CT()
+    for _,l in pairs(lines) do
+        local list, action, params = l:match("^actions%.?([%a_]*)%+?=/?([^,]+),?(.*)")
+        if list and action then
+            list = list:len() == 0 and "default" or list
+            local t = CT()
+            t.line, t.action, t.params = l, action, CT()
+            local paramName, paramValue, p = params:match("([^=]+)=([^,]+),?(.*)")
+            while paramName do
+                if paramName == "if" then paramName = "condition" end
+                t.params[paramName] = paramValue
+                if (paramName == "condition") or (paramName == "target_if") or (t.action == "variable" and paramName == "value") then
+                    t.params[paramName.."_converted"] = simcExpressionRenderer(paramValue, t.action, primaryModifier, ...)
                 end
-                allEntries[list] = allEntries[list] or CT()
-                local thisList = allEntries[list]
-                thisList[1+#thisList] = t
+                paramName, paramValue, p = p:match("([^=]+)=([^,]+),?(.*)")
             end
+            allEntries[list] = allEntries[list] or CT()
+            local thisList = allEntries[list]
+            thisList[1+#thisList] = t
         end
-        return allEntries
     end
+    return allEntries
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -404,16 +403,14 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 
 local function splitnewlines(str, tbl)
-    local t = tbl and wipe(tbl) or CT()
-    local function helper(line) tinsert(t, line) return "" end
+    local function helper(line) tinsert(tbl, line) return "" end
     helper(str:gsub("(.-)\r?\n", helper))
-    return t
 end
 
-function Engine:ExpressionParser(str, primaryModifier)
-    local tmp = CT()
-    local lines = splitnewlines(str, tmp)
-    local ret = simcAplParser(lines, primaryModifier)
-    RT(tmp)
+function Engine:ExpressionParser(str, primaryModifier, ...)
+    local lines = CT()
+    splitnewlines(str, lines)
+    local ret = simcAplParser(lines, primaryModifier, ...)
+    RT(lines)
     return ret
 end

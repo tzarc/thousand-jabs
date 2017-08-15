@@ -1,5 +1,3 @@
-local addonName = ...
-
 local GetSpecialization = GetSpecialization
 local LoadAddOn = LoadAddOn
 local select = select
@@ -10,7 +8,6 @@ local LibStub = LibStub
 
 LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
-local TJ = TJ
 local Config = Config
 
 local defaultConf = {

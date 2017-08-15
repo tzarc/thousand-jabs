@@ -1,5 +1,10 @@
--- Save args, ARGV[1] = className, ARGV[2] = classID, ARGV[3] = specID
+-- Save args, ARGV[1] = className, ARGV[2] = classID, ARGV[3] = specID, ARGV[4] = build ('7.2.5')
 ARGV=arg
+
+-- Profiling
+os.remove('RunTest.Profiling.out')
+local profiler = require('profiler')
+profiler.start('RunTest.Profiling.out')
 
 -- Base libs
 require('Test-Harness/Helpers')
@@ -21,12 +26,15 @@ local trim = trim
 local type = type
 local UnitClass = UnitClass
 
--- Sandbox
+local LSD = require('TJ5/Libs/LibSerpentDump')
 local LibSandbox = LibStub('LibSandbox-5.0')
+
+-- Sandbox
 LibSandbox:NewSandbox('TJ5')
 LibSandbox:UseSandbox('TJ5')
 
 -- Globals
+_G['Config'] = {}
 _G['MockData'] = {}
 _G['Engine'] = {}
 _G['TableCache'] = {}
@@ -67,16 +75,7 @@ do
     LibSandbox:AttachObservers('TJ5', globalReadObserver, globalWriteObserver)
 end
 
--- Engine libs
-require('TJ5/Engine/DefaultsTable')
-require('TJ5/Engine/Engine')
-require('TJ5/Engine/Profiles')
-require('TJ5/Engine/ExpressionParser')
-
-require('TJ5/Generated-EquippedItems')
-require('TJ5/Generated-ItemSets')
-
-do
+local function ValidateReadsWrites()
     local found = false
     for k,v in pairs(globalReadNames) do found = true break end
     if found then
@@ -92,10 +91,8 @@ do
         end
         print('')
     end
-end
 
-do
-    local found = false
+    found = false
     for k,v in pairs(globalWrites) do found = true break end
     if found then
         print('----------------------------------------------------------------------------------------------')
@@ -109,6 +106,34 @@ do
     end
 end
 
-print(GetTime())
-print(debugprofilestop())
-print(GetTime())
+-- Engine libs
+require('TJ5/Engine/DefaultsTable')
+require('TJ5/Engine/ExpressionParser')
+require('TJ5/Engine/Engine')
+require('TJ5/Engine/Profiles')
+require('TJ5/Engine/State')
+
+require('TJ5/Generated-EquippedItems')
+require('TJ5/Generated-ItemSets')
+
+require('TJ5/Class_Mage/Generated-Actions')
+require('TJ5/Class_Mage/Profile-Frost-725')
+
+Engine:ActivateProfile()
+
+local curProfile = Engine.Runtime.ActiveProfile
+local curState = curProfile.State
+local curEnv = curState.Env
+
+curState:ResetState()
+print(LSD(curProfile))
+
+Engine:DeactivateProfile()
+
+-- Do this last, so we know we need to clean stuff up
+ValidateReadsWrites()
+local totalAllocated, totalAcquired, totalReleased = TableCache:GetMetrics()
+print(("Allocated: %d, Acquired: %d, Released: %d, In-use: %d"):format(totalAllocated, totalAcquired, totalReleased, totalAcquired-totalReleased))
+
+profiler.stop()
+print('lua ~/.luarocks/lib/luarocks/rocks/luaprofiler/2.0.2-2/bin/summary.lua -v RunTest.Profiling.out > RunTest.Profiling.tsv')

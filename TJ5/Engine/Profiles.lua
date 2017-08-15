@@ -3,6 +3,7 @@ local GetSpecialization = GetSpecialization
 local GetSpecializationInfo = GetSpecializationInfo
 local UnitClass = UnitClass
 local select = select
+local pairs = pairs
 
 LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
@@ -10,7 +11,8 @@ LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 -- Keyword modification
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local function expressionPrimaryModifier(keyword, profileSubstitutions)
+local function expressionPrimaryModifier(keyword, profile)
+    local profileSubstitutions = profile.Data.ProfileSubstitutions
     if keyword:match('^([%d%.]+)$') then return keyword end
 
     local before = keyword
@@ -94,11 +96,11 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub('^equipped%.([%a_]+)', 'equipped["%1"]')
 
     -- Incoming damage
-    keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)*1000) end)
-    keyword = keyword:gsub('^incoming_damage_([%d]+)ms', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)) end)
+    keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return ('incoming_damage_over_%d'):format(tonumber(a)*1000) end)
+    keyword = keyword:gsub('^incoming_damage_([%d]+)ms', function(a) return ('incoming_damage_over_%d'):format(tonumber(a)) end)
 
     -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
-    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a,b,c) return Core:Format("%s.%s_%s", b, a, c:gsub("%.","_")) end)
+    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a,b,c) return ("%s.%s_%s"):format(b, a, c:gsub("%.","_")) end)
 
     -- Percentage consolidation
     keyword = keyword:gsub("_pct$", "_percent")
@@ -125,9 +127,52 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local function profilePrototype_Activate(self)
+    self.State = self.State or Engine:CreateState(self.Data.Actions)
+    self.State:UpdateDisplayName()
+    self.State:Reset()
+
+    if not self.Data.ParsedActions then
+        self:ParseActions()
+    end
 end
 
 local function profilePrototype_Deactivate(self)
+    self.State:Reset()
+    self:ResetParsedActions()
+end
+
+local function profilePrototype_AddActions(self, actions)
+    self.Data = self.Data or {}
+    self.Data.Actions = self.Data.Actions or {}
+
+    for action,data in pairs(actions) do
+        self.Data.Actions[data:Name()] = data
+    end
+end
+
+local function profilePrototype_ParseActions(self, aplID)
+    self:ResetParsedActions()
+    self.Data = self.Data or {}
+
+    -- If unspecified, use the default
+    if not aplID then aplID = self.DefaultActionProfile end
+
+    -- Get and validate the APL we're trying to use
+    local aplDefinition = Engine.Data.ActionListDefinitions[aplID]
+    if not aplDefinition or aplDefinition.ClassID ~= self.ClassID or aplDefinition.SpecID ~= self.SpecID then
+        error('Invalid APL.')
+    end
+
+    -- Run the expression parser over the APLs
+    self.Data.ParsedActions = Engine:ExpressionParser(aplDefinition.AplData, expressionPrimaryModifier, self)
+end
+
+local function profilePrototype_ResetParsedActions(self)
+    if self.Data and self.Data.ParsedActions then
+        local t = self.Data.ParsedActions
+        self.Data.ParsedActions = nil
+        RT(t)
+    end
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -136,18 +181,17 @@ end
 
 function Engine:RegisterClassProfile(config)
     -- config expects the following fields:
-    ---- config.name                 | string, name for the profile
-    ---- config.classID              | int, class ID from select(3, UnitClass('player'))
-    ---- config.specID               | int, spec ID from GetSpecialization()
-    ---- config.defaultActionProfile | string, maps to the name of the registered action profile list
-    ---- config.resources            | array of strings, resource types to make available during execution
+    ---- config.Name                 | string, name for the profile
+    ---- config.ClassID              | int, class ID from select(3, UnitClass('player'))
+    ---- config.SpecID               | int, spec ID from GetSpecialization()
+    ---- config.DefaultActionProfile | string, maps to the name of the registered action profile list
 
     -- config has the following optional fields:
-    ---- config.blacklisted          | array of strings, actions to ignore whenever executing APL
-    ---- config.settings             | key/value pairs, (key = name of setting entry), (value = true/false [checkbox]), or value = { default, minimum, maximum, step } [slider])
-    ---- config.remap                | key/value pairs, (key = name of APL action name), (value = TJ-defined action name) -- when APLs use different terminology for the same thing
+    ---- config.Blacklisted          | array of strings, actions to ignore whenever executing APL
+    ---- config.Settings             | key/value pairs, (key = name of setting entry), (value = true/false [checkbox]), or value = { default, minimum, maximum, step } [slider])
+    ---- config.Remap                | key/value pairs, (key = name of APL action name), (value = TJ-defined action name) -- when APLs use different terminology for the same thing
 
-    local profile = Engine:CreateDefaultsTable(config.name, {
+    local profile = Engine:CreateDefaultsTable(config.Name, {
         -- Fields
         ClassID = config.ClassID,
         SpecID = config.SpecID,
@@ -155,6 +199,9 @@ function Engine:RegisterClassProfile(config)
     })
     profile:SetFunction('Activate', profilePrototype_Activate)
     profile:SetFunction('Deactivate', profilePrototype_Deactivate)
+    profile:SetFunction('AddActions', profilePrototype_AddActions)
+    profile:SetFunction('ParseActions', profilePrototype_ParseActions)
+    profile:SetFunction('ResetParsedActions', profilePrototype_ResetParsedActions)
 
     self.Data = self.Data or {}
     self.Data.AllProfiles = self.Data.AllProfiles or {}
@@ -191,32 +238,32 @@ function Engine:DeactivateProfile()
     end
 end
 
-function Engine:RegisterActionProfileList(aplID, aplName, classID, specID, aplData)
+function Engine:RegisterActionList(aplID, aplName, classID, specID, aplData)
     self.Data = self.Data or {}
-    self.Data.ProfileDefinitions = self.Data.ProfileDefinitions or {}
-    self.Data.ProfileDefinitions[aplID] = {
+    self.Data.ActionListDefinitions = self.Data.ActionListDefinitions or {}
+    self.Data.ActionListDefinitions[aplID] = {
         AplName = aplName,
         ClassID = classID,
         SpecID = specID,
         AplData = aplData
     }
 
-    self.Data.AvailableProfiles = self.Data.AvailableProfiles or {}
-    self.Data.AvailableProfiles[classID] = self.Data.AvailableProfiles[classID] or {}
-    self.Data.AvailableProfiles[classID][specID] = self.Data.AvailableProfiles[classID][specID] or {}
-    local t = self.Data.AvailableProfiles[classID][specID]
+    self.Data.AvailableActionLists = self.Data.AvailableActionLists or {}
+    self.Data.AvailableActionLists[classID] = self.Data.AvailableActionLists[classID] or {}
+    self.Data.AvailableActionLists[classID][specID] = self.Data.AvailableActionLists[classID][specID] or {}
+    local t = self.Data.AvailableActionLists[classID][specID]
     t[1+#t] = aplID
     tsort(t)
 end
 
 local dummy = {}
-function Engine:GetAvailableProfilesForSpec(classID, specID)
+function Engine:GetAvailableActionListsForSpec(classID, specID)
     local classID = classID or select(3, UnitClass('player'))
     local specID = specID or GetSpecialization()
     local available = self.Data
-        and self.Data.AvailableProfiles
-        and self.Data.AvailableProfiles[classID]
-        and self.Data.AvailableProfiles[classID][specID]
+        and self.Data.AvailableActionLists
+        and self.Data.AvailableActionLists[classID]
+        and self.Data.AvailableActionLists[classID][specID]
         or wipe(dummy)
 
     local defaultProfile = self.Data

@@ -5,8 +5,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
 actions.precombat=flask
 actions.precombat+=/augmentation
-actions.precombat+=/food,if=!equipped.majordomos_dinner_bell
-actions.precombat+=/food,type=nightborne_delicacy_platter,if=equipped.majordomos_dinner_bell
+actions.precombat+=/food
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/metamorphosis,if=!(talent.demon_reborn.enabled&talent.demonic.enabled)
@@ -59,7 +58,7 @@ actions.normal+=/fury_of_the_illidari,if=(active_enemies>desired_targets)|(raid_
 actions.normal+=/blade_dance,if=variable.blade_dance&!cooldown.metamorphosis.ready
 actions.normal+=/throw_glaive,if=talent.bloodlet.enabled&spell_targets>=2&(!talent.master_of_the_glaive.enabled|!talent.momentum.enabled|buff.momentum.up)&(spell_targets>=3|raid_event.adds.in>recharge_time+cooldown)
 actions.normal+=/felblade,if=fury.deficit>=30+buff.prepared.up*8
-actions.normal+=/eye_beam,if=spell_targets.eye_beam_tick>desired_targets|(spell_targets.eye_beam_tick>=3&raid_event.adds.in>cooldown)|(talent.blind_fury.enabled&fury.deficit>=35)
+actions.normal+=/eye_beam,if=spell_targets.eye_beam_tick>desired_targets|(spell_targets.eye_beam_tick>=3&raid_event.adds.in>cooldown)|(talent.blind_fury.enabled&fury.deficit>=35)|set_bonus.tier21_2pc
 actions.normal+=/annihilation,if=(talent.demon_blades.enabled|!talent.momentum.enabled|buff.momentum.up|fury.deficit<30+buff.prepared.up*8|buff.metamorphosis.remains<5)&!variable.pooling_for_blade_dance
 actions.normal+=/throw_glaive,if=talent.bloodlet.enabled&(!talent.master_of_the_glaive.enabled|!talent.momentum.enabled|buff.momentum.up)&raid_event.adds.in>recharge_time+cooldown
 actions.normal+=/throw_glaive,if=!talent.bloodlet.enabled&buff.metamorphosis.down&spell_targets>=3

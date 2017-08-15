@@ -20,8 +20,36 @@ local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 local unpack = unpack
 
-
+local CBH = LibStub('CallbackHandler-1.0')
 LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
+
+------------------------------------------------------------------------------------------------------------------------
+-- Message notifications
+------------------------------------------------------------------------------------------------------------------------
+do
+    local callbackSystem = {}
+    local callbacks = CBH:New(callbackSystem, "RegisterCallback", "UnregisterCallback", "UnregisterAllCallbacks")
+
+    Engine.RegisterCallback = callbackSystem.RegisterCallback
+    Engine.UnregisterCallback = callbackSystem.UnregisterCallback
+    Engine.UnregisterAllCallbacks = callbackSystem.UnregisterAllCallbacks
+    Engine.Notify = callbacks.Fire
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Helpers
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+function Engine:MatchesBuild(tripletFrom, tripletTo)
+    tripletTo = tripletTo or tripletFrom
+    local f1,f2,f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
+    local f = tonumber(f1)*10000000000 + tonumber(f2)*100000000 + tonumber(f3)*1000000
+    local t1,t2,t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
+    local t = tonumber(t1)*10000000000 + tonumber(t2)*100000000 + tonumber(t3)*1000000
+    local c1,c2,c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
+    local c = tonumber(c1)*10000000000 + tonumber(c2)*100000000 + tonumber(c3)*1000000
+    return (f <= c and c <= t) and true or false
+end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Base Tables
@@ -46,28 +74,28 @@ Engine:RegisterFallbackTable('aura', {
 
 -- Simplify aura definitions
 Engine:RegisterFallbackTable('player_aura_mine', { AuraUnit = 'player', AuraMine = true }, 'aura')
-function Engine:RegisterPlayerMySpell(name, AuraID, ...)
+function Engine:CreateAuraMySpellOnPlayer(name, AuraID, ...)
     local args = {...}
     args[1+#args] = 'player_aura_mine'
     return Engine:RegisterFallbackTable(name, { AuraID = AuraID }, unpack(args))
 end
 
 Engine:RegisterFallbackTable('player_aura_any', { AuraUnit = 'player', AuraMine = false }, 'aura')
-function Engine:RegisterPlayerAnySpell(name, AuraID, ...)
+function Engine:CreateAuraAnybodySpellOnPlayer(name, AuraID, ...)
     local args = {...}
     args[1+#args] = 'player_aura_any'
     return Engine:RegisterFallbackTable(name, { AuraID = AuraID }, unpack(args))
 end
 
 Engine:RegisterFallbackTable('target_aura_mine', { AuraUnit = 'target', AuraMine = true }, 'aura')
-function Engine:RegisterTargetMySpell(name, AuraID, ...)
+function Engine:CreateAuraMySpellOnTarget(name, AuraID, ...)
     local args = {...}
     args[1+#args] = 'target_aura_mine'
     return Engine:RegisterFallbackTable(name, { AuraID = AuraID }, unpack(args))
 end
 
 Engine:RegisterFallbackTable('target_aura_any', { AuraUnit = 'target', AuraMine = false }, 'aura')
-function Engine:RegisterTargetAnySpell(name, AuraID, ...)
+function Engine:CreateAuraAnybodySpellOnTarget(name, AuraID, ...)
     local args = {...}
     args[1+#args] = 'target_aura_any'
     return Engine:RegisterFallbackTable(name, { AuraID = AuraID }, unpack(args))
@@ -86,17 +114,16 @@ Engine:RegisterFallbackTable('base_power', {
 
 -- Support for SPELL_POWER_???????? types
 Engine:RegisterFallbackTable('powertype_power', {
-    Sampled = function(power, env) return (UnitPower('player', power.PowerType) or 0) end,
+    Sampled = function(power, env) return (UnitPower(power.PowerUnitID, power.PowerType) or 0) end,
 
-    max = function(power, env) return (UnitPowerMax('player', power.PowerType) or 0) end,
+    max = function(power, env) return (UnitPowerMax(power.PowerUnitID, power.PowerType) or 0) end,
 }, 'base_power')
 
 -- Support for time-based regenerating power
 Engine:RegisterFallbackTable('regen_power', {
-    Regen = function(power, env) return GetPowerRegen() end,
-
-    curr = function(power, env) return power.Sampled + power.Gained - power.Spent + (power.Regen * env.PredictionOffset) end,
-    time_to_max = function(power, env) return (power.max - power.curr) / power.Regen end,
+    curr = function(power, env) return power.Sampled + power.Gained - power.Spent + (power.regen * env.PredictionOffset) end,
+    regen = function(power, env) return GetPowerRegen() end,
+    time_to_max = function(power, env) return (power.max - power.curr) / power.regen end,
 }, 'powertype_power')
 
 -- Support for aura-stack-based power
@@ -110,12 +137,12 @@ Engine:RegisterFallbackTable('autoattack_power', {
     GainedFromAutoattacks = function(power, env)
         if not power.CanGainFromAutoattacks then return 0 end
         local now = GetTime()
-        local mh_speed, oh_speed = UnitAttackSpeed('player')
+        local mh_speed, oh_speed = UnitAttackSpeed(power.PowerUnitID)
         oh_speed = oh_speed or 99999999
-        if TJ.lastMainhandAttack < now - mh_speed then TJ.lastMainhandAttack = now end
-        if TJ.lastOffhandAttack < now - oh_speed then TJ.lastOffhandAttack = now end
-        local mh_swings = mfloor((env.currentTime - TJ.lastMainhandAttack) / mh_speed)
-        local oh_swings = mfloor((env.currentTime - TJ.lastOffhandAttack) / oh_speed)
+        if Engine.lastMainhandAttack < now - mh_speed then Engine.lastMainhandAttack = now end
+        if Engine.lastOffhandAttack < now - oh_speed then Engine.lastOffhandAttack = now end
+        local mh_swings = mfloor((env.CurrentTime - Engine.lastMainhandAttack) / mh_speed)
+        local oh_swings = mfloor((env.CurrentTime - Engine.lastOffhandAttack) / oh_speed)
         return (mh_swings + oh_swings) * power.GainedPerSwing
     end,
 
@@ -129,22 +156,21 @@ end
 local function resourcePrototype__PerformSpend(power, amount)
 end
 
-function Engine:RegisterResourceHandler(name, powerType, ...)
-    local tbl = self:CreateStateEnvTable(name, {PowerType=powerType}, ...)
-    self.Data = self.Data or {}
-    self.Data.CommonActions = self.Data.CommonActions or {}
-    self.Data.CommonActions[name] = tbl
-
+function Engine:CreateResourceHandler(name, unitID, powerType, ...)
+    local tbl = self:CreateStateEnvTable(name, { PowerUnitID = unitID, PowerType = powerType }, ...)
     tbl:SetFunction('CanSpend', resourcePrototype__CanSpend)
     tbl:SetFunction('PerformSpend', resourcePrototype__PerformSpend)
+    return tbl
 end
 
-Engine:RegisterResourceHandler('mana', SPELL_POWER_MANA, 'regen_power')
-Engine:RegisterResourceHandler('energy', SPELL_POWER_ENERGY, 'regen_power')
-Engine:RegisterResourceHandler('soul_shards', SPELL_POWER_SOUL_SHARDS, 'powertype_power')
-Engine:RegisterResourceHandler('chi', SPELL_POWER_CHI, 'powertype_power')
-Engine:RegisterResourceHandler('rage', SPELL_POWER_RAGE, 'autoattack_power')
-Engine:RegisterResourceHandler('pain', SPELL_POWER_PAIN, 'powertype_power')
-Engine:RegisterResourceHandler('fury', SPELL_POWER_FURY, 'autoattack_power')
-Engine:RegisterResourceHandler('maelstrom', SPELL_POWER_MAELSTROM, 'powertype_power')
-Engine:RegisterResourceHandler('soul_fragments', SPELL_POWER_MAELSTROM, { AuraID = 203981 }, 'aura_stacks_power')
+--[[
+Engine:RegisterResourceHandler('mana', 'player', SPELL_POWER_MANA, 'regen_power')
+Engine:RegisterResourceHandler('energy', 'player', SPELL_POWER_ENERGY, 'regen_power')
+Engine:RegisterResourceHandler('soul_shards', 'player', SPELL_POWER_SOUL_SHARDS, 'powertype_power')
+Engine:RegisterResourceHandler('chi', 'player', SPELL_POWER_CHI, 'powertype_power')
+Engine:RegisterResourceHandler('rage', 'player', SPELL_POWER_RAGE, 'autoattack_power')
+Engine:RegisterResourceHandler('pain', 'player', SPELL_POWER_PAIN, 'powertype_power')
+Engine:RegisterResourceHandler('fury', 'player', SPELL_POWER_FURY, 'autoattack_power')
+Engine:RegisterResourceHandler('maelstrom', 'player', SPELL_POWER_MAELSTROM, 'powertype_power')
+Engine:RegisterResourceHandler('soul_fragments', 'player', SPELL_POWER_MAELSTROM, { AuraID = 203981 }, 'aura_stacks_power')
+]]

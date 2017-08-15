@@ -1,15 +1,19 @@
-local addonName = ...
+local SPELL_POWER_MANA = SPELL_POWER_MANA
 
 LibStub('LibSandbox-5.0'):UseSandbox('TJ5')
 
 local Frost = Engine:RegisterClassProfile({
-    classID = 8,
-    specID = 3,
-    defaultActionProfile = 'simc::mage::frost',
-    resource = { 'mana' }
+    Name = 'FrostMage',
+    ClassID = 8,
+    SpecID = 3,
+    DefaultActionProfile = 'simc::mage::frost',
 })
 
 Frost:AddActions({
-    fingers_of_frost = Engine:RegisterPlayerMySpell('fingers_of_frost', { 44544, 112965 }),
-    icy_veins = Engine:RegisterPlayerMySpell('icy_veins', 12472),
+    -- Base resources
+    Engine:CreateResourceHandler('mana', 'player', SPELL_POWER_MANA, 'regen_power'),
+
+    -- Buffs/debuffs
+    Engine:CreateAuraMySpellOnPlayer('fingers_of_frost', { 44544, 112965 }),
+    Engine:CreateAuraMySpellOnPlayer('icy_veins', 12472),
 })

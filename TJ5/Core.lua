@@ -240,17 +240,6 @@ function TJ:MergeTables(...)
     return target
 end
 
-function TJ:MatchesBuild(tripletFrom, tripletTo)
-    tripletTo = tripletTo or tripletFrom
-    local f1,f2,f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
-    local f = tonumber(f1)*10000000000 + tonumber(f2)*100000000 + tonumber(f3)*1000000
-    local t1,t2,t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
-    local t = tonumber(t1)*10000000000 + tonumber(t2)*100000000 + tonumber(t3)*1000000
-    local c1,c2,c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
-    local c = tonumber(c1)*10000000000 + tonumber(c2)*100000000 + tonumber(c3)*1000000
-    return (f <= c and c <= t) and true or false
-end
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Command handler
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

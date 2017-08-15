@@ -130,7 +130,7 @@ actions+=/call_action_list,name=cds
 actions+=/call_action_list,name=core
 actions+=/call_action_list,name=filler
 actions.asc=earthen_spike
-actions.asc+=/doom_winds,if=cooldown.windstrike.up
+actions.asc+=/doom_winds,if=cooldown.strike.up
 actions.asc+=/windstrike
 actions.buffs=rockbiter,if=talent.landslide.enabled&!buff.landslide.up
 actions.buffs+=/fury_of_air,if=!ticking&maelstrom>22
