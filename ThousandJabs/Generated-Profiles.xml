@@ -7,4 +7,11 @@
     <Script file="Class_Shaman/Profile-725.lua"/>
     <Script file="Class_Warlock/Profile-725.lua"/>
     <Script file="Class_Warrior/Profile-725.lua"/>
+    <Script file="Class_DeathKnight/Profile-730.lua"/>
+    <Script file="Class_DemonHunter/Profile-730.lua"/>
+    <Script file="Class_Mage/Profile-730.lua"/>
+    <Script file="Class_Monk/Profile-730.lua"/>
+    <Script file="Class_Shaman/Profile-730.lua"/>
+    <Script file="Class_Warlock/Profile-730.lua"/>
+    <Script file="Class_Warrior/Profile-730.lua"/>
 </Ui>
