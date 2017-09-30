@@ -21,9 +21,6 @@ Core:Safety()
 ------------------------------------------------------------------------------------------------------------------------
 
 local playerGUID, targetGUID, petGUID = nil, nil, nil
-local specialGUIDs = {}
-local summonedGuardians = {}
-local summonedGuardianExpiry = 5.0 -- Valid only for 5 seconds, if not seen
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -34,23 +31,6 @@ local function updateGUIDs()
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
     targetGUID = UnitExists('target') and UnitGUID('target') or nil
     petGUID = UnitExists('pet') and UnitGUID('pet') or nil
-
-    -- Set up the special GUIDs table so that we can use tContains
-    wipe(specialGUIDs)
-    if playerGUID then specialGUIDs[1+#specialGUIDs] = playerGUID end
-    if targetGUID then specialGUIDs[1+#specialGUIDs] = targetGUID end
-    if petGUID then specialGUIDs[1+#specialGUIDs] = petGUID end
-
-    -- Sort out any summoned guardians too
-    local now = GetTime()
-    for k,v in pairs(summonedGuardians) do
-        -- Clear out any summoned guardians if they've been around for too long
-        if (v + summonedGuardianExpiry) < now then
-            summonedGuardians[k] = nil
-        else
-            specialGUIDs[1+#specialGUIDs] = k
-        end
-    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -151,53 +131,58 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
     end
     self.lastHP = currHP
 
-    -- We only want to know if it's a spell, and it concerns either the player or the current target
-    if tContains(specialGUIDs, sourceGUID) or tContains(specialGUIDs, destGUID) and combatEvent:find('SPELL_') == 1 then
-        -- Check if this event concerns the player
-        if sourceGUID == playerGUID or destGUID == playerGUID then
-            local targetedGUID, targetedName
-            if sourceGUID ~= playerGUID then targetedGUID = sourceGUID; targetedName = sourceName end
-            if destGUID ~= playerGUID then targetedGUID = destGUID; targetedName = destName end
-            if targetedGUID and targetedGUID ~= "" then
-                self.seenTargets[targetedGUID] = now
+    -- Work out which of the source and dest units is attackable
+    local sourceAttackable = (bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0 or bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) ~= 0)
+    local destAttackable = (bit.band(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0 or bit.band(destFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) ~= 0)
+
+    -- Keep track of friendly and attackable units
+    local friendlyGUID, friendlyFlags, attackbleGUID, attackbleFlags
+
+    -- We only want to know if it's a spell/swing
+    if combatEvent:find('SPELL_') == 1 or combatEvent:find('SWING_') == 1 then
+        -- Only attempt to determine guid/flags if either the source or destination is attackable, and the other unit is the player/pet
+        if sourceAttackable or destAttackable then
+            if combatEvent == 'SPELL_SUMMON' and sourceGUID == playerGUID then
+            -- Do nothing - we just summoned a pet, for some reason they come up as neutral initially
+            elseif sourceAttackable and (destGUID == playerGUID or destGUID == petGUID) then
+                friendlyGUID = destGUID
+                friendlyFlags = destFlags
+                attackbleGUID = sourceGUID
+                attackbleFlags = sourceFlags
+            elseif destAttackable and (sourceGUID == playerGUID or sourceGUID == petGUID) then
+                friendlyGUID = sourceGUID
+                friendlyFlags = sourceFlags
+                attackbleGUID = destGUID
+                attackbleFlags = destFlags
             end
         end
 
-        -- Check if the player had a successful spellcast
-        if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-            local spellID = arg12
-            TJ:SpellCastSuccess(spellID, 'player')
-        end
+        -- If we found an attackable unit, then...
+        if attackbleGUID and attackbleFlags then
+            -- ...keep track of the last-seen time of the attackable unit
+            self.seenTargets[attackbleGUID] = now
 
-        -- If our pet cast something, then we count it as off-GCD as well
-        if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-            local spellID = arg12
-            TJ:SpellCastSuccess(spellID, 'pet')
-        end
+            -- Check if the player had a successful outgoing spellcast
+            if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+                local spellID = arg12
+                TJ:SpellCastSuccess(spellID, 'player')
+            end
 
-        -- If the player has summoned something friendly... like a guardian or secondary pet (Grim of Service, Dimensional Rift)
-        if sourceGUID == playerGUID and combatEvent == 'SPELL_SUMMON' and bit.band(sourceFlags, COMBATLOG_FILTER_ME) == COMBATLOG_FILTER_ME then
-            summonedGuardians[destGUID] = now
+            -- If our pet cast something, then we count it as off-GCD as well
+            if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+                local spellID = arg12
+                TJ:SpellCastSuccess(spellID, 'pet')
+            end
         end
     end
 
-    -- Update the last-seen time for guardian units
-    if summonedGuardians[sourceGUID] then
-        summonedGuardians[sourceGUID] = now
-        self.seenTargets[sourceGUID] = nil
+    -- Update the last-seen time if it's a target we already know about
+    if attackbleGUID and self.seenTargets[attackbleGUID] then
+        self.seenTargets[attackbleGUID] = now
     end
-    if summonedGuardians[destGUID] then
-        summonedGuardians[destGUID] = now
-        self.seenTargets[destGUID] = nil
-    end
-
-    -- Clear out the player/pet guid's
-    if playerGUID then self.seenTargets[playerGUID] = nil end
-    if petGUID then self.seenTargets[petGUID] = nil end
 
     -- Remove the seen target if it exists
     if combatEvent == 'UNIT_DIED' or combatEvent == 'UNIT_DESTROYED' then
-        summonedGuardians[destGUID] = nil
         self.seenTargets[destGUID] = nil
     end
 
