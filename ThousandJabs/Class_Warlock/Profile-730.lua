@@ -222,6 +222,11 @@ local destruction_talent_overrides = {
             return 3 * env.playerHasteMultiplier
         end
     },
+    grimoire_of_sacrifice = {
+        CanCast = function(spell, env)
+            return env.demonic_power.aura_down
+        end,
+    },
 }
 
 local destruction_legendaries = {
