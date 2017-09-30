@@ -22,6 +22,8 @@ Core:Safety()
 
 local playerGUID, targetGUID, petGUID = nil, nil, nil
 local specialGUIDs = {}
+local summonedGuardians = {}
+local summonedGuardianExpiry = 5.0 -- Valid only for 5 seconds, if not seen
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Helpers
@@ -38,6 +40,17 @@ local function updateGUIDs()
     if playerGUID then specialGUIDs[1+#specialGUIDs] = playerGUID end
     if targetGUID then specialGUIDs[1+#specialGUIDs] = targetGUID end
     if petGUID then specialGUIDs[1+#specialGUIDs] = petGUID end
+
+    -- Sort out any summoned guardians too
+    local now = GetTime()
+    for k,v in pairs(summonedGuardians) do
+        -- Clear out any summoned guardians if they've been around for too long
+        if (v + summonedGuardianExpiry) < now then
+            summonedGuardians[k] = nil
+        else
+            specialGUIDs[1+#specialGUIDs] = k
+        end
+    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -161,7 +174,26 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
             local spellID = arg12
             TJ:SpellCastSuccess(spellID, 'pet')
         end
+
+        -- If the player has summoned something friendly... like a guardian or secondary pet (Grim of Service, Dimensional Rift)
+        if sourceGUID == playerGUID and combatEvent == 'SPELL_SUMMON' and bit.band(sourceFlags, COMBATLOG_FILTER_ME) == COMBATLOG_FILTER_ME then
+            summonedGuardians[destGUID] = now
+        end
     end
+
+    -- Update the last-seen time for guardian units
+    if summonedGuardians[sourceGUID] then
+        summonedGuardians[sourceGUID] = now
+        self.seenTargets[sourceGUID] = nil
+    end
+    if summonedGuardians[destGUID] then
+        summonedGuardians[destGUID] = now
+        self.seenTargets[destGUID] = nil
+    end
+
+    -- Clear out the player/pet guid's
+    self.seenTargets[playerGUID] = nil
+    self.seenTargets[petGUID] = nil
 
     -- Remove the seen target if it exists
     if combatEvent == 'UNIT_DIED' or combatEvent == 'UNIT_DESTROYED' then

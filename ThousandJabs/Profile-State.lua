@@ -375,7 +375,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     end
 
     -- Set the initial parameters
-    env.ptr = Core:MatchesBuild('7.2.5')
+    env.ptr = Core:MatchesBuild('7.2.1', '9.0.0')
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
@@ -437,6 +437,11 @@ local function StateResetPrototype(self, targetCount, seenTargets)
         if hc then
             hc(env[v.ability], env, self, v.time)
         end
+    end
+
+    Core:Debug('Seen targets:')
+    for k,v in pairs(TJ.seenTargets) do
+        Core:Debug('  %s', k)
     end
 end
 
