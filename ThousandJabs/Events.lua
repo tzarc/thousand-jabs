@@ -192,11 +192,12 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
     end
 
     -- Clear out the player/pet guid's
-    self.seenTargets[playerGUID] = nil
-    self.seenTargets[petGUID] = nil
+    if playerGUID then self.seenTargets[playerGUID] = nil end
+    if petGUID then self.seenTargets[petGUID] = nil end
 
     -- Remove the seen target if it exists
     if combatEvent == 'UNIT_DIED' or combatEvent == 'UNIT_DESTROYED' then
+        summonedGuardians[destGUID] = nil
         self.seenTargets[destGUID] = nil
     end
 

@@ -122,7 +122,7 @@ sub update {
         die unless (($cloned == 1) || ($last_branch eq $requested_branch));
     }
 
-    common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
+    common::exec("cd '${simc::directory}/engine' && make -j5 OS=UNIX");
 }
 
 package generator;
