@@ -16,12 +16,16 @@ if [[ $(uname -s) == "Linux" ]] ; then
     if ! havecmd luarocks ; then
       $(nsudo) apt-get install luarocks
     fi
+    if ! havecmd parallel ; then
+      $(nsudo) apt-get install parallel
+    fi
     if ! havecmd perltidy ; then
       $(nsudo) apt-get install perltidy
     fi
   fi
 
   if ! havecmd luaformatter ; then
+    luarocks install --local checks
     luarocks install --local formatter
   fi
 
