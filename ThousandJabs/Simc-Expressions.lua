@@ -10,6 +10,7 @@ local setmetatable = setmetatable
 local tContains = tContains
 local tinsert = table.insert
 local tsort = table.sort
+local wipe = wipe
 
 local IsLoadedByWoW = _G.GetSpellInfo and true or false
 if IsLoadedByWoW then
@@ -40,6 +41,9 @@ else
     end
     ct = function() return {} end
     rt = function(tbl) end
+    wipe = function(tbl)
+        for k,v in pairs(tbl) do tbl[k] = nil end
+    end
 end
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -2,11 +2,16 @@ local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 
+local bit_and = bit.band
+local bit_or = bit.bor
+local COMBATLOG_OBJECT_AFFILIATION_OUTSIDER = COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
+local COMBATLOG_OBJECT_REACTION_FRIENDLY = COMBATLOG_OBJECT_REACTION_FRIENDLY
 local GetSpellCooldown = GetSpellCooldown
 local GetTime = GetTime
 local pairs = pairs
 local rawget = rawget
 local tContains = tContains
+local tostring = tostring
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
 local UnitExists = UnitExists
@@ -26,12 +31,82 @@ local playerGUID, targetGUID, petGUID = nil, nil, nil
 -- Helpers
 ------------------------------------------------------------------------------------------------------------------------
 
-local function updateGUIDs()
+local function UpdateGUIDs()
     -- Save the player/pet/target GUID
     playerGUID = UnitExists('player') and UnitGUID('player') or nil
     targetGUID = UnitExists('target') and UnitGUID('target') or nil
     petGUID = UnitExists('pet') and UnitGUID('pet') or nil
 end
+
+local UnitHostileActionEvents = {
+    RANGE_DAMAGE = true,
+    RANGE_MISSED = true,
+    SPELL_AURA_APPLIED = true,
+    SPELL_AURA_REFRESH = true,
+    SPELL_DAMAGE = true,
+    SPELL_MISSED = true,
+    --SPELL_PERIODIC_DAMAGE = true,
+    SWING_DAMAGE = true,
+    SWING_MISSED = true,
+}
+
+local UnitDespawnEvents = {
+    UNIT_DIED = true,
+    UNIT_DESTROYED = true,
+    UNIT_DISSIPATES = true,
+}
+
+local function UnitFlagsIsOutsider(flags)
+    return (bit_and(flags, COMBATLOG_OBJECT_AFFILIATION_OUTSIDER) ~= 0) and true or false
+end
+
+local function UnitFlagsIsFriendly(flags)
+    return (bit_and(flags, COMBATLOG_OBJECT_REACTION_FRIENDLY) ~= 0) and true or false
+end
+
+local function UnitFlagsIsUnfriendlyOutsider(flags)
+    return UnitFlagsIsOutsider(flags) and not UnitFlagsIsFriendly(flags) and true or false
+end
+
+local function HandleUnitHostileActionEvent(combatEvent, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
+    -- Returns:
+    --  wasFirstSeen, hostileGUID, hostileName, hostileFlags, friendlyGUID, friendlyName, friendlyFlags
+    if UnitFlagsIsUnfriendlyOutsider(sourceFlags) and UnitFlagsIsFriendly(destFlags) then
+        -- Source = outsider, Dest = friendly
+        local notYetSeen = (not TJ.seenTargets[sourceGUID]) and true or false
+        TJ.seenTargets[sourceGUID] = GetTime()
+        return notYetSeen, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags
+    elseif UnitFlagsIsFriendly(sourceFlags) and UnitFlagsIsUnfriendlyOutsider(destFlags) then
+        -- Source = friendly, Dest = outsider
+        local notYetSeen = (not TJ.seenTargets[destGUID]) and true or false
+        TJ.seenTargets[destGUID] = GetTime()
+        return notYetSeen, destGUID, destName, destFlags, sourceGUID, sourceName, sourceFlags
+    end
+    return false
+end
+
+local function HandleUnitDespawnEvent(combatEvent, destGUID, destName, destFlags)
+    -- Returns:
+    --  wasRemoved, hostileGUID, hostileName, hostileFlags
+    if TJ.seenTargets[destGUID] then
+        TJ.seenTargets[destGUID] = nil
+        return true, destGUID, destName, destFlags
+    end
+    return false
+end
+
+local lastSeenPurgeCheckTime = 1 -- second
+local lastSeenExpirationTime = 10 -- seconds
+local function HandleUnitExpiry()
+    local now = GetTime()
+    for k, v in pairs(TJ.seenTargets) do
+        if v + lastSeenExpirationTime < now then
+            TJ.seenTargets[k] = nil
+        end
+    end
+end
+
+TJ:SetupPeriodicCallback(lastSeenPurgeCheckTime, HandleUnitExpiry)
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Events
@@ -39,7 +114,7 @@ end
 
 function TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
     -- Update required info
-    updateGUIDs()
+    UpdateGUIDs()
     TJ:UpdateCastsOffGCD()
 
     -- Notify the profile
@@ -131,59 +206,42 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
     end
     self.lastHP = currHP
 
-    -- Work out which of the source and dest units is attackable
-    local sourceAttackable = (bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0 or bit.band(sourceFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) ~= 0)
-    local destAttackable = (bit.band(destFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) ~= 0 or bit.band(destFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) ~= 0)
+    -- If both source and destination are fully specified...
+    if sourceName and sourceGUID and sourceName ~= '' and destName and destGUID and destName ~= '' then
+        --Core:Print('%s -- source: %s (%s) [%08X], dest: %s (%s) [%08X]', combatEvent, sourceName, sourceGUID, sourceFlags, destName, destGUID, destFlags)
 
-    -- Keep track of friendly and attackable units
-    local friendlyGUID, friendlyFlags, attackbleGUID, attackbleFlags
+        -- Detect hostile and friendly units for the combat event
+        if UnitHostileActionEvents[combatEvent] then
+            local hostileAdded, hostileGUID, hostileName, hostileFlags = HandleUnitHostileActionEvent(combatEvent, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags)
+            -- if hostileAdded then
+            -- Core:Print('%s -- hostile added: %s (%s) [%X]', combatEvent, hostileName, hostileGUID, hostileFlags)
+            -- Core:Print('%s -- source: %s (%s) [%08X], dest: %s (%s) [%X]', combatEvent, sourceName, sourceGUID, sourceFlags, destName, destGUID, destFlags)
+            -- end
 
-    -- We only want to know if it's a spell/swing
-    if combatEvent:find('SPELL_') == 1 or combatEvent:find('SWING_') == 1 then
-        -- Only attempt to determine guid/flags if either the source or destination is attackable, and the other unit is the player/pet
-        if sourceAttackable or destAttackable then
-            if combatEvent == 'SPELL_SUMMON' and sourceGUID == playerGUID then
-            -- Do nothing - we just summoned a pet, for some reason they come up as neutral initially
-            elseif sourceAttackable and (destGUID == playerGUID or destGUID == petGUID) then
-                friendlyGUID = destGUID
-                friendlyFlags = destFlags
-                attackbleGUID = sourceGUID
-                attackbleFlags = sourceFlags
-            elseif destAttackable and (sourceGUID == playerGUID or sourceGUID == petGUID) then
-                friendlyGUID = sourceGUID
-                friendlyFlags = sourceFlags
-                attackbleGUID = destGUID
-                attackbleFlags = destFlags
+            -- If there was a hostile party involved, check if the player or the pet finished casting something
+            if hostileGUID and hostileName and hostileFlags then
+                -- Check if the player had a successful outgoing spellcast
+                if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+                    local spellID = arg12
+                    TJ:SpellCastSuccess(spellID, 'player')
+                end
+
+                -- If our pet cast something, then we count it as off-GCD as well
+                if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
+                    local spellID = arg12
+                    TJ:SpellCastSuccess(spellID, 'pet')
+                end
             end
         end
 
-        -- If we found an attackable unit, then...
-        if attackbleGUID and attackbleFlags then
-            -- ...keep track of the last-seen time of the attackable unit
-            self.seenTargets[attackbleGUID] = now
-
-            -- Check if the player had a successful outgoing spellcast
-            if sourceGUID == playerGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-                local spellID = arg12
-                TJ:SpellCastSuccess(spellID, 'player')
-            end
-
-            -- If our pet cast something, then we count it as off-GCD as well
-            if sourceGUID == petGUID and combatEvent == 'SPELL_CAST_SUCCESS' then
-                local spellID = arg12
-                TJ:SpellCastSuccess(spellID, 'pet')
-            end
+        -- Handle any unit despawn
+        if UnitDespawnEvents[combatEvent] then
+            local hostileRemoved, hostileGUID, hostileName, hostileFlags = HandleUnitDespawnEvent(combatEvent, destGUID, destName, destFlags)
+            -- if hostileRemoved then
+            -- Core:Print('%s -- hostile removed: %s (%s) [%X]', combatEvent, hostileName, hostileGUID, hostileFlags)
+            -- Core:Print('%s -- source: %s (%s) [%08X], dest: %s (%s) [%X]', combatEvent, sourceName, sourceGUID, sourceFlags, destName, destGUID, destFlags)
+            -- end
         end
-    end
-
-    -- Update the last-seen time if it's a target we already know about
-    if attackbleGUID and self.seenTargets[attackbleGUID] then
-        self.seenTargets[attackbleGUID] = now
-    end
-
-    -- Remove the seen target if it exists
-    if combatEvent == 'UNIT_DIED' or combatEvent == 'UNIT_DESTROYED' then
-        self.seenTargets[destGUID] = nil
     end
 
     -- Notify the profile

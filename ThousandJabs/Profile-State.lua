@@ -441,7 +441,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
 
     Core:Debug('Seen targets:')
     for k,v in pairs(TJ.seenTargets) do
-        Core:Debug('  %s', k)
+        Core:Debug('  %s - %5.3f - %f', k, GetTime() - v, v)
     end
 end
 

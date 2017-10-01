@@ -23,6 +23,7 @@ local LoadAddOn = LoadAddOn
 local mmax = math.max
 local NewTicker = C_Timer.NewTicker
 local pairs = pairs
+local pcall = pcall
 local select = select
 local tconcat = table.concat
 local tremove = table.remove
@@ -123,6 +124,23 @@ function TJ:RunFuncCoroutines()
     if exists then TJ:QueueUpdate() end
 end
 
+local periodicCallbacks = {}
+
+function TJ:SetupPeriodicCallback(interval, callback)
+    periodicCallbacks[callback] = { nextRun = 0, interval = interval }
+end
+
+function TJ:RunPeriodicCallbacks()
+    local now = GetTime()
+
+    for callback, callbackData in pairs(periodicCallbacks) do
+        if callbackData.nextRun < now then
+            callbackData.nextRun = now + callbackData.interval
+            pcall(callback)
+        end
+    end
+end
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Screen update
 ------------------------------------------------------------------------------------------------------------------------
@@ -132,7 +150,10 @@ function TJ:QueueUpdate()
 
     if not screenUpdateTimer then
         watchdogScreenUpdateExpiry = now + watchdogScreenUpdateTime
-        screenUpdateTimer = NewTicker(0.01, function() TJ:PerformUpdateTimerCheck() end)
+        screenUpdateTimer = NewTicker(0.01, function()
+            TJ:RunPeriodicCallbacks()
+            TJ:PerformUpdateTimerCheck()
+        end)
     end
 
     nextScreenUpdateExpiry = nextScreenUpdateExpiry or now + queuedScreenUpdateTime
