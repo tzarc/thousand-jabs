@@ -79,6 +79,8 @@ Core.Environment.common = {
         remains = 0,
         distance = 9999,
         raid_event_in = 180,
+        raid_event_distance = 9999,
+        raid_event_exists = false,
     },
     raid_movement = {
         remains = 0,
@@ -122,6 +124,9 @@ Core.Environment.common = {
         AuraMine = true,
         Icon = 'Interface\\Icons\\inv_potion_108',
         ConfigName = 'Potion'
+    },
+    cooldown = {
+        trinket_remains = false, -- TODO (do we actually care?)
     },
     proc = {
         trinket_any_react = false, -- TODO (do we actually care?)

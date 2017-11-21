@@ -210,6 +210,188 @@ TJ:RegisterPlayerClass({
 })
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Fury profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+local fury_abilities_exported = {
+    avatar = { SpellIDs = { 107574 }, TalentID = 19138, },
+    battle_cry = { SpellIDs = { 1719 }, },
+    berserker_rage = { SpellIDs = { 18499 }, },
+    bladestorm = { SpellIDs = { 46924 }, TalentID = 22405, },
+    bloodbath = { SpellIDs = { 12292 }, TalentID = 22395, },
+    bloodthirst = { SpellIDs = { 23881 }, },
+    bounding_stride = { TalentID = 22627, },
+    carnage = { TalentID = 19140, },
+    charge = { SpellIDs = { 100 }, },
+    commanding_shout = { SpellIDs = { 97462 }, },
+    double_time = { TalentID = 22409, },
+    dragon_roar = { SpellIDs = { 118000 }, TalentID = 16037, },
+    endless_rage = { TalentID = 22633, },
+    enrage = { SpellIDs = { 184361 }, },
+    enraged_regeneration = { SpellIDs = { 184364 }, },
+    execute = { SpellIDs = { 5308 }, },
+    frenzy = { TalentID = 22544, },
+    fresh_meat = { TalentID = 22491, },
+    frothing_berserker = { TalentID = 22391, },
+    furious_charge = { TalentID = 22635, },
+    furious_slash = { SpellIDs = { 100130 }, },
+    heroic_leap = { SpellIDs = { 6544 }, },
+    heroic_throw = { SpellIDs = { 57755 }, },
+    inner_rage = { TalentID = 22400, },
+    intimidating_shout = { SpellIDs = { 5246 }, },
+    massacre = { TalentID = 22384, },
+    mastery_unshackled_fury = { SpellIDs = { 76856 }, },
+    odyns_fury = { SpellIDs = { 205545 }, },
+    outburst = { TalentID = 22381, },
+    piercing_howl = { SpellIDs = { 12323 }, },
+    pummel = { SpellIDs = { 6552 }, },
+    raging_blow = { SpellIDs = { 85288 }, },
+    rampage = { SpellIDs = { 184367 }, },
+    reckless_abandon = { TalentID = 22402, },
+    shockwave = { SpellIDs = { 46968 }, TalentID = 22374, },
+    storm_bolt = { SpellIDs = { 107570 }, TalentID = 22372, },
+    taunt = { SpellIDs = { 355 }, },
+    titans_grip = { SpellIDs = { 46917 }, },
+    war_machine = { TalentID = 22632, },
+    warpaint = { TalentID = 22382, },
+    whirlwind = { SpellIDs = { 190411 }, },
+    wrecking_ball = { TalentID = 22379, },
+}
+
+local fury_base_overrides = {
+    pummel = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
+    charge = {
+        CanCast = function(spell,env)
+            return (12 <= env.movement.distance and env.movement.distance <= 25) -- tooltip says 8, but in-game range is 12... does tooltip mean range-to-max-melee?
+        end,
+        PerformCast = function(spell,env)
+            env.rage.gained = env.rage.gained + 20
+            env.movement.distance = 5 -- melee
+        end,
+    },
+    heroic_leap = {
+        CanCast = function(spell,env)
+            return not env.melee.in_range
+        end,
+        PerformCast = function(spell,env)
+            env.movement.distance = 5 -- melee
+        end,
+    },
+    execute = {
+        CanCast = function(spell,env)
+            return env.health.target_percent < 20
+        end,
+    },
+    battle_cry = {
+        AuraID = 1719,
+        AuraUnit = 'player',
+        AuraMine = true,
+        PerformCast = function(spell,env)
+            env.rage.gained = env.rage.gained + 100
+        end,
+    },
+    bloodthirst = {
+        PerformCast = function(spell,env)
+            env.rage.gained = env.rage.gained + 10
+        end,
+    },
+    raging_blow = {
+        PerformCast = function(spell,env)
+            env.rage.gained = env.rage.gained + 5
+        end,
+    },
+    enrage = {
+        AuraID = 184361,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    frothing_berserker = {
+        AuraID = 215571,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    meat_cleaver = {
+        AuraID = 85739,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    draught_of_souls = {
+        AuraID = 225141,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    massacre = {
+        AuraID = 206315,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+local fury_artifact = {
+    odyns_fury = {
+        AuraID = { 205546, 205547 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'odyns_fury',
+        AuraApplyLength = 4,
+    },
+    juggernaut = {
+        AuraID = { 201009 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        artifact_enabled = function(spell,env) return Config:GetSpec("juggernaut_selected") end,
+    },
+}
+
+local fury_legendaries = {
+    corrupted_blood_of_zakajz = {
+        AuraID = { 209566, 209567, 209569 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    fujiedas_fury = {
+        AuraID = { 207775 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stone_heart = {
+        AuraID = { 207767 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+TJ:RegisterPlayerClass({
+    name = 'Fury',
+    class_id = 1,
+    spec_id = 2,
+    default_action_profile = 'simc::warrior::fury',
+    resources = { 'rage' },
+    actions = {
+        fury_abilities_exported,
+        fury_base_overrides,
+        fury_legendaries,
+        fury_artifact,
+    },
+    config_checkboxes = {
+        juggernaut_selected = false,
+    },
+    blacklisted = {},
+})
+
+------------------------------------------------------------------------------------------------------------------------
 -- Protection profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
