@@ -14,9 +14,7 @@ Core:Safety()
 local defaultConf = {
     allowBetaProfiles = false,
     displayMode = "separate",
-    showCleave = true,
-    showAoE = true,
-    predictST = 4,
+    predictMain = 4,
     predictCleave = 2,
     predictAoE = 2,
     inCombatAlpha = 1,
@@ -55,6 +53,17 @@ function Config:Upgrade()
         Config:Set(nil, "scale")
         Config:Set(Config:Get("padding"), "geometry", "padding")
         Config:Set(nil, "padding")
+    end
+
+    if type(Config:Get("showAoE")) ~= "nil" then
+        local origCleave = Config:Get("showCleave")
+        local origAoE = Config:Get("showAoE")
+        Config:Set(nil, "showCleave")
+        Config:Set(nil, "showAoE")
+
+        Config:Set(4, "predictMain")
+        Config:Set(origCleave and 2 or 0, "predictCleave")
+        Config:Set(origAoE and 2 or 0, "predictAoE")
     end
 end
 

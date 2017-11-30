@@ -399,32 +399,45 @@ function TJ:ExecuteAllActionProfiles()
     end
 
     -- Calculate the single-target profiles
+    local count = Config:Get('predictMain')
     local action = self.state:PredictNextAction() or "wait"
     UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    action = self.state:PredictActionFollowing(action) or "wait"
-    UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+    if count >= 2 then
+        action = self.state:PredictActionFollowing(action) or "wait"
+        UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+    end
+    if count >= 3 then
+        action = self.state:PredictActionFollowing(action) or "wait"
+        UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+    end
+    if count >= 4 then
+        action = self.state:PredictActionFollowing(action) or "wait"
+        UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+    end
 
     if Config:Get('displayMode') ~= 'automatic' then
-        if Config:Get('showCleave') then
+        count = Config:Get('predictCleave')
+        if count >= 1 then
             Core:Debug("")
             Core:Debug("|cFFFFFFFFCleave|r")
             self.state:Reset(2, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+        end
+        if count >= 2 then
             action = self.state:PredictActionFollowing(action) or "wait"
             UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
         end
 
-        if Config:Get('showAoE') then
+        count = Config:Get('predictAoE')
+        if count >= 1 then
             Core:Debug("")
             Core:Debug("|cFFFFFFFFAoE|r")
             self.state:Reset(3, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.AOE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+        end
+        if count >= 2 then
             action = self.state:PredictActionFollowing(action) or "wait"
             UI:SetAction(UI.AOE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
         end

@@ -301,22 +301,37 @@ function UI:ReapplyLayout(skipMasque)
     if not actionFrames.backdrop then return end
 
     -- Resize buttons
+    local main = Config:Get('predictMain')
     for i=1,4 do
         local btn = actionFrames.actions[UI.SINGLE_TARGET][i]
-        if btn then btn:ClearAllPoints(); btn:Resize(); end
+        if btn then
+            btn:ClearAllPoints()
+            btn:Resize()
+            if main >= i then btn:Show() else btn:Hide() end
+        end
     end
+    local cleave = Config:Get('predictCleave')
+    local aoe = Config:Get('predictAoE')
     for i=1,2 do
         local btn = actionFrames.actions[UI.CLEAVE][i]
-        if btn then btn:ClearAllPoints(); btn:Resize(); end
+        if btn then
+            btn:ClearAllPoints()
+            btn:Resize()
+            if cleave >= i then btn:Show() else btn:Hide() end
+        end
         btn = actionFrames.actions[UI.AOE][i]
-        if btn then btn:ClearAllPoints(); btn:Resize(); end
+        if btn then
+            btn:ClearAllPoints()
+            btn:Resize()
+            if aoe >= i then btn:Show() else btn:Hide() end
+        end
     end
 
     -- Reapply the layout for the ST container
     actionFrames.containers[UI.SINGLE_TARGET]:ReapplyLayout()
 
     -- Reapply the layout for the cleave container
-    if Config:Get('showCleave') and Config:Get('displayMode') ~= 'automatic' then
+    if Config:Get('predictCleave') > 0 and Config:Get('displayMode') ~= 'automatic' then
         actionFrames.containers[UI.CLEAVE]:Show()
         actionFrames.containers[UI.CLEAVE]:ReapplyLayout()
     else
@@ -324,7 +339,7 @@ function UI:ReapplyLayout(skipMasque)
     end
 
     -- Reapply the layout for the AoE container
-    if Config:Get('showAoE') and Config:Get('displayMode') ~= 'automatic' then
+    if Config:Get('predictAoE') > 0 and Config:Get('displayMode') ~= 'automatic' then
         actionFrames.containers[UI.AOE]:Show()
         actionFrames.containers[UI.AOE]:ReapplyLayout()
     else

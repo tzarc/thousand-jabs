@@ -96,30 +96,52 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                             UI:UpdateAlpha()
                         end
                     },
-                    showCleave = {
-                        type = "toggle",
-                        order = 203,
-                        name = L["Show Cleave Abilties"],
-                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                    mainDisplayCount = {
+                        type = "range",
+                        order = 202,
+                        name = L["Main display count"],
+                        min = 1,
+                        max = 4,
+                        step = 1,
                         get = function(info)
-                            return Config:Get("showCleave") and true or false
+                            return Config:Get("predictMain") or 4
                         end,
                         set = function(info, val)
-                            Config:Set(val and true or false, "showCleave")
+                            Config:Set(val or 4, "predictMain")
                             UI:ReapplyLayout()
                             UI:UpdateAlpha()
                         end
                     },
-                    showAoE = {
-                        type = "toggle",
-                        order = 204,
-                        name = L["Show AoE Abilties"],
+                    cleaveDisplayCount = {
+                        type = "range",
+                        order = 203,
+                        name = L["Cleave display count"],
+                        min = 0,
+                        max = 2,
+                        step = 1,
                         hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
                         get = function(info)
-                            return Config:Get("showAoE") and true or false
+                            return Config:Get("predictCleave") or 2
                         end,
                         set = function(info, val)
-                            Config:Set(val and true or false, "showAoE")
+                            Config:Set(val or 2, "predictCleave")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                        end
+                    },
+                    AoEDisplayCount = {
+                        type = "range",
+                        order = 204,
+                        name = L["AoE display count"],
+                        min = 0,
+                        max = 2,
+                        step = 1,
+                        hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
+                        get = function(info)
+                            return Config:Get("predictAoE") or 2
+                        end,
+                        set = function(info, val)
+                            Config:Set(val or 2, "predictAoE")
                             UI:ReapplyLayout()
                             UI:UpdateAlpha()
                         end
