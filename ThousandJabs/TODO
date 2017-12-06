@@ -1,3 +1,4 @@
 Havoc.metamorphosis.aura_extended_by_demonic
 Merge across the updated spellbook iteration from support
 Deferred timing for resource applications - things like fracture take ~1sec to actually award fragments after casting
+summon_voidwalker bug?

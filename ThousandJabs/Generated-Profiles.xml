@@ -4,6 +4,7 @@
     <Script file="Class_DemonHunter/Profile-732.lua"/>
     <Script file="Class_Mage/Profile-732.lua"/>
     <Script file="Class_Monk/Profile-732.lua"/>
+    <Script file="Class_Paladin/Profile-732.lua"/>
     <Script file="Class_Shaman/Profile-732.lua"/>
     <Script file="Class_Warlock/Profile-732.lua"/>
     <Script file="Class_Warrior/Profile-732.lua"/>

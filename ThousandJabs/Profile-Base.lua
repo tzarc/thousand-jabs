@@ -96,6 +96,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub("^soul_shardss", "soul_shards")
     if keyword == "soul_shards" then keyword = "soul_shards.curr" end
     if keyword == "maelstrom" then keyword = "maelstrom.curr" end
+    if keyword == "holy_power" then keyword = "holy_power.curr" end
 
     -- Aura consolidation
     keyword = keyword:gsub("^target%.dot%.", "aura.")

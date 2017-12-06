@@ -402,17 +402,9 @@ function TJ:ExecuteAllActionProfiles()
     local count = Config:Get('predictMain')
     local action = self.state:PredictNextAction() or "wait"
     UI:SetAction(UI.SINGLE_TARGET, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    if count >= 2 then
+    for i=2,count do
         action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    end
-    if count >= 3 then
-        action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 3, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-    end
-    if count >= 4 then
-        action = self.state:PredictActionFollowing(action) or "wait"
-        UI:SetAction(UI.SINGLE_TARGET, 4, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+        UI:SetAction(UI.SINGLE_TARGET, i, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
     end
 
     if Config:Get('displayMode') ~= 'automatic' then
@@ -423,10 +415,10 @@ function TJ:ExecuteAllActionProfiles()
             self.state:Reset(2, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.CLEAVE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-        end
-        if count >= 2 then
-            action = self.state:PredictActionFollowing(action) or "wait"
-            UI:SetAction(UI.CLEAVE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+            for i=2,count do
+                action = self.state:PredictActionFollowing(action) or "wait"
+                UI:SetAction(UI.CLEAVE, i, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+            end
         end
 
         count = Config:Get('predictAoE')
@@ -436,10 +428,10 @@ function TJ:ExecuteAllActionProfiles()
             self.state:Reset(3, targetCount)
             action = self.state:PredictNextAction() or "wait"
             UI:SetAction(UI.AOE, 1, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
-        end
-        if count >= 2 then
-            action = self.state:PredictActionFollowing(action) or "wait"
-            UI:SetAction(UI.AOE, 2, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+            for i=2,count do
+                action = self.state:PredictActionFollowing(action) or "wait"
+                UI:SetAction(UI.AOE, i, self.state.env[action].Icon, self.state.env[action].OverlayTitle)
+            end
         end
     end
 end

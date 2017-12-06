@@ -15,6 +15,7 @@ local select = select
 local SPELL_POWER_CHI = SPELL_POWER_CHI
 local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
 local SPELL_POWER_FURY = SPELL_POWER_FURY
+local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
 local SPELL_POWER_MAELSTROM = SPELL_POWER_MAELSTROM
 local SPELL_POWER_MANA = SPELL_POWER_MANA
 local SPELL_POWER_PAIN = SPELL_POWER_PAIN
@@ -32,6 +33,7 @@ local UnitHealthMax = UnitHealthMax
 local UnitLevel = UnitLevel
 local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
+local UnitRace = UnitRace
 
 Core:Safety()
 
@@ -81,6 +83,9 @@ Core.Environment.common = {
         raid_event_in = 180,
         raid_event_distance = 9999,
         raid_event_exists = false,
+    },
+    race = {
+        blood_elf = function(self,state) return select(2, UnitRace('player')) == "BloodElf" and true or false end,
     },
     raid_movement = {
         remains = 0,
@@ -447,6 +452,16 @@ Core.Environment.resources = {
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
+    holy_power = {
+        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_HOLY_POWER) or 0) end,
+        gained = 0,
+        spent = 0,
+        curr = function(power,env) return power.sampled - power.spent + power.gained end,
+        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_HOLY_POWER) or 0) end,
+        deficit = function(power,env) return power.max - power.curr end,
+        can_spend = generic_can_spend,
+        perform_spend = generic_perform_spend,
+    },
 }
 
 -- Set up the per-time resources to match the base resources
@@ -464,3 +479,5 @@ Core.Environment.resources.pain_per_time = Core.Environment.resources.pain
 Core.Environment.resources.pain_per_time_no_base = Core.Environment.resources.pain
 Core.Environment.resources.maelstrom_per_time = Core.Environment.resources.maelstrom
 Core.Environment.resources.maelstrom_per_time_no_base = Core.Environment.resources.maelstrom
+Core.Environment.resources.holy_power_per_time = Core.Environment.resources.holy_power
+Core.Environment.resources.holy_power_per_time_no_base = Core.Environment.resources.holy_power

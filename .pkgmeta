@@ -23,7 +23,6 @@ ignore:
     - Support
     - Class_Druid
     - Class_Hunter
-    - Class_Paladin
     - Class_Priest
     - Class_Rogue
     - cleanup.sh

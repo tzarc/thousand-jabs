@@ -432,17 +432,19 @@ local function StateResetPrototype(self, targetCount, seenTargets)
 
     -- Call any historical cast functions for each ability
     for k,v in pairs(self.castQueue) do
-        Core:Debug("cast queue #%d -- %s @ %.3f", k, v.ability, v.time)
+        --Core:Debug("cast queue #%d -- %s @ %.3f", k, v.ability, v.time)
         local hc = self.profile.actions[v.ability] and rawget(self.profile.actions[v.ability], 'HistoricalCast') -- function(spell, env, state, originalCastTime)
         if hc then
             hc(env[v.ability], env, self, v.time)
         end
     end
 
+    --[[
     Core:Debug('Seen targets:')
     for k,v in pairs(TJ.seenTargets) do
-        Core:Debug('  %s - %5.3f - %f', k, GetTime() - v, v)
+    Core:Debug('  %s - %5.3f - %f', k, GetTime() - v, v)
     end
+    --]]
 end
 
 local function StateDeferPrototype(self, time, action, ...)

@@ -101,7 +101,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                         order = 202,
                         name = L["Main display count"],
                         min = 1,
-                        max = 4,
+                        max = 8,
                         step = 1,
                         get = function(info)
                             return Config:Get("predictMain") or 4
@@ -117,7 +117,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                         order = 203,
                         name = L["Cleave display count"],
                         min = 0,
-                        max = 2,
+                        max = 8,
                         step = 1,
                         hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
                         get = function(info)
@@ -134,7 +134,7 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                         order = 204,
                         name = L["AoE display count"],
                         min = 0,
-                        max = 2,
+                        max = 8,
                         step = 1,
                         hidden = function() return Config:Get("displayMode") == "automatic" and true or false end,
                         get = function(info)
@@ -144,6 +144,19 @@ AC:RegisterOptionsTable("Thousand Jabs", function()
                             Config:Set(val or 2, "predictAoE")
                             UI:ReapplyLayout()
                             UI:UpdateAlpha()
+                        end
+                    },
+                    resetDisplayCounts = {
+                        type = "execute",
+                        order = 205,
+                        name = L["Reset Display Counts"],
+                        func = function()
+                            Config:Set(nil, "predictMain")
+                            Config:Set(nil, "predictCleave")
+                            Config:Set(nil, "predictAoE")
+                            UI:ReapplyLayout()
+                            UI:UpdateAlpha()
+                            TJ:QueueProfileReload()
                         end
                     },
                     timingHeader = {

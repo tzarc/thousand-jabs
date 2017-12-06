@@ -302,7 +302,7 @@ function UI:ReapplyLayout(skipMasque)
 
     -- Resize buttons
     local main = Config:Get('predictMain')
-    for i=1,4 do
+    for i=1,8 do
         local btn = actionFrames.actions[UI.SINGLE_TARGET][i]
         if btn then
             btn:ClearAllPoints()
@@ -312,7 +312,7 @@ function UI:ReapplyLayout(skipMasque)
     end
     local cleave = Config:Get('predictCleave')
     local aoe = Config:Get('predictAoE')
-    for i=1,2 do
+    for i=1,8 do
         local btn = actionFrames.actions[UI.CLEAVE][i]
         if btn then
             btn:ClearAllPoints()
@@ -409,7 +409,7 @@ function UI:CreateFrames()
     actionFrames.cooldown:SetDrawBling(Config:Get("showSpellFlash"))
 
     -- Create the ST icons
-    for i=1,4 do
+    for i=1,8 do
         local parent = actionFrames.containers[UI.SINGLE_TARGET]
         local button = CreateSingleIconFrame(('ThousandJabs_ST%d'):format(i), parent, "singleTargetSize", i)
         actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
@@ -417,7 +417,7 @@ function UI:CreateFrames()
     end
 
     -- Create the cleave icons
-    for i=1,2 do
+    for i=1,8 do
         local parent = actionFrames.containers[UI.CLEAVE]
         local button = CreateSingleIconFrame(('ThousandJabs_Cleave%d'):format(i), parent, "cleaveSize", i)
         actionFrames.containers[UI.CLEAVE]:AddElement(button)
@@ -425,7 +425,7 @@ function UI:CreateFrames()
     end
 
     -- Create the AoE icons
-    for i=1,2 do
+    for i=1,8 do
         local parent = actionFrames.containers[UI.AOE]
         local button = CreateSingleIconFrame(('ThousandJabs_AoE%d'):format(i), parent, "aoeSize", i)
         actionFrames.containers[UI.AOE]:AddElement(button)
