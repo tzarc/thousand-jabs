@@ -419,10 +419,12 @@ sub validate_actions_files {
         my $bn = basename($file);
         my $dn = basename(dirname($file));
         my $tn = $file;
+        $tn =~ s/${cfg::script_dir}//g;
         $tn =~ s/\//_/g;
         print(" - ${dn}/${bn}\n");
         common::exec("{ cd '${cfg::script_dir}/ThousandJabs/' && lua Simc-Expressions.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
         unlink("${cfg::script_dir}/Temp/${tn}.errors") if -z "${cfg::script_dir}/Temp/${tn}.errors";
+
         if(-f "${cfg::script_dir}/Temp/${tn}.errors") {
             common::exec("cat '${cfg::script_dir}/Temp/${tn}.errors'");
             print("\n\nError parsing file '${file}'.");
@@ -456,12 +458,18 @@ sub create_equipped_mapping {
     for my $item (sort keys %items) {
         print(" - Item: '${item}'\n");
         my $urlitem = $item;
+        $urlitem =~ s/s_/_/g;    # wowdb can't deal with plurals
+        $urlitem =~ s/s$//g;     # wowdb can't deal with plurals
+
+        $urlitem =~ s/halfgiant/half_giant/g;    # sigh
+        $urlitem =~ s/qapla/qa_pla/g;            # sigh
+
         $urlitem =~ s/_/+/g;
-        my $url  = "http://ptr.wowhead.com/items/name:${urlitem}/slot:16:18:5:8:11:10:1:23:7:21:2:22:13:24:15:28:14:4:3:19:25:12:17:6:9";
+        my $url  = "http://www.wowdb.com/items?filter-search=${urlitem}&filter-slot=2359278";
         my $data = datacache::get_url($url);
 
         my %itemids;
-        while($data =~ m/_\[(\d+)\]/g) {
+        while($data =~ m/\/\/www.wowdb.com\/items\/(\d+)-/g) {
             $itemids{$1} = 1;
         }
 

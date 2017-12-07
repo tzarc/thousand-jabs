@@ -488,13 +488,17 @@ else
             for _, action in pairs(actions) do
                 if action.params.condition_converted then
                     local loadFunc = Core:Format("function() return (%s) and true or false end", action.params.condition_converted.expression)
-                    local retFunc = LoadFunctionString(loadFunc)
-                    local success, retVal = pcall(retFunc)
+                    if action.action ~= 'strict_sequence' then
+                        local retFunc = LoadFunctionString(loadFunc)
+                        local success, retVal = pcall(retFunc)
+                    end
                 end
                 if action.params.value_converted then
                     local loadFunc = Core:Format("function() return (%s) and true or false end", action.params.value_converted.expression)
-                    local retFunc = LoadFunctionString(loadFunc)
-                    local success, retVal = pcall(retFunc)
+                    if action.action ~= 'strict_sequence' then
+                        local retFunc = LoadFunctionString(loadFunc)
+                        local success, retVal = pcall(retFunc)
+                    end
                 end
             end
         end

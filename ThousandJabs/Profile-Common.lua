@@ -49,6 +49,7 @@ Core.Environment.globalBlacklist = {
     'flask',
     'augmentation',
     'snapshot_stats',
+    'strict_sequence', -- TODO...maybe.
 }
 
 Core.Environment.base = {
