@@ -526,6 +526,9 @@ local havoc_base_overrides = {
     anguish_of_the_deceiver = {
         artifact_enabled = function(spell,env) return Config:GetSpec("anguish_of_the_deceiver_selected") end,
     },
+    chaos_blades = {
+        aura_duration = 18,
+    },
 }
 
 local havoc_hooks = {

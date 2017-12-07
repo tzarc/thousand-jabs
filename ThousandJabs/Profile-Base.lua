@@ -257,6 +257,11 @@ local function addActionAuraFields(action)
             action.aura_ticking = function(spell, env) return spell.aura_up and true or false end
             action.aura_react = function(spell, env) return spell.aura_up and true or false end
             action.aura_stack = function(spell, env) return spell.auraCount or 0 end
+
+            action.spell_tick_time = 1.0 -- TBD
+            action.aura_tick_time_remains = 1.0 -- TBD
+
+            action.ticking = action.aura_ticking
         end
     end
 end

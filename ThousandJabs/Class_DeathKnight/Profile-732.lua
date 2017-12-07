@@ -402,6 +402,14 @@ local unholy_talents = {
 local unholy_artifact = {
     }
 
+local unholy_tier_bonuses = {
+    master_of_ghouls = { -- T20 2P
+        AuraID = { 242064, 246995 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
 local unholy_legendaries = {
     cold_heart = {
         AuraID = 235599,
@@ -417,10 +425,18 @@ local unholy_legendaries = {
 
 local unholy_hooks = {
     hooks = {
+        OnStateInit = function(env)
+            local dummy = env.rune.curr -- Need to invoke the rune sampling routine
+        end,
         OnPredictActionAtOffset = function(env)
-            -- [[
+            local dummy = env.rune.curr -- Need to invoke the rune sampling routine
+            --[[
             Core:Debug({
-                remaining = env.rune.all_remains,
+            all = env.rune.all_remains,
+            gained = env.rune.gained,
+            spent = env.rune.spent,
+            skipped = env.rune.skipped,
+            curr = env.rune.curr,
             })
             --]]
         end,
@@ -446,6 +462,7 @@ TJ:RegisterPlayerClass({
         unholy_non_ability_auras,
         unholy_talents,
         unholy_artifact,
+        unholy_tier_bonuses,
         unholy_legendaries,
         unholy_hooks
     },

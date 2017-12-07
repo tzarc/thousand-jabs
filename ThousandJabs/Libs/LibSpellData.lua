@@ -274,7 +274,7 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 do
-    local PowerTypes = { 'mana', 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power', 'rage', 'soul_shards', 'maelstrom' }
+    local PowerTypes = { 'mana', 'energy', 'chi', 'pain', 'fury', 'rune', 'runic_power', 'rage', 'soul_shards', 'maelstrom', 'holy_power' }
     local PowerSuffixes = { '_COST', '_COST_PER_TIME', '_COST_PER_TIME_NO_BASE', '_COST_PCT' }
     local DurationChecks = { 'days', 'hours', 'min', 'sec' }
     local placeholder = '____PLACEHOLDER____'

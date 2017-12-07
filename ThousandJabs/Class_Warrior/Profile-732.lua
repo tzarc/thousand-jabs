@@ -194,6 +194,14 @@ local arms_legendaries = {
     }
 }
 
+local arms_tier = {
+    weighted_blade = {
+        AuraID = { 251879, 253383 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
 TJ:RegisterPlayerClass({
     name = 'Arms',
     class_id = 1,
@@ -205,6 +213,7 @@ TJ:RegisterPlayerClass({
         arms_base_overrides,
         arms_legendaries,
         arms_artifact,
+        arms_tier,
     },
     blacklisted = {},
 })

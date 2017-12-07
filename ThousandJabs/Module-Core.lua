@@ -396,8 +396,8 @@ function Core:ShowLoggingFrame()
 
     self.log_frame:Show()
     self.log_frame.text:Show()
-    local f = LSM:Fetch("font", "mplus-1m-bold") or LSM:Fetch("font", "Anonymous Pro Bold (U)")
-    if f then self.log_frame.text:SetFont(f, 7, "OUTLINE") end
+    local f = LSM:Fetch("font", "iosevka-mono-nickb-bold") or LSM:Fetch("font", "Anonymous Pro Bold (U)")
+    if f then self.log_frame.text:SetFont(f, 6, "OUTLINE") end
 end
 
 function Core:HideLoggingFrame()

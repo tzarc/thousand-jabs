@@ -135,6 +135,10 @@ local frost_base_abilities = {
         CanCast = function(spell, env)
             return env.icicles.aura_stack == 5 and true or false
         end,
+        PerformCast = function(spell, env)
+            env.icicles.expirationTime = 0
+            env.icicles.aura_stack = 0
+        end,
     },
     brain_freeze = {
         AuraID = { 190447, 231584 },

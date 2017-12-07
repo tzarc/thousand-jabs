@@ -5,3 +5,4 @@ summon_voidwalker bug?
 DK:Unholy pestilent_pustules
 DK:Unholy auto_attack + blighted_rune_weapon -> festering_wound
 strict_sequence ?
+aura_tick_time_remains / spell_tick_time

@@ -253,6 +253,21 @@ local function generic_perform_spend(power, env, action, costType, costAmount)
     power.spent = power.spent + costAmount
 end
 
+local function rune_calc(currentTime, rune_tbl, gained, spent)
+    wipe(rune_tbl)
+    for i=1,6 do
+        local s, d = GetRuneCooldown(i)
+        s, d = (s or 0), (d or 0)
+        local remaining = mmax(0, s + d - currentTime)
+        rune_tbl[i] = remaining
+    end
+    tsort(rune_tbl)
+    for i=1,gained do rune_tbl[i] = 0 end -- Change to zero at the front to cater for gained runes
+    for i=1,spent do rune_tbl[i] = 15 end -- Change to 15 at the front to cater for spent runes
+    tsort(rune_tbl)
+    return rune_tbl
+end
+
 local function IsArmsWarrior()
     local classID, specID = select(3, UnitClass('player')), GetSpecialization()
     if classID == 1 and specID == 1 then
@@ -372,7 +387,7 @@ Core.Environment.resources = {
         AuraUnit = 'player',
         AuraMine = true,
         spent = 0,
-        gained= 0,
+        gained = 0,
         curr = function(power, env) return power.aura_stack - power.spent + power.gained end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
@@ -399,22 +414,7 @@ Core.Environment.resources = {
         all_remains = {},
         sample = function(power,env)
             power.all_remains = power.all_remains or {}
-            local all_remains = power.all_remains
-            for i=1,6 do
-                local s, d = GetRuneCooldown(i)
-                s, d = (s or 0), (d or 0)
-                local remaining = mmax(0, s + d - env.currentTime)
-                all_remains[i] = remaining
-            end
-            tsort(all_remains)
-
-            -- Change to zero at the front to allow for gained runes
-            for i=1,power.gained do all_remains[i] = 0 end
-            -- Change to 15 at the front to allow for spent runes
-            for i=1,power.spent do all_remains[i] = 15 end
-
-            tsort(all_remains)
-            return all_remains
+            return rune_calc(env.currentTime, power.all_remains, power.gained, power.spent)
         end,
 
         time_to_1 = function(power,env) return power.sample[1] end,
