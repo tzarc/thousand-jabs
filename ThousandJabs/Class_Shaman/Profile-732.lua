@@ -265,6 +265,14 @@ local elemental_legendary_overrides = {
     }
 }
 
+local elemental_tier = {
+    earthen_strength = { -- T21 2P
+        AuraID = { 251757, 252141 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
 local elemental_hooks = {
     hooks = {
         OnStateInit = function(env)
@@ -284,6 +292,7 @@ TJ:RegisterPlayerClass({
         elemental_talent_overrides,
         elemental_artifact_abilities,
         elemental_legendary_overrides,
+        elemental_tier,
         elemental_hooks,
     },
     config_checkboxes = {
