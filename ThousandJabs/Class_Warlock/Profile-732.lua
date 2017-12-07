@@ -320,7 +320,7 @@ TJ:RegisterPlayerClass({
         lord_of_flames_selected = false,
         conflagration_of_chaos_selected = false,
     },
-    conditional_substitutions = {
+    conditional_substitutions_post = {
         { "active_havoc", "havoc" },
         { "soul_shard", "soul_shards" },
         { "soul_shardss", "soul_shards" },

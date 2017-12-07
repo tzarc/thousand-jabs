@@ -407,16 +407,10 @@ Core.Environment.resources = {
             end
             tsort(all_remains)
 
-            -- Insert '0' at the front to allow for gained runes
-            for i=1,power.gained do
-                tinsert(all_remains, 1, 0)
-            end
-            while #all_remains > 6 do tremove(all_remains, 7) end
-
-            -- Replace the end of the array for any spent runes
-            for i=1,mmin(6,power.spent) do
-                all_remains[7-i] = mmax(15, all_remains[7-i])
-            end
+            -- Change to zero at the front to allow for gained runes
+            for i=1,power.gained do all_remains[i] = 0 end
+            -- Change to 15 at the front to allow for spent runes
+            for i=1,power.spent do all_remains[i] = 15 end
 
             tsort(all_remains)
             return all_remains

@@ -294,7 +294,7 @@ TJ:RegisterPlayerClass({
     config_checkboxes = {
         fiery_demise_selected = false,
     },
-    conditional_substitutions = {
+    conditional_substitutions_post = {
         { "in_flight", "infernal_strike.in_flight" },
         { "travel_time", "infernal_strike.travel_time" },
         { "sigil_placed", "any_flame_sigil.placed" },

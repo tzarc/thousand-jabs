@@ -188,25 +188,33 @@ local unholy_abilities_exported = {
 }
 
 local unholy_base_abilities = {
-    raise_dead = {
-        CanCast = function(spell, env)
-            return (not UnitExists("pet"))
-        end
+    antimagic_shell = {
+        AuraID = 48707,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'antimagic_shell',
+        AuraApplyLength = 10,
     },
-    outbreak = {
-        AuraID = 196782,
+    chains_of_ice = {
+        AuraID = 45524,
         AuraUnit = 'target',
         AuraMine = true,
-        AuraApplied = 'outbreak',
-        AuraApplyLength = 6,
-        PerformCast = function(spell, env)
-            env.virulent_plague.expirationTime = env.currentTime + 20
-        end
+        AuraApplied = 'chains_of_ice',
+        AuraApplyLength = 8,
+    },
+    dark_transformation = {
+        AuraID = 63560,
+        AuraMine = true,
+        AuraUnit = "pet",
+        AuraApplied = 'dark_transformation',
+        AuraApplyLength = 20,
     },
     death_and_decay = {
         AuraID = 188290,
         AuraUnit = 'player',
         AuraMine = true,
+        AuraApplied = 'death_and_decay',
+        AuraApplyLength = 10,
     },
     death_coil = {
         -- This needs to be manually specified - if there's a profile reload while sudden doom is up, then there's no cost associated with it
@@ -218,72 +226,25 @@ local unholy_base_abilities = {
             if env.sudden_doom.aura_up then
                 env.sudden_doom.expirationTime = 0
             end
+            if env.necrosis.talent_enabled then
+                env.necrosis.expirationTime = env.currentTime + 6
+            end
         end,
-    },
-    defile = {
-        AuraID = 218100,
-        AuraUnit = 'player',
-        AuraMine = true,
-    },
-    soul_reaper = {
-        AuraID = 130736,
-        AuraUnit = 'target',
-        AuraMine = true,
-    },
-    sudden_doom = {
-        AuraID = 81340,
-        AuraUnit = 'player',
-        AuraMine = true,
     },
     festering_strike = {
         AuraApplied = 'festering_wound',
         AuraApplyLength = 24,
         PerformCast = function(spell,env)
-            env.runic_power.gained = env.runic_power.gained + 6
             env.festering_wound.aura_stack = env.festering_wound.aura_stack + 2
         end,
     },
-    scourge_strike = {
-        PerformCast = function(spell,env)
-            if env.festering_wound.aura_stack > 0 then
-                env.festering_wound.aura_stack = env.festering_wound.aura_stack - 1
-            end
-            if env.festering_wound.aura_stack == 0 then
-                env.festering_wound.expirationTime = 0
-            end
-        end,
-    },
-    festering_wound = {
-        AuraID = 194310,
+    icebound_fortitude = {
+        AuraID = 48792,
+        AuraUnit = 'player',
         AuraMine = true,
-        AuraUnit = "target",
-    },
-    virulent_plague = {
-        AuraID = 191587,
-        AuraMine = true,
-        AuraUnit = "target",
-    },
-    dark_transformation = {
-        AuraID = 63560,
-        AuraMine = true,
-        AuraUnit = "pet",
-    },
-    necrosis = {
-        AuraID = 207346,
-        AuraMine = true,
-        AuraUnit = "player",
-    },
-    unholy_strength = {
-        AuraID = 53368,
-        AuraMine = true,
-        AuraUnit = "player",
-    },
-    pet = {
-        valkyr_battlemaiden_active = function(spell,env)
-            -- active for 15secs after last cast
-            local lastCast = env.lastCastTimes[207349]
-            return lastCast and (env.currentTime < (lastCast + 15)) and true or false
-        end,
+        AuraApplied = 'icebound_fortitude',
+        AuraApplyLength = 8,
+        spell_cast_time = 0.01, -- off GCD!
     },
     mind_freeze = {
         spell_cast_time = 0.01, -- off GCD!
@@ -297,30 +258,181 @@ local unholy_base_abilities = {
             end
         end,
     },
-    clawing_shadows = {
+    outbreak = {
+        AuraID = 196782,
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'outbreak',
+        AuraApplyLength = 6,
+        PerformCast = function(spell, env)
+            env.virulent_plague.expirationTime = env.currentTime + 20
+            if env.debilitating_infestation.talent_enabled then
+                env.debilitating_infestation.expirationTime = env.currentTime + 6
+            end
+        end
+    },
+    raise_dead = {
+        CanCast = function(spell, env)
+            if UnitExists('pet') then return false end
+            local lastCast = env.lastCastTimes[46584]
+            if not lastCast then return true end
+            if lastCast + 15 < env.currentTime then return true end
+            return false
+        end,
+    },
+    scourge_strike = {
         PerformCast = function(spell,env)
             if env.festering_wound.aura_stack > 0 then
                 env.festering_wound.aura_stack = env.festering_wound.aura_stack - 1
+                env.runic_power.gained = env.runic_power.gained + 3
             end
             if env.festering_wound.aura_stack == 0 then
                 env.festering_wound.expirationTime = 0
             end
         end,
     },
-    temptation = {
-        AuraID = 234143,
+    wraith_walk = {
+        AuraID = 212552,
+        AuraUnit = 'player',
         AuraMine = true,
-        AuraUnit = "player",
+        AuraApplied = 'wraith_walk',
+        AuraApplyLength = 3,
     },
 }
+
+local unholy_non_ability_auras = {
+    festering_wound = {
+        AuraID = 194310,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    sudden_doom = {
+        AuraID = 81340,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    unholy_frenzy = {
+        AuraID = 207290,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    unholy_strength = {
+        AuraID = 53365,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    virulent_plague = {
+        AuraID = 191587,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+}
+
+local unholy_talents = {
+    blighted_rune_weapon = {
+        AuraID = 194918,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'blighted_rune_weapon',
+        AuraApplyLength = 10,
+    },
+    clawing_shadows = {
+        PerformCast = function(spell,env)
+            if env.festering_wound.aura_stack > 0 then
+                env.festering_wound.aura_stack = env.festering_wound.aura_stack - 1
+                env.runic_power.gained = env.runic_power.gained + 3
+            end
+            if env.festering_wound.aura_stack == 0 then
+                env.festering_wound.expirationTime = 0
+            end
+            if env.soul_reaper.aura_up then
+                env.soul_reaper_self.expirationTime = env.currentTime + 6
+                env.soul_reaper_self.aura_stack = env.soul_reaper_self.aura_stack + 1
+            end
+        end,
+    },
+    corpse_shield = {
+        AuraID = 207319,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'corpse_shield',
+        AuraApplyLength = 10,
+    },
+    debilitating_infestation = {
+        AuraID = 208278,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    defile = {
+        AuraID = 218100,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'defile',
+        AuraApplyLength = 10,
+        PerformCast = function(spell, env)
+            env.death_and_decay.expirationTime = env.currentTime + 10
+        end
+    },
+    necrosis = {
+        AuraID = 216974,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    pet = {
+        valkyr_battlemaiden_active = function(spell,env) -- Dark Arbiter
+            -- active for 20secs after last cast
+            local lastCast = env.lastCastTimes[207349]
+            return lastCast and (env.currentTime < (lastCast + 20)) and true or false
+        end,
+    },
+    soul_reaper = { -- Self-buff, from when festering explodes, corresponding debuff on the target is below. Note that there are conditional substitutions present to be able to change the debuff name.
+        AuraID = 215711,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'soul_reaper_debuff',
+        AuraApplyLength = 10,
+    },
+    soul_reaper_debuff = { -- Target debuff
+        AuraID = 130736,
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+}
+
+local unholy_artifact = {
+    }
 
 local unholy_legendaries = {
     cold_heart = {
         AuraID = 235599,
+        AuraUnit = 'target',
         AuraMine = true,
-        AuraUnit = "player",
+    },
+    temptation = { -- Not a legendary, from Ring of Collapsing Futures from Kara
+        AuraID = 234143,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+local unholy_hooks = {
+    hooks = {
+        OnPredictActionAtOffset = function(env)
+            -- [[
+            Core:Debug({
+                remaining = env.rune.all_remains,
+            })
+            --]]
+        end,
+        perform_spend = function(spell, env, action, origCostType, origCostAmount)
+            return origCostType, origCostAmount
+        end,
+        can_spend = function(spell, env, action, origCostType, origCostAmount)
+            return origCostType, origCostAmount
+        end,
     }
 }
+
 
 TJ:RegisterPlayerClass({
     name = 'Unholy',
@@ -331,9 +443,18 @@ TJ:RegisterPlayerClass({
     actions = {
         unholy_abilities_exported,
         unholy_base_abilities,
+        unholy_non_ability_auras,
+        unholy_talents,
+        unholy_artifact,
         unholy_legendaries,
+        unholy_hooks
     },
     blacklisted = {},
+    conditional_substitutions_pre = {
+        { "^energy$", "pet_energy" }, -- Energy corresponds to pet, not player
+        { "^energy%.", "pet_energy." }, -- Energy corresponds to pet, not player
+        { "debuff.soul_reaper", "debuff.soul_reaper_debuff" }, -- Need to differentiate between the target debuff and the player buff
+    }
 })
 
 ------------------------------------------------------------------------------------------------------------------------

@@ -32,10 +32,17 @@ local wipe = wipe
 
 Core:Safety()
 
-local function expressionPrimaryModifier(keyword, profileSubstitutions)
+local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profileSubstitutionsPost)
     if keyword:match('^([%d%.]+)$') then return keyword end
 
     local before = keyword
+
+    -- Handle any profile-specific substitutions
+    if profileSubstitutionsPre then
+        for _,e in pairs(profileSubstitutionsPre) do
+            keyword = keyword:gsub(e[1], e[2])
+        end
+    end
 
     -- Selectors starting with a digit...
     keyword = keyword:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
@@ -134,8 +141,8 @@ local function expressionPrimaryModifier(keyword, profileSubstitutions)
     keyword = keyword:gsub('^([%a_]+)%.pet_([%a_]+)$', 'pet.%1_%2')
 
     -- Handle any profile-specific substitutions
-    if profileSubstitutions then
-        for _,e in pairs(profileSubstitutions) do
+    if profileSubstitutionsPost then
+        for _,e in pairs(profileSubstitutionsPost) do
             keyword = keyword:gsub(e[1], e[2])
         end
     end
@@ -345,7 +352,7 @@ function TJ:RegisterPlayerClass(config)
             -- Parse the action profile
             local function primaryModifier(str)
                 if converted[str] then return converted[str] end
-                local res = expressionPrimaryModifier(str, config.conditional_substitutions)
+                local res = expressionPrimaryModifier(str, config.conditional_substitutions_pre, config.conditional_substitutions_post)
                 converted[str] = res
                 return res
             end

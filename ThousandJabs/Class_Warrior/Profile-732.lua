@@ -613,5 +613,5 @@ TJ:RegisterPlayerClass({
     },
     blacklisted = {},
     config_checkboxes = {},
-    conditional_substitutions = {}
+    conditional_substitutions_post = {}
 })
