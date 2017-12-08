@@ -1,0 +1,5 @@
+﻿cmake_minimum_required(VERSION 3.5)
+set(CMAKE_CXX_STANDARD 14)
+project(datagenerator)
+add_executable(datagenerator main.cpp util.cpp simc_copied.cpp simc_data.cpp)
+target_include_directories(datagenerator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../simc/engine)

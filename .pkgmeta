@@ -19,12 +19,14 @@ move-folders:
     ThousandJabs/ThousandJabs_Config: ThousandJabs_Config
 
 ignore:
+    - .clang-format
     - .gitignore
     - Support
     - Class_Druid
     - Class_Hunter
     - Class_Priest
     - Class_Rogue
+    - build-datagenerator.sh
     - cleanup.sh
     - tag-release.sh
     - tag-alpha.sh

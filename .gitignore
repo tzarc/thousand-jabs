@@ -1,4 +1,5 @@
-/simc
-/Temp
-/datacache.sqlitedb
-RunTest.Profiling.out
+simc/
+Temp/
+datacache.sqlitedb
+Support/DataGenerator/build/
+./datagenerator
