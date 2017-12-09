@@ -5,7 +5,7 @@ SCRIPT_DIR="$(readlink -f "$(dirname "$THIS_SCRIPT")")"
 
 [[ ! -d "Support/DataGenerator/build" ]] && mkdir -p "Support/DataGenerator/build"
 
-find "Support/DataGenerator" -not -path 'Support/DataGenerator/build' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
+find "./Support/DataGenerator" -not -path './Support/DataGenerator/build/*' -and  -not -path './Support/DataGenerator/3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
 
 pushd "Support/DataGenerator/build" >/dev/null 2>&1 \
     && cmake .. \

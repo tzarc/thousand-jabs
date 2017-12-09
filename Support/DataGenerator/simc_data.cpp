@@ -15,6 +15,9 @@
 #include "simc_data.hpp"
 #include "util.hpp"
 
+//////////////////////////////////////////////////
+// common
+
 size_t simc_data::specIdx_from_specID(size_t specID)
 {
     return specdata::__idx_specs[specID] + 1;
@@ -48,7 +51,105 @@ std::vector<size_t> simc_data::slug_to_spellIDs(const std::string& slug)
     return ret;
 }
 
-std::map<std::string, std::set<size_t>> simc_data::get_itemsets(size_t classID)
+std::set<size_t> simc_data::specIDs_from_classID(size_t classID)
+{
+    auto mask = util::classMask_from_classID(classID);
+    std::set<size_t> specIDs;
+    for(const auto& t : __talent_data)
+        if(t._m_class == mask && t._spec != 0)
+            specIDs.insert(t._spec);
+    return specIDs;
+}
+
+size_t simc_data::classID_from_specID(size_t specID)
+{
+    for(const auto& t : __talent_data)
+        if(t._spec == specID)
+            return util::classID_from_classMask(t._m_class);
+    THROW_UTIL_EXCEPTION << "Could not find classID for specID=" << specID;
+}
+
+//////////////////////////////////////////////////
+// talents
+
+namespace
+{
+    const auto& talent_entry(size_t id)
+    {
+        for(const auto& e : __talent_data)
+        {
+            if(e._id == id)
+                return e;
+        }
+        THROW_UTIL_EXCEPTION << "Could not find talent info for talentID=" << id;
+    }
+} // namespace
+
+std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
+{
+    auto classID = simc_data::classID_from_specID(specID);
+    auto mask = util::classMask_from_classID(classID);
+    std::set<size_t> talentIDs;
+    for(const auto& t : __talent_data)
+    {
+        if(t._m_class == mask && t._spec == specID)
+            talentIDs.insert(t._id);
+    }
+    for(const auto& t : __talent_data)
+    {
+        if(t._m_class == mask && t._spec == 0)
+        {
+            auto it = util::find_if(talentIDs, [&](auto id) {
+                auto t2 = talent_info(id);
+                return t2.row == t._row + 1 && t2.col == t._col + 1;
+            });
+            if(it == std::end(talentIDs))
+                talentIDs.insert(t._id);
+        }
+    }
+    if(talentIDs.size() == 21)
+        return talentIDs;
+
+    THROW_UTIL_EXCEPTION << "Could not detect all 21 talents, " << simc_copied::specName_from_specID(specID) << " (specID=" << specID << ")";
+}
+
+simc_data::talent_t simc_data::talent_info(size_t talentID)
+{
+    auto e = talent_entry(talentID);
+    return simc_data::talent_t{.id = e._id, .name = e._name, .row = e._row + 1, .col = e._col + 1, .specID = e._spec};
+}
+
+simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
+{
+    talent_set_t talents;
+    for(const auto& talentID : talentIDs_from_specID(specID))
+        talents.insert(talent_info(talentID));
+    return talents;
+}
+
+//////////////////////////////////////////////////
+// items
+
+namespace
+{
+    const auto& item_entry(size_t id)
+    {
+        for(const auto& e : __item_data)
+        {
+            if(e.id == id)
+                return e;
+        }
+        THROW_UTIL_EXCEPTION << "Could not find item info for itemID=" << id;
+    }
+} // namespace
+
+simc_data::item_t simc_data::item_info(size_t itemID)
+{
+    auto e = item_entry(itemID);
+    return simc_data::item_t{.id = e.id, .name = e.name};
+}
+
+std::map<std::string, std::set<size_t>> simc_data::itemsets_from_classID(size_t classID)
 {
     std::map<std::string, std::set<size_t>> allData;
 
@@ -77,78 +178,21 @@ std::map<std::string, std::set<size_t>> simc_data::get_itemsets(size_t classID)
     return allData;
 }
 
-std::set<size_t> simc_data::specIDs_from_classID(size_t classID)
-{
-    auto mask = util::classMask_from_classID(classID);
-    std::set<size_t> specIDs;
-    for(const auto& t : __talent_data)
-        if(t._m_class == mask && t._spec != 0)
-            specIDs.insert(t._spec);
-    return specIDs;
-}
+//////////////////////////////////////////////////
+// artifacts
 
-size_t simc_data::classID_from_specID(size_t specID)
+namespace
 {
-    for(const auto& t : __talent_data)
-        if(t._spec == specID)
-            return util::classID_from_classMask(t._m_class);
-    return -1;
-}
-
-std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
-{
-    auto classID = simc_data::classID_from_specID(specID);
-    auto mask = util::classMask_from_classID(classID);
-    std::set<size_t> talentIDs;
-    for(const auto& t : __talent_data)
+    const auto& artifact_trait_entry(size_t id)
     {
-        if(t._m_class == mask && t._spec == specID)
-            talentIDs.insert(t._id);
-    }
-    for(const auto& t : __talent_data)
-    {
-        if(t._m_class == mask && t._spec == 0)
+        for(const auto& e : __artifact_power_data)
         {
-            auto it = util::find_if(talentIDs, [&](auto id) {
-                auto t2 = talent_info(id);
-                return t2.row == t._row + 1 && t2.col == t._col + 1;
-            });
-            if(it == std::end(talentIDs))
-                talentIDs.insert(t._id);
+            if(e.id == id)
+                return e;
         }
+        THROW_UTIL_EXCEPTION << "Could not find artifact trait info for traitID=" << id;
     }
-    if(talentIDs.size() != 21)
-        THROW_UTIL_EXCEPTION << "Could not detect all 21 talents, " << simc_copied::specName_from_specID(specID) << " (specID=" << specID << ")";
-    return talentIDs;
-}
-
-simc_data::talent_t simc_data::talent_info(size_t talentID)
-{
-    for(const auto& t : __talent_data)
-    {
-        if(t._id == talentID)
-            return simc_data::talent_t{.id = t._id, .name = t._name, .row = t._row + 1, .col = t._col + 1, .specID = t._spec};
-    }
-    return {};
-}
-
-simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
-{
-    talent_set_t talents;
-    for(const auto& talentID : talentIDs_from_specID(specID))
-        talents.insert(talent_info(talentID));
-    return talents;
-}
-
-simc_data::item_t simc_data::item_info(size_t itemID)
-{
-    for(const auto& t : __item_data)
-    {
-        if(t.id == itemID)
-            return simc_data::item_t{.id = t.id, .name = t.name};
-    }
-    return {};
-}
+} // namespace
 
 size_t simc_data::artifactID_from_specID(size_t specID)
 {
@@ -159,7 +203,7 @@ size_t simc_data::artifactID_from_specID(size_t specID)
             return t.id;
         }
     }
-    return -1;
+    THROW_UTIL_EXCEPTION << "Could not find artifactID for specID=" << specID;
 }
 
 std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
@@ -175,12 +219,8 @@ std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
 
 simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID)
 {
-    for(const auto& t : __artifact_power_data)
-    {
-        if(t.id == artifactTraitID)
-            return simc_data::artifact_trait_t{.id = t.id, .name = t.name, .max_rank = t.max_rank};
-    }
-    return {};
+    const auto& e = artifact_trait_entry(artifactTraitID);
+    return simc_data::artifact_trait_t{.id = e.id, .name = e.name, .max_rank = e.max_rank};
 }
 
 simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t artifactID)
@@ -189,4 +229,84 @@ simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t
     for(const auto& id : artifactTraitIDs_from_artifactID(artifactID))
         traits.insert(artifact_trait_info(id));
     return traits;
+}
+
+//////////////////////////////////////////////////
+// spells
+
+namespace
+{
+    const auto& spell_entry(size_t id)
+    {
+        for(const auto& e : __spell_data)
+        {
+            if(e._id == id)
+                return e;
+        }
+        THROW_UTIL_EXCEPTION << "Could not find spell info for spellID=" << id;
+    }
+} // namespace
+
+std::set<size_t> simc_data::player_spellIDs_from_specID(size_t specID)
+{
+    auto classID = simc_data::classID_from_specID(specID);
+    auto specIndex = simc_data::specIdx_from_specID(specID);
+    auto classSpellData = __class_ability_data[classID];
+    std::set<size_t> spellIDs;
+    std::set<size_t> toRemove;
+
+    // 0th entry is common
+    for(const auto& spellID : classSpellData[0])
+    {
+        if(spellID != 0)
+            spellIDs.insert(spellID);
+    }
+
+    // specIndex'th entry is the spec-specific spells
+    for(const auto& spellID : classSpellData[specIndex])
+    {
+        if(spellID != 0)
+            spellIDs.insert(spellID);
+    }
+
+    // Remove any spellIDs which were replaced by another
+    for(const auto& spellID : spellIDs)
+    {
+        const auto& e = spell_entry(spellID);
+        if(e._replace_spell_id != 0)
+            toRemove.insert(e._replace_spell_id);
+    }
+    for(const auto& spellID : toRemove)
+        spellIDs.erase(spellID);
+
+    // Need to go through the talents to check if they've got a corresponding spell
+    auto talentIDs = simc_data::talentIDs_from_specID(specID);
+    for(const auto& talentID : talentIDs)
+    {
+        const auto& e = talent_entry(talentID);
+        if(e._spell_id)
+            spellIDs.insert(e._spell_id);
+    }
+    return spellIDs;
+}
+
+simc_data::spell_t simc_data::spell_info(size_t spellID)
+{
+    const auto& e = spell_entry(spellID);
+    return simc_data::spell_t{.id = e._id,
+                              .name = e._name,
+                              .is_ability = e.flags(SPELL_ATTR_UNK4),
+                              .passive = e.flags(SPELL_ATTR_PASSIVE),
+                              .gcd = e._gcd / 1000.0f,
+                              .duration_affected_by_haste = e.flags(SPELL_ATTR_EX5_UNK13),
+                              .min_range = static_cast<float>(e._min_range),
+                              .max_range = static_cast<float>(e._max_range)};
+}
+
+simc_data::spell_set_t simc_data::player_spells_from_specID(size_t specID)
+{
+    spell_set_t spells;
+    for(const auto& id : player_spellIDs_from_specID(specID))
+        spells.insert(spell_info(id));
+    return spells;
 }

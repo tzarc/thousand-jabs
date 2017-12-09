@@ -33,7 +33,7 @@ if [[ $(uname -s) == "Linux" ]] ; then
 fi
 
 tjfind() {
-    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -and -not -path './Support/DataGenerator/build*' -print | sort
+    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -and -not -path './Support/DataGenerator/build*' -and -not -path './Support/DataGenerator/3rdparty*' -print | sort
 }
 
 # Remove executable flag on all files

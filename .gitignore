@@ -2,4 +2,4 @@ simc/
 Temp/
 datacache.sqlitedb
 Support/DataGenerator/build/
-./datagenerator
+datagenerator

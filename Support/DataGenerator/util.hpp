@@ -1,9 +1,12 @@
 #pragma once
 #include <algorithm>
 #include <cstdlib>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <fmt/format.h>
 
 namespace util
 {
@@ -16,6 +19,61 @@ namespace util
     std::string filename(const std::string& path);
 
     std::string make_slug(const std::string& name);
+
+    template <typename C, typename F>
+    std::string comma_separated(const C& collection, F&& f)
+    {
+        std::string out;
+        for(const auto& e : collection)
+            out += fmt::format("{0}, ", f(e));
+        if(out.length())
+            out.resize(out.size() - 2);
+        return out;
+    }
+
+    template <typename C>
+    std::string comma_separated(const C& collection)
+    {
+        std::string out;
+        for(const auto& e : collection)
+            out += fmt::format("{0}, ", e);
+        if(out.length())
+            out.resize(out.size() - 2);
+        return out;
+    }
+
+    template <typename C, typename T, typename F>
+    size_t member_max_slug_len(const C& collection, const F(T::*member))
+    {
+        int maxLen = 0;
+        for(const auto& c : collection)
+        {
+            auto l = make_slug(c.*member).length();
+            if(maxLen < l)
+                maxLen = l;
+        }
+        return maxLen;
+    }
+
+    template <typename CharType, typename CharTraitsType>
+    std::basic_string<CharType, CharTraitsType>& ltrim(std::basic_string<CharType, CharTraitsType>& s)
+    {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](CharType c) { return !std::isspace(c); }));
+        return s;
+    }
+
+    template <typename CharType, typename CharTraitsType>
+    std::basic_string<CharType, CharTraitsType>& rtrim(std::basic_string<CharType, CharTraitsType>& s)
+    {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](CharType c) { return !std::isspace(c); }).base(), s.end());
+        return s;
+    }
+
+    template <typename CharType, typename CharTraitsType>
+    std::basic_string<CharType, CharTraitsType>& trim(std::basic_string<CharType, CharTraitsType>& s)
+    {
+        return ltrim(rtrim(s));
+    }
 
     size_t classID_from_classMask(size_t mask);
     size_t classMask_from_classID(size_t classID);
