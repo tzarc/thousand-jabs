@@ -37,7 +37,8 @@ namespace simc_data
     {
         struct talent_comparator
         {
-            bool operator()(const talent_t& lhs, const talent_t& rhs) const { return strcmp(lhs.name, rhs.name) < 0; }
+            // bool operator()(const talent_t& lhs, const talent_t& rhs) const { return lhs.id < rhs.id; }
+            bool operator()(const talent_t& lhs, const talent_t& rhs) const { return std::tie(lhs.row, lhs.col) < std::tie(rhs.row, rhs.col); }
         };
     } // namespace detail
     using talent_set_t = std::set<talent_t, detail::talent_comparator>;
@@ -71,7 +72,7 @@ namespace simc_data
     {
         struct artifact_trait_comparator
         {
-            bool operator()(const artifact_trait_t& lhs, const artifact_trait_t& rhs) const { return strcmp(lhs.name, rhs.name) < 0; }
+            bool operator()(const artifact_trait_t& lhs, const artifact_trait_t& rhs) const { return lhs.id < rhs.id; }
         };
     } // namespace detail
     using artifact_trait_set_t = std::set<artifact_trait_t, detail::artifact_trait_comparator>;
@@ -79,6 +80,7 @@ namespace simc_data
 
     //////////////////////////////////////////////////
     // spells
+    std::set<size_t> spellIDs_from_classID(size_t classID);
     std::set<size_t> player_spellIDs_from_specID(size_t specID);
 
     struct spell_t
@@ -86,9 +88,15 @@ namespace simc_data
         size_t id;
         const char* name;
         bool is_ability;
-        bool passive;
+        bool is_passive;
+        bool is_hidden;
         float gcd;
-        bool duration_affected_by_haste;
+        float duration;
+        float cooldown;
+        size_t charges;
+        float charge_cooldown;
+        size_t max_stack;
+        size_t replaces_id;
         float min_range;
         float max_range;
     };
@@ -98,9 +106,10 @@ namespace simc_data
     {
         struct spell_comparator
         {
-            bool operator()(const spell_t& lhs, const spell_t& rhs) const { return strcmp(lhs.name, rhs.name) < 0; }
+            bool operator()(const spell_t& lhs, const spell_t& rhs) const { return lhs.id < rhs.id; }
         };
     } // namespace detail
     using spell_set_t = std::set<spell_t, detail::spell_comparator>;
+    spell_set_t spells_from_classID(size_t classID);
     spell_set_t player_spells_from_specID(size_t specID);
 } // namespace simc_data

@@ -247,6 +247,16 @@ namespace
     }
 } // namespace
 
+std::set<size_t> simc_data::spellIDs_from_classID(size_t classID)
+{
+    auto mask = util::classMask_from_classID(classID);
+    std::set<size_t> spellIDs;
+    for(const auto& e : __spell_data)
+        if((e._class_mask & mask) == mask)
+            spellIDs.insert(e._id);
+    return spellIDs;
+}
+
 std::set<size_t> simc_data::player_spellIDs_from_specID(size_t specID)
 {
     auto classID = simc_data::classID_from_specID(specID);
@@ -296,11 +306,25 @@ simc_data::spell_t simc_data::spell_info(size_t spellID)
     return simc_data::spell_t{.id = e._id,
                               .name = e._name,
                               .is_ability = e.flags(SPELL_ATTR_UNK4),
-                              .passive = e.flags(SPELL_ATTR_PASSIVE),
+                              .is_passive = e.flags(SPELL_ATTR_PASSIVE),
+                              .is_hidden = e.flags(SPELL_ATTR_HIDDEN),
                               .gcd = e._gcd / 1000.0f,
-                              .duration_affected_by_haste = e.flags(SPELL_ATTR_EX5_UNK13),
+                              .duration = e._duration / 1000.0f,
+                              .cooldown = e._cooldown / 1000.0f,
+                              .charges = e._charges,
+                              .charge_cooldown = e._charge_cooldown,
+                              .max_stack = e._max_stack,
+                              .replaces_id = e._replace_spell_id,
                               .min_range = static_cast<float>(e._min_range),
                               .max_range = static_cast<float>(e._max_range)};
+}
+
+simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
+{
+    spell_set_t spells;
+    for(const auto& id : spellIDs_from_classID(classID))
+        spells.insert(spell_info(id));
+    return spells;
 }
 
 simc_data::spell_set_t simc_data::player_spells_from_specID(size_t specID)

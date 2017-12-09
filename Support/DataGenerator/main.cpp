@@ -27,22 +27,28 @@ void export_itemsets(int classID)
 
 void export_spells_for_spec(int specID)
 {
-    auto spells = simc_data::player_spells_from_specID(specID);
-    int maxLen = util::member_max_slug_len(spells, &simc_data::spell_t::name);
+    auto classID = simc_data::classID_from_specID(specID);
+    auto spells = simc_data::spells_from_classID(classID);
+    std::vector<simc_data::spell_t> sortedSpells(std::begin(spells), std::end(spells));
+    std::sort(std::begin(sortedSpells), std::end(sortedSpells), [&](const auto& lhs, const auto& rhs) {
+        auto ls = util::make_slug(lhs.name);
+        auto rs = util::make_slug(rhs.name);
+        return std::tie(ls, lhs.id) < std::tie(rs, rhs.id);
+    });
+    int maxLen = util::member_max_slug_len(sortedSpells, &simc_data::spell_t::name);
     fmt::print("    spells = {{\n");
-    for(const auto& spell : spells)
+    for(const auto& spell : sortedSpells)
     {
-        if(spell.is_ability)
+        if(!spell.is_hidden
+           && (spell.gcd > 0 || spell.cooldown > 0 || spell.charges > 0 || spell.charge_cooldown > 0 || spell.duration > 0 || spell.max_stack > 0))
         {
             auto spell_slug = util::make_slug(spell.name);
-            auto spells_with_same_name = simc_data::slug_to_spellIDs(spell_slug);
-            fmt::print("        {0} = {{\n", spell_slug);
-            fmt::print("            spell_id = {{ {0} }},\n", util::comma_separated(spells_with_same_name));
-            fmt::print("            spell_cast_time = {0:4.2f},\n", std::max(0.01f, spell.gcd));
-            fmt::print("            duration_affected_by_haste = {0},\n", spell.duration_affected_by_haste);
-            fmt::print("            min_range = {0},\n", spell.min_range);
-            fmt::print("            max_range = {0},\n", spell.max_range);
-            fmt::print("        }},\n");
+            fmt::print("        {0:>32s} = {{", spell_slug);
+            fmt::print(" spell_id = {{ {0:6d} }},", spell.id);
+            fmt::print(" spell_cast_time = {0:4.2f},", std::max(0.01f, spell.gcd));
+            fmt::print(" min_range = {0},", spell.min_range);
+            fmt::print(" max_range = {0},", spell.max_range);
+            fmt::print(" }},\n");
         }
     }
     fmt::print("    }},\n");
