@@ -31,7 +31,7 @@ namespace simc_data
         size_t col;
         size_t specID;
     };
-    talent_t talent_info(size_t talentID, bool failIfNotFound = true);
+    talent_t talent_info(size_t talentID, bool throwIfNotFound = true);
 
     namespace detail
     {
@@ -51,7 +51,7 @@ namespace simc_data
         size_t id;
         const char* name;
     };
-    item_t item_info(size_t itemID, bool failIfNotFound = true);
+    item_t item_info(size_t itemID, bool throwIfNotFound = true);
 
     std::map<std::string, std::set<size_t>> itemsets_from_classID(size_t classID);
 
@@ -66,7 +66,7 @@ namespace simc_data
         const char* name;
         size_t max_rank;
     };
-    artifact_trait_t artifact_trait_info(size_t artifactTraitID, bool failIfNotFound = true);
+    artifact_trait_t artifact_trait_info(size_t artifactTraitID, bool throwIfNotFound = true);
 
     namespace detail
     {
@@ -81,7 +81,6 @@ namespace simc_data
     //////////////////////////////////////////////////
     // spells
     std::set<size_t> spellIDs_from_classID(size_t classID);
-    std::set<size_t> player_spellIDs_from_specID(size_t specID);
 
     struct spell_t
     {
@@ -101,7 +100,7 @@ namespace simc_data
         const char* description;
         const char* tooltip;
     };
-    spell_t spell_info(size_t spellID, bool failIfNotFound = true);
+    spell_t spell_info(size_t spellID, bool throwIfNotFound = true);
 
     namespace detail
     {
@@ -112,17 +111,23 @@ namespace simc_data
     } // namespace detail
     using spell_set_t = std::set<spell_t, detail::spell_comparator>;
     spell_set_t spells_from_classID(size_t classID);
-    spell_set_t player_abilities_from_classID(size_t classID);
 
     //////////////////////////////////////////////////
     // spell effects
     std::set<size_t> spellEffectIDs_from_spellID(size_t spellID);
 
+    enum spelleffect_type_t
+    {
+        apply_aura,
+        trigger_spell,
+        add_power,
+        add_combo_points,
+    };
     struct spelleffect_t
     {
         size_t id;
         size_t index;
-        size_t type;
+        spelleffect_type_t type;
         size_t subtype;
         size_t trigger_spell_id;
         int val1;
@@ -130,7 +135,7 @@ namespace simc_data
         int val3;
         int die_sides;
     };
-    spelleffect_t spelleffect_info(size_t spellEffectID, bool failIfNotFound = true);
+    spelleffect_t spelleffect_info(size_t spellEffectID, bool throwIfNotFound = true);
 
     namespace detail
     {

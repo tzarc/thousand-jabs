@@ -74,7 +74,7 @@ size_t simc_data::classID_from_specID(size_t specID)
 
 namespace
 {
-    const auto& talent_entry(size_t id, bool failIfNotFound)
+    const auto& talent_entry(size_t id, bool throwIfNotFound)
     {
         for(const auto& e : __talent_data)
         {
@@ -82,7 +82,7 @@ namespace
                 return e;
         }
         static std::decay_t<decltype(__talent_data[0])> dummy;
-        if(!failIfNotFound)
+        if(!throwIfNotFound)
             return dummy;
         THROW_UTIL_EXCEPTION << "Could not find talent info for talentID=" << id;
     }
@@ -116,9 +116,9 @@ std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
     THROW_UTIL_EXCEPTION << "Could not detect all 21 talents, " << simc_copied::specName_from_specID(specID) << " (specID=" << specID << ")";
 }
 
-simc_data::talent_t simc_data::talent_info(size_t talentID, bool failIfNotFound)
+simc_data::talent_t simc_data::talent_info(size_t talentID, bool throwIfNotFound)
 {
-    auto e = talent_entry(talentID, failIfNotFound);
+    auto e = talent_entry(talentID, throwIfNotFound);
     return simc_data::talent_t{.id = e._id, .name = e._name, .row = e._row + 1, .col = e._col + 1, .specID = e._spec};
 }
 
@@ -135,7 +135,7 @@ simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
 
 namespace
 {
-    const auto& item_entry(size_t id, bool failIfNotFound)
+    const auto& item_entry(size_t id, bool throwIfNotFound)
     {
         for(const auto& e : __item_data)
         {
@@ -143,15 +143,15 @@ namespace
                 return e;
         }
         static std::decay_t<decltype(__item_data[0])> dummy;
-        if(!failIfNotFound)
+        if(!throwIfNotFound)
             return dummy;
         THROW_UTIL_EXCEPTION << "Could not find item info for itemID=" << id;
     }
 } // namespace
 
-simc_data::item_t simc_data::item_info(size_t itemID, bool failIfNotFound)
+simc_data::item_t simc_data::item_info(size_t itemID, bool throwIfNotFound)
 {
-    auto e = item_entry(itemID, failIfNotFound);
+    auto e = item_entry(itemID, throwIfNotFound);
     return simc_data::item_t{.id = e.id, .name = e.name};
 }
 
@@ -189,7 +189,7 @@ std::map<std::string, std::set<size_t>> simc_data::itemsets_from_classID(size_t 
 
 namespace
 {
-    const auto& artifact_trait_entry(size_t id, bool failIfNotFound)
+    const auto& artifact_trait_entry(size_t id, bool throwIfNotFound)
     {
         for(const auto& e : __artifact_power_data)
         {
@@ -197,7 +197,7 @@ namespace
                 return e;
         }
         static std::decay_t<decltype(__artifact_power_data[0])> dummy;
-        if(!failIfNotFound)
+        if(!throwIfNotFound)
             return dummy;
         THROW_UTIL_EXCEPTION << "Could not find artifact trait info for traitID=" << id;
     }
@@ -226,9 +226,9 @@ std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
     return allTraitIDs;
 }
 
-simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID, bool failIfNotFound)
+simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID, bool throwIfNotFound)
 {
-    const auto& e = artifact_trait_entry(artifactTraitID, failIfNotFound);
+    const auto& e = artifact_trait_entry(artifactTraitID, throwIfNotFound);
     return simc_data::artifact_trait_t{.id = e.id, .name = e.name, .max_rank = e.max_rank};
 }
 
@@ -245,7 +245,7 @@ simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t
 
 namespace
 {
-    const auto& spell_entry(size_t id, bool failIfNotFound)
+    const auto& spell_entry(size_t id, bool throwIfNotFound)
     {
         for(const auto& e : __spell_data)
         {
@@ -253,7 +253,7 @@ namespace
                 return e;
         }
         static std::decay_t<decltype(__spell_data[0])> dummy;
-        if(!failIfNotFound)
+        if(!throwIfNotFound)
             return dummy;
         THROW_UTIL_EXCEPTION << "Could not find spell info for spellID=" << id;
     }
@@ -269,9 +269,9 @@ std::set<size_t> simc_data::spellIDs_from_classID(size_t classID)
     return spellIDs;
 }
 
-simc_data::spell_t simc_data::spell_info(size_t spellID, bool failIfNotFound)
+simc_data::spell_t simc_data::spell_info(size_t spellID, bool throwIfNotFound)
 {
-    const auto& e = spell_entry(spellID, failIfNotFound);
+    const auto& e = spell_entry(spellID, throwIfNotFound);
     return simc_data::spell_t{
       .id = e._id,
       .name = e._name,
@@ -299,22 +299,12 @@ simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
     return spells;
 }
 
-simc_data::spell_set_t simc_data::player_abilities_from_classID(size_t classID)
-{
-    simc_data::spell_set_t ret;
-    const auto spells = spells_from_classID(classID);
-    std::copy_if(std::begin(spells), std::end(spells), std::inserter(ret, std::end(ret)), [&](const auto& spell) {
-        return !spell.is_hidden; // && (spell.gcd > 0 || spell.cooldown > 0 || spell.charges > 0 || spell.charge_cooldown > 0);
-    });
-    return ret;
-}
-
 //////////////////////////////////////////////////
 // spell effects
 
 namespace
 {
-    const auto& spelleffect_entry(size_t id, bool failIfNotFound)
+    const auto& spelleffect_entry(size_t id, bool throwIfNotFound)
     {
         for(const auto& e : __spelleffect_data)
         {
@@ -322,7 +312,7 @@ namespace
                 return e;
         }
         static std::decay_t<decltype(__spelleffect_data[0])> dummy;
-        if(!failIfNotFound)
+        if(!throwIfNotFound)
             return dummy;
         THROW_UTIL_EXCEPTION << "Could not find spell effect info for spellID=" << id;
     }
@@ -337,12 +327,28 @@ std::set<size_t> simc_data::spellEffectIDs_from_spellID(size_t spellID)
     return ids;
 }
 
-simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool failIfNotFound)
+simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool throwIfNotFound)
 {
-    const auto& e = spelleffect_entry(spellEffectID, failIfNotFound);
+    const auto& e = spelleffect_entry(spellEffectID, throwIfNotFound);
+    simc_data::spelleffect_type_t type;
+    switch(e._type)
+    {
+        case effect_type_t::E_APPLY_AURA:
+            type = simc_data::spelleffect_type_t::apply_aura;
+            break;
+        case effect_type_t::E_TRIGGER_SPELL:
+            type = simc_data::spelleffect_type_t::trigger_spell;
+            break;
+        case effect_type_t::E_ENERGIZE:
+            type = simc_data::spelleffect_type_t::add_power;
+            break;
+        case effect_type_t::E_ADD_COMBO_POINTS:
+            type = simc_data::spelleffect_type_t::add_combo_points;
+            break;
+    }
     return spelleffect_t{.id = e._id,
                          .index = e._index,
-                         .type = e._type,
+                         .type = type,
                          .subtype = e._subtype,
                          .trigger_spell_id = e._trigger_spell_id,
                          .val1 = e._base_value,

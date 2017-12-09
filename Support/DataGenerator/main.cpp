@@ -13,12 +13,10 @@
 #include <string>
 #include <vector>
 
-const effect_type_t supportedEffectTypes[] = {effect_type_t::E_APPLY_AURA,
-                                              effect_type_t::E_TRIGGER_SPELL,
-                                              effect_type_t::E_TRIGGER_SPELL_2,
-                                              effect_type_t::E_ENERGIZE,
-                                              effect_type_t::E_ADD_COMBO_POINTS,
-                                              effect_type_t::E_ACTIVATE_RUNE};
+const simc_data::spelleffect_type_t supportedEffectTypes[] = {simc_data::spelleffect_type_t::apply_aura,
+                                                              simc_data::spelleffect_type_t::trigger_spell,
+                                                              simc_data::spelleffect_type_t::add_power,
+                                                              simc_data::spelleffect_type_t::add_combo_points};
 
 void export_itemsets(int classID)
 {
@@ -46,6 +44,8 @@ void export_spelleffects_for_spellID(size_t spellID)
             return false;
         return util::find_if(supportedEffectTypes, [&](const auto& f) { return f == e.type; }) != std::end(supportedEffectTypes);
     });
+
+#ifdef _DEBUG
     fmt::print("        spell_effects = {{\n");
     fmt::print("            --{:>2s}, {:>6s}, {:>6s}, {:>3s}, {:>3s}, {:>6s}, {:>6s}, {:>6s}, {:>4s}\n", "n", "id", "ts", "t", "st", "v1", "v2", "v3", "ds");
     for(const auto& e : effects)
@@ -60,40 +60,30 @@ void export_spelleffects_for_spellID(size_t spellID)
                    e.val3,
                    e.die_sides);
     fmt::print("        }},\n");
+#endif
+
     fmt::print("        actions = {{\n");
     if(info.duration > auraThreshold)
         fmt::print("            {{ 'apply_aura', '{}', {}, {:.1f} }},\n", util::make_slug(simc_data::spell_info(info.id).name), info.id, info.duration);
     for(const auto& e : supportedEffects)
     {
-        if(e.type == effect_type_t::E_APPLY_AURA)
+        auto i = simc_data::spell_info(e.trigger_spell_id, false);
+        switch(e.type)
         {
-            auto i = simc_data::spell_info(e.trigger_spell_id, false);
-            if(i.id && !i.is_hidden && i.duration > auraThreshold)
-                fmt::print("            {{ 'apply_aura', '{}', {}, {:.1f} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id, i.duration);
-        }
-        else if(e.type == effect_type_t::E_TRIGGER_SPELL)
-        {
-            auto i = simc_data::spell_info(e.trigger_spell_id, false);
-            if(i.id && !i.is_hidden && i.duration > auraThreshold)
-                fmt::print("            {{ 'trigger_spell', '{}', {} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id);
-        }
-        else if(e.type == effect_type_t::E_TRIGGER_SPELL_2)
-        {
-            auto i = simc_data::spell_info(e.trigger_spell_id, false);
-            if(i.id && !i.is_hidden && i.duration > auraThreshold)
-                fmt::print("            {{ 'trigger_spell_2', '{}', {} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id);
-        }
-        else if(e.type == effect_type_t::E_ENERGIZE)
-        {
-            fmt::print("            {{ 'energize', '{}', {} }},\n", util::str(static_cast<simc_copied::powertype_t>(e.val2)), e.val1);
-        }
-        else if(e.type == effect_type_t::E_ADD_COMBO_POINTS)
-        {
-            fmt::print("            {{ 'combo_points' }},\n");
-        }
-        else if(e.type == effect_type_t::E_ACTIVATE_RUNE)
-        {
-            fmt::print("            {{ 'activate_rune' }},\n");
+            case simc_data::spelleffect_type_t::apply_aura:
+                if(i.id && !i.is_hidden && i.duration > auraThreshold)
+                    fmt::print("            {{ 'apply_aura', '{}', {}, {:.1f} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id, i.duration);
+                break;
+            case simc_data::spelleffect_type_t::trigger_spell:
+                if(i.id && !i.is_hidden && i.duration > auraThreshold)
+                    fmt::print("            {{ 'trigger_spell', '{}', {} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id);
+                break;
+            case simc_data::spelleffect_type_t::add_power:
+                fmt::print("            {{ 'energize', '{}', {} }},\n", util::str(static_cast<simc_copied::powertype_t>(e.val2)), e.val1);
+                break;
+            case simc_data::spelleffect_type_t::add_combo_points:
+                fmt::print("            {{ 'combo_points' }},\n");
+                break;
         }
     }
     fmt::print("        }},\n");
@@ -155,6 +145,7 @@ void export_spells_for_classID(int classID)
                 fmt::print("        min_range = {:.0f},\n", spell.min_range);
             if(spell.max_range > 0)
                 fmt::print("        max_range = {:.0f},\n", spell.max_range);
+#ifdef _DEBUG
             if(spell.description)
             {
                 std::string q(spell.description);
@@ -171,6 +162,7 @@ void export_spells_for_classID(int classID)
                 q = std::regex_replace(q, std::regex("\'"), "\\'");
                 fmt::print("        tooltip = '{}',\n", q);
             }
+#endif
             export_spelleffects_for_spellID(spell.id);
             fmt::print("    }},\n");
         }
