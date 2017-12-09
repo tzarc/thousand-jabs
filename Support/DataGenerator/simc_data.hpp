@@ -37,7 +37,6 @@ namespace simc_data
     {
         struct talent_comparator
         {
-            // bool operator()(const talent_t& lhs, const talent_t& rhs) const { return lhs.id < rhs.id; }
             bool operator()(const talent_t& lhs, const talent_t& rhs) const { return std::tie(lhs.row, lhs.col, lhs.id) < std::tie(rhs.row, rhs.col, rhs.id); }
         };
     } // namespace detail
@@ -59,6 +58,8 @@ namespace simc_data
     // artifacts
     size_t artifactID_from_specID(size_t specID);
     std::set<size_t> artifactTraitIDs_from_artifactID(size_t artifactID);
+    std::pair<size_t, size_t> artifactItemIDs_from_artifactID(size_t artifactID);
+    std::pair<size_t, size_t> artifactItemIDs_from_specID(size_t specID);
 
     struct artifact_trait_t
     {
@@ -72,7 +73,12 @@ namespace simc_data
     {
         struct artifact_trait_comparator
         {
-            bool operator()(const artifact_trait_t& lhs, const artifact_trait_t& rhs) const { return lhs.id < rhs.id; }
+            bool operator()(const artifact_trait_t& lhs, const artifact_trait_t& rhs) const
+            {
+                auto ls = util::make_slug(lhs.name);
+                auto rs = util::make_slug(rhs.name);
+                return std::tie(ls, lhs.id) < std::tie(rs, rhs.id);
+            }
         };
     } // namespace detail
     using artifact_trait_set_t = std::set<artifact_trait_t, detail::artifact_trait_comparator>;
@@ -106,7 +112,12 @@ namespace simc_data
     {
         struct spell_comparator
         {
-            bool operator()(const spell_t& lhs, const spell_t& rhs) const { return lhs.id < rhs.id; }
+            bool operator()(const spell_t& lhs, const spell_t& rhs) const
+            {
+                auto ls = util::make_slug(lhs.name);
+                auto rs = util::make_slug(rhs.name);
+                return std::tie(ls, lhs.id) < std::tie(rs, rhs.id);
+            }
         };
     } // namespace detail
     using spell_set_t = std::set<spell_t, detail::spell_comparator>;

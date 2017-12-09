@@ -219,6 +219,11 @@ void export_data_for_class(size_t classID)
         fmt::print("    spec_id = {},\n", specID);
         fmt::print("    spec_index = {},\n", specIndex);
         fmt::print("    artifact_id = {},\n", artifactID);
+        auto artifactItemIDs = simc_data::artifactItemIDs_from_specID(specID);
+        if(artifactItemIDs.first && artifactItemIDs.second)
+            fmt::print("    artifact_itemids = {{ {}, {} }},\n", artifactItemIDs.first, artifactItemIDs.second);
+        else if(artifactItemIDs.first)
+            fmt::print("    artifact_itemids = {{ {} }},\n", artifactItemIDs.first);
         fmt::print("}}\n\n");
         export_talents_for_spec(classID, specID);
         export_artifact_traits_for_artifact(classID, specID, artifactID);

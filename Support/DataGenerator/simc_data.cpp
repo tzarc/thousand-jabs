@@ -215,6 +215,64 @@ size_t simc_data::artifactID_from_specID(size_t specID)
     THROW_UTIL_EXCEPTION << "Could not find artifactID for specID=" << specID;
 }
 
+std::pair<size_t, size_t> simc_data::artifactItemIDs_from_artifactID(size_t artifactID)
+{
+    // Gotta go through the normal items table to check for the artifact ID
+    size_t mainHand = 0;
+    for(const auto& e : __item_data)
+    {
+        if(e.id_artifact == artifactID)
+        {
+            mainHand = e.id;
+            break;
+        }
+    }
+    if(mainHand == 0)
+        THROW_UTIL_EXCEPTION << "Could not find artifact itemID for artifactID=" << artifactID;
+
+    // Handle the dual-wield scenario
+    for(const auto& e : __item_child_equipment_data)
+    {
+        if(e.id_item == mainHand || e.id_child == mainHand)
+        {
+            auto i1 = item_entry(e.id_item, true);
+            auto i2 = item_entry(e.id_child, true);
+
+            // Dual-wield
+            if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_WEAPONOFFHAND)
+                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+            if(i1.inventory_type == INVTYPE_WEAPONOFFHAND && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
+                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+
+            // Dual-wield 2H'er: Fury/TG
+            if(i1.inventory_type == INVTYPE_2HWEAPON && i2.inventory_type == INVTYPE_2HWEAPON)
+                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+
+            // Weapon + Shield
+            if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_SHIELD)
+                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+            if(i1.inventory_type == INVTYPE_SHIELD && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
+                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+
+            // Weapon + Offhand
+            if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_HOLDABLE)
+                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+            if(i1.inventory_type == INVTYPE_HOLDABLE && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
+                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+
+            THROW_UTIL_EXCEPTION << "Unknown item slots for artifactID=" << artifactID << " -- (i1=" << i1.inventory_type << ", i2=" << i2.inventory_type
+                                 << ")";
+        }
+    }
+
+    return std::pair<size_t, size_t>(mainHand, 0);
+}
+
+std::pair<size_t, size_t> simc_data::artifactItemIDs_from_specID(size_t specID)
+{
+    return artifactItemIDs_from_artifactID(artifactID_from_specID(specID));
+}
+
 std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
 {
     std::set<size_t> allTraitIDs;

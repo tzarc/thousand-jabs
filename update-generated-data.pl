@@ -250,7 +250,7 @@ my $customprofiles = {
 
 my $profiles = {
     DeathKnight => {
-        blood  => { mainhand => 128402, artifact => "15:0:0:0:0:289:1" },
+        blood  => { mainhand => 128402, artifact => "15:0:0:0:0:289:1" },                       # <artifactID>:0:0:0:0:<traitId1>:<traitRank1>:....<traitIdN>:<traitRankN>
         frost  => { mainhand => 128292, offhand  => 128293, artifact => "12:0:0:0:0:122:1" },
         unholy => { mainhand => 128403, artifact => "16:0:0:0:0:149:1" },
     },

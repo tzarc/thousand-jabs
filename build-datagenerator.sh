@@ -3,12 +3,18 @@
 THIS_SCRIPT="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(readlink -f "$(dirname "$THIS_SCRIPT")")"
 
+if [[ ! -d "${SCRIPT_DIR}/simc/.git" ]] ; then
+    git clone --depth=1 https://github.com/simulationcraft/simc "${SCRIPT_DIR}/simc"
+else
+    { pushd "${SCRIPT_DIR}/simc" && git reset --hard origin/HEAD && git checkout -- . && git pull --depth=1 && popd ; }
+fi
+
 [[ ! -d "Support/DataGenerator/build" ]] && mkdir -p "Support/DataGenerator/build"
 
 find "./Support/DataGenerator" -not -path './Support/DataGenerator/build/*' -and  -not -path './Support/DataGenerator/3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
 
 pushd "Support/DataGenerator/build" >/dev/null 2>&1 \
-    && cmake -DCMAKE_BUILD_TYPE=Release .. \
+    && cmake -DCMAKE_BUILD_TYPE=Debug .. \
     && make -j5 \
     && cp datagenerator "${SCRIPT_DIR}" \
     && chmod +x "${SCRIPT_DIR}/datagenerator" \
