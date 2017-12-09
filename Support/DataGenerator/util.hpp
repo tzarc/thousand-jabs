@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 
 namespace util
 {
@@ -16,7 +17,15 @@ namespace util
         return std::find_if(std::begin(coll), std::end(coll), func);
     }
 
+    template <typename T, typename F>
+    auto count_if(T&& coll, F&& func)
+    {
+        return std::count_if(std::begin(coll), std::end(coll), func);
+    }
+
     std::string filename(const std::string& path);
+
+    std::string camel_to_underscores(const std::string& input);
 
     std::string make_slug(const std::string& name);
 

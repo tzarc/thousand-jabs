@@ -74,13 +74,16 @@ size_t simc_data::classID_from_specID(size_t specID)
 
 namespace
 {
-    const auto& talent_entry(size_t id)
+    const auto& talent_entry(size_t id, bool failIfNotFound)
     {
         for(const auto& e : __talent_data)
         {
             if(e._id == id)
                 return e;
         }
+        static std::decay_t<decltype(__talent_data[0])> dummy;
+        if(!failIfNotFound)
+            return dummy;
         THROW_UTIL_EXCEPTION << "Could not find talent info for talentID=" << id;
     }
 } // namespace
@@ -113,9 +116,9 @@ std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
     THROW_UTIL_EXCEPTION << "Could not detect all 21 talents, " << simc_copied::specName_from_specID(specID) << " (specID=" << specID << ")";
 }
 
-simc_data::talent_t simc_data::talent_info(size_t talentID)
+simc_data::talent_t simc_data::talent_info(size_t talentID, bool failIfNotFound)
 {
-    auto e = talent_entry(talentID);
+    auto e = talent_entry(talentID, failIfNotFound);
     return simc_data::talent_t{.id = e._id, .name = e._name, .row = e._row + 1, .col = e._col + 1, .specID = e._spec};
 }
 
@@ -132,20 +135,23 @@ simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
 
 namespace
 {
-    const auto& item_entry(size_t id)
+    const auto& item_entry(size_t id, bool failIfNotFound)
     {
         for(const auto& e : __item_data)
         {
             if(e.id == id)
                 return e;
         }
+        static std::decay_t<decltype(__item_data[0])> dummy;
+        if(!failIfNotFound)
+            return dummy;
         THROW_UTIL_EXCEPTION << "Could not find item info for itemID=" << id;
     }
 } // namespace
 
-simc_data::item_t simc_data::item_info(size_t itemID)
+simc_data::item_t simc_data::item_info(size_t itemID, bool failIfNotFound)
 {
-    auto e = item_entry(itemID);
+    auto e = item_entry(itemID, failIfNotFound);
     return simc_data::item_t{.id = e.id, .name = e.name};
 }
 
@@ -183,13 +189,16 @@ std::map<std::string, std::set<size_t>> simc_data::itemsets_from_classID(size_t 
 
 namespace
 {
-    const auto& artifact_trait_entry(size_t id)
+    const auto& artifact_trait_entry(size_t id, bool failIfNotFound)
     {
         for(const auto& e : __artifact_power_data)
         {
             if(e.id == id)
                 return e;
         }
+        static std::decay_t<decltype(__artifact_power_data[0])> dummy;
+        if(!failIfNotFound)
+            return dummy;
         THROW_UTIL_EXCEPTION << "Could not find artifact trait info for traitID=" << id;
     }
 } // namespace
@@ -217,9 +226,9 @@ std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
     return allTraitIDs;
 }
 
-simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID)
+simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID, bool failIfNotFound)
 {
-    const auto& e = artifact_trait_entry(artifactTraitID);
+    const auto& e = artifact_trait_entry(artifactTraitID, failIfNotFound);
     return simc_data::artifact_trait_t{.id = e.id, .name = e.name, .max_rank = e.max_rank};
 }
 
@@ -236,13 +245,16 @@ simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t
 
 namespace
 {
-    const auto& spell_entry(size_t id)
+    const auto& spell_entry(size_t id, bool failIfNotFound)
     {
         for(const auto& e : __spell_data)
         {
             if(e._id == id)
                 return e;
         }
+        static std::decay_t<decltype(__spell_data[0])> dummy;
+        if(!failIfNotFound)
+            return dummy;
         THROW_UTIL_EXCEPTION << "Could not find spell info for spellID=" << id;
     }
 } // namespace
@@ -257,66 +269,26 @@ std::set<size_t> simc_data::spellIDs_from_classID(size_t classID)
     return spellIDs;
 }
 
-std::set<size_t> simc_data::player_spellIDs_from_specID(size_t specID)
+simc_data::spell_t simc_data::spell_info(size_t spellID, bool failIfNotFound)
 {
-    auto classID = simc_data::classID_from_specID(specID);
-    auto specIndex = simc_data::specIdx_from_specID(specID);
-    auto classSpellData = __class_ability_data[classID];
-    std::set<size_t> spellIDs;
-    std::set<size_t> toRemove;
-
-    // 0th entry is common
-    for(const auto& spellID : classSpellData[0])
-    {
-        if(spellID != 0)
-            spellIDs.insert(spellID);
-    }
-
-    // specIndex'th entry is the spec-specific spells
-    for(const auto& spellID : classSpellData[specIndex])
-    {
-        if(spellID != 0)
-            spellIDs.insert(spellID);
-    }
-
-    // Remove any spellIDs which were replaced by another
-    for(const auto& spellID : spellIDs)
-    {
-        const auto& e = spell_entry(spellID);
-        if(e._replace_spell_id != 0)
-            toRemove.insert(e._replace_spell_id);
-    }
-    for(const auto& spellID : toRemove)
-        spellIDs.erase(spellID);
-
-    // Need to go through the talents to check if they've got a corresponding spell
-    auto talentIDs = simc_data::talentIDs_from_specID(specID);
-    for(const auto& talentID : talentIDs)
-    {
-        const auto& e = talent_entry(talentID);
-        if(e._spell_id)
-            spellIDs.insert(e._spell_id);
-    }
-    return spellIDs;
-}
-
-simc_data::spell_t simc_data::spell_info(size_t spellID)
-{
-    const auto& e = spell_entry(spellID);
-    return simc_data::spell_t{.id = e._id,
-                              .name = e._name,
-                              .is_ability = e.flags(SPELL_ATTR_UNK4),
-                              .is_passive = e.flags(SPELL_ATTR_PASSIVE),
-                              .is_hidden = e.flags(SPELL_ATTR_HIDDEN),
-                              .gcd = e._gcd / 1000.0f,
-                              .duration = e._duration / 1000.0f,
-                              .cooldown = e._cooldown / 1000.0f,
-                              .charges = e._charges,
-                              .charge_cooldown = e._charge_cooldown,
-                              .max_stack = e._max_stack,
-                              .replaces_id = e._replace_spell_id,
-                              .min_range = static_cast<float>(e._min_range),
-                              .max_range = static_cast<float>(e._max_range)};
+    const auto& e = spell_entry(spellID, failIfNotFound);
+    return simc_data::spell_t{
+      .id = e._id,
+      .name = e._name,
+      .is_ability = e.flags(SPELL_ATTR_UNK4),
+      .is_passive = e.flags(SPELL_ATTR_PASSIVE),
+      .is_hidden = e.flags(SPELL_ATTR_HIDDEN),
+      .gcd = static_cast<float>(e._gcd) / 1000.0f,
+      .duration = static_cast<float>(e._duration) / 1000.0f,
+      .cooldown = static_cast<float>(e._cooldown) / 1000.0f,
+      .charges = e._charges,
+      .charge_cooldown = static_cast<float>(e._charge_cooldown) / 1000.0f,
+      .max_stack = e._max_stack,
+      .min_range = static_cast<float>(e._min_range),
+      .max_range = static_cast<float>(e._max_range),
+      .description = e._desc,
+      .tooltip = e._tooltip,
+    };
 }
 
 simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
@@ -327,10 +299,62 @@ simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
     return spells;
 }
 
-simc_data::spell_set_t simc_data::player_spells_from_specID(size_t specID)
+simc_data::spell_set_t simc_data::player_abilities_from_classID(size_t classID)
 {
-    spell_set_t spells;
-    for(const auto& id : player_spellIDs_from_specID(specID))
-        spells.insert(spell_info(id));
-    return spells;
+    simc_data::spell_set_t ret;
+    const auto spells = spells_from_classID(classID);
+    std::copy_if(std::begin(spells), std::end(spells), std::inserter(ret, std::end(ret)), [&](const auto& spell) {
+        return !spell.is_hidden; // && (spell.gcd > 0 || spell.cooldown > 0 || spell.charges > 0 || spell.charge_cooldown > 0);
+    });
+    return ret;
+}
+
+//////////////////////////////////////////////////
+// spell effects
+
+namespace
+{
+    const auto& spelleffect_entry(size_t id, bool failIfNotFound)
+    {
+        for(const auto& e : __spelleffect_data)
+        {
+            if(e._id == id)
+                return e;
+        }
+        static std::decay_t<decltype(__spelleffect_data[0])> dummy;
+        if(!failIfNotFound)
+            return dummy;
+        THROW_UTIL_EXCEPTION << "Could not find spell effect info for spellID=" << id;
+    }
+} // namespace
+
+std::set<size_t> simc_data::spellEffectIDs_from_spellID(size_t spellID)
+{
+    std::set<size_t> ids;
+    for(const auto& e : __spelleffect_data)
+        if(e._spell_id == spellID)
+            ids.insert(e._id);
+    return ids;
+}
+
+simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool failIfNotFound)
+{
+    const auto& e = spelleffect_entry(spellEffectID, failIfNotFound);
+    return spelleffect_t{.id = e._id,
+                         .index = e._index,
+                         .type = e._type,
+                         .subtype = e._subtype,
+                         .trigger_spell_id = e._trigger_spell_id,
+                         .val1 = e._base_value,
+                         .val2 = e._misc_value,
+                         .val3 = e._misc_value_2,
+                         .die_sides = e._die_sides};
+}
+
+simc_data::spelleffect_set_t simc_data::spellEffects_from_spellID(size_t spellID)
+{
+    spelleffect_set_t spellEffects;
+    for(const auto& id : spellEffectIDs_from_spellID(spellID))
+        spellEffects.insert(spelleffect_info(id));
+    return spellEffects;
 }

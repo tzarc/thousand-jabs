@@ -9,7 +9,20 @@ find "./Support/DataGenerator" -not -path './Support/DataGenerator/build/*' -and
 
 pushd "Support/DataGenerator/build" >/dev/null 2>&1 \
     && cmake -DCMAKE_BUILD_TYPE=Debug .. \
-    && make \
+    && make -j5 \
     && cp datagenerator "${SCRIPT_DIR}" \
-    && chmod +x "${SCRIPT_DIR}/datagenerator"
+    && chmod +x "${SCRIPT_DIR}/datagenerator" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 1 > "${SCRIPT_DIR}/Temp/Generated-Warrior.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 2 > "${SCRIPT_DIR}/Temp/Generated-Paladin.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 3 > "${SCRIPT_DIR}/Temp/Generated-Hunter.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 4 > "${SCRIPT_DIR}/Temp/Generated-Rogue.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 5 > "${SCRIPT_DIR}/Temp/Generated-Priest.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 6 > "${SCRIPT_DIR}/Temp/Generated-DeathKnight.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 7 > "${SCRIPT_DIR}/Temp/Generated-Shaman.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 8 > "${SCRIPT_DIR}/Temp/Generated-Mage.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 9 > "${SCRIPT_DIR}/Temp/Generated-Warlock.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 10 > "${SCRIPT_DIR}/Temp/Generated-Monk.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 11 > "${SCRIPT_DIR}/Temp/Generated-Druid.lua" \
+    && "${SCRIPT_DIR}/datagenerator" class_dump 12 > "${SCRIPT_DIR}/Temp/Generated-DemonHunter.lua" \
+    && { for file in $(find "${SCRIPT_DIR}/Temp" -name 'Generated-*.lua') ; do lua $file ; done ; } \
     && popd >/dev/null 2>&1

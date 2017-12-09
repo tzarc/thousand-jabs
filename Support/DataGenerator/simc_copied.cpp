@@ -98,3 +98,16 @@ std::string simc_copied::specName_from_specID(size_t specID)
         return "!!UNKNOWN_SPEC!!";
     return std::string(it->name);
 }
+
+std::string simc_copied::powertype_string(powertype_t pt)
+{
+    switch(pt)
+    {
+#define POWER_TYPE(val, name)                                                                                                                                  \
+    case powertype_t::name:                                                                                                                                    \
+        return util::camel_to_underscores(#name);
+        POWER_TYPES(POWER_TYPE)
+#undef POWER_TYPE
+    }
+    return {};
+}

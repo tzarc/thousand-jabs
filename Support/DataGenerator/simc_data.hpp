@@ -31,14 +31,14 @@ namespace simc_data
         size_t col;
         size_t specID;
     };
-    talent_t talent_info(size_t talentID);
+    talent_t talent_info(size_t talentID, bool failIfNotFound = true);
 
     namespace detail
     {
         struct talent_comparator
         {
             // bool operator()(const talent_t& lhs, const talent_t& rhs) const { return lhs.id < rhs.id; }
-            bool operator()(const talent_t& lhs, const talent_t& rhs) const { return std::tie(lhs.row, lhs.col) < std::tie(rhs.row, rhs.col); }
+            bool operator()(const talent_t& lhs, const talent_t& rhs) const { return std::tie(lhs.row, lhs.col, lhs.id) < std::tie(rhs.row, rhs.col, rhs.id); }
         };
     } // namespace detail
     using talent_set_t = std::set<talent_t, detail::talent_comparator>;
@@ -51,7 +51,7 @@ namespace simc_data
         size_t id;
         const char* name;
     };
-    item_t item_info(size_t itemID);
+    item_t item_info(size_t itemID, bool failIfNotFound = true);
 
     std::map<std::string, std::set<size_t>> itemsets_from_classID(size_t classID);
 
@@ -66,7 +66,7 @@ namespace simc_data
         const char* name;
         size_t max_rank;
     };
-    artifact_trait_t artifact_trait_info(size_t artifactTraitID);
+    artifact_trait_t artifact_trait_info(size_t artifactTraitID, bool failIfNotFound = true);
 
     namespace detail
     {
@@ -96,11 +96,12 @@ namespace simc_data
         size_t charges;
         float charge_cooldown;
         size_t max_stack;
-        size_t replaces_id;
         float min_range;
         float max_range;
+        const char* description;
+        const char* tooltip;
     };
-    spell_t spell_info(size_t spellID);
+    spell_t spell_info(size_t spellID, bool failIfNotFound = true);
 
     namespace detail
     {
@@ -111,5 +112,33 @@ namespace simc_data
     } // namespace detail
     using spell_set_t = std::set<spell_t, detail::spell_comparator>;
     spell_set_t spells_from_classID(size_t classID);
-    spell_set_t player_spells_from_specID(size_t specID);
+    spell_set_t player_abilities_from_classID(size_t classID);
+
+    //////////////////////////////////////////////////
+    // spell effects
+    std::set<size_t> spellEffectIDs_from_spellID(size_t spellID);
+
+    struct spelleffect_t
+    {
+        size_t id;
+        size_t index;
+        size_t type;
+        size_t subtype;
+        size_t trigger_spell_id;
+        int val1;
+        int val2;
+        int val3;
+        int die_sides;
+    };
+    spelleffect_t spelleffect_info(size_t spellEffectID, bool failIfNotFound = true);
+
+    namespace detail
+    {
+        struct spelleffect_comparator
+        {
+            bool operator()(const spelleffect_t& lhs, const spelleffect_t& rhs) const { return lhs.id < rhs.id; }
+        };
+    } // namespace detail
+    using spelleffect_set_t = std::set<spelleffect_t, detail::spelleffect_comparator>;
+    spelleffect_set_t spellEffects_from_spellID(size_t spellID);
 } // namespace simc_data
