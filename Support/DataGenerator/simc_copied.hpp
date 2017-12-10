@@ -9,6 +9,9 @@ namespace simc_copied
     std::string className_from_classID(size_t classID);
     std::string specName_from_specID(size_t specID);
 
+    int translate_spec_str(int ptype, const std::string& spec_str);
+    std::string specialization_string(int spec);
+
     // from http://wowprogramming.com/docs/api_types
     // copied direct from page
     // Atom find/replace syntax (regex)

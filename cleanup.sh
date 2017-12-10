@@ -43,10 +43,10 @@ tjfind -type f | parallel "chmod -x '{1}'"
 tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
 
 # Make sure everything has Unix line endings
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' | parallel "dos2unix '{1}' >/dev/null 2>&1"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "dos2unix '{1}' >/dev/null 2>&1"
 
 # Remove trailing whitespace
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
 
 # Reformat perl scripts
 tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
@@ -55,7 +55,7 @@ tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dw
 tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
 
 # Reformat cpp files
-tjfind -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
+tjfind -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
 
 # Disable devMode
 tjfind -iname '*.lua' | parallel "sed -i 's/^local devMode = true/local devMode = false/' '{1}'"

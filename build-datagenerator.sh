@@ -11,11 +11,11 @@ fi
 
 [[ ! -d "Support/DataGenerator/build" ]] && mkdir -p "Support/DataGenerator/build"
 
-find "./Support/DataGenerator" -not -path './Support/DataGenerator/build/*' -and  -not -path './Support/DataGenerator/3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
-
 pushd "Support/DataGenerator/build" >/dev/null 2>&1 \
+    && ../extract-methods.sh \
+    && { find .. -not -path '../build/*' -and  -not -path '../3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'" ; } \
     && cmake -DCMAKE_BUILD_TYPE=Debug .. \
-    && make -j5 \
+    && make \
     && cp datagenerator "${SCRIPT_DIR}" \
     && chmod +x "${SCRIPT_DIR}/datagenerator" \
     && "${SCRIPT_DIR}/datagenerator" class_dump 1 > "${SCRIPT_DIR}/Temp/Generated-Warrior.lua" \
