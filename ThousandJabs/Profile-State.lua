@@ -587,6 +587,7 @@ local function StateExecuteActionProfileListPrototype(self, listname)
                         or { Core:Format("\n'|cFFFFFF99%s.spell_can_cast=|cFFFF9900' .. tostring(%s.spell_can_cast)", action.action, action.action) }
                     local keywords = action.params.condition_converted and action.params.condition_converted.keywords
                         or action.params.value_converted and action.params.value_converted.keywords
+                        or action.params.target_if_converted and action.params.target_if_converted.keywords
                         or {}
                     for k,v in pairs(keywords) do
                         entries[1+#entries] = Core:Format("'|cFFFFFF99%s=|cFFFF9900' .. (type(%s) == 'number' and ('%%.2f'):format(%s) or tostring(%s))", v, v, v, v)

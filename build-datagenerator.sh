@@ -9,9 +9,10 @@ else
     { pushd "${SCRIPT_DIR}/simc" && git reset --hard origin/HEAD && git checkout -- . && git pull --depth=1 && popd ; }
 fi
 
-[[ ! -d "Support/DataGenerator/build" ]] && mkdir -p "Support/DataGenerator/build"
+[[ ! -d "${SCRIPT_DIR}/Temp" ]] && mkdir -p "${SCRIPT_DIR}/Temp"
+[[ ! -d "${SCRIPT_DIR}/Support/DataGenerator/build" ]] && mkdir -p "${SCRIPT_DIR}/Support/DataGenerator/build"
 
-pushd "Support/DataGenerator/build" >/dev/null 2>&1 \
+pushd "${SCRIPT_DIR}/Support/DataGenerator/build" >/dev/null 2>&1 \
     && ../extract-methods.sh \
     && { find .. -not -path '../build/*' -and  -not -path '../3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' \) | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'" ; } \
     && cmake -DCMAKE_BUILD_TYPE=Debug .. \

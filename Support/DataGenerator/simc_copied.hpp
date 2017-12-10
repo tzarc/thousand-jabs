@@ -11,6 +11,7 @@ namespace simc_copied
 
     int translate_spec_str(int ptype, const std::string& spec_str);
     std::string specialization_string(int spec);
+    const char* player_type_string(int type);
 
     // from http://wowprogramming.com/docs/api_types
     // copied direct from page

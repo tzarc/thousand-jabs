@@ -62,6 +62,53 @@ const spec_map_t spec_map[] = {
   {DEMON_HUNTER_VENGEANCE, "Vengeance DemonHunter"},
 };
 
+const char* simc_copied::player_type_string(int type)
+{
+    switch(type)
+    {
+        case PLAYER_NONE:
+            return "none";
+        case DEATH_KNIGHT:
+            return "deathknight";
+        case DEMON_HUNTER:
+            return "demonhunter";
+        case DRUID:
+            return "druid";
+        case HUNTER:
+            return "hunter";
+        case MAGE:
+            return "mage";
+        case MONK:
+            return "monk";
+        case PALADIN:
+            return "paladin";
+        case PRIEST:
+            return "priest";
+        case ROGUE:
+            return "rogue";
+        case SHAMAN:
+            return "shaman";
+        case WARLOCK:
+            return "warlock";
+        case WARRIOR:
+            return "warrior";
+        case PLAYER_PET:
+            return "pet";
+        case PLAYER_GUARDIAN:
+            return "guardian";
+        case ENEMY:
+            return "enemy";
+        case ENEMY_ADD:
+            return "add";
+        case TMI_BOSS:
+            return "tmi_boss";
+        case TANK_DUMMY:
+            return "tank_dummy";
+        default:
+            return "unknown";
+    }
+}
+
 const struct
 {
     const char* name;

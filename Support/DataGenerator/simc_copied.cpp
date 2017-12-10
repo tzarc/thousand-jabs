@@ -11,6 +11,8 @@
 #include "simc_copied.hpp"
 #include "util.hpp"
 
+using namespace simc_copied;
+using namespace util;
 #include "simc_extracted.inl"
 
 std::string simc_copied::className_from_classID(size_t classID)

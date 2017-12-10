@@ -28,6 +28,10 @@ extract_block_colon "${SCRIPT_DIR}/../../simc/engine/sc_util.cpp" 'struct spec_m
     >> "${SCRIPT_DIR}/simc_extracted.inl"
 extract_block_colon "${SCRIPT_DIR}/../../simc/engine/sc_util.cpp" 'const spec_map_t' \
     >> "${SCRIPT_DIR}/simc_extracted.inl"
+extract_block "${SCRIPT_DIR}/../../simc/engine/sc_util.cpp" 'const char\* util::player_type_string(' \
+    | sed -e 's#util::#simc_copied::#g' \
+    | sed -e 's#player_e#int#g' \
+    >> "${SCRIPT_DIR}/simc_extracted.inl"
 
 extract_block_colon "${SCRIPT_DIR}/../../simc/engine/dbc/sc_spell_info.cpp" '_class_map\[\]' \
     >> "${SCRIPT_DIR}/simc_extracted.inl"
