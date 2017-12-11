@@ -13,10 +13,7 @@
 #include <string>
 #include <vector>
 
-const simc_data::spelleffect_type_t supportedEffectTypes[] = {simc_data::spelleffect_type_t::apply_aura,
-                                                              simc_data::spelleffect_type_t::trigger_spell,
-                                                              simc_data::spelleffect_type_t::add_power,
-                                                              simc_data::spelleffect_type_t::add_combo_points};
+const effect_type_t supportedEffectTypes[] = {E_APPLY_AURA, E_TRIGGER_SPELL, E_ENERGIZE, E_ADD_COMBO_POINTS};
 
 void export_itemsets(int classID)
 {
@@ -47,9 +44,9 @@ void export_spelleffects_for_spellID(size_t spellID)
 
 #ifdef _DEBUG
     fmt::print("        spell_effects = {{\n");
-    fmt::print("            --{:>2s}, {:>6s}, {:>6s}, {:>3s}, {:>3s}, {:>6s}, {:>6s}, {:>6s}, {:>4s}\n", "n", "id", "ts", "t", "st", "v1", "v2", "v3", "ds");
+    fmt::print("            --{:>2s}, {:>6s}, {:>6s}, {:>5s}, {:>3s}, {:>6s}, {:>6s}, {:>6s}, {:>4s}\n", "n", "id", "ts", "t", "st", "v1", "v2", "v3", "ds");
     for(const auto& e : effects)
-        fmt::print("            {{ {:2d}, {:6d}, {:6d}, {:3d}, {:3d}, {:6d}, {:6d}, {:6d}, {:4d} }},\n",
+        fmt::print("            {{ {:2d}, {:6d}, {:6d}, {:5d}, {:3d}, {:6d}, {:6d}, {:6d}, {:4d} }},\n",
                    e.index,
                    e.id,
                    e.trigger_spell_id,
@@ -70,18 +67,18 @@ void export_spelleffects_for_spellID(size_t spellID)
         auto i = simc_data::spell_info(e.trigger_spell_id, false);
         switch(e.type)
         {
-            case simc_data::spelleffect_type_t::apply_aura:
+            case E_APPLY_AURA:
                 if(i.id && !i.is_hidden && i.duration > auraThreshold)
                     fmt::print("            {{ 'apply_aura', '{}', {}, {:.1f} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id, i.duration);
                 break;
-            case simc_data::spelleffect_type_t::trigger_spell:
+            case E_TRIGGER_SPELL:
                 if(i.id && !i.is_hidden && i.duration > auraThreshold)
                     fmt::print("            {{ 'trigger_spell', '{}', {} }},\n", util::make_slug(simc_data::spell_info(i.id).name), i.id);
                 break;
-            case simc_data::spelleffect_type_t::add_power:
+            case E_ENERGIZE:
                 fmt::print("            {{ 'energize', '{}', {} }},\n", util::str(static_cast<simc_copied::powertype_t>(e.val2)), e.val1);
                 break;
-            case simc_data::spelleffect_type_t::add_combo_points:
+            case E_ADD_COMBO_POINTS:
                 fmt::print("            {{ 'combo_points' }},\n");
                 break;
         }

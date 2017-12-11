@@ -67,14 +67,14 @@ namespace util
     template <typename CharType, typename CharTraitsType>
     std::basic_string<CharType, CharTraitsType>& ltrim(std::basic_string<CharType, CharTraitsType>& s)
     {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](CharType c) { return !std::isspace(c); }));
+        s.erase(s.begin(), find_if(s, [](CharType c) { return !std::isspace(c); }));
         return s;
     }
 
     template <typename CharType, typename CharTraitsType>
     std::basic_string<CharType, CharTraitsType>& rtrim(std::basic_string<CharType, CharTraitsType>& s)
     {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](CharType c) { return !std::isspace(c); }).base(), s.end());
+        s.erase(find_if(s, [](CharType c) { return !std::isspace(c); }).base(), s.end());
         return s;
     }
 

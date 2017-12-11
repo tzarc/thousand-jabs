@@ -388,25 +388,9 @@ std::set<size_t> simc_data::spellEffectIDs_from_spellID(size_t spellID)
 simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool throwIfNotFound)
 {
     const auto& e = spelleffect_entry(spellEffectID, throwIfNotFound);
-    simc_data::spelleffect_type_t type;
-    switch(e._type)
-    {
-        case effect_type_t::E_APPLY_AURA:
-            type = simc_data::spelleffect_type_t::apply_aura;
-            break;
-        case effect_type_t::E_TRIGGER_SPELL:
-            type = simc_data::spelleffect_type_t::trigger_spell;
-            break;
-        case effect_type_t::E_ENERGIZE:
-            type = simc_data::spelleffect_type_t::add_power;
-            break;
-        case effect_type_t::E_ADD_COMBO_POINTS:
-            type = simc_data::spelleffect_type_t::add_combo_points;
-            break;
-    }
     return spelleffect_t{.id = e._id,
                          .index = e._index,
-                         .type = type,
+                         .type = e._type,
                          .subtype = e._subtype,
                          .trigger_spell_id = e._trigger_spell_id,
                          .val1 = e._base_value,

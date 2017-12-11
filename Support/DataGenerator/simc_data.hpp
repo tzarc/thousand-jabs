@@ -127,18 +127,11 @@ namespace simc_data
     // spell effects
     std::set<size_t> spellEffectIDs_from_spellID(size_t spellID);
 
-    enum spelleffect_type_t
-    {
-        apply_aura,
-        trigger_spell,
-        add_power,
-        add_combo_points,
-    };
     struct spelleffect_t
     {
         size_t id;
         size_t index;
-        spelleffect_type_t type;
+        size_t type;
         size_t subtype;
         size_t trigger_spell_id;
         int val1;
