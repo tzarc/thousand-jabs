@@ -413,7 +413,7 @@ local unholy_tier_bonuses = {
 local unholy_legendaries = {
     cold_heart = {
         AuraID = 235599,
-        AuraUnit = 'target',
+        AuraUnit = 'player',
         AuraMine = true,
     },
     temptation = { -- Not a legendary, from Ring of Collapsing Futures from Kara
