@@ -216,14 +216,14 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
             if usesSpellCountForCharges then
                 action.spell_max_charges = 999
                 action.spell_charges_fractional = function(spell, env)
-                    return (spell.blacklisted and 0) or (spell.rechargeSampled - spell.rechargeSpent)
+                    return (spell.blacklisted and 0) or (spell.rechargeSampled - spell.rechargeSpent + spell.rechargeGained)
                 end
             else
                 action.spell_max_charges = function(spell, env) return spell.rechargeMax end
                 action.spell_charges_fractional = function(spell, env)
                     local f = (spell.rechargeSampled == spell.rechargeMax)
-                        and spell.rechargeMax - spell.rechargeSpent
-                        or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent
+                        and spell.rechargeMax - spell.rechargeSpent + spell.rechargeGained
+                        or spell.rechargeSampled + (env.currentTime - spell.rechargeStartTime)/spell.rechargeDuration - spell.rechargeSpent + spell.rechargeGained
                     return (spell.blacklisted and 0) or mmin(f, spell.rechargeMax)
                 end
             end

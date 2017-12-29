@@ -213,6 +213,11 @@ Core.Environment.common = {
         AuraUnit = 'player',
         AuraMine = true,
     },
+    stoneform = {
+        AuraID = { 20594 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 Core.Environment.common.exhaustion = Core.Environment.common.sated
 

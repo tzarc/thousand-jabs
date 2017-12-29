@@ -100,6 +100,8 @@ local retribution_ability_overrides = {
         AuraID = { 31884 },
         AuraUnit = 'player',
         AuraMine = true,
+        AuraApplied = 'avenging_wrath',
+        AuraApplyLength = 20,
     },
     forbearance = {
         AuraID = { 25771 },
@@ -194,6 +196,214 @@ TJ:RegisterPlayerClass({
     config_checkboxes = {
         ashes_to_ashes_selected = false,
         wake_of_ashes_selected = false,
+    },
+    blacklisted = {},
+})
+
+------------------------------------------------------------------------------------------------------------------------
+-- Protection profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+
+-- exported with /tj _esd
+local protection_abilities_exported = {
+    aegis_of_light = { SpellIDs = { 204150 }, TalentID = 22564, },
+    ardent_defender = { SpellIDs = { 31850 }, },
+    avengers_shield = { SpellIDs = { 31935 }, },
+    avenging_wrath = { SpellIDs = { 31884 }, },
+    bastion_of_light = { SpellIDs = { 204035 }, TalentID = 22604, },
+    blessed_hammer = { SpellIDs = { 204019 }, TalentID = 22558, },
+    blessing_of_freedom = { SpellIDs = { 1044 }, },
+    blessing_of_protection = { SpellIDs = { 1022 }, },
+    blessing_of_sacrifice = { SpellIDs = { 6940 }, },
+    blessing_of_spellwarding = { SpellIDs = { 204018 }, TalentID = 22433, },
+    blinding_light = { SpellIDs = { 115750 }, TalentID = 21811, },
+    cavalier = { TalentID = 22434, },
+    cleanse_toxins = { SpellIDs = { 213644 }, },
+    consecrated_ground = { TalentID = 22438, },
+    consecrated_hammer = { TalentID = 22430, },
+    consecration = { SpellIDs = { 26573 }, },
+    contemplation = { SpellIDs = { 121183 }, },
+    crusaders_judgment = { TalentID = 22594, },
+    divine_shield = { SpellIDs = { 642 }, },
+    divine_steed = { SpellIDs = { 190784 }, },
+    eye_of_tyr = { SpellIDs = { 209202 }, },
+    final_stand = { TalentID = 17601, },
+    first_avenger = { TalentID = 22431, },
+    fist_of_justice = { TalentID = 22179, },
+    flash_of_light = { SpellIDs = { 19750 }, },
+    grand_crusader = { SpellIDs = { 85043 }, },
+    guardian_of_ancient_kings = { SpellIDs = { 86659 }, },
+    hammer_of_justice = { SpellIDs = { 853 }, },
+    hammer_of_the_righteous = { SpellIDs = { 53595 }, },
+    hand_of_reckoning = { SpellIDs = { 62124 }, },
+    hand_of_the_protector = { SpellIDs = { 213652 }, TalentID = 22705, },
+    heart_of_the_crusader = { SpellIDs = { 32223 }, },
+    holy_shield = { TalentID = 22428, },
+    judgment = { SpellIDs = { 20271 }, },
+    judgment_of_light = { TalentID = 22484, },
+    knight_templar = { TalentID = 21795, },
+    last_defender = { TalentID = 22645, },
+    lay_on_hands = { SpellIDs = { 633 }, },
+    light_of_the_protector = { SpellIDs = { 184092 }, },
+    mastery_divine_bulwark = { SpellIDs = { 76671 }, },
+    rebuke = { SpellIDs = { 96231 }, },
+    redemption = { SpellIDs = { 7328 }, },
+    repentance = { SpellIDs = { 20066 }, TalentID = 22180, },
+    retribution_aura = { TalentID = 22435, },
+    righteous_protector = { TalentID = 21201, },
+    seraphim = { SpellIDs = { 152262 }, TalentID = 21202, },
+    shield_of_the_righteous = { SpellIDs = { 53600 }, },
+    vindicaar_matrix_crystal = { SpellIDs = { 251463 }, },
+}
+
+local protection_base_overrides = {
+    role = {
+        attack = false -- Huh?
+    },
+    avengers_shield = {
+        AuraID = { 31935 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'avengers_shield',
+        AuraApplyLength = 3,
+    },
+    avenging_wrath = {
+        AuraID = { 31884 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'avenging_wrath',
+        AuraApplyLength = 20,
+    },
+    blessing_of_protection = {
+        AuraID = { 1022 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blessing_of_protection',
+        AuraApplyLength = 10,
+        PerformCast = function(spell, env)
+            env.forbearance.expirationTime = env.currentTime + 30
+        end,
+        CanCast = function(spell, env)
+            return env.forbearance.aura_down and true or false
+        end,
+    },
+    blessing_of_sacrifice = {
+        AuraID = { 6940 }, -- TODO: Check this
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blessing_of_sacrifice',
+        AuraApplyLength = 12,
+        PerformCast = function(spell, env)
+            env.forbearance.expirationTime = env.currentTime + 30
+        end,
+        CanCast = function(spell, env)
+            return env.forbearance.aura_down and true or false
+        end,
+    },
+    consecration = {
+        AuraID = { 204242 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'consecration',
+        AuraApplyLength = 10,
+    },
+    divine_shield = {
+        AuraID = { 642 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'divine_shield',
+        AuraApplyLength = 8,
+        PerformCast = function(spell, env)
+            env.forbearance.expirationTime = env.currentTime + 30
+        end,
+        CanCast = function(spell, env)
+            return env.forbearance.aura_down and true or false
+        end,
+    },
+    forbearance = {
+        AuraID = { 25771 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    guardian_of_ancient_kings = {
+        AuraID = { 86659 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'guardian_of_ancient_kings',
+        AuraApplyLength = 10,
+    },
+    hammer_of_justice = {
+        AuraID = { 853 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'hammer_of_justice',
+        AuraApplyLength = 3,
+    },
+    hand_of_reckoning = {
+        AuraID = { 62124 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'hand_of_reckoning',
+        AuraApplyLength = 3,
+    },
+    judgment = {
+        AuraApplied = 'judgment_of_light',
+        AuraApplyLength = 30,
+    },
+    judgment_of_light = {
+        AuraID = { 196941 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+}
+
+local protection_talent_overrides = {
+    bastion_of_light = {
+        PerformCast = function(spell, env)
+            spell.rechargeGained = mmin(3, spell.spell_max_charges-spell.spell_charges)
+        end,
+    },
+    blessed_hammer = {
+        AuraID = { 204301 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blessed_hammer',
+        AuraApplyLength = 10,
+    },
+    blinding_light = {
+        AuraID = { 105421 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blinding_light',
+        AuraApplyLength = 6,
+    },
+}
+
+local protection_artifact_overrides = {
+    eye_of_tyr = {
+        AuraID = { 209202 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'eye_of_tyr',
+        AuraApplyLength = 10,
+    }
+}
+
+TJ:RegisterPlayerClass({
+    name = 'Protection',
+    class_id = 2,
+    spec_id = 2,
+    default_action_profile = 'simc::paladin::protection',
+    resources = { 'mana', 'mana_per_time' },
+    actions = {
+        protection_abilities_exported,
+        protection_base_overrides,
+        protection_talent_overrides,
+        protection_artifact_overrides,
+    },
+    config_checkboxes = {
     },
     blacklisted = {},
 })

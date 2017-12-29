@@ -350,6 +350,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
                 v.rechargeStartTime = start or 0
                 v.rechargeDuration = duration or 0
                 v.rechargeSpent = 0
+                v.rechargeGained = 0
             end
 
             -- Add data if we're using GetSpellCount to get the number of charges for this ability
@@ -363,6 +364,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
                 v.rechargeStartTime = 0
                 v.rechargeDuration = 0
                 v.rechargeSpent = 0
+                v.rechargeGained = 0
             end
         else
             env[k] = nil
