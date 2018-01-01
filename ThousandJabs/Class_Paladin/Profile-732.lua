@@ -5,6 +5,9 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
+local mmax = math.max
+local mmin = math.min
+
 if not Core:MatchesBuild('7.3.2', '7.3.2') then return end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -75,61 +78,128 @@ local retribution_ability_overrides = {
             end
         end,
     },
-    shield_of_vengeance = {
-        AuraID = { 184662 },
-        AuraUnit = 'player',
-        AuraMine = true,
-    },
-    blessing_of_protection = {
-        AuraApplied = 'forbearance',
-        AuraApplyLength = 30,
-
-        CanCast = function(spell, env)
-            return env.forbearance.aura_down and true or false
-        end,
-    },
-    divine_shield = {
-        AuraApplied = 'forbearance',
-        AuraApplyLength = 30,
-
-        CanCast = function(spell, env)
-            return env.forbearance.aura_down and true or false
-        end,
-    },
     avenging_wrath = {
         AuraID = { 31884 },
         AuraUnit = 'player',
         AuraMine = true,
         AuraApplied = 'avenging_wrath',
         AuraApplyLength = 20,
+        cooldown_remains = function(spell, env)
+            if env.crusade.talent_enabled then
+                return 0 -- This seems to be different to other cases?
+            else
+                return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime)
+            end
+        end,
+    },
+    blade_of_justice = {
+        PerformCast = function(spell, env)
+            env.holy_power.gained = env.holy_power.gained + mmin(2, env.holy_power.deficit)
+        end,
+    },
+    blessing_of_protection = {
+        AuraID = { 1022 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blessing_of_protection',
+        AuraApplyLength = 10,
+        PerformCast = function(spell, env)
+            env.forbearance.expirationTime = env.currentTime + 30
+        end,
+        CanCast = function(spell, env)
+            return env.forbearance.aura_down and true or false
+        end,
+    },
+    crusader_strike = {
+        PerformCast = function(spell,env)
+            env.holy_power.gained = env.holy_power.gained + mmin(1, env.holy_power.deficit)
+        end,
+    },
+    divine_shield = {
+        AuraID = { 642 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'divine_shield',
+        AuraApplyLength = 8,
+        PerformCast = function(spell, env)
+            env.forbearance.expirationTime = env.currentTime + 30
+        end,
+        CanCast = function(spell, env)
+            return env.forbearance.aura_down and true or false
+        end,
     },
     forbearance = {
         AuraID = { 25771 },
         AuraUnit = 'player',
         AuraMine = true,
     },
+    hammer_of_justice = {
+        AuraID = { 853 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'hammer_of_justice',
+        AuraApplyLength = 3,
+    },
+    hand_of_hindrance = {
+        AuraID = { 183218 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'hand_of_hindrance',
+        AuraApplyLength = 10,
+    },
+    hand_of_reckoning = {
+        AuraID = { 62124 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'hand_of_reckoning',
+        AuraApplyLength = 3,
+    },
     judgment = {
         AuraID = { 197277 },
         AuraUnit = 'target',
         AuraMine = true,
+        AuraApplied = 'judgment',
+        AuraApplyLength = 8,
+        PerformCast = function(spell, env)
+            if env.judgment_of_light.talent_enabled then
+                env.judgment_of_light.expirationTime = env.currentTime + 30
+                env.judgment_of_light.aura_stack = 40
+            end
+        end
+    },
+    judgment_of_light = {
+        AuraID = { 196941 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    shield_of_vengeance = {
+        AuraID = { 184662 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'shield_of_vengeance',
+        AuraApplyLength = 15,
     },
 }
 
 local retribution_talent_overrides = {
-    crusader_strike = {
-        PerformCast = function(spell,env)
-            env.holy_power.gained = env.holy_power.gained + 1
-        end,
+    blinding_light = {
+        AuraID = { 105421 },
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'blinding_light',
+        AuraApplyLength = 6,
+    },
+    crusade = {
+        AuraID = { 231895 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'crusade',
+        AuraApplyLength = 6,
     },
     divine_hammer = {
         PerformCast = function(spell,env)
-            env.holy_power.gained = env.holy_power.gained + 2
+            env.holy_power.gained = env.holy_power.gained + mmin(2, env.holy_power.deficit)
         end,
-    },
-    crusade = {
-        AuraID = { 231895 }, -- TODO: Confirm
-        AuraUnit = 'player',
-        AuraMine = true,
     },
     divine_purpose = {
         AuraID = { 223817, 223819 }, -- TODO: Confirm
@@ -159,6 +229,9 @@ local retribution_artifact_overrides = {
         AuraApplied = 'wake_of_ashes',
         AuraApplyLength = 6,
         artifact_enabled = function(spell,env) return Config:GetSpec("wake_of_ashes_selected") end,
+        PerformCast = function(spell, env)
+            env.holy_power.gained = env.holy_power.gained + mmin(5, env.holy_power.deficit)
+        end
     },
 }
 
@@ -262,6 +335,18 @@ local protection_base_overrides = {
     role = {
         attack = false -- Huh?
     },
+    rebuke = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
     avengers_shield = {
         AuraID = { 31935 },
         AuraUnit = 'target',
@@ -349,8 +434,12 @@ local protection_base_overrides = {
         AuraApplyLength = 3,
     },
     judgment = {
-        AuraApplied = 'judgment_of_light',
-        AuraApplyLength = 30,
+        PerformCast = function(spell, env)
+            if env.judgment_of_light.talent_enabled then
+                env.judgment_of_light.expirationTime = env.currentTime + 30
+                env.judgment_of_light.aura_stack = 40
+            end
+        end
     },
     judgment_of_light = {
         AuraID = { 196941 },
