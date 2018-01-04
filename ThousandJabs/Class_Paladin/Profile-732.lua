@@ -278,8 +278,6 @@ TJ:RegisterPlayerClass({
 ------------------------------------------------------------------------------------------------------------------------
 
 -- exported with /tj _esd
-
--- exported with /tj _esd
 local protection_abilities_exported = {
     aegis_of_light = { SpellIDs = { 204150 }, TalentID = 22564, },
     ardent_defender = { SpellIDs = { 31850 }, },
