@@ -529,6 +529,11 @@ local havoc_base_overrides = {
     chaos_blades = {
         aura_duration = 18,
     },
+    havoc_t21_4pc = {
+        AuraID = { 251769, 252165 }, -- TODO: Confirm, looks like it should be "Betrayer's Fury"
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 
 local havoc_hooks = {

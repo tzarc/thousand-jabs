@@ -56,6 +56,7 @@ actions+=/use_item,name=archimondes_hatred_reborn,if=buff.vampiric_blood.up
 actions+=/potion,if=buff.dancing_rune_weapon.up
 actions+=/dancing_rune_weapon,if=(!talent.blooddrinker.enabled|!cooldown.blooddrinker.ready)&!cooldown.death_and_decay.ready
 actions+=/vampiric_blood,if=!equipped.archimondes_hatred_reborn|cooldown.trinket.ready
+actions+=/tombstone,if=buff.bone_shield.stack>=7
 actions+=/call_action_list,name=standard
 actions.standard=death_strike,if=runic_power.deficit<10
 actions.standard+=/death_and_decay,if=talent.rapid_decomposition.enabled&!buff.dancing_rune_weapon.up
@@ -116,9 +117,10 @@ actions.bos_ticking+=/remorseless_winter,if=spell_targets.remorseless_winter>=2
 actions.bos_ticking+=/obliterate,if=runic_power.deficit>25|rune>3
 actions.bos_ticking+=/empower_rune_weapon,if=runic_power<30&rune.time_to_2>gcd
 actions.cold_heart=chains_of_ice,if=buff.cold_heart.stack=20&buff.unholy_strength.react&cooldown.pillar_of_frost.remains>6
+actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>=16&(cooldown.obliteration.ready&talent.obliteration.enabled)&buff.pillar_of_frost.up
 actions.cold_heart+=/chains_of_ice,if=buff.pillar_of_frost.up&buff.pillar_of_frost.remains<gcd&(buff.cold_heart.stack>=11|(buff.cold_heart.stack>=10&set_bonus.tier20_4pc))
-actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>16&buff.unholy_strength.react&buff.unholy_strength.remains<gcd&cooldown.pillar_of_frost.remains>6
-actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>12&buff.unholy_strength.react&talent.shattering_strikes.enabled
+actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>=17&buff.unholy_strength.react&buff.unholy_strength.remains<gcd&cooldown.pillar_of_frost.remains>6
+actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>=13&buff.unholy_strength.react&talent.shattering_strikes.enabled
 actions.cold_heart+=/chains_of_ice,if=buff.cold_heart.stack>=4&target.time_to_die<=gcd
 actions.cooldowns=arcane_torrent,if=runic_power.deficit>=20&!talent.breath_of_sindragosa.enabled
 actions.cooldowns+=/arcane_torrent,if=dot.breath_of_sindragosa.ticking&runic_power.deficit>=50&rune<2
