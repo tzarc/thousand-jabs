@@ -201,7 +201,10 @@ TJ:RegisterPlayerClass({
         brewmaster_base_overrides,
         brewmaster_talent_overrides,
     },
-    blacklisted = {},
+    blacklisted = {
+        'gift_of_the_ox',
+        'greater_gift_of_the_ox',
+    },
 })
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -410,9 +413,6 @@ TJ:RegisterPlayerClass({
         windwalker_legendaries,
         windwalker_tiersets,
         windwalker_hooks,
-    },
-    blacklisted = {
-        'spear_hand_strike',
     },
     config_checkboxes = {
         gale_burst_selected = false,

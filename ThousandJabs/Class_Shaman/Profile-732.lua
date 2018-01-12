@@ -163,8 +163,12 @@ local elemental_base_overrides = {
         end,
     },
     earthquake = {
+        maelstrom_cost = function(spell, env)
+            return env.echoes_of_the_great_sundering.aura_up and 0 or 50
+        end,
         PerformCast = function(spell, env)
             DecrementUpdateElementalFocus(env)
+            env.echoes_of_the_great_sundering.expirationTime = 0
         end,
     },
     lava_burst = {
@@ -260,7 +264,10 @@ local elemental_artifact_abilities = {
 
 local elemental_legendary_overrides = {
     echoes_of_the_great_sundering = {
-
+        AuraID = { 208722, 208723 },
+        AuraUnit = 'player',
+        AuraMine = true,
+        aura_duration = 10,
     }
 }
 

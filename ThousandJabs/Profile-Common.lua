@@ -34,6 +34,7 @@ local UnitLevel = UnitLevel
 local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 local UnitRace = UnitRace
+local wipe = wipe
 
 Core:Safety()
 

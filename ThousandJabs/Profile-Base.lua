@@ -56,9 +56,9 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
     keyword = keyword:gsub("math%.min", "_mmin")
     keyword = keyword:gsub("math%.max", "_mmax")
 
-    -- Min/max modifiers (ignored)
-    keyword = keyword:gsub("^min:", "")
-    keyword = keyword:gsub("^max:", "")
+    -- Min/max modifiers (effectively ignored, resolves to true)
+    keyword = keyword:gsub("^min:([%a_%.]+)", "true")
+    keyword = keyword:gsub("^max:([%a_%.]+)", "true")
 
     -- Casting checks
     if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
