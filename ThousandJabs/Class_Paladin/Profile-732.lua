@@ -84,7 +84,7 @@ local retribution_ability_overrides = {
         AuraMine = true,
         AuraApplied = 'avenging_wrath',
         AuraApplyLength = 20,
-        cooldown_remains = function(spell, env)
+        cooldown_remains_override = function(spell, env)
             if env.crusade.talent_enabled then
                 return 0 -- This seems to be different to other cases?
             else
@@ -126,6 +126,12 @@ local retribution_ability_overrides = {
         end,
         CanCast = function(spell, env)
             return env.forbearance.aura_down and true or false
+        end,
+    },
+    divine_storm = {
+        PerformCast = function(spell, env)
+            env.scarlet_inquisitors_expurgation.expirationTime = 0
+            env.scarlet_inquisitors_expurgation.aura_stack = 0
         end,
     },
     forbearance = {
@@ -242,7 +248,7 @@ local retribution_legendary_overrides = {
         AuraMine = true,
     },
     scarlet_inquisitors_expurgation = {
-        AuraID = { 248013 }, -- TODO: Confirm
+        AuraID = { 248289 },
         AuraUnit = 'player',
         AuraMine = true,
     },

@@ -188,9 +188,10 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
             action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
 
-            if type(rawget(action, 'cooldown_remains')) == 'nil' then
-                action.cooldown_remains = function(spell, env) return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
-            end
+            local cooldown_remains_override = rawget(action, 'cooldown_remains_override')
+            action.cooldown_remains =
+                (type(cooldown_remains_override) ~= 'nil' and cooldown_remains_override)
+                or function(spell, env) return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime) end
             action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
             action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
             action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
@@ -237,7 +238,10 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
                 return (spell.spell_charges > 0) and 0 or remains
             end
 
-            action.cooldown_remains = function(spell,env) return mmax(0, spell.spell_recharge_time) end
+            local cooldown_remains_override = rawget(action, 'cooldown_remains_override')
+            action.cooldown_remains =
+                (type(cooldown_remains_override) ~= 'nil' and cooldown_remains_override)
+                or function(spell,env) return mmax(0, spell.spell_recharge_time) end
             action.cooldown_ready = function(spell, env) return (spell.cooldown_remains == 0) and true or false end
             action.cooldown_up = function(spell, env) return spell.cooldown_ready and true or false end
             action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
@@ -285,7 +289,12 @@ local function addMissingFields(action)
         if not rawget(action, 'spell_recharge_time') then action.spell_recharge_time = 99999 end
         if not rawget(action, 'spell_cooldown') then action.spell_cooldown = 99999 end
 
-        if not rawget(action, 'cooldown_remains') then action.cooldown_remains = 99999 end
+        if not rawget(action, 'cooldown_remains') then
+            local cooldown_remains_override = rawget(action, 'cooldown_remains_override')
+            action.cooldown_remains =
+                (type(cooldown_remains_override) ~= 'nil' and cooldown_remains_override)
+                or 999999
+        end
         if not rawget(action, 'cooldown_ready') then action.cooldown_ready = false end
         if not rawget(action, 'cooldown_up') then action.cooldown_up = false end
         if not rawget(action, 'cooldown_down') then action.cooldown_down = false end
@@ -521,7 +530,7 @@ function TJ:RegisterPlayerClass(config)
             if type(v) == 'table' and not rawget(v, 'AbilityID') then
                 v.spell_can_cast = false
                 v.in_range = rawget(v, 'in_range') or false
-                v.cooldown_remains = rawget(v, 'cooldown_remains') or 99999
+                v.cooldown_remains = rawget(v, 'cooldown_remains_override') or rawget(v, 'cooldown_remains') or 99999
             end
 
             -- Determine the ability-specific information, if we can cast the current action

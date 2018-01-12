@@ -236,7 +236,7 @@ local destruction_legendaries = {
         AuraMine = true,
     },
     sindorei_spite_icd = {
-        cooldown_remains = function(spell, env)
+        cooldown_remains_override = function(spell, env)
             return 99999 -- TODO
         end,
     },
