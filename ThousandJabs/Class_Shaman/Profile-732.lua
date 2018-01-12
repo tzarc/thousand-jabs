@@ -108,13 +108,12 @@ local elemental_base_overrides = {
         AuraUnit = 'target',
         AuraMine = true,
         AuraApplied = 'flame_shock',
-        AuraApplyLength = 120,
+        AuraApplyLength = 120, -- Not actually this long - next screen update will end up reading the new length
         aura_duration = 15,
         cost_type = 'maelstrom',
         spell_refreshable = function(spell, env)
             if spell.aura_down then return true end
-            local tick_time = 2 -- TODO
-            if spell.aura_remains <= tick_time then return true end
+            if spell.aura_remains <= spell.aura_duration * 0.3 then return true end
             return false
         end,
         maelstrom_cost = function(spell, env)

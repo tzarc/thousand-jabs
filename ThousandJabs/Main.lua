@@ -296,6 +296,7 @@ function TJ:ActivateProfile()
         UI:UpdateAlpha()
 
         -- Register event listeners
+        TJ:RegisterEvent('PLAYER_EQUIPMENT_CHANGED', 'GENERIC_RELOAD_PROFILE_HANDLER')
         TJ:RegisterEvent('PLAYER_LEVEL_UP', 'GENERIC_RELOAD_PROFILE_HANDLER')
         TJ:RegisterEvent('PLAYER_REGEN_ENABLED')
         TJ:RegisterEvent('PLAYER_REGEN_DISABLED')
@@ -347,6 +348,7 @@ function TJ:DeactivateProfile()
     TJ:UnregisterEvent('PLAYER_REGEN_DISABLED')
     TJ:UnregisterEvent('PLAYER_REGEN_ENABLED')
     TJ:UnregisterEvent('PLAYER_LEVEL_UP')
+    TJ:UnregisterEvent('PLAYER_EQUIPMENT_CHANGED')
 
     -- Deactivate the current profile
     if TJ.currentProfile then

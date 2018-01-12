@@ -401,8 +401,13 @@ function TJ:RegisterPlayerClass(config)
                     -- Create the condition function
                     if type(entry.condition_func) == "nil" then
                         if type(entry.params.condition_converted) ~= "nil" or type(entry.params.target_if_converted) ~= "nil" then
-                            local cond = entry.params.condition_converted or entry.params.target_if_converted
-                            entry.fullconditionfuncsrc = Core:Format("((%s) and (%s))", entry.precondition, cond.expression:gsub('THIS_SPELL', entry.action))
+                            local cond_if = entry.params.condition_converted and entry.params.condition_converted.expression
+                            local cond_target_if = entry.params.target_if_converted and entry.params.target_if_converted.expression
+                            local cond = (cond_if and cond_target_if and Core:Format("((%s) and (%s))", cond_if, cond_target_if))
+                                or cond_if
+                                or cond_target_if
+                                or 'false'
+                            entry.fullconditionfuncsrc = Core:Format("((%s) and (%s))", entry.precondition, cond:gsub('THIS_SPELL', entry.action))
                         else
                             entry.fullconditionfuncsrc = entry.precondition
                         end
