@@ -408,7 +408,7 @@ do
     function simcAplParser(lines, primaryModifier, tbl)
         local allEntries = tbl or ct()
         for _,l in pairs(lines) do
-            local list, action, params = l:match("^actions%.?([%a_]*)%+?=/?([^,]+),?(.*)")
+            local list, action, params = l:match("^actions%.?([%w_]*)%+?=/?([^,]+),?(.*)")
             if list and action then
                 list = list:len() == 0 and "default" or list
                 local t = ct()

@@ -57,8 +57,8 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
     keyword = keyword:gsub("math%.max", "_mmax")
 
     -- Min/max modifiers (effectively ignored, resolves to true)
-    keyword = keyword:gsub("^min:([%a_%.]+)", "true")
-    keyword = keyword:gsub("^max:([%a_%.]+)", "true")
+    keyword = keyword:gsub("^min:([%w_%.]+)", "true")
+    keyword = keyword:gsub("^max:([%w_%.]+)", "true")
 
     -- Casting checks
     if keyword == "debuff.casting.up" then keyword = "target.is_casting" end
@@ -121,14 +121,14 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
 
     -- Equipped items
     keyword = keyword:gsub('^equipped%.(%d+)', 'equipped[%1]')
-    keyword = keyword:gsub('^equipped%.([%a_]+)', 'equipped["%1"]')
+    keyword = keyword:gsub('^equipped%.([%w_]+)', 'equipped["%1"]')
 
     -- Incoming damage
     keyword = keyword:gsub('^incoming_damage_([%d]+)s', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)*1000) end)
     keyword = keyword:gsub('^incoming_damage_([%d]+)ms', function(a) return Core:Format('incoming_damage_over_%d', tonumber(a)) end)
 
     -- Convert XXXXX.YYYYY.ZZZZZ -> YYYYY.XXXXX_ZZZZZ (talent.blah.enabled -> blah.talent_enabled)
-    keyword = keyword:gsub('([%a_]+)%.([%a_]+)%.([%a_%.]+)', function(a,b,c) return Core:Format("%s.%s_%s", b, a, c:gsub("%.","_")) end)
+    keyword = keyword:gsub('([%w_]+)%.([%w_]+)%.([%w_%.]+)', function(a,b,c) return Core:Format("%s.%s_%s", b, a, c:gsub("%.","_")) end)
 
     -- Percentage consolidation
     keyword = keyword:gsub("_pct$", "_percent")
@@ -138,7 +138,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
     keyword = keyword:gsub("time_to_die.target_remains", "target.time_to_die")
 
     -- Pet stuff
-    keyword = keyword:gsub('^([%a_]+)%.pet_([%a_]+)$', 'pet.%1_%2')
+    keyword = keyword:gsub('^([%w_]+)%.pet_([%w_]+)$', 'pet.%1_%2')
 
     -- Handle any profile-specific substitutions
     if profileSubstitutionsPost then

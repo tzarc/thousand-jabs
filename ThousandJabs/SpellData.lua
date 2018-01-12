@@ -42,7 +42,7 @@ local lastExportedSpecialisation = nil
 local definedAbilities = {}
 local function slug(name)
     if GetLocale() ~= "enUS" then return name end -- Slug names are only relevant for en-US, other locales are internally matched by spellID anyway
-    return name:lower():gsub(' ','_'):gsub('[^%a%d_]','')
+    return name:lower():gsub(' ','_'):gsub('[^%w_]','')
 end
 local blacklistedExportedAbilities = {
     'apprentice_riding',
