@@ -31,9 +31,9 @@ std::string util::make_slug(const std::string& name)
     return ret;
 }
 
-size_t util::classID_from_classMask(size_t mask)
+int util::classID_from_classMask(int mask)
 {
-    size_t classID = 0;
+    int classID = 0;
     while(mask)
     {
         ++classID;
@@ -42,7 +42,7 @@ size_t util::classID_from_classMask(size_t mask)
     return classID;
 }
 
-size_t util::classMask_from_classID(size_t classID)
+int util::classMask_from_classID(int classID)
 {
     return (1 << (classID - 1));
 }

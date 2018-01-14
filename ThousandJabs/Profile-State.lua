@@ -494,7 +494,7 @@ local function StatePredictNextActionPrototype(self)
         start = cstart * 0.001
         duration = (cend - cstart) * 0.001
     end
-    duration = mmin(1, duration) -- GCD capped at 1 sec
+    duration = mmax(1, duration) -- GCD capped at 1 sec
 
     -- Find the sampling offset
     local predictionOffset = mmax(0, (start and duration) and (start + duration - GetTime()) or 0)

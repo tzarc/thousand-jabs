@@ -3,6 +3,7 @@
 #include "util.hpp"
 
 #include "argagg.hpp"
+#include "json.hpp"
 
 #include "dbc/data_enums.hh"
 
@@ -32,7 +33,7 @@ void export_itemsets(int classID)
     fmt::print("}}\n\n");
 }
 
-void export_spelleffects_for_spellID(size_t spellID)
+void export_spelleffects_for_spellID(int spellID)
 {
     const float auraThreshold = 0.5f;
     auto info = simc_data::spell_info(spellID);
@@ -88,9 +89,9 @@ void export_spelleffects_for_spellID(size_t spellID)
     fmt::print("        }},\n");
 }
 
-std::set<std::size_t> collect_known_spells_for_classID(int classID)
+std::set<int> collect_known_spells_for_classID(int classID)
 {
-    std::set<std::size_t> allSpellIDs;
+    std::set<int> allSpellIDs;
     auto spells = simc_data::spells_from_classID(classID);
     for(const auto& e : spells)
         allSpellIDs.insert(e.id);
@@ -169,7 +170,7 @@ void export_spells_for_classID(int classID)
     fmt::print("}}\n\n");
 }
 
-void export_talents_for_spec(size_t classID, size_t specID)
+void export_talents_for_spec(int classID, int specID)
 {
     auto talents = simc_data::talents_from_specID(specID);
     int maxLen = util::member_max_slug_len(talents, &simc_data::talent_t::name);
@@ -187,7 +188,7 @@ void export_talents_for_spec(size_t classID, size_t specID)
     fmt::print("}}\n\n");
 }
 
-void export_artifact_traits_for_artifact(size_t classID, size_t specID, size_t artifactID)
+void export_artifact_traits_for_artifact(int classID, int specID, int artifactID)
 {
     auto artifactTraits = simc_data::artifactTraits_from_artifactID(artifactID);
     int maxLen = util::member_max_slug_len(artifactTraits, &simc_data::artifact_trait_t::name);
@@ -199,7 +200,7 @@ void export_artifact_traits_for_artifact(size_t classID, size_t specID, size_t a
     fmt::print("}}\n\n");
 }
 
-void export_data_for_class(size_t classID)
+void export_data_for_class(int classID)
 {
     auto className = simc_copied::className_from_classID(classID);
     fmt::print("-- {} (classID={})\n", className, classID);
@@ -236,11 +237,13 @@ int main(int argc, char* argv[])
       {"classID", {"--classID"}, "Input class ID", 1},
       {"itemID", {"--itemID"}, "Input item ID", 1},
       {"spellID", {"--spellID"}, "Input spell ID", 1},
+      {"dumpclass", {"--dumpclass"}, "Dumps class data", 0},
     }};
 
     int classID = 0;
     int itemID = 0;
     int spellID = 0;
+    bool dumpclass = false;
 
     argagg::parser_results args;
     try
@@ -251,19 +254,45 @@ int main(int argc, char* argv[])
         {
             classID = args["classID"].as<int>();
         }
+
         if(args["itemID"])
         {
             itemID = args["itemID"].as<int>();
         }
+
         if(args["spellID"])
         {
             spellID = args["spellID"].as<int>();
+        }
+
+        if(args["dumpclass"])
+        {
+            dumpclass = true;
         }
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
+    }
+
+    if(dumpclass)
+    {
+        auto specIDs = simc_data::specIDs_from_classID(classID);
+
+        nlohmann::json specData;
+        for(const auto& specID : specIDs)
+        {
+            specData[std::to_string(specID)] = {{"specID", specID}};
+        }
+
+        nlohmann::json my_json = {
+          {"classID", classID},
+          {"specIDs", nlohmann::json(specIDs)},
+          {"specData", specData},
+        };
+
+        fmt::print("{}\n", my_json.dump());
     }
 
     /*

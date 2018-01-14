@@ -39,6 +39,19 @@ chmod +x "${SCRIPT_DIR}/datagenerator"
 "${SCRIPT_DIR}/datagenerator" --classID=11 > "${SCRIPT_DIR}/Temp/Generated-Druid.lua"
 "${SCRIPT_DIR}/datagenerator" --classID=12 > "${SCRIPT_DIR}/Temp/Generated-DemonHunter.lua"
 
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=1 > "${SCRIPT_DIR}/Temp/Generated-Warrior-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=2 > "${SCRIPT_DIR}/Temp/Generated-Paladin-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=3 > "${SCRIPT_DIR}/Temp/Generated-Hunter-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=4 > "${SCRIPT_DIR}/Temp/Generated-Rogue-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=5 > "${SCRIPT_DIR}/Temp/Generated-Priest-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=6 > "${SCRIPT_DIR}/Temp/Generated-DeathKnight-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=7 > "${SCRIPT_DIR}/Temp/Generated-Shaman-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=8 > "${SCRIPT_DIR}/Temp/Generated-Mage-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=9 > "${SCRIPT_DIR}/Temp/Generated-Warlock-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=10 > "${SCRIPT_DIR}/Temp/Generated-Monk-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=11 > "${SCRIPT_DIR}/Temp/Generated-Druid-PTR.lua"
+"${SCRIPT_DIR}/datagenerator" --ptr --classID=12 > "${SCRIPT_DIR}/Temp/Generated-DemonHunter-PTR.lua"
+
 for file in $(find "${SCRIPT_DIR}/Temp" -name 'Generated-*.lua') ; do
     lua $file
 done

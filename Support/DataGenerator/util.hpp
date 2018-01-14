@@ -52,7 +52,7 @@ namespace util
     }
 
     template <typename C, typename T, typename F>
-    size_t member_max_slug_len(const C& collection, const F(T::*member))
+    int member_max_slug_len(const C& collection, const F(T::*member))
     {
         int maxLen = 0;
         for(const auto& c : collection)
@@ -84,8 +84,8 @@ namespace util
         return ltrim(rtrim(s));
     }
 
-    size_t classID_from_classMask(size_t mask);
-    size_t classMask_from_classID(size_t classID);
+    int classID_from_classMask(int mask);
+    int classMask_from_classID(int classID);
 
     class exception : public std::runtime_error
     {

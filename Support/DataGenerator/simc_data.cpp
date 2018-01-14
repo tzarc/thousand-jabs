@@ -18,14 +18,14 @@
 //////////////////////////////////////////////////
 // common
 
-size_t simc_data::specIdx_from_specID(size_t specID)
+int simc_data::specIdx_from_specID(int specID)
 {
     return specdata::__idx_specs[specID] + 1;
 }
 
-std::vector<size_t> simc_data::slug_to_itemIDs(const std::string& slug)
+std::vector<int> simc_data::slug_to_itemIDs(const std::string& slug)
 {
-    std::vector<size_t> ret;
+    std::vector<int> ret;
     for(const auto& e : __item_data)
     {
         if(!e.name)
@@ -37,9 +37,9 @@ std::vector<size_t> simc_data::slug_to_itemIDs(const std::string& slug)
     return ret;
 }
 
-std::vector<size_t> simc_data::slug_to_spellIDs(const std::string& slug)
+std::vector<int> simc_data::slug_to_spellIDs(const std::string& slug)
 {
-    std::vector<size_t> ret;
+    std::vector<int> ret;
     for(const auto& e : __spell_data)
     {
         if(!e._name)
@@ -51,17 +51,17 @@ std::vector<size_t> simc_data::slug_to_spellIDs(const std::string& slug)
     return ret;
 }
 
-std::set<size_t> simc_data::specIDs_from_classID(size_t classID)
+std::set<int> simc_data::specIDs_from_classID(int classID)
 {
     auto mask = util::classMask_from_classID(classID);
-    std::set<size_t> specIDs;
+    std::set<int> specIDs;
     for(const auto& t : __talent_data)
         if(t._m_class == mask && t._spec != 0)
             specIDs.insert(t._spec);
     return specIDs;
 }
 
-size_t simc_data::classID_from_specID(size_t specID)
+int simc_data::classID_from_specID(int specID)
 {
     for(const auto& t : __talent_data)
         if(t._spec == specID)
@@ -74,7 +74,7 @@ size_t simc_data::classID_from_specID(size_t specID)
 
 namespace
 {
-    const auto& talent_entry(size_t id, bool throwIfNotFound)
+    const auto& talent_entry(int id, bool throwIfNotFound)
     {
         for(const auto& e : __talent_data)
         {
@@ -88,11 +88,11 @@ namespace
     }
 } // namespace
 
-std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
+std::set<int> simc_data::talentIDs_from_specID(int specID)
 {
     auto classID = simc_data::classID_from_specID(specID);
     auto mask = util::classMask_from_classID(classID);
-    std::set<size_t> talentIDs;
+    std::set<int> talentIDs;
     for(const auto& t : __talent_data)
     {
         if(t._m_class == mask && t._spec == specID)
@@ -116,13 +116,13 @@ std::set<size_t> simc_data::talentIDs_from_specID(size_t specID)
     THROW_UTIL_EXCEPTION << "Could not detect all 21 talents, " << simc_copied::specName_from_specID(specID) << " (specID=" << specID << ")";
 }
 
-simc_data::talent_t simc_data::talent_info(size_t talentID, bool throwIfNotFound)
+simc_data::talent_t simc_data::talent_info(int talentID, bool throwIfNotFound)
 {
     auto e = talent_entry(talentID, throwIfNotFound);
     return simc_data::talent_t{.id = e._id, .name = e._name, .row = e._row + 1, .col = e._col + 1, .specID = e._spec};
 }
 
-simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
+simc_data::talent_set_t simc_data::talents_from_specID(int specID)
 {
     talent_set_t talents;
     for(const auto& talentID : talentIDs_from_specID(specID))
@@ -135,7 +135,7 @@ simc_data::talent_set_t simc_data::talents_from_specID(size_t specID)
 
 namespace
 {
-    const auto& item_entry(size_t id, bool throwIfNotFound)
+    const auto& item_entry(int id, bool throwIfNotFound)
     {
         for(const auto& e : __item_data)
         {
@@ -149,15 +149,15 @@ namespace
     }
 } // namespace
 
-simc_data::item_t simc_data::item_info(size_t itemID, bool throwIfNotFound)
+simc_data::item_t simc_data::item_info(int itemID, bool throwIfNotFound)
 {
     auto e = item_entry(itemID, throwIfNotFound);
     return simc_data::item_t{.id = e.id, .name = e.name};
 }
 
-std::map<std::string, std::set<size_t>> simc_data::itemsets_from_classID(size_t classID)
+std::map<std::string, std::set<int>> simc_data::itemsets_from_classID(int classID)
 {
-    std::map<std::string, std::set<size_t>> allData;
+    std::map<std::string, std::set<int>> allData;
 
     std::set<std::string> itemsets;
     for(const auto& e : __set_bonus_data)
@@ -189,7 +189,7 @@ std::map<std::string, std::set<size_t>> simc_data::itemsets_from_classID(size_t 
 
 namespace
 {
-    const auto& artifact_trait_entry(size_t id, bool throwIfNotFound)
+    const auto& artifact_trait_entry(int id, bool throwIfNotFound)
     {
         for(const auto& e : __artifact_power_data)
         {
@@ -203,7 +203,7 @@ namespace
     }
 } // namespace
 
-size_t simc_data::artifactID_from_specID(size_t specID)
+int simc_data::artifactID_from_specID(int specID)
 {
     for(const auto& t : __artifact_data)
     {
@@ -215,10 +215,10 @@ size_t simc_data::artifactID_from_specID(size_t specID)
     THROW_UTIL_EXCEPTION << "Could not find artifactID for specID=" << specID;
 }
 
-std::pair<size_t, size_t> simc_data::artifactItemIDs_from_artifactID(size_t artifactID)
+std::pair<int, int> simc_data::artifactItemIDs_from_artifactID(int artifactID)
 {
     // Gotta go through the normal items table to check for the artifact ID
-    size_t mainHand = 0;
+    int mainHand = 0;
     for(const auto& e : __item_data)
     {
         if(e.id_artifact == artifactID)
@@ -240,42 +240,42 @@ std::pair<size_t, size_t> simc_data::artifactItemIDs_from_artifactID(size_t arti
 
             // Dual-wield
             if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_WEAPONOFFHAND)
-                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+                return std::make_pair<int, int>(e.id_item, e.id_child);
             if(i1.inventory_type == INVTYPE_WEAPONOFFHAND && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
-                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+                return std::make_pair<int, int>(e.id_child, e.id_item);
 
             // Dual-wield 2H'er: Fury/TG
             if(i1.inventory_type == INVTYPE_2HWEAPON && i2.inventory_type == INVTYPE_2HWEAPON)
-                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+                return std::make_pair<int, int>(e.id_item, e.id_child);
 
             // Weapon + Shield
             if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_SHIELD)
-                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+                return std::make_pair<int, int>(e.id_item, e.id_child);
             if(i1.inventory_type == INVTYPE_SHIELD && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
-                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+                return std::make_pair<int, int>(e.id_child, e.id_item);
 
             // Weapon + Offhand
             if(i1.inventory_type == INVTYPE_WEAPONMAINHAND && i2.inventory_type == INVTYPE_HOLDABLE)
-                return std::make_pair<size_t, size_t>(e.id_item, e.id_child);
+                return std::make_pair<int, int>(e.id_item, e.id_child);
             if(i1.inventory_type == INVTYPE_HOLDABLE && i2.inventory_type == INVTYPE_WEAPONMAINHAND)
-                return std::make_pair<size_t, size_t>(e.id_child, e.id_item);
+                return std::make_pair<int, int>(e.id_child, e.id_item);
 
             THROW_UTIL_EXCEPTION << "Unknown item slots for artifactID=" << artifactID << " -- (i1=" << i1.inventory_type << ", i2=" << i2.inventory_type
                                  << ")";
         }
     }
 
-    return std::pair<size_t, size_t>(mainHand, 0);
+    return std::pair<int, int>(mainHand, 0);
 }
 
-std::pair<size_t, size_t> simc_data::artifactItemIDs_from_specID(size_t specID)
+std::pair<int, int> simc_data::artifactItemIDs_from_specID(int specID)
 {
     return artifactItemIDs_from_artifactID(artifactID_from_specID(specID));
 }
 
-std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
+std::set<int> simc_data::artifactTraitIDs_from_artifactID(int artifactID)
 {
-    std::set<size_t> allTraitIDs;
+    std::set<int> allTraitIDs;
     for(const auto& t : __artifact_power_data)
     {
         if(t.id_artifact == artifactID)
@@ -284,13 +284,13 @@ std::set<size_t> simc_data::artifactTraitIDs_from_artifactID(size_t artifactID)
     return allTraitIDs;
 }
 
-simc_data::artifact_trait_t simc_data::artifact_trait_info(size_t artifactTraitID, bool throwIfNotFound)
+simc_data::artifact_trait_t simc_data::artifact_trait_info(int artifactTraitID, bool throwIfNotFound)
 {
     const auto& e = artifact_trait_entry(artifactTraitID, throwIfNotFound);
     return simc_data::artifact_trait_t{.id = e.id, .name = e.name, .max_rank = e.max_rank};
 }
 
-simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t artifactID)
+simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(int artifactID)
 {
     artifact_trait_set_t traits;
     for(const auto& id : artifactTraitIDs_from_artifactID(artifactID))
@@ -303,7 +303,7 @@ simc_data::artifact_trait_set_t simc_data::artifactTraits_from_artifactID(size_t
 
 namespace
 {
-    const auto& spell_entry(size_t id, bool throwIfNotFound)
+    const auto& spell_entry(int id, bool throwIfNotFound)
     {
         for(const auto& e : __spell_data)
         {
@@ -317,17 +317,17 @@ namespace
     }
 } // namespace
 
-std::set<size_t> simc_data::spellIDs_from_classID(size_t classID)
+std::set<int> simc_data::spellIDs_from_classID(int classID)
 {
     auto mask = util::classMask_from_classID(classID);
-    std::set<size_t> spellIDs;
+    std::set<int> spellIDs;
     for(const auto& e : __spell_data)
         if((e._class_mask & mask) == mask)
             spellIDs.insert(e._id);
     return spellIDs;
 }
 
-simc_data::spell_t simc_data::spell_info(size_t spellID, bool throwIfNotFound)
+simc_data::spell_t simc_data::spell_info(int spellID, bool throwIfNotFound)
 {
     const auto& e = spell_entry(spellID, throwIfNotFound);
     return simc_data::spell_t{
@@ -349,7 +349,7 @@ simc_data::spell_t simc_data::spell_info(size_t spellID, bool throwIfNotFound)
     };
 }
 
-simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
+simc_data::spell_set_t simc_data::spells_from_classID(int classID)
 {
     spell_set_t spells;
     for(const auto& id : spellIDs_from_classID(classID))
@@ -362,7 +362,7 @@ simc_data::spell_set_t simc_data::spells_from_classID(size_t classID)
 
 namespace
 {
-    const auto& spelleffect_entry(size_t id, bool throwIfNotFound)
+    const auto& spelleffect_entry(int id, bool throwIfNotFound)
     {
         for(const auto& e : __spelleffect_data)
         {
@@ -376,16 +376,16 @@ namespace
     }
 } // namespace
 
-std::set<size_t> simc_data::spellEffectIDs_from_spellID(size_t spellID)
+std::set<int> simc_data::spellEffectIDs_from_spellID(int spellID)
 {
-    std::set<size_t> ids;
+    std::set<int> ids;
     for(const auto& e : __spelleffect_data)
         if(e._spell_id == spellID)
             ids.insert(e._id);
     return ids;
 }
 
-simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool throwIfNotFound)
+simc_data::spelleffect_t simc_data::spelleffect_info(int spellEffectID, bool throwIfNotFound)
 {
     const auto& e = spelleffect_entry(spellEffectID, throwIfNotFound);
     return spelleffect_t{.id = e._id,
@@ -399,7 +399,7 @@ simc_data::spelleffect_t simc_data::spelleffect_info(size_t spellEffectID, bool 
                          .die_sides = e._die_sides};
 }
 
-simc_data::spelleffect_set_t simc_data::spellEffects_from_spellID(size_t spellID)
+simc_data::spelleffect_set_t simc_data::spellEffects_from_spellID(int spellID)
 {
     spelleffect_set_t spellEffects;
     for(const auto& id : spellEffectIDs_from_spellID(spellID))

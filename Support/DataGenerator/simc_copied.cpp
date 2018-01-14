@@ -12,7 +12,6 @@ namespace simc_live
 #include "dbc/generated/sc_talent_data.inc"
 }
 
-#ifdef PTR
 namespace simc_ptr
 {
 #include "dbc/generated/sc_item_data_ptr.inc"
@@ -22,7 +21,6 @@ namespace simc_ptr
 #include "dbc/generated/sc_spell_lists_ptr.inc"
 #include "dbc/generated/sc_talent_data_ptr.inc"
 }
-#endif
 
 #include "simc_copied.hpp"
 #include "util.hpp"
@@ -31,12 +29,12 @@ using namespace simc_copied;
 using namespace util;
 #include "simc_extracted.inl"
 
-std::string simc_copied::className_from_classID(size_t classID)
+std::string simc_copied::className_from_classID(int classID)
 {
     return std::string(_class_map[classID].name);
 }
 
-std::string simc_copied::specName_from_specID(size_t specID)
+std::string simc_copied::specName_from_specID(int specID)
 {
     auto it = util::find_if(spec_map, [&](const auto& s) { return s.spec == specID; });
     if(it == std::end(spec_map))
