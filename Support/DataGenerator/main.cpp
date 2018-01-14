@@ -2,6 +2,8 @@
 #include "simc_data.hpp"
 #include "util.hpp"
 
+#include "argagg.hpp"
+
 #include "dbc/data_enums.hh"
 
 #include <algorithm>
@@ -229,6 +231,42 @@ void export_data_for_class(size_t classID)
 
 int main(int argc, char* argv[])
 {
+    argagg::parser argparser{{
+      {"ptr", {"--ptr"}, "Exports data using PTR values", 0},
+      {"classID", {"--classID"}, "Input class ID", 1},
+      {"itemID", {"--itemID"}, "Input item ID", 1},
+      {"spellID", {"--spellID"}, "Input spell ID", 1},
+    }};
+
+    int classID = 0;
+    int itemID = 0;
+    int spellID = 0;
+
+    argagg::parser_results args;
+    try
+    {
+        args = argparser.parse(argc, argv);
+
+        if(args["classID"])
+        {
+            classID = args["classID"].as<int>();
+        }
+        if(args["itemID"])
+        {
+            itemID = args["itemID"].as<int>();
+        }
+        if(args["spellID"])
+        {
+            spellID = args["spellID"].as<int>();
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    /*
     std::vector<std::string> args(argc);
     std::copy(&argv[0], &argv[argc], std::begin(args));
 
@@ -268,6 +306,7 @@ int main(int argc, char* argv[])
         export_data_for_class(classID);
         return 0;
     }
+    */
 
     return 0;
 }

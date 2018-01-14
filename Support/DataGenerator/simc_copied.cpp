@@ -1,12 +1,28 @@
 #include "dbc/data_definitions.hh"
 #include "dbc/data_enums.hh"
 #include "dbc/dbc.hpp"
+
+namespace simc_live
+{
 #include "dbc/generated/sc_item_data.inc"
 #include "dbc/generated/sc_item_data2.inc"
 #include "dbc/generated/sc_spec_list.inc"
 #include "dbc/generated/sc_spell_data.inc"
 #include "dbc/generated/sc_spell_lists.inc"
 #include "dbc/generated/sc_talent_data.inc"
+}
+
+#ifdef PTR
+namespace simc_ptr
+{
+#include "dbc/generated/sc_item_data_ptr.inc"
+#include "dbc/generated/sc_item_data_ptr2.inc"
+#include "dbc/generated/sc_spec_list_ptr.inc"
+#include "dbc/generated/sc_spell_data_ptr.inc"
+#include "dbc/generated/sc_spell_lists_ptr.inc"
+#include "dbc/generated/sc_talent_data_ptr.inc"
+}
+#endif
 
 #include "simc_copied.hpp"
 #include "util.hpp"
