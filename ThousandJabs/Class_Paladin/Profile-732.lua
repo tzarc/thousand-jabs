@@ -8,7 +8,7 @@ local Config = TJ:GetModule('Config')
 local mmax = math.max
 local mmin = math.min
 
-if not Core:MatchesBuild('7.3.2', '7.3.2') then return end
+if not Core:MatchesBuild('7.3.2', '7.3.9') then return end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Retribution profile definition
