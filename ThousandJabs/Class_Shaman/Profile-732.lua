@@ -206,6 +206,9 @@ local elemental_base_overrides = {
 
 local elemental_talent_overrides = {
     ascendance = {
+        AuraID = 114050,
+        AuraUnit = 'player',
+        AuraMine = true,
         aura_duration = 15,
     },
     elemental_blast = {

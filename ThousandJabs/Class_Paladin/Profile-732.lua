@@ -171,6 +171,9 @@ local retribution_ability_overrides = {
                 env.judgment_of_light.expirationTime = env.currentTime + 30
                 env.judgment_of_light.aura_stack = 40
             end
+            if env.set_bonus.tier21_4pc then
+                env.sacred_judgment.expirationTime = env.currentTime + 10
+            end
         end
     },
     judgment_of_light = {
@@ -259,6 +262,32 @@ local retribution_legendary_overrides = {
     },
 }
 
+local retribution_tier_overrides = {
+    sacred_judgment = { -- T21 4pc
+        AuraID = { 253806 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+local retribution_hooks = {
+    hooks = {
+        perform_spend = function(spell, env, action, origCostType, origCostAmount)
+            if origCostType == 'holy_power' and env.sacred_judgment.aura_up then
+                env.sacred_judgment.expirationTime = 0
+                return origCostType, mmax(0, origCostAmount - 1)
+            end
+            return origCostType, origCostAmount
+        end,
+        can_spend = function(spell, env, action, origCostType, origCostAmount)
+            if origCostType == 'holy_power' and env.sacred_judgment.aura_up then
+                return origCostType, mmax(0, origCostAmount - 1)
+            end
+            return origCostType, origCostAmount
+        end,
+    },
+}
+
 TJ:RegisterPlayerClass({
     name = 'Retribution',
     class_id = 2,
@@ -271,6 +300,8 @@ TJ:RegisterPlayerClass({
         retribution_talent_overrides,
         retribution_artifact_overrides,
         retribution_legendary_overrides,
+        retribution_tier_overrides,
+        retribution_hooks,
     },
     config_checkboxes = {
         ashes_to_ashes_selected = false,
