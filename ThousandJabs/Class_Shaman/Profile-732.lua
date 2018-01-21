@@ -10,7 +10,8 @@ if not Core:MatchesBuild('7.3.2', '7.3.9') then return end
 local mmin = math.min
 local mmax = math.max
 
--- When exporting Ele shaman, run a normal export, then select Ascendance and re-run '/tj _esd' a second time.
+-- When exporting Ele shaman, run a normal export, then select Ascendance, cast Ascendance, and re-run '/tj _esd' a second time while it's up.
+-- You'll most likely need to enable devMode to get through all the talents before the buff goes away.
 
 -- exported with /tj _esd
 local elemental_abilities_exported = {
@@ -53,13 +54,10 @@ local elemental_abilities_exported = {
     lightning_surge_totem = { SpellIDs = { 192058 }, TalentID = 19275, },
     liquid_magma_totem = { SpellIDs = { 192222 }, TalentID = 22145, },
     mastery_elemental_overload = { SpellIDs = { 168534 }, },
-    pack_hobgoblin = { SpellIDs = { 69046 }, },
     path_of_flame = { TalentID = 22356, },
     primal_elementalist = { TalentID = 22172, },
     purge = { SpellIDs = { 370 }, },
     reincarnation = { SpellIDs = { 20608 }, },
-    rocket_barrage = { SpellIDs = { 69041 }, },
-    rocket_jump = { SpellIDs = { 69070 }, },
     storm_elemental = { SpellIDs = { 192249 }, TalentID = 19266, },
     stormkeeper = {  SpellIDs = { 205495 }, }, -- TODO: Check
     thunderstorm = { SpellIDs = { 51490 }, },
@@ -179,6 +177,12 @@ local elemental_base_overrides = {
             end
             return spell.base_cast_time
         end,
+        cooldown_remains_override = function(spell, env)
+            if env.ascendance.aura_up then
+                return 0
+            end
+            return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime)
+        end,
         PerformCast = function(spell, env)
             env.maelstrom.gained = env.maelstrom.gained + 12
             if env.lava_surge.aura_up then
@@ -209,6 +213,8 @@ local elemental_talent_overrides = {
         AuraID = 114050,
         AuraUnit = 'player',
         AuraMine = true,
+        AuraApplied = 'ascendance',
+        AuraApplyLength = 15,
         aura_duration = 15,
     },
     elemental_blast = {
