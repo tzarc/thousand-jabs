@@ -87,6 +87,15 @@ local function DecrementIcefury(env)
     end
 end
 
+local function DecrementStormkeeper(env)
+    if env.stormkeeper.aura_up then
+        env.stormkeeper.aura_stack = env.stormkeeper.aura_stack - 1
+        if env.stormkeeper.aura_stack == 0 then
+            env.stormkeeper.expirationTime = 0
+        end
+    end
+end
+
 local elemental_base_overrides = {
     wind_shear = {
         spell_cast_time = 0.01, -- off GCD!
@@ -145,14 +154,16 @@ local elemental_base_overrides = {
     },
     lightning_bolt = {
         PerformCast = function(spell, env)
-            env.maelstrom.gained = env.maelstrom.gained + 8
+            env.maelstrom.gained = env.maelstrom.gained + mmin(8, env.maelstrom.deficit)
             DecrementUpdateElementalFocus(env)
+            DecrementStormkeeper(env)
         end,
     },
     chain_lightning = {
         PerformCast = function(spell, env)
-            env.maelstrom.gained = env.maelstrom.gained + (6 * mmin(5, env.seen_targets))
+            env.maelstrom.gained = env.maelstrom.gained + mmin((6 * mmin(5, env.seen_targets)), env.maelstrom.deficit)
             DecrementUpdateElementalFocus(env)
+            DecrementStormkeeper(env)
         end,
     },
     thunderstorm = {
@@ -178,13 +189,14 @@ local elemental_base_overrides = {
             return spell.base_cast_time
         end,
         cooldown_remains_override = function(spell, env)
-            if env.ascendance.aura_up then
-                return 0
-            end
-            return (spell.blacklisted and 999) or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime)
+            if env.ascendance.aura_up then return 0 end
+            if spell.blacklisted then return 999 end
+            return type(spell.RechargeTime) ~= 'nil'
+                and mmax(0, spell.spell_recharge_time)
+                or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime)
         end,
         PerformCast = function(spell, env)
-            env.maelstrom.gained = env.maelstrom.gained + 12
+            env.maelstrom.gained = env.maelstrom.gained + mmin(12, env.maelstrom.deficit)
             if env.lava_surge.aura_up then
                 env.lava_surge.expirationTime = 0
             end
@@ -236,8 +248,8 @@ local elemental_talent_overrides = {
         AuraApplied = 'icefury',
         AuraApplyLength = 15,
         PerformCast = function(spell, env)
-            env.maelstrom.gained = env.maelstrom.gained + 24
-            env.icefury.aura_stack = 4
+            env.maelstrom.gained = env.maelstrom.gained + mmin(24, env.maelstrom.deficit)
+            spell.aura_stack = 4
             DecrementUpdateElementalFocus(env)
         end,
     },
@@ -254,6 +266,16 @@ local elemental_talent_overrides = {
 }
 
 local elemental_artifact_abilities = {
+    stormkeeper = {
+        AuraID = 205495, -- TODO: Check
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'stormkeeper',
+        AuraApplyLength = 15,
+        PerformCast = function(spell,env)
+            spell.aura_stack = 3
+        end
+    },
     power_of_the_maelstrom = {
         AuraID = 191861,
         AuraUnit = 'player',
