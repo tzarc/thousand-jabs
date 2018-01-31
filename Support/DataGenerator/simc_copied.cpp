@@ -10,7 +10,7 @@ namespace simc_live
 #include "dbc/generated/sc_spell_data.inc"
 #include "dbc/generated/sc_spell_lists.inc"
 #include "dbc/generated/sc_talent_data.inc"
-}
+} // namespace simc_live
 
 namespace simc_ptr
 {
@@ -20,7 +20,7 @@ namespace simc_ptr
 #include "dbc/generated/sc_spell_data_ptr.inc"
 #include "dbc/generated/sc_spell_lists_ptr.inc"
 #include "dbc/generated/sc_talent_data_ptr.inc"
-}
+} // namespace simc_ptr
 
 #include "simc_copied.hpp"
 #include "util.hpp"

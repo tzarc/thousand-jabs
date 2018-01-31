@@ -347,7 +347,7 @@ local unholy_talents = {
             end
             if env.soul_reaper.aura_up then
                 env.soul_reaper_self.expirationTime = env.currentTime + 6
-                env.soul_reaper_self.aura_stack = env.soul_reaper_self.aura_stack + 1
+                env.soul_reaper_self.aura_stack = (env.soul_reaper_self.aura_stack or 0) + 1
             end
         end,
     },
@@ -385,14 +385,14 @@ local unholy_talents = {
             return lastCast and (env.currentTime < (lastCast + 20)) and true or false
         end,
     },
-    soul_reaper = { -- Self-buff, from when festering explodes, corresponding debuff on the target is below. Note that there are conditional substitutions present to be able to change the debuff name.
+    soul_reaper_self = { -- Self-buff, from when festering explodes, corresponding debuff on the target is below. Note that there are conditional substitutions present to be able to change the debuff name.
         AuraID = 215711,
         AuraUnit = 'player',
         AuraMine = true,
         AuraApplied = 'soul_reaper_debuff',
         AuraApplyLength = 10,
     },
-    soul_reaper_debuff = { -- Target debuff
+    soul_reaper = { -- Target debuff
         AuraID = 130736,
         AuraUnit = 'target',
         AuraMine = true,

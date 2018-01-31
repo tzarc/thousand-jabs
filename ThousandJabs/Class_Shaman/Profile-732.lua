@@ -109,6 +109,11 @@ local elemental_base_overrides = {
             end
         end,
     },
+    fire_elemental = {
+        Icon = function(spell,env)
+            return select(3, GetSpellInfo(198067)) -- For some reason, Storm elemental overrides this and it doesn't get restored
+        end,
+    },
     flame_shock = {
         spell_cast_time = 0.01,
         AuraID = 188389,
@@ -191,7 +196,7 @@ local elemental_base_overrides = {
         cooldown_remains_override = function(spell, env)
             if env.ascendance.aura_up then return 0 end
             if spell.blacklisted then return 999 end
-            return type(spell.RechargeTime) ~= 'nil'
+            return env.echo_of_the_elements.talent_enabled
                 and mmax(0, spell.spell_recharge_time)
                 or mmax(0, spell.cooldownStart + spell.cooldownDuration - env.currentTime)
         end,
