@@ -14,3 +14,6 @@ ThousandJabs/Libs/LibStub/
 ThousandJabs_Config/Libs/AceLocale-3.0/
 ThousandJabs_Config/Libs/AceGUI-3.0/
 ThousandJabs_Config/Libs/AceConfig-3.0/
+
+**/._*
+**/.DS_Store
