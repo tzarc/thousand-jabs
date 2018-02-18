@@ -7,6 +7,8 @@ local Config = TJ:GetModule('Config')
 
 if not Core:MatchesBuild('7.3.2', '7.3.9') then return end
 
+local mmin = math.min
+
 ------------------------------------------------------------------------------------------------------------------------
 -- Brewmaster profile definition
 ------------------------------------------------------------------------------------------------------------------------
@@ -272,6 +274,18 @@ local windwalker_base_overrides = {
             end
         end,
     },
+    touch_of_death = {
+        AuraID = 115080,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'touch_of_death',
+        AuraApplyLength = 8,
+        CanCast = function(spell, env)
+            return spell.aura_down and true or false
+        end,
+        PerformCast = function(spell, env)
+        end,
+    },
     touch_of_karma = {
         spell_cast_time = 0.01, -- off GCD!
     },
@@ -284,13 +298,20 @@ local windwalker_base_overrides = {
         end,
     },
     blackout_kick = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 1 end,
         PerformCast = function(spell, env)
             if env.bok_proc.aura_react then
+                if env.set_bonus.tier21_2pc then
+                    env.chi.gained = env.chi.gained + mmin(1, env.chi.deficit)
+                end
                 env.bok_proc.expirationTime = 0 -- remove the buff
             end
         end,
     },
     fists_of_fury = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 3 end,
         spell_cast_time = function(spell,env) return env.playerHasteMultiplier * 4 end, -- seems like we can't detect this...
     },
     energizing_elixir = {
@@ -320,9 +341,15 @@ local windwalker_base_overrides = {
         AuraUnit = 'player',
     },
     spinning_crane_kick = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 3 end,
         count = function(spell, env)
             return env.active_enemies
         end
+    },
+    rising_sun_kick = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end,
     },
 }
 
@@ -364,6 +391,8 @@ local windwalker_artifact_overrides = {
         artifact_enabled = function(spell,env) return Config:GetSpec("gale_burst_selected") end,
     },
     strike_of_the_windlord = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end,
         artifact_enabled = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
     },
 }
@@ -384,6 +413,7 @@ local windwalker_tiersets = {
     }
 }
 
+local lastSerenityState
 local windwalker_hooks = {
     hooks = {
         perform_spend = function(spell, env, action, origCostType, origCostAmount)
@@ -395,6 +425,13 @@ local windwalker_hooks = {
                 end
             end
             return origCostType, origCostAmount
+        end,
+        OnStateInit = function(env)
+            -- Dodgy shit for when serenity changes costs
+            if lastSerenityState ~= env.serenity.aura_up then
+                lastSerenityState = env.serenity.aura_up
+                TJ:QueueProfileReload(true)
+            end
         end,
     },
 }
