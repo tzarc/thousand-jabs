@@ -8,12 +8,9 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local addonName, tj, _ = ...
-local LibStub = LibStub
-local TJ = tj.TJ
-local Callbacks = tj.Callbacks
-local Config = tj.Config
-local UI = tj.UI
+local addonName, TJ, _ = ...
+local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -30,10 +27,11 @@ LibStub('LibTJSandbox-8.0'):Use(addonName)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function UI:PROFILE_ACTIVATED(classID, specID)
-    TJ:Print('PROFILE_ACTIVATED: %d %d', classID, specID)
+    TJ:Print('PROFILE_ACTIVATED(UI): %d %d', classID, specID)
 end
 Callbacks.Register(UI, 'PROFILE_ACTIVATED')
 
 function UI:PROFILE_DEACTIVATED(classID, specID)
+    TJ:Print('PROFILE_DEACTIVATED(UI): %d %d', classID, specID)
 end
 Callbacks.Register(UI, 'PROFILE_DEACTIVATED')

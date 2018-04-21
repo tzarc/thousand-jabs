@@ -20,6 +20,7 @@ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 LibTJSerpentDump.lua
 LibTJSandbox.lua
 LibTJTableCache.lua
+LibTJProfiling.lua
 
 Core.lua
 Config.lua

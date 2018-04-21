@@ -8,23 +8,27 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Addon definition.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local addonName, tj, _ = ...
+local addonName, TJ, _ = ...
 local LibStub = LibStub
-tj.TJ = tj.TJ or {}
-local TJ = tj.TJ
 
 local devMode = false
 if devMode then _G['TJ'] = TJ end
 
 -- Modules
+local ThousandJabsGlobal = {}
 local Callbacks = {}
+local Events = {}
 local Config = {}
 local UI = {}
-local Broker = {}
-tj.Callbacks = Callbacks
-tj.Config = Config
-tj.UI = UI
-tj.Broker = Broker
+local Stats = {}
+TJ.ThousandJabsGlobal = ThousandJabsGlobal
+TJ.Callbacks = Callbacks
+TJ.Events = Events
+TJ.Config = Config
+TJ.UI = UI
+TJ.Stats = Stats
+
+_G['ThousandJabs'] = ThousandJabsGlobal
 
 -- Command
 local SLASH_TJ1 = '/tj'
@@ -37,11 +41,11 @@ if devMode then
     SLASH_TJ_RLN1, SLASH_TJ_RLN2, SLASH_TJ_RLN3 = '/rl', '/rln', '//'
     SLASH_TJ_RLC1 = '/rlc'
     function SlashCmdList.TJ_RLN(msg, editbox)
-        SetCVar("scriptProfile", "0")
+        SetCVar('scriptProfile', '0')
         ReloadUI()
     end
     function SlashCmdList.TJ_RLC(msg, editbox)
-        SetCVar("scriptProfile", "1")
+        SetCVar('scriptProfile', '1')
         ReloadUI()
     end
 end
@@ -54,8 +58,13 @@ local co_resume = coroutine.resume
 local co_status = coroutine.status
 local co_yield = coroutine.yield
 local CreateFrame = CreateFrame
+local debugprofilestop = debugprofilestop
 local debugstack = debugstack
+local GetAddOnCPUUsage = GetAddOnCPUUsage
+local GetAddOnMemoryUsage = GetAddOnMemoryUsage
 local GetTime = GetTime
+local InCombatLockdown = InCombatLockdown
+local mceil = math.ceil
 local mmax = math.max
 local mmin = math.min
 local NewTicker = C_Timer.NewTicker
@@ -75,13 +84,18 @@ local type = type
 local UIParent = UIParent
 local UISpecialFrames = UISpecialFrames
 local unpack = unpack
+local UpdateAddOnCPUUsage = UpdateAddOnCPUUsage
+local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 local wipe = wipe
 
 local CBH = LibStub('CallbackHandler-1.0')
 local LSD = LibStub('LibTJSerpentDump-8.0')
 local LSM = LibStub('LibSharedMedia-3.0')
+local PRF = LibStub('LibTJProfiling-8.0')
 local Sandbox = LibStub('LibTJSandbox-8.0')
 local TableCache = LibStub('LibTJTableCache-8.0')
+
+local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TJ sandboxing
@@ -98,20 +112,60 @@ _G['CT'] = function() return TableCache:Acquire() end
 _G['RT'] = function(tbl) TableCache:Release(tbl) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Callback notifications
---   Callbacks.RegisterCallback('myFuncToken', 'CALLBACK_NAME', myFunc) ---> Invokes myFunc()
---   Callbacks.RegisterCallback(TJ, 'CALLBACK_NAME') ---> Invokes TJ:CALLBACK_NAME()
+-- Event/Callback notifications
+--   Events.Register('myFuncToken', 'PLAYER_ENTERING_WORLD', myFunc) ---> Invokes myFunc() when event PLAYER_ENTERING_WORLD received
+--   Events.Register(Module, 'PLAYER_ENTERING_WORLD') ---> Invokes Module:PLAYER_ENTERING_WORLD() when event PLAYER_ENTERING_WORLD received
+--   Callbacks.Register('myFuncToken', 'CALLBACK_NAME', myFunc) ---> Invokes myFunc()
+--   Callbacks.Register(Module, 'CALLBACK_NAME') ---> Invokes Module:CALLBACK_NAME()
 --
 -- Available callbacks:
 --   VARIABLES_LOADED -- Fired when the normal WoW VARIABLES_LOADED event is received
 --   CONFIG_CHANGED -- Fired whenever one of the config values changed (or after variables loaded), allows other components to update their local copies
 --   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
+--   DATABROKER_TEXT_UPDATE -- Text to show in the databroker
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    local callbackRegistry = CBH:New(Callbacks, "Register", "Unregister", false)
+    local callbackRegistry = CBH:New(Callbacks, 'Register', 'Unregister', false)
     Callbacks.Invoke = callbackRegistry.Fire
+
+    local externalCallbackRegistry = CBH:New(ThousandJabsGlobal, 'Register', 'Unregister', false)
+    Callbacks.InvokeExternal = externalCallbackRegistry.Fire
+
+    local eventRegistry = CBH:New(Events, 'Register', 'Unregister', false)
+    local eventFrame = CreateFrame('Frame', addonName..'_EventFrame')
+    eventFrame:SetScript('OnEvent', function(_, eventName, ...) eventRegistry:Fire(eventName, ...) end)
+    eventFrame:Show()
+
+    function eventRegistry:OnUsed(_, eventName)
+        eventFrame:RegisterEvent(eventName)
+    end
+
+    function eventRegistry:OnUnused(_, eventName)
+        eventFrame:UnregisterEvent(eventName)
+    end
 end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Config values
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+local doDebug = false
+local doProfiling = false
+
+Callbacks.Register('CoreConfigUpdate', 'CONFIG_CHANGED', function()
+    TJ:DevPrint('CONFIG_CHANGED(CoreConfigUpdate)')
+
+    doDebug = Config:Get('doDebug')
+    if doDebug then
+        TJ:ShowDebugLog()
+    else
+        TJ:HideDebugLog()
+    end
+
+    doProfiling = Config:Get('doProfiling')
+    PRF:EnableProfiling(doProfiling)
+end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Unknown field sandbox getter/setter observers
@@ -127,7 +181,7 @@ do
     local function globalReadObserver(key)
         local stack = trim(debugstack(3))
         local file, line = stack:match('(.-):(.-):')
-        local tableKey = ('%s:%s:%d'):format(key, file, line)
+        local tableKey = ('%s:%s:%d'):format(tostring(key), file, line)
 
         -- Keep track of the stacks of every global read we haven't made a local copy for
         if not globalReads[tableKey] then
@@ -142,7 +196,7 @@ do
     local function globalWriteObserver(key, val)
         local stack = trim(debugstack(3))
         local file, line = stack:match('(.-):(.-):')
-        local tableKey = ('%s:%s:%d'):format(key, file, line)
+        local tableKey = ('%s:%s:%d'):format(tostring(key), file, line)
 
         -- Keep track of the stacks of every global write we haven't made a local copy for
         if not globalWrites[tableKey] then
@@ -163,22 +217,27 @@ function TJ:Format(f, ...)
     return ((select('#', ...) > 0) and f:format(...) or (type(f) == 'string' and f) or tostring(f) or '')
 end
 
-function TJ:Print(...)
-    print('|cFF00FFFFT|cFF00EFFFh|cFF00DFFFo|cFF00CFFFu|cFF00BFFFs|cFF00AFFFa|cFF009FFFn|cFF008FFFd|cFF007FFFJ|cFF006FFFa|cFF005FFFb|cFF004FFFs|cFF003FFF:|r', self:Format(...))
-end
-
-function TJ:DevPrint(...)
-    if devMode then self:Print("%.3f: %s", debugprofilestop(), self:Format(...)) end
-end
 
 do
+    local printPrefix = '|cFF00FFFFT|cFF00EFFFh|cFF00DFFFo|cFF00CFFFu|cFF00BFFFs|cFF00AFFFa|cFF009FFFn|cFF008FFFd|cFF007FFFJ|cFF006FFFa|cFF005FFFb|cFF004FFFs|cFF003FFF:|r'
+    local debugPrefix = function() return ('%.3f:'):format(debugprofilestop()) end
+    function TJ:Print(...)
+        print(printPrefix, self:Format(...))
+    end
+
+    function TJ:DevPrint(...)
+        if devMode then
+            print(printPrefix, debugPrefix(), self:Format(...))
+        end
+    end
+
     local printedOnce = {}
 
     function TJ:PrintOnce(...)
         local text = self:Format(...)
         if not printedOnce[text] then
             printedOnce[text] = true
-            self:Print(text)
+            print(printPrefix, text)
         end
     end
 
@@ -187,7 +246,7 @@ do
             local text = self:Format(...)
             if not printedOnce[text] then
                 printedOnce[text] = true
-                self:Print("%.3f: %s", debugprofilestop(), text)
+                print(printPrefix, debugPrefix, text)
             end
         end
     end
@@ -243,11 +302,11 @@ end
 
 function TJ:MatchesBuild(tripletFrom, tripletTo)
     tripletTo = tripletTo or tripletFrom
-    local f1, f2, f3 = tripletFrom:match("(%d+)%.(%d+)%.(%d+)")
+    local f1, f2, f3 = tripletFrom:match('(%d+)%.(%d+)%.(%d+)')
     local f = tonumber(f1)*10000000000 + tonumber(f2)*100000000 + tonumber(f3)*1000000
-    local t1, t2, t3 = tripletTo:match("(%d+)%.(%d+)%.(%d+)")
+    local t1, t2, t3 = tripletTo:match('(%d+)%.(%d+)%.(%d+)')
     local t = tonumber(t1)*10000000000 + tonumber(t2)*100000000 + tonumber(t3)*1000000
-    local c1, c2, c3 = GetBuildInfo():match("(%d+)%.(%d+)%.(%d+)")
+    local c1, c2, c3 = GetBuildInfo():match('(%d+)%.(%d+)%.(%d+)')
     local c = tonumber(c1)*10000000000 + tonumber(c2)*100000000 + tonumber(c3)*1000000
     return (f <= c and c <= t) and true or false
 end
@@ -299,26 +358,26 @@ do
     local slashCmdArgs = {}
     function SlashCmdList.TJ(msg, editbox)
         local args = {}
-        for w in msg:gmatch("%S+") do args[1+#args] = w end
+        for w in msg:gmatch('%S+') do args[1+#args] = w end
         local first = args[1] or ''
         tremove(args, 1)
         local handler = slashHandlers[first]
         if handler then
             handler(unpack(args))
         else
-            TJ:Print('Unknown command: "%s"', tostring(first))
+            TJ:Print('Unknown command: '%s'', tostring(first))
         end
     end
 
     function TJ:RegisterCommandHandler(command, helptxt, handler, args)
         if type(command) ~= 'string' then
-            self:Error(self:Format('Command "%s" is not a string type', tostring(command)))
+            self:Error(self:Format('Command '%s' is not a string type', tostring(command)))
         end
         if type(helptxt) ~= 'string' then
-            self:Error(self:Format('Help text for command "%s" is not a string type', tostring(command)))
+            self:Error(self:Format('Help text for command '%s' is not a string type', tostring(command)))
         end
         if type(handler) ~= 'function' then
-            self:Error(self:Format('Handler for command "%s" is not a function type', tostring(command)))
+            self:Error(self:Format('Handler for command '%s' is not a function type', tostring(command)))
         end
         slashHelpText[command] = helptxt
         slashHandlers[command] = handler
@@ -329,14 +388,14 @@ do
         self:Print('|cFFFF9900Chat commands:|r')
         for cmd, help in self:OrderedPairsTC(slashHelpText) do
             if cmd ~= '' and cmd:sub(1, 1) ~= '_' then
-                self:Print("     |cFFFFCC00%s %s %s|r - %s", SLASH_TJ1, cmd, slashCmdArgs[cmd], help)
+                self:Print('     |cFFFFCC00%s %s %s|r - %s', SLASH_TJ1, cmd, slashCmdArgs[cmd], help)
             end
         end
         if devMode then
             self:Print('|cFFFF9900Debugging commands:|r')
             for cmd, help in self:OrderedPairsTC(slashHelpText) do
                 if cmd:sub(1, 1) == '_' then
-                    self:Print("     |cFFFFCC00%s %s %s|r - %s", SLASH_TJ1, cmd, slashCmdArgs[cmd], help)
+                    self:Print('     |cFFFFCC00%s %s %s|r - %s', SLASH_TJ1, cmd, slashCmdArgs[cmd], help)
                 end
             end
         end
@@ -357,15 +416,15 @@ do
     local tableNames = {}
     local missingFieldMetatable = {
         __index = function(tbl, key)
-            local tableName = (type(tableNames[tbl]) == 'string' and tableNames[tbl] or "UNKNOWN_TABLE")
+            local tableName = (type(tableNames[tbl]) == 'string' and tableNames[tbl] or 'UNKNOWN_TABLE')
             local header
             local stack = debugstack(2)
             if type(key) == 'nil' then
-                header = TJ:Format('Attempted to index table "%s" with nil key.', tableName)
+                header = TJ:Format('Attempted to index table '%s' with nil key.', tableName)
             elseif type(key) == 'table' then
-                header = TJ:Format('Attempted to index table "%s" with key of type table.', tableName)
+                header = TJ:Format('Attempted to index table '%s' with key of type table.', tableName)
             else
-                header = TJ:Format('Missing field: "%s"', targetFieldName(tableName, key))
+                header = TJ:Format('Missing field: '%s'', targetFieldName(tableName, key))
             end
             if header then
                 local errtxt = TJ:Format('%s\n%s', header, stack)
@@ -390,15 +449,8 @@ end
 -- Event handling and timing
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    local variablesLoaded = false
-    local enteredWorld = false
-
-    TJ.events = CBH:New(TJ, "RegisterEvent", "UnregisterEvent", false)
-    local eventFrame = CreateFrame("Frame", addonName..'_EventFrame')
-    eventFrame:SetScript("OnEvent", function(_, eventName, ...) TJ.events.Fire(TJ, eventName, ...) end)
-
     -- Deferred execution
-    local quickestUpdateTime = 0.05
+    local quickestUpdateTime = 0.01
     local lastUpdate = 0
     local deferredExecution = {}
     local function runDeferredExecution()
@@ -421,7 +473,7 @@ do
         if coroutineSkipped then
             for th in pairs(backgroundTasks) do
                 coroutineSkipped = false
-                if co_status(th) == "dead" then
+                if co_status(th) == 'dead' then
                     backgroundTasks[th] = nil
                 else
                     local ok, errstr = co_resume(th)
@@ -441,6 +493,7 @@ do
         runDeferredExecution()
         runFuncCoroutines()
         Callbacks:Invoke('TIME_SLICE')
+        TJ:UpdateUsageStatistics()
     end)
 
     -- Defer a piece of code until a specific time (or shortly thereafter)
@@ -458,13 +511,14 @@ do
         local th = co_create(funcToExec)
         backgroundTasks[th] = true
     end
+end
 
-    function TJ.events:OnUsed(_, eventName)
-        eventFrame:RegisterEvent(eventName)
-    end
-    function TJ.events:OnUnused(_, eventName)
-        eventFrame:UnregisterEvent(eventName)
-    end
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Login handler
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+do
+    local variablesLoaded = false
+    local enteredWorld = false
 
     local function tryPerformLoginHandler()
         if variablesLoaded and enteredWorld then
@@ -472,7 +526,7 @@ do
         end
     end
 
-    TJ:RegisterEvent('VARIABLES_LOADED', function()
+    Events.Register('LoginVariables', 'VARIABLES_LOADED', function()
         if not variablesLoaded then
             variablesLoaded = true
             Callbacks:Invoke('VARIABLES_LOADED')
@@ -480,61 +534,59 @@ do
         end
     end)
 
-    TJ:RegisterEvent('PLAYER_ENTERING_WORLD', function()
+    Events.Register('LoginEnteringWorld', 'PLAYER_ENTERING_WORLD', function()
         if not enteredWorld then
             enteredWorld = true
             tryPerformLoginHandler()
         end
     end)
-
-    eventFrame:Show()
 end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Information Export Dialog Frame
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    LSM:Register("font", "Iosevka Tzarc", [[Interface\AddOns\ThousandJabs\Assets\iosevka-tzarc\iosevka-tzarc-regular.ttf]])
+    LSM:Register('font', 'Iosevka Tzarc', [[Interface\AddOns\ThousandJabs\Assets\iosevka-tzarc\iosevka-tzarc-regular.ttf]])
 
-    local infoFont = LSM:Fetch("font", "Iosevka Tzarc")
-    local infoFrameName = addonName.."InfoFrame"
-    local infoFrame = CreateFrame("Frame", infoFrameName, UIParent, "UIPanelDialogTemplate")
+    local infoFont = LSM:Fetch('font', 'Iosevka Tzarc')
+    local infoFrameName = addonName..'InfoFrame'
+    local infoFrame = CreateFrame('Frame', infoFrameName, UIParent, 'UIPanelDialogTemplate')
     local infoFrameBG = _G[infoFrameName..'TitleBG']
     local infoFrameChildBG = _G[infoFrameName..'DialogBG']
     infoFrame:SetSize(mmax(300, UIParent:GetWidth()/3), mmax(200, UIParent:GetHeight()/3))
-    infoFrame:SetPoint("CENTER")
+    infoFrame:SetPoint('CENTER')
     infoFrame:Hide()
     infoFrame:SetAlpha(0.8)
-    infoFrame:SetFrameStrata("DIALOG")
+    infoFrame:SetFrameStrata('DIALOG')
 
     local frameTitle = infoFrame:CreateFontString(infoFrameName..'TitleOverlay', 'OVERLAY', 'GameFontHighlight')
-    frameTitle:SetJustifyH("LEFT")
-    frameTitle:SetJustifyV("CENTER")
-    frameTitle:SetPoint("TOPLEFT", infoFrameBG, 8, 0)
-    frameTitle:SetPoint("BOTTOMRIGHT", infoFrameBG, -8, 0)
+    frameTitle:SetJustifyH('LEFT')
+    frameTitle:SetJustifyV('CENTER')
+    frameTitle:SetPoint('TOPLEFT', infoFrameBG, 8, 0)
+    frameTitle:SetPoint('BOTTOMRIGHT', infoFrameBG, -8, 0)
     frameTitle:SetTextColor(0.7, 0.7, 0.7, 1.0)
-    frameTitle:SetFont(infoFont, 8, "OUTLINE")
+    frameTitle:SetFont(infoFont, 8, 'OUTLINE')
 
     local scrollFrameInset = 14
-    local scrollFrame = CreateFrame("ScrollFrame", infoFrameName..'ScrollFrame', infoFrame, "InputScrollFrameTemplate")
+    local scrollFrame = CreateFrame('ScrollFrame', infoFrameName..'ScrollFrame', infoFrame, 'InputScrollFrameTemplate')
     scrollFrame.CharCount:Hide()
-    scrollFrame:SetPoint("TOPLEFT", infoFrameChildBG, scrollFrameInset, -scrollFrameInset-4)
-    scrollFrame:SetPoint("BOTTOMRIGHT", infoFrameChildBG, -scrollFrameInset, scrollFrameInset)
+    scrollFrame:SetPoint('TOPLEFT', infoFrameChildBG, scrollFrameInset, -scrollFrameInset-4)
+    scrollFrame:SetPoint('BOTTOMRIGHT', infoFrameChildBG, -scrollFrameInset, scrollFrameInset)
 
     local editBox = scrollFrame.EditBox
-    editBox:SetFontObject("ChatFontNormal")
+    editBox:SetFontObject('ChatFontNormal')
     editBox:SetAllPoints(true)
     editBox:SetWidth(scrollFrame:GetWidth())
-    editBox:SetFont(infoFont, 8, "SHADOW")
+    editBox:SetFont(infoFont, 8, 'SHADOW')
 
-    editBox:SetScript("OnEscapePressed", function() editBox:ClearFocus() editBox:HighlightText(0, 0) end) -- on <ESC> in editbox, clear focus+selection
+    editBox:SetScript('OnEscapePressed', function() editBox:ClearFocus() editBox:HighlightText(0, 0) end) -- on <ESC> in editbox, clear focus+selection
     tinsert(UISpecialFrames, infoFrameName) -- on <ESC> without editbox focus, close window automatically
 
     function TJ:ShowInfoDialog(title, str, preselect)
-        frameTitle:SetText(addonName .. " -- " .. title)
+        frameTitle:SetText(addonName .. ' -- ' .. title)
         editBox:SetText(str)
-        self:DeferExecution(0, function() scrollFrame:SetVerticalScroll(0) end) -- scroll to top, apparently a screen update is required before the scrolling actually kicks in
         infoFrame:Show()
+        self:DeferExecution(0.1, function() scrollFrame:SetVerticalScroll(0) end) -- scroll to top, apparently a screen update is required before the scrolling actually kicks in
         if preselect then
             editBox:HighlightText()
             editBox:SetFocus(true)
@@ -547,7 +599,7 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
     TJ:RegisterCommandHandler('_dbg', 'Enables debugging overlay.', function()
-        local newValue = not Config:Get('doDebug')
+        local newValue = not doDebug
         Config:Set(newValue, 'doDebug')
         if newValue then
             TJ:ShowDebugLog()
@@ -556,12 +608,18 @@ do
         end
     end)
 
+    TJ:RegisterCommandHandler('_prof', 'Toggles profiling.', function()
+        local newValue = not doProfiling
+        Config:Set(newValue, 'doProfiling')
+        PRF:EnableProfiling(newValue)
+    end)
+
     TJ:RegisterCommandHandler('_db', 'Dumps SavedVariables.', function()
-        TJ:ShowInfoDialog("SavedVariables Export", LSD(ThousandJabsDB))
+        TJ:ShowInfoDialog('SavedVariables Export', LSD(ThousandJabsDB))
     end)
 
     TJ:RegisterCommandHandler('_err', 'Dumps errors.', function()
-        TJ:ShowInfoDialog("Errors", LSD({errors=TJ.errors}))
+        TJ:ShowInfoDialog('Errors', LSD({errors=TJ.errors}))
     end)
 
     TJ:RegisterCommandHandler('_dtc', 'Dumps table cache metrics.', function()
@@ -569,28 +627,27 @@ do
         TJ:Print('Table cache -- Allocated: %d, Acquired: %d, Released: %d', metrics.TotalAllocated, metrics.TotalAcquired, metrics.TotalReleased)
     end)
 
-    local logFont = LSM:Fetch("font", "Iosevka Tzarc")
-    local logFrame = CreateFrame("Frame", "ThousandJabsLog", UIParent)
+    local logFont = LSM:Fetch('font', 'Iosevka Tzarc')
+    local logFrame = CreateFrame('Frame', 'ThousandJabsLog', UIParent)
     logFrame:ClearAllPoints()
-    logFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 550, -20)
-    logFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -20, 20)
+    logFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 550, -20)
+    logFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -20, 20)
 
-    local logFrameText = logFrame:CreateFontString("ThousandJabsLogText", "OVERLAY", "GameFontHighlightSmall")
-    logFrameText:SetJustifyH("LEFT")
-    logFrameText:SetJustifyV("TOP")
-    logFrameText:SetPoint("TOPLEFT", 8, -8)
-    logFrameText:SetPoint("BOTTOMRIGHT", -8, 8)
+    local logFrameText = logFrame:CreateFontString('ThousandJabsLogText', 'OVERLAY', 'GameFontHighlightSmall')
+    logFrameText:SetJustifyH('LEFT')
+    logFrameText:SetJustifyV('TOP')
+    logFrameText:SetPoint('TOPLEFT', 8, -8)
+    logFrameText:SetPoint('BOTTOMRIGHT', -8, 8)
     logFrameText:SetTextColor(0.7, 0.7, 0.7, 1.0)
-    logFrameText:SetFont(logFont, 8, "OUTLINE")
+    logFrameText:SetFont(logFont, 7, 'OUTLINE')
 
     logFrame:Hide()
 
-    local doDebug = false
     local logData = {}
 
     function TJ:AddDebugLog(...)
         if doDebug and logFrame:IsVisible() then
-            if #logData == 0 then logData[1] = self:Format("|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):") end
+            if #logData == 0 then logData[1] = self:Format('|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):') end
             local a = ...
             if type(a) == 'table' and select('#', ...) == 1 then
                 logData[1+#logData] = self:Format('|cFFFFFF99%s|r', LSD(a))
@@ -617,13 +674,76 @@ do
             logFrameText:SetText(tconcat(logData, '\n'))
         end
     end
-
-    Callbacks.Register('DebugLogConfigUpdate', 'CONFIG_CHANGED', function()
-        doDebug = Config:Get('doDebug')
-        if doDebug then
-            TJ:ShowDebugLog()
-        else
-            TJ:HideDebugLog()
-        end
-    end)
 end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Statistics
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+do
+    local function TimedUpdateUsageStats()
+        local start = debugprofilestop()
+        UpdateAddOnMemoryUsage()
+        UpdateAddOnCPUUsage()
+        local finish = debugprofilestop()
+        return finish - start
+    end
+
+    function TJ:UpdateUsageStatistics()
+        if not devMode then return end
+        if not Stats.updateTime then
+            if not InCombatLockdown() then
+                Stats.updateTime = TimedUpdateUsageStats()
+            end
+        else
+            Stats.lastCheck = Stats.lastCheck or 0
+            local statUpdateSpeed = 5 -- in seconds
+            if (InCombatLockdown() and Stats.updateTime < 10) or (Stats.updateTime < 25) then -- calc in-combat if <10ms, or out-of-combat if <25ms
+                local now = GetTime()
+                if Stats.lastCheck + statUpdateSpeed < now then
+                    Stats.updateTime = TimedUpdateUsageStats()
+                    Stats.lastCheckDelta = now - Stats.lastCheck
+                    Stats.lastMemAmount = Stats.currMemAmount
+                    Stats.currMemAmount = GetAddOnMemoryUsage(addonName)
+                    Stats.lastCpuAmount = Stats.currCpuAmount
+                    Stats.currCpuAmount = GetAddOnCPUUsage(addonName)
+                    Stats.lastCheck = now
+
+                    DBG('Usage stats update time: %12.3f ms', Stats.updateTime)
+                    if Stats.lastCheckDelta then
+                        local dt = Stats.lastCheckDelta
+                        local outText = ''
+
+                        if Stats.lastMemAmount and Stats.lastMemAmount > 0 then
+                            local curr = Stats.currMemAmount
+                            local prev = Stats.lastMemAmount
+                            local delta = curr - prev
+                            DBG('           Memory usage: %12.3f kB', curr)
+                            DBG('           Memory delta: %12.3f kB', delta)
+                            DBG('           Memory delta: %12.3f kB/sec (over last %d secs)', delta/dt, statUpdateSpeed)
+                            outText = self:Format('Thousand Jabs: Memory: %d bytes/sec', 1024*delta/dt)
+                        end
+
+                        if Stats.lastCpuAmount and Stats.lastCpuAmount > 0 then
+                            local curr = Stats.currCpuAmount
+                            local prev = Stats.lastCpuAmount
+                            local delta = curr - prev
+                            DBG('              CPU usage: %12.3f ms', curr)
+                            DBG('              CPU delta: %12.3f ms', delta)
+                            DBG('              CPU delta: %12.3f ms/sec (over last %d secs)', delta/dt, statUpdateSpeed)
+                            DBG('              CPU usage: %10.1f%%', 100*(delta/dt)/1000.0)
+                            outText = outText .. self:Format(', CPU: %.1f%% (%.3fms)', 100*(delta/dt)/1000.0, delta/dt)
+                        end
+
+                        if outText:len() > 0 then
+                            Callbacks:Invoke('DATABROKER_TEXT_UPDATE', outText)
+                        end
+                    else
+                        Callbacks:Invoke('DATABROKER_TEXT_UPDATE', self:Format('Thousand Jabs: Statistics disabled, too much time used (%d ms)', mceil(Stats.updateTime)))
+                    end
+                end
+            end
+        end
+    end
+end
+
+Callbacks.Register('Dummy', 'DATABROKER_TEXT_UPDATE', function(event,str) TJ:DevPrint(str) end)

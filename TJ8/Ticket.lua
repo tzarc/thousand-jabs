@@ -8,10 +8,9 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local addonName, tj, _ = ...
-local LibStub = LibStub
-local TJ = tj.TJ
-local Config = tj.Config
+local addonName, TJ, _ = ...
+local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -96,10 +95,6 @@ do
                 specInfo = tconcat({ GetSpecializationInfo(GetSpecialization()) }, ' | '),
                 talentInfo = tierSelections(),
             },
-            frame = {
-            --position = { UI:GetPoint() },
-            --scale = UI:GetScale(),
-            },
             errors = {
                 global = {
                     reads = TJ.errors.globalReads,
@@ -115,9 +110,6 @@ do
                 globalReadNames = copiesExport(),
             },
         }
-        --if export.frame.position and type(export.frame.position[2]) == 'table' and export.frame.position[2].GetName then
-        --export.frame.position[2] = export.frame.position[2]:GetName()
-        --end
         return export
     end
 
@@ -126,7 +118,7 @@ do
             TJ:Print("In combat, cannot open debug information window.")
         else
             local export = TJ:GenerateDebuggingInformation()
-            TJ:ShowInfoDialog(TJ:Format('%s Diagnostic Information', addonName), TJ:Format("%s Diagnostic Information:\n%s", addonName, LSD(export)))
+            TJ:ShowInfoDialog(TJ:Format('%s Diagnostic Information', addonName), TJ:Format("%s Diagnostic Information:\n%s", addonName, LSD(export)), true)
         end
     end
 end

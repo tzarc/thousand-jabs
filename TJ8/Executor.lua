@@ -8,12 +8,9 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local addonName, tj, _ = ...
-local LibStub = LibStub
-local TJ = tj.TJ
-local Callbacks = tj.Callbacks
-local Config = tj.Config
-local UI = tj.UI
+local addonName, TJ, _ = ...
+local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -21,11 +18,22 @@ local UI = tj.UI
 local GetTime = GetTime
 local mmin = math.min
 
-local TableCache = LibStub('LibTJTableCache-8.0')
+local PRF = LibStub('LibTJProfiling-8.0')
+
+local nextUpdateTime = 0
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Config values
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local slowUpdateSpeed = 0.75
 local fastUpdateSpeed = 0.2
-local nextUpdateTime = 0
+
+Callbacks.Register('ExecutorConfigUpdate', 'CONFIG_CHANGED', function()
+    TJ:DevPrint('CONFIG_CHANGED(ExecutorConfigUpdate)')
+    slowUpdateSpeed = Config:Get('slowUpdateSpeed')
+    fastUpdateSpeed = Config:Get('fastUpdateSpeed')
+end)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Sandbox
@@ -46,20 +54,22 @@ function TJ:QueueProfileReload(forceNow)
 end
 
 function TJ:PerformUpdate()
-    self:AddDebugLog('zzz: %.3f', GetTime())
 end
+PRF:ProfileFunction(TJ, 'PerformUpdate')
 
 Callbacks.Register('MainLoop', 'TIME_SLICE', function()
     local now = GetTime()
     if nextUpdateTime <= now then
         nextUpdateTime = now + slowUpdateSpeed
         TJ:ClearDebugLog()
+        DBG(PRF:GetProfilingString())
         TJ:PerformUpdate()
         TJ:UpdateDebugLog()
     end
 end)
 
-Callbacks.Register('MainConfigUpdate', 'CONFIG_CHANGED', function()
-    slowUpdateSpeed = Config:Get('slowUpdateSpeed')
-    fastUpdateSpeed = Config:Get('fastUpdateSpeed')
-end)
+function TJ:COMBAT_LOG_EVENT_UNFILTERED(...)
+    self:QueueUpdate()
+end
+PRF:ProfileFunction(TJ, 'COMBAT_LOG_EVENT_UNFILTERED')
+Events.Register(TJ, 'COMBAT_LOG_EVENT_UNFILTERED')

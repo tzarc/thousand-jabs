@@ -8,12 +8,9 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local addonName, tj, _ = ...
-local LibStub = LibStub
-local TJ = tj.TJ
-local Callbacks = tj.Callbacks
-local Config = tj.Config
-
+local addonName, TJ, _ = ...
+local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -58,6 +55,7 @@ local defaultConf = {
         tgtPoint = 'CENTER',
     },
     doDebug = false,
+    doProfiling = false,
 }
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,12 +94,14 @@ function Config:Upgrade()
     end
 end
 
-Callbacks.Register(Config, 'VARIABLES_LOADED', function()
+function Config:VARIABLES_LOADED()
+    TJ:DevPrint('VARIABLES_LOADED(Config)')
     ThousandJabsDB = ThousandJabsDB or {}
     variablesAvailable = true
     Config:Upgrade()
     Callbacks:Invoke('CONFIG_CHANGED')
-end)
+end
+Events.Register(Config, 'VARIABLES_LOADED')
 
 local function getconf(tbl, key, ...)
     if select('#', ...) == 0 then return tbl[key] end
