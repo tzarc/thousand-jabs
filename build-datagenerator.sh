@@ -15,9 +15,12 @@ fi
 [[ ! -d "${SCRIPT_DIR}/Support/DataGenerator/build" ]] && mkdir -p "${SCRIPT_DIR}/Support/DataGenerator/build"
 
 pushd "${SCRIPT_DIR}/Support/DataGenerator/build" >/dev/null 2>&1
-#../extract-methods.sh
+../extract-methods.sh ../generated/live/extracted.inl
+../extract-methods.sh ../generated/ptr/extracted.inl
+../extract-methods.sh ../generated/beta/extracted.inl
+../extract-methods.sh ../generated/alpha/extracted.inl
 
-find .. -not -path '../build/*' -and  -not -path '../3rdparty/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' \) \
+find .. -not -path '../build/*' -and  -not -path '../3rdparty/*' -and  -not -path '*/generated/*' -and \( -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' \) \
     | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
 
 cmake -DCMAKE_BUILD_TYPE=Debug ..

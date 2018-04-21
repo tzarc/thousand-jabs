@@ -28,6 +28,7 @@ actions.burn+=/stop_burn_phase,if=prev_gcd.1.evocation&cooldown.evocation.charge
 actions.burn+=/nether_tempest,if=refreshable|!ticking
 actions.burn+=/mark_of_aluneth
 actions.burn+=/mirror_image
+actions.burn+=/lights_judgment,if=buff.arcane_power.down
 actions.burn+=/rune_of_power,if=mana.pct>30|(buff.arcane_power.up|cooldown.arcane_power.up)
 actions.burn+=/arcane_power
 actions.burn+=/blood_fury
@@ -91,7 +92,8 @@ actions.active_talents+=/meteor,if=cooldown.combustion.remains>40|(cooldown.comb
 actions.active_talents+=/cinderstorm,if=cooldown.combustion.remains<cast_time&(buff.rune_of_power.up|!talent.rune_of_power.enabled)|cooldown.combustion.remains>10*spell_haste&!buff.combustion.up
 actions.active_talents+=/dragons_breath,if=equipped.132863|(talent.alexstraszas_fury.enabled&!buff.hot_streak.react)
 actions.active_talents+=/living_bomb,if=active_enemies>1&buff.combustion.down
-actions.combustion_phase=rune_of_power,if=buff.combustion.down
+actions.combustion_phase=lights_judgment,if=buff.combustion.down
+actions.combustion_phase+=/rune_of_power,if=buff.combustion.down
 actions.combustion_phase+=/call_action_list,name=active_talents
 actions.combustion_phase+=/combustion
 actions.combustion_phase+=/potion
@@ -151,7 +153,6 @@ actions.precombat+=/frostbolt
 actions=counterspell
 actions+=/ice_lance,if=!buff.fingers_of_frost.react&prev_gcd.1.flurry
 actions+=/time_warp,if=buff.bloodlust.down&(buff.exhaustion.down|equipped.shard_of_the_exodar)&(cooldown.icy_veins.remains<1|target.time_to_die<50)
-actions+=/call_action_list,name=movement,moving=1
 actions+=/call_action_list,name=cooldowns
 actions+=/call_action_list,name=aoe,if=active_enemies>=3
 actions+=/call_action_list,name=single
@@ -167,6 +168,7 @@ actions.aoe+=/ice_lance,if=buff.fingers_of_frost.react
 actions.aoe+=/ebonbolt
 actions.aoe+=/glacial_spike
 actions.aoe+=/frostbolt
+actions.aoe+=/call_action_list,name=movement
 actions.aoe+=/cone_of_cold
 actions.aoe+=/ice_lance
 actions.cooldowns=rune_of_power,if=cooldown.icy_veins.remains<cast_time|charges_fractional>1.9&cooldown.icy_veins.remains>10|buff.icy_veins.up|target.time_to_die+5<charges_fractional*10
@@ -177,8 +179,9 @@ actions.cooldowns+=/use_items
 actions.cooldowns+=/blood_fury
 actions.cooldowns+=/berserking
 actions.cooldowns+=/arcane_torrent
+actions.cooldowns+=/lights_judgment
 actions.movement=blink,if=movement.distance>10
-actions.movement+=/ice_floes,if=buff.ice_floes.down&!buff.fingers_of_frost.react
+actions.movement+=/ice_floes,if=buff.ice_floes.down
 actions.single=ice_nova,if=debuff.winters_chill.up
 actions.single+=/frostbolt,if=prev_off_gcd.water_jet
 actions.single+=/water_jet,if=prev_gcd.1.frostbolt&buff.fingers_of_frost.stack<3&!buff.brain_freeze.react
@@ -196,6 +199,7 @@ actions.single+=/blizzard,if=active_enemies>1|buff.zannesu_journey.stack=5&buff.
 actions.single+=/frostbolt,if=buff.frozen_mass.remains>execute_time+action.glacial_spike.execute_time+action.glacial_spike.travel_time&!buff.brain_freeze.react&talent.glacial_spike.enabled
 actions.single+=/glacial_spike,if=cooldown.frozen_orb.remains>10|!set_bonus.tier20_2pc
 actions.single+=/frostbolt
+actions.single+=/call_action_list,name=movement
 actions.single+=/blizzard
 actions.single+=/ice_lance
 ]])

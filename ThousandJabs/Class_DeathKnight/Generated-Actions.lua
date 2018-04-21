@@ -142,7 +142,7 @@ actions.cooldowns+=/obliteration,if=rune>=1&runic_power>=20&(!talent.frozen_puls
 actions.cooldowns+=/hungering_rune_weapon,if=!buff.hungering_rune_weapon.up&rune.time_to_2>gcd&runic_power<40
 actions.obliteration=remorseless_winter,if=talent.gathering_storm.enabled
 actions.obliteration+=/frostscythe,if=(buff.killing_machine.up&(buff.killing_machine.react|prev_gcd.1.frost_strike|prev_gcd.1.howling_blast))&spell_targets.frostscythe>1
-actions.obliteration+=/obliterate,if=(buff.killing_machine.up&(buff.killing_machine.react|prev_gcd.1.frost_strike|prev_gcd.1.howling_blast))|(spell_targets.howling_blast>=3&!buff.rime.up)
+actions.obliteration+=/obliterate,if=(buff.killing_machine.up&(buff.killing_machine.react|prev_gcd.1.frost_strike|prev_gcd.1.howling_blast))|(spell_targets.howling_blast>=3&!buff.rime.up&!talent.frostscythe.enabled)
 actions.obliteration+=/howling_blast,if=buff.rime.up&spell_targets.howling_blast>1
 actions.obliteration+=/howling_blast,if=!buff.rime.up&spell_targets.howling_blast>2&rune>3&talent.freezing_fog.enabled&talent.gathering_storm.enabled
 actions.obliteration+=/frost_strike,if=!buff.rime.up|rune.time_to_1>=gcd|runic_power.deficit<20
@@ -189,6 +189,8 @@ actions+=/use_item,name=feloiled_infernal_machine,if=pet.valkyr_battlemaiden.act
 actions+=/use_item,name=ring_of_collapsing_futures,if=(buff.temptation.stack=0&target.time_to_die>60)|target.time_to_die<60
 actions+=/potion,if=buff.unholy_strength.react
 actions+=/blighted_rune_weapon,if=debuff.festering_wound.stack<=4
+actions+=/sequence,if=equipped.137075&talent.dark_arbiter.enabled&!talent.blighted_rune_weapon.enabled,name=opener:outbreak:chains_of_ice:festering_strike:festering_strike:apocalypse:festering_strike:dark_arbiter:death_coil:dark_transformation
+actions+=/sequence,if=!equipped.137075&talent.dark_arbiter.enabled&!talent.blighted_rune_weapon.enabled,name=opener:outbreak:chains_of_ice:festering_strike:festering_strike:apocalypse:dark_transformation:festering_strike:dark_arbiter
 actions+=/outbreak,target_if=(dot.virulent_plague.tick_time_remains+tick_time<=dot.virulent_plague.remains)&dot.virulent_plague.remains<=gcd
 actions+=/call_action_list,name=cooldowns
 actions+=/run_action_list,name=valkyr,if=pet.valkyr_battlemaiden.active&talent.dark_arbiter.enabled

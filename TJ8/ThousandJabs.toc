@@ -1,0 +1,28 @@
+## Interface: 80000
+## Title: ThousandJabs
+## Notes: Simulationcraft -> In-game rotation
+## Author: Tzarc
+## X-License: UNLICENSE
+## X-Category: Combat
+## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
+## X-Repository: https://github.com/tzarc/thousand-jabs
+## Version: 79999.999
+
+## OptionalDeps: LibStub, CallbackHandler-1.0, Ace3, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
+
+## SavedVariables: ThousandJabsDB
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+Libs\LibSharedMedia-3.0\lib.xml
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+LibTJSerpentDump.lua
+LibTJSandbox.lua
+LibTJTableCache.lua
+
+Core.lua
+Config.lua
+Ticket.lua
+UI.lua
+Executor.lua

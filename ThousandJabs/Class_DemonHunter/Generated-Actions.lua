@@ -21,7 +21,9 @@ actions+=/call_action_list,name=cooldown,if=gcd.remains=0
 actions+=/pick_up_fragment,if=fury.deficit>=35&((cooldown.eye_beam.remains>5|!talent.blind_fury.enabled&!set_bonus.tier21_4pc)|(buff.metamorphosis.up&!set_bonus.tier21_4pc))
 actions+=/run_action_list,name=demonic,if=talent.demonic.enabled
 actions+=/run_action_list,name=normal
-actions.cooldown=metamorphosis,if=!(talent.demonic.enabled|variable.pooling_for_meta|variable.waiting_for_nemesis|variable.waiting_for_chaos_blades)|target.time_to_die<25
+actions.cooldown=arcane_torrent,if=!talent.demonic.enabled&fury.deficit>=15
+actions.cooldown+=/arcane_torrent,if=talent.demonic.enabled&fury.deficit>=15&buff.metamorphosis.up
+actions.cooldown+=/metamorphosis,if=!(talent.demonic.enabled|variable.pooling_for_meta|variable.waiting_for_nemesis|variable.waiting_for_chaos_blades)|target.time_to_die<25
 actions.cooldown+=/metamorphosis,if=talent.demonic.enabled&buff.metamorphosis.up
 actions.cooldown+=/nemesis,target_if=min:target.time_to_die,if=raid_event.adds.exists&debuff.nemesis.down&(active_enemies>desired_targets|raid_event.adds.in>60)
 actions.cooldown+=/nemesis,if=!raid_event.adds.exists&(buff.chaos_blades.up|buff.metamorphosis.up|cooldown.metamorphosis.adjusted_remains<20|target.time_to_die<=60)

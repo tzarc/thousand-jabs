@@ -32,13 +32,6 @@ DerivePointerAlignment: false
 DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros: ['foreach','Q_FOREACH','BOOST_FOREACH']
-IncludeCategories:
- - Regex: '^<windows'
-   Priority: 1
- - Regex: '^<'
-   Priority: 2
- - Regex: '.\*'
-   Priority: 3
 IndentCaseLabels: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
@@ -54,6 +47,7 @@ PenaltyBreakString: 1000
 PenaltyExcessCharacter: 100000
 PenaltyReturnTypeOnItsOwnLine: 1000000
 PointerAlignment: Left
+SortIncludes: false
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: Never

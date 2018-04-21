@@ -3,17 +3,18 @@ if select(3, UnitClass('player')) ~= 1 then return end
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
 TJ:RegisterActionProfileList('simc::warrior::arms', 'Simulationcraft Warrior Profile: Arms', 1, 1, [[
-actions.precombat=flask,type=countless_armies
-actions.precombat+=/food,type=nightborne_delicacy_platter
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=old_war
+actions.precombat+=/potion
 actions=charge
 actions+=/auto_attack
-actions+=/potion,name=old_war,if=(!talent.avatar.enabled|buff.avatar.up)&buff.battle_cry.up&debuff.colossus_smash.up|target.time_to_die<=26
+actions+=/potion,if=(!talent.avatar.enabled|buff.avatar.up)&buff.battle_cry.up&debuff.colossus_smash.up|target.time_to_die<=26
 actions+=/blood_fury,if=buff.battle_cry.up|target.time_to_die<=16
 actions+=/berserking,if=buff.battle_cry.up|target.time_to_die<=11
 actions+=/arcane_torrent,if=buff.battle_cry_deadly_calm.down&rage.deficit>40&cooldown.battle_cry.remains
+actions+=/lights_judgment,if=buff.battle_cry.up|target.time_to_die<=11
 actions+=/avatar,if=gcd.remains<0.25&(buff.battle_cry.up|cooldown.battle_cry.remains<15)|target.time_to_die<=20
 actions+=/battle_cry,if=((target.time_to_die>=70|set_bonus.tier20_4pc)&((gcd.remains<=0.5&prev_gcd.1.ravager)|!talent.ravager.enabled&!gcd.remains&target.debuff.colossus_smash.remains>=5&(!cooldown.bladestorm.remains|!set_bonus.tier20_4pc)&(!talent.rend.enabled|dot.rend.remains>4)))|buff.executioners_precision.stack=2&buff.shattered_defenses.up&!gcd.remains&!set_bonus.tier20_4pc
 actions+=/use_items,if=buff.battle_cry.up&debuff.colossus_smash.up
@@ -74,16 +75,16 @@ actions.single+=/bladestorm,if=(raid_event.adds.in>90|!raid_event.adds.exists)&!
 ]])
 
 TJ:RegisterActionProfileList('simc::warrior::fury', 'Simulationcraft Warrior Profile: Fury', 1, 2, [[
-actions.precombat=flask,type=countless_armies
-actions.precombat+=/food,type=nightborne_delicacy_platter
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=old_war
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/charge
 actions+=/run_action_list,name=movement,if=movement.distance>5
 actions+=/heroic_leap,if=(raid_event.movement.distance>25&raid_event.movement.in>45)|!raid_event.movement.exists
-actions+=/potion,name=old_war,if=buff.battle_cry.up&(buff.avatar.up|!talent.avatar.enabled)
+actions+=/potion,if=buff.battle_cry.up&(buff.avatar.up|!talent.avatar.enabled)
 actions+=/dragon_roar,if=(equipped.convergence_of_fates&cooldown.battle_cry.remains<2)|!equipped.convergence_of_fates&(!cooldown.battle_cry.remains<=10|cooldown.battle_cry.remains<2)|(talent.bloodbath.enabled&(cooldown.bloodbath.remains<1|buff.bloodbath.up))
 actions+=/rampage,if=cooldown.battle_cry.remains<1&cooldown.bloodbath.remains<1&target.health.pct>20
 actions+=/furious_slash,if=talent.frenzy.enabled&(buff.frenzy.stack<3|buff.frenzy.remains<3|(cooldown.battle_cry.remains<1&buff.frenzy.remains<9))
@@ -98,6 +99,7 @@ actions+=/bloodbath,if=buff.battle_cry.up|(target.time_to_die<14)|(cooldown.batt
 actions+=/blood_fury,if=buff.battle_cry.up
 actions+=/berserking,if=(buff.battle_cry.up&(buff.avatar.up|!talent.avatar.enabled))|(buff.battle_cry.up&target.time_to_die<40)
 actions+=/arcane_torrent,if=rage<rage.max-40
+actions+=/lights_judgment,if=buff.battle_cry.up
 actions+=/run_action_list,name=cooldowns,if=buff.battle_cry.up&spell_targets.whirlwind=1
 actions+=/run_action_list,name=three_targets,if=target.health.pct>20&(spell_targets.whirlwind=3|spell_targets.whirlwind=4)
 actions+=/run_action_list,name=aoe,if=spell_targets.whirlwind>4
@@ -140,6 +142,7 @@ actions.single_target+=/execute,if=buff.stone_heart.react&((talent.inner_rage.en
 actions.single_target+=/bloodthirst
 actions.single_target+=/furious_slash,if=set_bonus.tier19_2pc&!talent.inner_rage.enabled
 actions.single_target+=/whirlwind,if=buff.wrecking_ball.react&buff.enrage.up
+actions.single_target+=/whirlwind,if=!buff.meat_cleaver.up&spell_targets.whirlwind=2
 actions.single_target+=/raging_blow
 actions.single_target+=/furious_slash
 actions.three_targets=execute,if=buff.stone_heart.react
@@ -150,26 +153,28 @@ actions.three_targets+=/whirlwind
 ]])
 
 TJ:RegisterActionProfileList('simc::warrior::protection', 'Simulationcraft Warrior Profile: Protection', 1, 3, [[
-actions.precombat=flask,type=countless_armies
-actions.precombat+=/food,type=lavish_suramar_feast
-actions.precombat+=/augmentation,type=defiled
+actions.precombat=flask
+actions.precombat+=/food
+actions.precombat+=/augmentation
 actions.precombat+=/snapshot_stats
-actions.precombat+=/potion,name=old_war
+actions.precombat+=/potion
 actions=auto_attack
 actions+=/intercept
 actions+=/blood_fury
 actions+=/berserking
 actions+=/arcane_torrent
+actions+=/lights_judgment
 actions+=/call_action_list,name=prot
-actions.prot=potion,name=old_war,if=target.time_to_die<25
-actions.prot+=/battle_cry,if=cooldown.shield_slam.remains=0
-actions.prot+=/demoralizing_shout
-actions.prot+=/ravager,if=talent.ravager.enabled
-actions.prot+=/shield_block,if=cooldown.shield_slam.remains=0
-actions.prot+=/ignore_pain,if=(!talent.vengeance.enabled&buff.renewed_fury.remains<1.5)|(!talent.vengeance.enabled&rage.deficit>=40)|(buff.vengeance_ignore_pain.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage<30&!buff.revenge.react)
+actions.prot=potion,if=target.time_to_die<25
+actions.prot+=/battle_cry,if=gcd.remains=0
+actions.prot+=/demoralizing_shout,if=buff.battle_cry.up
+actions.prot+=/ravager,if=talent.ravager.enabled&buff.battle_cry.up
+actions.prot+=/shield_block,if=(buff.battle_cry.up&buff.shield_block.down)|(cooldown.shield_slam.remains=0&gcd.remains=0)
+actions.prot+=/ignore_pain,if=(!talent.vengeance.enabled&buff.renewed_fury.remains<=0)|(!talent.vengeance.enabled&rage.deficit>=40)|(buff.vengeance_ignore_pain.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage<30&!buff.revenge.react)
 actions.prot+=/shield_slam
 actions.prot+=/revenge,if=(!talent.vengeance.enabled)|(talent.vengeance.enabled&buff.revenge.react&!buff.vengeance_ignore_pain.up)|(buff.vengeance_revenge.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage>=30)
 actions.prot+=/thunder_clap
 actions.prot+=/devastate
+actions.prot+=/berserker_rage
 ]])
 

@@ -28,9 +28,11 @@ ignore:
     - Class_Rogue
     - build-datagenerator.sh
     - cleanup.sh
+    - download-db2.sh
     - tag-release.sh
     - tag-alpha.sh
     - update-generated-data.pl
     - update-generated-data-TJ5.pl
     - TJ5
+	- TJ8
     - Test-Harness
