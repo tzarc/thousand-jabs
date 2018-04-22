@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local LibStub, CT, RT, Config, UI, UnitCache = LibStub, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache
 local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -30,22 +30,22 @@ local PRF = LibStub('LibTJProfiling-8.0')
 local nextUpdateTime = 0
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Sandbox
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+LibStub('LibTJSandbox-8.0'):Use(addonName)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Config values
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local slowUpdateSpeed = 0.75
 local fastUpdateSpeed = 0.2
 
-Callbacks.Register('ExecutorConfigUpdate', 'CONFIG_CHANGED', function()
+TJ.RegisterCallback('ExecutorConfigUpdate', 'CONFIG_CHANGED', function()
     TJ:DevPrint('CONFIG_CHANGED(ExecutorConfigUpdate)')
     slowUpdateSpeed = Config:Get('slowUpdateSpeed')
     fastUpdateSpeed = Config:Get('fastUpdateSpeed')
 end)
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Sandbox
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-LibStub('LibTJSandbox-8.0'):Use(addonName)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Main loop
@@ -91,7 +91,7 @@ do
             if co_status(th) == 'dead' then
                 backgroundTasks[th] = nil
             else
-                local ok, errstr = co_resume(th)
+                local ok, errstr = co_resume(th, co_yield)
                 if not ok then
                     TJ:Error(errstr)
                     backgroundTasks[th] = nil
@@ -111,13 +111,13 @@ do
         r[1+#r] = func
     end
 
-    -- Execute a task in the background
-    function TJ:ExecuteFuncAsCoroutine(funcToExec)
+    -- Execute a task in the background:
+    function TJ:ExecuteFuncAsCoroutine(funcToExec) -- usage: function myFunc(yield) <dostuff> yield() <dostuff> end
         local th = co_create(funcToExec)
         backgroundTasks[th] = true
     end
 
-    Callbacks.Register('MainLoop', 'TIME_SLICE', function(eventName, debugEnabled)
+    TJ.RegisterCallback('MainLoop', 'TIME_SLICE', function(eventName, debugEnabled)
         local now = GetTime()
         if nextUpdateTime <= now then
             nextUpdateTime = now + slowUpdateSpeed
@@ -131,6 +131,7 @@ do
                 DBG(PRF:GetProfilingString())
                 DBG('')
             end
+
             TJ:PerformUpdate()
             TJ:UpdateDebugLog()
         end
@@ -141,31 +142,17 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(...)
     self:QueueUpdate()
 end
 PRF:ProfileFunction(TJ, 'COMBAT_LOG_EVENT_UNFILTERED')
-Events.Register(TJ, 'COMBAT_LOG_EVENT_UNFILTERED')
+TJ:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 
-TJ:ExecuteFuncAsCoroutine(function()
-    TJ:Print('a')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('b')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('c')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('d')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('e')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('f')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('g')
-    TJ:QueueUpdate()
-    co_yield()
-    TJ:Print('h')
-    TJ:QueueUpdate()
-    co_yield()
+local fast = false
+TJ:ExecuteFuncAsCoroutine(function(yield)
+    local str = 'abcdefghijklmnopqrstuvwxyz'
+    local lastTime = GetTime()
+    for i=1,str:len() do
+        local now = GetTime()
+        TJ:DevPrint('%s -- delta: %.3f', str:sub(i,i), now-lastTime)
+        lastTime = now
+        if fast then TJ:QueueUpdate() end
+        yield()
+    end
 end)

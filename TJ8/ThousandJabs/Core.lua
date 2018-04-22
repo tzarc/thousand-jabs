@@ -16,15 +16,13 @@ if devMode then _G['TJ'] = TJ end
 
 -- Modules
 local ThousandJabsGlobal = {}
-local Callbacks = {}
-local Events = {}
 local Config = {}
 local UI = {}
+local UnitCache = {}
 TJ.ThousandJabsGlobal = ThousandJabsGlobal
-TJ.Callbacks = Callbacks
-TJ.Events = Events
 TJ.Config = Config
 TJ.UI = UI
+TJ.UnitCache = UnitCache
 
 _G['ThousandJabs'] = ThousandJabsGlobal
 
@@ -90,11 +88,14 @@ _G['CT'] = function() return TableCache:Acquire() end
 _G['RT'] = function(tbl) TableCache:Release(tbl) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Event/Callback notifications
---   Events.Register('myFuncToken', 'PLAYER_ENTERING_WORLD', myFunc) ---> Invokes myFunc() when event PLAYER_ENTERING_WORLD received
---   Events.Register(Module, 'PLAYER_ENTERING_WORLD') ---> Invokes Module:PLAYER_ENTERING_WORLD() when event PLAYER_ENTERING_WORLD received
---   Callbacks.Register('myFuncToken', 'CALLBACK_NAME', myFunc) ---> Invokes myFunc()
---   Callbacks.Register(Module, 'CALLBACK_NAME') ---> Invokes Module:CALLBACK_NAME()
+-- Event/Callback notifications:
+--
+--   TJ:RegisterEvent('PLAYER_ENTERING_WORLD') ---> Invokes TJ:PLAYER_ENTERING_WORLD() when event PLAYER_ENTERING_WORLD received
+--   TJ.RegisterEvent(Module, 'PLAYER_ENTERING_WORLD') ---> Invokes Module:PLAYER_ENTERING_WORLD() when event PLAYER_ENTERING_WORLD received
+--
+--   TJ:RegisterCallback('CALLBACK_NAME') ---> Invokes TJ:CALLBACK_NAME()
+--   TJ.RegisterCallback('myFuncToken', 'CALLBACK_NAME', myFunc) ---> Invokes myFunc()
+--   TJ.RegisterCallback(Module, 'CALLBACK_NAME') ---> Invokes Module:CALLBACK_NAME()
 --
 -- Available callbacks:
 --   VARIABLES_LOADED -- Fired when the normal WoW VARIABLES_LOADED event is received
@@ -103,14 +104,33 @@ _G['RT'] = function(tbl) TableCache:Release(tbl) end
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    local callbackRegistry = CBH:New(Callbacks, 'Register', 'Unregister', false)
-    Callbacks.Invoke = callbackRegistry.Fire
+    local mixins = { 'RegisterCallback', 'UnregisterCallback', 'RegisterEvent', 'UnregisterEvent' }
+    local function attachMixins(src, ...)
+        local tbls = {...}
+        for _,tbl in pairs(tbls) do
+            for _,e in pairs(mixins) do
+                if src[e] then
+                    tbl[e] = src[e]
+                end
+            end
+        end
+    end
 
-    local externalCallbackRegistry = CBH:New(ThousandJabsGlobal, 'Register', 'Unregister', false)
-    Callbacks.InvokeExternal = externalCallbackRegistry.Fire
+    local callbacks = {}
+    local callbackRegistry = CBH:New(callbacks, 'RegisterCallback', 'UnregisterCallback', false)
+    TJ.InvokeCallbacks = callbackRegistry.Fire
+    attachMixins(callbacks, TJ, Config, UI, UnitCache)
 
-    local eventRegistry = CBH:New(Events, 'Register', 'Unregister', false)
+    local externalCallbacks = {}
+    local externalCallbackRegistry = CBH:New(externalCallbacks, 'RegisterCallback', 'UnregisterCallback', false)
+    TJ.InvokeExternalCallbacks = externalCallbackRegistry.Fire
+    attachMixins(externalCallbacks, ThousandJabsGlobal)
+
+    local events = {}
+    local eventRegistry = CBH:New(events, 'RegisterEvent', 'UnregisterEvent', false)
     local eventFrame = CreateFrame('Frame', addonName..'_EventFrame')
+    attachMixins(events, TJ, Config, UI, UnitCache)
+
     eventFrame:SetScript('OnEvent', function(_, eventName, ...) eventRegistry:Fire(eventName, ...) end)
     eventFrame:Show()
 
@@ -130,7 +150,7 @@ end
 local doDebug = false
 local doProfiling = false
 
-Callbacks.Register('CoreConfigUpdate', 'CONFIG_CHANGED', function()
+TJ.RegisterCallback('CoreConfigUpdate', 'CONFIG_CHANGED', function()
     TJ:DevPrint('CONFIG_CHANGED(CoreConfigUpdate)')
 
     doDebug = Config:Get('doDebug')
@@ -150,8 +170,14 @@ end)
 do
     -- Time slice execution
     local quickestUpdateTime = 0.05
-    local timeSlice = NewTicker(quickestUpdateTime, function()
-        Callbacks:Invoke('TIME_SLICE', doDebug)
+    local timeSlice
+
+    TJ.RegisterCallback('TimerStart', 'LOGIN_COMPLETED', function()
+        TJ:DevPrint('LOGIN_COMPLETED(TimerStart)')
+
+        timeSlice = NewTicker(quickestUpdateTime, function()
+            TJ:InvokeCallbacks('TIME_SLICE', doDebug)
+        end)
     end)
 end
 
@@ -442,19 +468,19 @@ do
 
     local function tryPerformLoginHandler()
         if variablesLoaded and enteredWorld then
-            Callbacks:Invoke('LOGIN_COMPLETED')
+            TJ:InvokeCallbacks('LOGIN_COMPLETED')
         end
     end
 
-    Events.Register('LoginVariables', 'VARIABLES_LOADED', function()
+    TJ.RegisterEvent('LoginVariables', 'VARIABLES_LOADED', function()
         if not variablesLoaded then
             variablesLoaded = true
-            Callbacks:Invoke('VARIABLES_LOADED')
+            TJ:InvokeCallbacks('VARIABLES_LOADED')
             tryPerformLoginHandler()
         end
     end)
 
-    Events.Register('LoginEnteringWorld', 'PLAYER_ENTERING_WORLD', function()
+    TJ.RegisterEvent('LoginEnteringWorld', 'PLAYER_ENTERING_WORLD', function()
         if not enteredWorld then
             enteredWorld = true
             tryPerformLoginHandler()

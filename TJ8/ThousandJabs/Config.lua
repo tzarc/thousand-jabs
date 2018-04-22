@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local LibStub, CT, RT, Config, UI, UnitCache = LibStub, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache
 local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -99,9 +99,9 @@ function Config:VARIABLES_LOADED()
     ThousandJabsDB = ThousandJabsDB or {}
     variablesAvailable = true
     Config:Upgrade()
-    Callbacks:Invoke('CONFIG_CHANGED')
+    TJ:InvokeCallbacks('CONFIG_CHANGED')
 end
-Events.Register(Config, 'VARIABLES_LOADED')
+Config:RegisterEvent('VARIABLES_LOADED')
 
 local function getconf(tbl, key, ...)
     if select('#', ...) == 0 then return tbl[key] end
@@ -132,7 +132,7 @@ function Config:Set(value, ...)
     if not variablesAvailable then error('Attempted to write config before login sequence complete.') end
     if not ThousandJabsDB then return nil end
     setconf(value, ThousandJabsDB, ...)
-    Callbacks:Invoke('CONFIG_CHANGED')
+    TJ:InvokeCallbacks('CONFIG_CHANGED')
 end
 
 function Config:GetSpecGeneric(...)

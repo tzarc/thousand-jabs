@@ -15,7 +15,6 @@ local DBG = function(...) TJ:AddDebugLog(...) end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local TableCache = LibStub('LibTJTableCache-8.0')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Sandbox
@@ -23,16 +22,18 @@ local TableCache = LibStub('LibTJTableCache-8.0')
 LibStub('LibTJSandbox-8.0'):Use(addonName)
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- UI
+-- Event Handlers
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-function UI:PROFILE_ACTIVATED(classID, specID)
-    TJ:DevPrint('PROFILE_ACTIVATED(UI): %d %d', classID, specID)
+function UnitCache:PLAYER_ENTERING_WORLD(eventName)
+    TJ:DevPrint('PLAYER_ENTERING_WORLD(UnitCache)')
+    self:UpdateUnitCache('player', true)
 end
 
-function UI:PROFILE_DEACTIVATED(classID, specID)
-    TJ:DevPrint('PROFILE_DEACTIVATED(UI): %d %d', classID, specID)
+function UnitCache:PLAYER_TARGET_CHANGED(eventName)
+    TJ:DevPrint('PLAYER_TARGET_CHANGED(UnitCache)')
+    self:UpdateUnitCache('target', true)
 end
 
-UI:RegisterCallback('PROFILE_ACTIVATED')
-UI:RegisterCallback('PROFILE_DEACTIVATED')
+UnitCache:RegisterEvent('PLAYER_ENTERING_WORLD')
+UnitCache:RegisterEvent('PLAYER_TARGET_CHANGED')

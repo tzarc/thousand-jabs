@@ -27,3 +27,4 @@ Config.lua
 Ticket.lua
 UI.lua
 Executor.lua
+UnitCache.lua

@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, CT, RT, Callbacks, Events, Config, UI = LibStub, CT, RT, TJ.Callbacks, TJ.Events, TJ.Config, TJ.UI
+local LibStub, CT, RT, Config, UI, UnitCache = LibStub, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache
 local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
