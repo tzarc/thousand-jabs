@@ -28,3 +28,4 @@ Ticket.lua
 UI.lua
 Executor.lua
 UnitCache.lua
+SpellBook.lua

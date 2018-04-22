@@ -19,10 +19,15 @@ local ThousandJabsGlobal = {}
 local Config = {}
 local UI = {}
 local UnitCache = {}
+local SpellBook = {}
 TJ.ThousandJabsGlobal = ThousandJabsGlobal
 TJ.Config = Config
 TJ.UI = UI
 TJ.UnitCache = UnitCache
+TJ.SpellBook = SpellBook
+
+local DBG = function(...) TJ:AddDebugLog(...) end
+TJ.DBG = DBG
 
 _G['ThousandJabs'] = ThousandJabsGlobal
 
@@ -71,7 +76,6 @@ local PRF = LibStub('LibTJProfiling-8.0')
 local Sandbox = LibStub('LibTJSandbox-8.0')
 local TableCache = LibStub('LibTJTableCache-8.0')
 
-local DBG = function(...) TJ:AddDebugLog(...) end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TJ sandboxing
@@ -79,6 +83,9 @@ local DBG = function(...) TJ:AddDebugLog(...) end
 Sandbox:New(addonName)
 Sandbox:Use(addonName)
 Sandbox:AllowPassthrough(addonName, 'ThousandJabsDB', 'ThousandJabsInfoFrameDialogBG', 'ThousandJabsInfoFrameTitleBG')
+
+-- Debug log helper
+_G['DBG'] = DBG
 
 -- Set 'devMode' in the sandbox table
 _G['devMode'] = devMode
@@ -104,7 +111,7 @@ _G['RT'] = function(tbl) TableCache:Release(tbl) end
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    local mixins = { 'RegisterCallback', 'UnregisterCallback', 'RegisterEvent', 'UnregisterEvent' }
+    local mixins = { 'RegisterCallback', 'UnregisterCallback', 'RegisterEvent', 'UnregisterEvent', 'InvokeCallbacks', 'InvokeExternalCallbacks' }
     local function attachMixins(src, ...)
         local tbls = {...}
         for _,tbl in pairs(tbls) do
@@ -118,20 +125,23 @@ do
 
     local callbacks = {}
     local callbackRegistry = CBH:New(callbacks, 'RegisterCallback', 'UnregisterCallback', false)
-    TJ.InvokeCallbacks = callbackRegistry.Fire
-    attachMixins(callbacks, TJ, Config, UI, UnitCache)
+    callbacks.InvokeCallbacks = callbackRegistry.Fire
+    attachMixins(callbacks, TJ, Config, UI, UnitCache, SpellBook)
 
     local externalCallbacks = {}
     local externalCallbackRegistry = CBH:New(externalCallbacks, 'RegisterCallback', 'UnregisterCallback', false)
-    TJ.InvokeExternalCallbacks = externalCallbackRegistry.Fire
+    externalCallbacks.InvokeExternalCallbacks = externalCallbackRegistry.Fire
     attachMixins(externalCallbacks, ThousandJabsGlobal)
 
     local events = {}
     local eventRegistry = CBH:New(events, 'RegisterEvent', 'UnregisterEvent', false)
     local eventFrame = CreateFrame('Frame', addonName..'_EventFrame')
-    attachMixins(events, TJ, Config, UI, UnitCache)
+    attachMixins(events, TJ, Config, UI, UnitCache, SpellBook)
 
-    eventFrame:SetScript('OnEvent', function(_, eventName, ...) eventRegistry:Fire(eventName, ...) end)
+    eventFrame:SetScript('OnEvent', function(_, eventName, ...)
+        --TJ:DevPrint('%s -- %d args', eventName, select('#', ...))
+        eventRegistry:Fire(eventName, ...)
+    end)
     eventFrame:Show()
 
     function eventRegistry:OnUsed(_, eventName)
@@ -176,7 +186,7 @@ do
         TJ:DevPrint('LOGIN_COMPLETED(TimerStart)')
 
         timeSlice = NewTicker(quickestUpdateTime, function()
-            TJ:InvokeCallbacks('TIME_SLICE', doDebug)
+            TJ:InvokeCallbacks('TIME_SLICE')
         end)
     end)
 end
@@ -564,6 +574,10 @@ do
         TJ:ShowInfoDialog('SavedVariables Export', LSD(ThousandJabsDB))
     end)
 
+    TJ:RegisterCommandHandler('_duc', 'Dumps UnitCache.', function()
+        TJ:ShowInfoDialog('UnitCache Export', LSD(UnitCache.unitCache))
+    end)
+
     TJ:RegisterCommandHandler('_err', 'Dumps errors.', function()
         TJ:ShowInfoDialog('Errors', LSD({errors=TJ.errors}))
     end)
@@ -585,7 +599,7 @@ do
     logFrameText:SetPoint('TOPLEFT', 8, -8)
     logFrameText:SetPoint('BOTTOMRIGHT', -8, 8)
     logFrameText:SetTextColor(0.7, 0.7, 0.7, 1.0)
-    logFrameText:SetFont(logFont, 7, 'OUTLINE')
+    logFrameText:SetFont(logFont, 9, 'OUTLINE')
 
     logFrame:Hide()
 

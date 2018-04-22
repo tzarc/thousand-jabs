@@ -80,7 +80,7 @@ logFrameText:SetJustifyV('BOTTOM')
 logFrameText:SetPoint('TOPLEFT', 8, -8)
 logFrameText:SetPoint('BOTTOMRIGHT', -8, 8)
 logFrameText:SetTextColor(0.7, 0.7, 0.7, 1.0)
-logFrameText:SetFont(logFont, 7, 'OUTLINE')
+logFrameText:SetFont(logFont, 9, 'OUTLINE')
 
 logFrame:Show()
 
