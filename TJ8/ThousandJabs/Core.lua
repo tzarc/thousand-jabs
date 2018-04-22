@@ -20,13 +20,11 @@ local Callbacks = {}
 local Events = {}
 local Config = {}
 local UI = {}
-local Stats = {}
 TJ.ThousandJabsGlobal = ThousandJabsGlobal
 TJ.Callbacks = Callbacks
 TJ.Events = Events
 TJ.Config = Config
 TJ.UI = UI
-TJ.Stats = Stats
 
 _G['ThousandJabs'] = ThousandJabsGlobal
 
@@ -35,28 +33,8 @@ local SLASH_TJ1 = '/tj'
 _G['SLASH_TJ1'] = SLASH_TJ1
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Quick script reload (dev mode only)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if devMode then
-    SLASH_TJ_RLN1, SLASH_TJ_RLN2, SLASH_TJ_RLN3 = '/rl', '/rln', '//'
-    SLASH_TJ_RLC1 = '/rlc'
-    function SlashCmdList.TJ_RLN(msg, editbox)
-        SetCVar('scriptProfile', '0')
-        ReloadUI()
-    end
-    function SlashCmdList.TJ_RLC(msg, editbox)
-        SetCVar('scriptProfile', '1')
-        ReloadUI()
-    end
-end
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-local co_create = coroutine.create
-local co_resume = coroutine.resume
-local co_status = coroutine.status
-local co_yield = coroutine.yield
 local CreateFrame = CreateFrame
 local debugprofilestop = debugprofilestop
 local debugstack = debugstack
@@ -123,7 +101,6 @@ _G['RT'] = function(tbl) TableCache:Release(tbl) end
 --   CONFIG_CHANGED -- Fired whenever one of the config values changed (or after variables loaded), allows other components to update their local copies
 --   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
---   DATABROKER_TEXT_UPDATE -- Text to show in the databroker
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
     local callbackRegistry = CBH:New(Callbacks, 'Register', 'Unregister', false)
@@ -166,6 +143,17 @@ Callbacks.Register('CoreConfigUpdate', 'CONFIG_CHANGED', function()
     doProfiling = Config:Get('doProfiling')
     PRF:EnableProfiling(doProfiling)
 end)
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Main pulse loop
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+do
+    -- Time slice execution
+    local quickestUpdateTime = 0.05
+    local timeSlice = NewTicker(quickestUpdateTime, function()
+        Callbacks:Invoke('TIME_SLICE', doDebug)
+    end)
+end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Unknown field sandbox getter/setter observers
@@ -219,7 +207,7 @@ end
 
 
 do
-    local printPrefix = '|cFF00FFFFT|cFF00EFFFh|cFF00DFFFo|cFF00CFFFu|cFF00BFFFs|cFF00AFFFa|cFF009FFFn|cFF008FFFd|cFF007FFFJ|cFF006FFFa|cFF005FFFb|cFF004FFFs|cFF003FFF:|r'
+    local printPrefix = '|cFF00FFFFT|cFF00EFFFh|cFF00DFFFo|cFF00CFFFu|cFF00BFFFs|cFF00AFFFa|cFF009FFFn|cFF008FFFd|cFF007FFFJ|cFF006FFFa|cFF005FFFb|cFF004FFFs|r'
     local debugPrefix = function() return ('%.3f:'):format(debugprofilestop()) end
     function TJ:Print(...)
         print(printPrefix, self:Format(...))
@@ -365,19 +353,19 @@ do
         if handler then
             handler(unpack(args))
         else
-            TJ:Print('Unknown command: '%s'', tostring(first))
+            TJ:Print('Unknown command: "%s"', tostring(first))
         end
     end
 
     function TJ:RegisterCommandHandler(command, helptxt, handler, args)
         if type(command) ~= 'string' then
-            self:Error(self:Format('Command '%s' is not a string type', tostring(command)))
+            self:Error(self:Format('Command "%s" is not a string type', tostring(command)))
         end
         if type(helptxt) ~= 'string' then
-            self:Error(self:Format('Help text for command '%s' is not a string type', tostring(command)))
+            self:Error(self:Format('Help text for command "%s" is not a string type', tostring(command)))
         end
         if type(handler) ~= 'function' then
-            self:Error(self:Format('Handler for command '%s' is not a function type', tostring(command)))
+            self:Error(self:Format('Handler for command "%s" is not a function type', tostring(command)))
         end
         slashHelpText[command] = helptxt
         slashHandlers[command] = handler
@@ -420,11 +408,11 @@ do
             local header
             local stack = debugstack(2)
             if type(key) == 'nil' then
-                header = TJ:Format('Attempted to index table '%s' with nil key.', tableName)
+                header = TJ:Format('Attempted to index table "%s" with nil key.', tableName)
             elseif type(key) == 'table' then
-                header = TJ:Format('Attempted to index table '%s' with key of type table.', tableName)
+                header = TJ:Format('Attempted to index table "%s" with key of type table.', tableName)
             else
-                header = TJ:Format('Missing field: '%s'', targetFieldName(tableName, key))
+                header = TJ:Format('Missing field: "%s"', targetFieldName(tableName, key))
             end
             if header then
                 local errtxt = TJ:Format('%s\n%s', header, stack)
@@ -442,74 +430,6 @@ do
             end
         end
         return tbl
-    end
-end
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Event handling and timing
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-do
-    -- Deferred execution
-    local quickestUpdateTime = 0.01
-    local lastUpdate = 0
-    local deferredExecution = {}
-    local function runDeferredExecution()
-        local now = GetTime()
-        for execTime, funcs in pairs(deferredExecution) do
-            if execTime <= now then
-                deferredExecution[execTime] = nil
-                for _,func in pairs(funcs) do pcall(func) end
-                RT(funcs)
-            else
-                break
-            end
-        end
-    end
-
-    -- Background coroutines
-    local backgroundTasks = {}
-    local coroutineSkipped = true -- Only execute the coroutines on every second ticker update (i.e. every 0.1sec)
-    local function runFuncCoroutines()
-        if coroutineSkipped then
-            for th in pairs(backgroundTasks) do
-                coroutineSkipped = false
-                if co_status(th) == 'dead' then
-                    backgroundTasks[th] = nil
-                else
-                    local ok, errstr = co_resume(th)
-                    if not ok then
-                        TJ:Error(errstr)
-                        backgroundTasks[th] = nil
-                    end
-                end
-            end
-        else
-            coroutineSkipped = true
-        end
-    end
-
-    -- Time slice execution
-    local timeSlice = NewTicker(quickestUpdateTime, function()
-        runDeferredExecution()
-        runFuncCoroutines()
-        Callbacks:Invoke('TIME_SLICE')
-        TJ:UpdateUsageStatistics()
-    end)
-
-    -- Defer a piece of code until a specific time (or shortly thereafter)
-    function TJ:DeferExecution(execTime, func)
-        local now = GetTime()
-        if execTime < now then execTime = now + execTime end -- if it's less than now, treat it as a time interval rather than a full timestamp
-        if execTime < now + quickestUpdateTime then execTime = now + quickestUpdateTime end -- if it's going to come within the current time slice, defer until the next one
-        deferredExecution[execTime] = deferredExecution[execTime] or CT()
-        local r = deferredExecution[execTime]
-        r[1+#r] = func
-    end
-
-    -- Execute a task in the background
-    function TJ:ExecuteFuncAsCoroutine(funcToExec)
-        local th = co_create(funcToExec)
-        backgroundTasks[th] = true
     end
 end
 
@@ -675,75 +595,3 @@ do
         end
     end
 end
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Statistics
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-do
-    local function TimedUpdateUsageStats()
-        local start = debugprofilestop()
-        UpdateAddOnMemoryUsage()
-        UpdateAddOnCPUUsage()
-        local finish = debugprofilestop()
-        return finish - start
-    end
-
-    function TJ:UpdateUsageStatistics()
-        if not devMode then return end
-        if not Stats.updateTime then
-            if not InCombatLockdown() then
-                Stats.updateTime = TimedUpdateUsageStats()
-            end
-        else
-            Stats.lastCheck = Stats.lastCheck or 0
-            local statUpdateSpeed = 5 -- in seconds
-            if (InCombatLockdown() and Stats.updateTime < 10) or (Stats.updateTime < 25) then -- calc in-combat if <10ms, or out-of-combat if <25ms
-                local now = GetTime()
-                if Stats.lastCheck + statUpdateSpeed < now then
-                    Stats.updateTime = TimedUpdateUsageStats()
-                    Stats.lastCheckDelta = now - Stats.lastCheck
-                    Stats.lastMemAmount = Stats.currMemAmount
-                    Stats.currMemAmount = GetAddOnMemoryUsage(addonName)
-                    Stats.lastCpuAmount = Stats.currCpuAmount
-                    Stats.currCpuAmount = GetAddOnCPUUsage(addonName)
-                    Stats.lastCheck = now
-
-                    DBG('Usage stats update time: %12.3f ms', Stats.updateTime)
-                    if Stats.lastCheckDelta then
-                        local dt = Stats.lastCheckDelta
-                        local outText = ''
-
-                        if Stats.lastMemAmount and Stats.lastMemAmount > 0 then
-                            local curr = Stats.currMemAmount
-                            local prev = Stats.lastMemAmount
-                            local delta = curr - prev
-                            DBG('           Memory usage: %12.3f kB', curr)
-                            DBG('           Memory delta: %12.3f kB', delta)
-                            DBG('           Memory delta: %12.3f kB/sec (over last %d secs)', delta/dt, statUpdateSpeed)
-                            outText = self:Format('Thousand Jabs: Memory: %d bytes/sec', 1024*delta/dt)
-                        end
-
-                        if Stats.lastCpuAmount and Stats.lastCpuAmount > 0 then
-                            local curr = Stats.currCpuAmount
-                            local prev = Stats.lastCpuAmount
-                            local delta = curr - prev
-                            DBG('              CPU usage: %12.3f ms', curr)
-                            DBG('              CPU delta: %12.3f ms', delta)
-                            DBG('              CPU delta: %12.3f ms/sec (over last %d secs)', delta/dt, statUpdateSpeed)
-                            DBG('              CPU usage: %10.1f%%', 100*(delta/dt)/1000.0)
-                            outText = outText .. self:Format(', CPU: %.1f%% (%.3fms)', 100*(delta/dt)/1000.0, delta/dt)
-                        end
-
-                        if outText:len() > 0 then
-                            Callbacks:Invoke('DATABROKER_TEXT_UPDATE', outText)
-                        end
-                    else
-                        Callbacks:Invoke('DATABROKER_TEXT_UPDATE', self:Format('Thousand Jabs: Statistics disabled, too much time used (%d ms)', mceil(Stats.updateTime)))
-                    end
-                end
-            end
-        end
-    end
-end
-
-Callbacks.Register('Dummy', 'DATABROKER_TEXT_UPDATE', function(event,str) TJ:DevPrint(str) end)

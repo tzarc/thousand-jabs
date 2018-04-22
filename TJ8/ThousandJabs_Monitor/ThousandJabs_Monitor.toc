@@ -1,0 +1,16 @@
+## Interface: 80000
+## Title: ThousandJabs_Monitor
+## Notes: ThousandJabs Monitor
+## Author: Tzarc
+## X-License: UNLICENSE
+## X-Category: Combat
+## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
+## X-Repository: https://github.com/tzarc/thousand-jabs
+## Version: 79999.999
+
+## OptionalDeps: ThousandJabs
+
+Libs\LibStub\LibStub.lua
+Libs\LibSharedMedia-3.0\lib.xml
+
+Monitor.lua
