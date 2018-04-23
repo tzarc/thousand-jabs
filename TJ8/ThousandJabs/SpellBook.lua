@@ -14,6 +14,25 @@ local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+local BOOKTYPE_PET = BOOKTYPE_PET
+local BOOKTYPE_SPELL = BOOKTYPE_SPELL
+local FindSpellBookSlotBySpellID = FindSpellBookSlotBySpellID
+local GetFlyoutInfo = GetFlyoutInfo
+local GetFlyoutSlotInfo = GetFlyoutSlotInfo
+local GetNumSpellTabs = GetNumSpellTabs
+local GetSpellBookItemInfo = GetSpellBookItemInfo
+local GetSpellBookItemName = GetSpellBookItemName
+local GetSpellInfo = GetSpellInfo
+local GetSpellLink = GetSpellLink
+local GetSpellTabInfo = GetSpellTabInfo
+local HasPetSpells = HasPetSpells
+local IsPassiveSpell = IsPassiveSpell
+local IsPlayerSpell = IsPlayerSpell
+local IsTalentSpell = IsTalentSpell
+local PetHasSpellbook = PetHasSpellbook
+local pcall = pcall
+local tonumber = tonumber
+
 local TableCache = LibStub('LibTJTableCache-8.0')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -149,7 +168,7 @@ do
     function SpellBook:Iterate(bookType, tmpTable, tableFactory, tableDestroyer)
         tableFactory = tableFactory or CT or function() return {} end
         tableDestroyer = tableDestroyer or RT or function() end
-        local state = tbl or tableFactory()
+        local state = tmpTable or tableFactory()
         state.tableFactory = tableFactory
         state.tableDestroyer = tableDestroyer
         state.index = 0

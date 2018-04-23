@@ -104,11 +104,14 @@ _G['RT'] = function(tbl) TableCache:Release(tbl) end
 --   TJ.RegisterCallback('myFuncToken', 'CALLBACK_NAME', myFunc) ---> Invokes myFunc()
 --   TJ.RegisterCallback(Module, 'CALLBACK_NAME') ---> Invokes Module:CALLBACK_NAME()
 --
--- Available callbacks:
+-- Available internal callbacks:
 --   VARIABLES_LOADED -- Fired when the normal WoW VARIABLES_LOADED event is received
 --   CONFIG_CHANGED -- Fired whenever one of the config values changed (or after variables loaded), allows other components to update their local copies
 --   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
+--
+-- Available external callbacks:
+--   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
     local mixins = { 'RegisterCallback', 'UnregisterCallback', 'RegisterEvent', 'UnregisterEvent', 'InvokeCallbacks', 'InvokeExternalCallbacks' }
@@ -123,15 +126,15 @@ do
         end
     end
 
+    local externalCallbacks = {}
+    local externalCallbackRegistry = CBH:New(externalCallbacks, 'RegisterCallback', 'UnregisterCallback', false)
+    attachMixins(externalCallbacks, ThousandJabsGlobal)
+
     local callbacks = {}
     local callbackRegistry = CBH:New(callbacks, 'RegisterCallback', 'UnregisterCallback', false)
     callbacks.InvokeCallbacks = callbackRegistry.Fire
+    callbacks.InvokeExternalCallbacks = externalCallbackRegistry.Fire
     attachMixins(callbacks, TJ, Config, UI, UnitCache, SpellBook)
-
-    local externalCallbacks = {}
-    local externalCallbackRegistry = CBH:New(externalCallbacks, 'RegisterCallback', 'UnregisterCallback', false)
-    externalCallbacks.InvokeExternalCallbacks = externalCallbackRegistry.Fire
-    attachMixins(externalCallbacks, ThousandJabsGlobal)
 
     local events = {}
     local eventRegistry = CBH:New(events, 'RegisterEvent', 'UnregisterEvent', false)
@@ -479,6 +482,7 @@ do
     local function tryPerformLoginHandler()
         if variablesLoaded and enteredWorld then
             TJ:InvokeCallbacks('LOGIN_COMPLETED')
+            TJ:InvokeExternalCallbacks('LOGIN_COMPLETED')
         end
     end
 
@@ -504,48 +508,55 @@ end
 do
     LSM:Register('font', 'Iosevka Tzarc', [[Interface\AddOns\ThousandJabs\Assets\iosevka-tzarc\iosevka-tzarc-regular.ttf]])
 
-    local infoFont = LSM:Fetch('font', 'Iosevka Tzarc')
-    local infoFrameName = addonName..'InfoFrame'
-    local infoFrame = CreateFrame('Frame', infoFrameName, UIParent, 'UIPanelDialogTemplate')
-    local infoFrameBG = _G[infoFrameName..'TitleBG']
-    local infoFrameChildBG = _G[infoFrameName..'DialogBG']
-    infoFrame:SetSize(mmax(300, UIParent:GetWidth()/3), mmax(200, UIParent:GetHeight()/3))
-    infoFrame:SetPoint('CENTER')
-    infoFrame:Hide()
-    infoFrame:SetAlpha(0.8)
-    infoFrame:SetFrameStrata('DIALOG')
+    local infoFrame
 
-    local frameTitle = infoFrame:CreateFontString(infoFrameName..'TitleOverlay', 'OVERLAY', 'GameFontHighlight')
-    frameTitle:SetJustifyH('LEFT')
-    frameTitle:SetJustifyV('CENTER')
-    frameTitle:SetPoint('TOPLEFT', infoFrameBG, 8, 0)
-    frameTitle:SetPoint('BOTTOMRIGHT', infoFrameBG, -8, 0)
-    frameTitle:SetTextColor(0.7, 0.7, 0.7, 1.0)
-    frameTitle:SetFont(infoFont, 8, 'OUTLINE')
+    local function createInfoFrame()
+        local infoFont = LSM:Fetch('font', 'Iosevka Tzarc')
+        local infoFrameName = addonName..'InfoFrame'
+        local infoFrame = CreateFrame('Frame', infoFrameName, UIParent, 'UIPanelDialogTemplate')
+        local infoFrameBG = _G[infoFrameName..'TitleBG']
+        local infoFrameChildBG = _G[infoFrameName..'DialogBG']
+        infoFrame:SetSize(mmax(300, UIParent:GetWidth()/3), mmax(200, UIParent:GetHeight()/3))
+        infoFrame:SetPoint('CENTER')
+        infoFrame:Hide()
+        infoFrame:SetAlpha(0.8)
+        infoFrame:SetFrameStrata('DIALOG')
 
-    local scrollFrameInset = 14
-    local scrollFrame = CreateFrame('ScrollFrame', infoFrameName..'ScrollFrame', infoFrame, 'InputScrollFrameTemplate')
-    scrollFrame.CharCount:Hide()
-    scrollFrame:SetPoint('TOPLEFT', infoFrameChildBG, scrollFrameInset, -scrollFrameInset-4)
-    scrollFrame:SetPoint('BOTTOMRIGHT', infoFrameChildBG, -scrollFrameInset, scrollFrameInset)
+        infoFrame.Title = infoFrame:CreateFontString(infoFrameName..'TitleOverlay', 'OVERLAY', 'GameFontHighlight')
+        infoFrame.Title:SetJustifyH('LEFT')
+        infoFrame.Title:SetJustifyV('CENTER')
+        infoFrame.Title:SetPoint('TOPLEFT', infoFrameBG, 8, 0)
+        infoFrame.Title:SetPoint('BOTTOMRIGHT', infoFrameBG, -8, 0)
+        infoFrame.Title:SetTextColor(0.7, 0.7, 0.7, 1.0)
+        infoFrame.Title:SetFont(infoFont, 9, 'OUTLINE')
 
-    local editBox = scrollFrame.EditBox
-    editBox:SetFontObject('ChatFontNormal')
-    editBox:SetAllPoints(true)
-    editBox:SetWidth(scrollFrame:GetWidth())
-    editBox:SetFont(infoFont, 8, 'SHADOW')
+        local scrollFrameInset = 14
+        infoFrame.ScrollFrame = CreateFrame('ScrollFrame', infoFrameName..'ScrollFrame', infoFrame, 'InputScrollFrameTemplate')
+        infoFrame.ScrollFrame.CharCount:Hide()
+        infoFrame.ScrollFrame:SetPoint('TOPLEFT', infoFrameChildBG, scrollFrameInset, -scrollFrameInset-4)
+        infoFrame.ScrollFrame:SetPoint('BOTTOMRIGHT', infoFrameChildBG, -scrollFrameInset, scrollFrameInset)
 
-    editBox:SetScript('OnEscapePressed', function() editBox:ClearFocus() editBox:HighlightText(0, 0) end) -- on <ESC> in editbox, clear focus+selection
-    tinsert(UISpecialFrames, infoFrameName) -- on <ESC> without editbox focus, close window automatically
+        infoFrame.EditBox = infoFrame.ScrollFrame.EditBox
+        infoFrame.EditBox:SetFontObject('ChatFontNormal')
+        infoFrame.EditBox:SetAllPoints(true)
+        infoFrame.EditBox:SetWidth(infoFrame.ScrollFrame:GetWidth())
+        infoFrame.EditBox:SetFont(infoFont, 9, 'SHADOW')
+
+        infoFrame.EditBox:SetScript('OnEscapePressed', function() infoFrame.EditBox:ClearFocus() infoFrame.EditBox:HighlightText(0, 0) end) -- on <ESC> in editbox, clear focus+selection
+        tinsert(UISpecialFrames, infoFrameName) -- on <ESC> without editbox focus, close window automatically
+
+        return infoFrame
+    end
 
     function TJ:ShowInfoDialog(title, str, preselect)
-        frameTitle:SetText(addonName .. ' -- ' .. title)
-        editBox:SetText(str)
+        infoFrame = infoFrame or createInfoFrame()
+        infoFrame.Title:SetText(addonName .. ' -- ' .. title)
+        infoFrame.EditBox:SetText(str)
         infoFrame:Show()
-        self:DeferExecution(0.1, function() scrollFrame:SetVerticalScroll(0) end) -- scroll to top, apparently a screen update is required before the scrolling actually kicks in
+        self:DeferExecution(0.1, function() infoFrame.ScrollFrame:SetVerticalScroll(0) end) -- scroll to top, apparently a screen update is required before the scrolling actually kicks in
         if preselect then
-            editBox:HighlightText()
-            editBox:SetFocus(true)
+            infoFrame.EditBox:HighlightText()
+            infoFrame.EditBox:SetFocus(true)
         end
     end
 end
