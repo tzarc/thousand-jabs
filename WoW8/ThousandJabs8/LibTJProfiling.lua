@@ -20,8 +20,8 @@ local mmax = math.max
 local mfloor = math.floor
 
 local TableCache = LibStub('LibTJTableCache-8.0')
-function CT() return TableCache:Acquire() end
-function RT(tbl) TableCache:Release(tbl) end
+local CT = TableCache.Acquire
+local RT = TableCache.Release
 
 local gatherMemoryStats = false
 local profilingData = {}

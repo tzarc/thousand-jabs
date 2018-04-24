@@ -105,7 +105,7 @@ do
             internals = {
                 devMode = devMode,
                 savedVariables = ThousandJabsDB,
-                tableCache = TableCache:GetMetrics(),
+                tableCache = TableCache.GetMetrics(),
                 globalReadNames = copiesExport(),
             },
         }

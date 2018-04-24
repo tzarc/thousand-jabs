@@ -24,13 +24,12 @@ externals:
 move-folders:
     ThousandJabs/WoW7/ThousandJabs: ThousandJabs
     ThousandJabs/WoW7/ThousandJabs_Config: ThousandJabs_Config
-    ThousandJabs/WoW8/ThousandJabs: ThousandJabs8
+    ThousandJabs/WoW8/ThousandJabs8: ThousandJabs8
 
 ignore:
     - build-datagenerator.sh
     - cleanup.sh
     - download-db2.sh
-    - tag-release.sh
-    - tag-alpha.sh
+    - tag-repo.sh
     - WoW7
     - WoW8

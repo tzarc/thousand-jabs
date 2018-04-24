@@ -91,8 +91,8 @@ _G['DBG'] = DBG
 _G['devMode'] = devMode
 
 -- Table cache helpers
-_G['CT'] = function() return TableCache:Acquire() end
-_G['RT'] = function(tbl) TableCache:Release(tbl) end
+_G['CT'] = TableCache.Acquire
+_G['RT'] = TableCache.Release
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Event/Callback notifications:
@@ -594,7 +594,7 @@ do
     end)
 
     TJ:RegisterCommandHandler('_dtc', 'Dumps table cache metrics.', function()
-        local metrics = TableCache:GetMetrics()
+        local metrics = TableCache.GetMetrics()
         TJ:Print('Table cache -- Allocated: %d, Acquired: %d, Released: %d', metrics.TotalAllocated, metrics.TotalAcquired, metrics.TotalReleased)
     end)
 

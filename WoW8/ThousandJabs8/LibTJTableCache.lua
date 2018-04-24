@@ -52,8 +52,8 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Functions
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-function TableCache:Acquire()
-    local tc = ensureTableCacheExists(self)
+function TableCache.Acquire()
+    local tc = ensureTableCacheExists(TableCache)
     if noCaching then return {} end
 
     -- Find if we have a table free, and reuse that
@@ -73,8 +73,8 @@ function TableCache:Acquire()
     return t
 end
 
-function TableCache:Release(tbl)
-    local tc = ensureTableCacheExists(self)
+function TableCache.Release(tbl)
+    local tc = ensureTableCacheExists(TableCache)
     if noCaching then return end
 
     -- Drop out if it's not a table
@@ -99,8 +99,8 @@ function TableCache:Release(tbl)
 end
 
 local metrics = {}
-function TableCache:GetMetrics()
-    local tc = ensureTableCacheExists(self)
+function TableCache.GetMetrics()
+    local tc = ensureTableCacheExists(TableCache)
     metrics.TotalAllocated = tc.TotalAllocated
     metrics.TotalAcquired = tc.TotalAcquired
     metrics.TotalReleased = tc.TotalReleased
