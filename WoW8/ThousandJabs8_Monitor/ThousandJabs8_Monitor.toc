@@ -1,13 +1,13 @@
 ## Interface: 80000
-## Title: ThousandJabs_Monitor
+## Title: ThousandJabs Monitor (BfA Dev)
 ## Notes: ThousandJabs Monitor
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
 ## X-Repository: https://github.com/tzarc/thousand-jabs
-## Version: 80000.000-alpha.000
+## Version: @project-version@
 
-## Dependencies: ThousandJabs
+## Dependencies: ThousandJabs8
 
 Monitor.lua

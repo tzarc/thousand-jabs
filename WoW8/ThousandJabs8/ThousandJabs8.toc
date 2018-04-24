@@ -1,14 +1,14 @@
 ## Interface: 80000
-## Title: ThousandJabs
+## Title: ThousandJabs (BfA Dev)
 ## Notes: Simulationcraft -> In-game rotation
 ## Author: Tzarc
 ## X-License: UNLICENSE
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
 ## X-Repository: https://github.com/tzarc/thousand-jabs
-## Version: 80000.000-alpha.000
+## Version: @project-version@
 
-## OptionalDeps: LibStub, CallbackHandler-1.0, Ace3, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
+## OptionalDeps: LibStub, CallbackHandler-1.0, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
 
 ## SavedVariables: ThousandJabsDB
 
