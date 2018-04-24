@@ -2,6 +2,9 @@ package-as: ThousandJabs
 
 enable-nolib-creation: no
 
+optional-dependencies:
+    - masque
+
 externals:
     ThousandJabs/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
     ThousandJabs/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
@@ -15,24 +18,14 @@ externals:
     ThousandJabs_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
 
 move-folders:
-    ThousandJabs/ThousandJabs: ThousandJabs
-    ThousandJabs/ThousandJabs_Config: ThousandJabs_Config
+    ThousandJabs/ThousandJabs: WoW7/ThousandJabs
+    ThousandJabs/ThousandJabs_Config: WoW7/ThousandJabs_Config
 
 ignore:
-    - .clang-format
-    - .gitignore
-    - Support
-    - Class_Druid
-    - Class_Hunter
-    - Class_Priest
-    - Class_Rogue
     - build-datagenerator.sh
     - cleanup.sh
     - download-db2.sh
     - tag-release.sh
     - tag-alpha.sh
-    - update-generated-data.pl
-    - update-generated-data-TJ5.pl
-    - TJ5
-	- TJ8
-    - Test-Harness
+    - WoW7
+    - WoW8

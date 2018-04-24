@@ -1,10 +1,9 @@
 simc/
 Temp/
 datacache.sqlitedb
-Support/DataGenerator/build/
-Support/DataGenerator/generated/
+WoW7/Support/DataGenerator/build/
+WoW7/Support/DataGenerator/generated/
 datagenerator
-DBFilesClient/
 
 ThousandJabs/Libs/AceAddon-3.0/
 ThousandJabs/Libs/AceConsole-3.0/

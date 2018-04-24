@@ -112,7 +112,7 @@ do
             end
 
             -- Return the spell info
-            return collectReturnInfoForSpell(spellID, state.Index, BOOKTYPE_SPELL, isOffSpec)
+            return collectReturnInfoForSpell(spellID, state.spellBookIndex, BOOKTYPE_SPELL, isOffSpec)
         elseif state.mode == "FLYOUT" then -- Flyout mode
             local _, spellBookID = GetSpellBookItemInfo(state.spellBookIndex, BOOKTYPE_SPELL)
             local _, _, numSlots = GetFlyoutInfo(spellBookID)
@@ -161,7 +161,7 @@ do
         -- Get the spellID for the current slot, and return the data associated with it
         local spellID = tonumber(link:match('Hspell:(%d+)')) or -1
         if spellID and spellID > 0 then
-            return collectReturnInfoForSpell(spellID, state.Index, BOOKTYPE_PET, false)
+            return collectReturnInfoForSpell(spellID, state.index, BOOKTYPE_PET, false)
         end
     end
 

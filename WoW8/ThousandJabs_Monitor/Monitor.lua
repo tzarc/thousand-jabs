@@ -157,3 +157,38 @@ function TJM:UpdateUsageStatistics()
         end
     end
 end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Table dumper, using Blizzard's implementation
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+do
+    function TJM:Dump(value, startKey)
+        if not IsAddOnLoaded('Blizzard_DebugTools') then
+            LoadAddOn('Blizzard_DebugTools')
+        end
+
+        local context = {
+            depth = 0,
+            key = startKey,
+        };
+
+        context.GetTableName = function() return nil end
+        context.GetFunctionName = function() return nil end
+        context.GetUserdataName = function() return nil end
+
+        local f = {}
+        context.Write = function(_, msg) tinsert(f, msg) end
+
+        local oldDEVTOOLS_MAX_ENTRY_CUTOFF = DEVTOOLS_MAX_ENTRY_CUTOFF
+        local oldDEVTOOLS_LONG_STRING_CUTOFF = DEVTOOLS_LONG_STRING_CUTOFF
+        local oldDEVTOOLS_DEPTH_CUTOFF = DEVTOOLS_DEPTH_CUTOFF
+        DEVTOOLS_MAX_ENTRY_CUTOFF = 9999999
+        DEVTOOLS_LONG_STRING_CUTOFF = 9999999
+        DEVTOOLS_DEPTH_CUTOFF = 9999999
+        DevTools_RunDump(value, context);
+        DEVTOOLS_MAX_ENTRY_CUTOFF = oldDEVTOOLS_MAX_ENTRY_CUTOFF
+        DEVTOOLS_LONG_STRING_CUTOFF = oldDEVTOOLS_LONG_STRING_CUTOFF
+        DEVTOOLS_DEPTH_CUTOFF = oldDEVTOOLS_DEPTH_CUTOFF
+        return tconcat(f, '\n')
+    end
+end
