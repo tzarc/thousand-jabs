@@ -6,7 +6,7 @@
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
 ## X-Repository: https://github.com/tzarc/thousand-jabs
-## Version: 79999.999
+## Version: 80000.000-alpha.000
 
 ## OptionalDeps: LibStub, CallbackHandler-1.0, Ace3, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
 

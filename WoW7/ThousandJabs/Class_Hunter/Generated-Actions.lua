@@ -1,3 +1,11 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Legion only.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if select(4, GetBuildInfo()) >= 80000 then
+    return
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 if select(3, UnitClass('player')) ~= 3 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
@@ -172,4 +180,3 @@ actions.fillers+=/flanking_strike
 actions.fillers+=/raptor_strike,if=(variable.mokTalented&buff.moknathal_tactics.remains<gcd*4)|(focus>((75-focus.regen*gcd)))
 actions.mokMaintain=raptor_strike,if=(buff.moknathal_tactics.remains<(gcd)|(buff.moknathal_tactics.stack<3))
 ]])
-

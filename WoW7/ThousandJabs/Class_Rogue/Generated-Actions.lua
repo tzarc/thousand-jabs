@@ -1,3 +1,11 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Legion only.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+if select(4, GetBuildInfo()) >= 80000 then
+    return
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 if select(3, UnitClass('player')) ~= 4 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
@@ -189,4 +197,3 @@ actions.stealthed+=/shuriken_storm,if=buff.shadowmeld.down&((combo_points.defici
 actions.stealthed+=/call_action_list,name=finish,if=combo_points>=5+(talent.deeper_stratagem.enabled&buff.vanish.up)&combo_points.deficit<3+buff.shadow_blades.up-equipped.mantle_of_the_master_assassin
 actions.stealthed+=/shadowstrike
 ]])
-

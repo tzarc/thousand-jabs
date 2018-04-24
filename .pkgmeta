@@ -16,10 +16,15 @@ externals:
     ThousandJabs_Config/Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
     ThousandJabs_Config/Libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
     ThousandJabs_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
+    ThousandJabs8/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
+    ThousandJabs8/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+    ThousandJabs8/Libs/LibSharedMedia-3.0: svn://svn.curseforge.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
+    ThousandJabs8/Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
 
 move-folders:
-    ThousandJabs/ThousandJabs: WoW7/ThousandJabs
-    ThousandJabs/ThousandJabs_Config: WoW7/ThousandJabs_Config
+    ThousandJabs/WoW7/ThousandJabs: ThousandJabs
+    ThousandJabs/WoW7/ThousandJabs_Config: ThousandJabs_Config
+    ThousandJabs/WoW8/ThousandJabs: ThousandJabs8
 
 ignore:
     - build-datagenerator.sh

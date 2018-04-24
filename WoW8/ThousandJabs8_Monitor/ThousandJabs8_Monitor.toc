@@ -6,11 +6,8 @@
 ## X-Category: Combat
 ## X-Website: https://wow.curseforge.com/addons/thousand-jabs/
 ## X-Repository: https://github.com/tzarc/thousand-jabs
-## Version: 79999.999
+## Version: 80000.000-alpha.000
 
-## OptionalDeps: ThousandJabs
-
-Libs\LibStub\LibStub.lua
-Libs\LibSharedMedia-3.0\lib.xml
+## Dependencies: ThousandJabs
 
 Monitor.lua
