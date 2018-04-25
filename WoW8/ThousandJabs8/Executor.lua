@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
+local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, TJ.CT, TJ.RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -20,11 +20,15 @@ local co_status = coroutine.status
 local co_yield = coroutine.yield
 local co_yield = coroutine.yield
 local GetTime = GetTime
+local IsRightAltKeyDown = IsRightAltKeyDown
+local IsRightControlKeyDown = IsRightControlKeyDown
+local IsRightShiftKeyDown = IsRightShiftKeyDown
 local mmin = math.min
 local pairs = pairs
 local pcall = pcall
 
 local PRF = LibStub('LibTJProfiling-8.0')
+local LSD = LibStub('LibTJSerpentDump-8.0')
 
 local nextUpdateTime = 0
 
@@ -63,7 +67,7 @@ end
 
 function TJ:PerformUpdate()
 end
-PRF:ProfileFunction(TJ, 'PerformUpdate')
+PRF:ProfileFunction(TJ, 'PerformUpdate', 'TJ:PerformUpdate')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Deferred/async execution

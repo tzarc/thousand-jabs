@@ -11,8 +11,9 @@ end
 local addonName, TJ, _ = ...
 local LibStub = LibStub
 
+-- Dev mode flag
 local devMode = false
-if devMode then _G['TJ'] = TJ end
+TJ.devMode = devMode
 
 -- Modules
 local ThousandJabsGlobal = {}
@@ -26,10 +27,12 @@ TJ.UI = UI
 TJ.UnitCache = UnitCache
 TJ.SpellBook = SpellBook
 
+-- Debug log helper
 local DBG = function(...) TJ:AddDebugLog(...) end
 TJ.DBG = DBG
 
-_G['ThousandJabs'] = ThousandJabsGlobal
+_G[addonName] = ThousandJabsGlobal
+if devMode then _G['TJ'] = TJ end
 
 -- Command
 local SLASH_TJ1 = '/tj'
@@ -76,23 +79,18 @@ local PRF = LibStub('LibTJProfiling-8.0')
 local Sandbox = LibStub('LibTJSandbox-8.0')
 local TableCache = LibStub('LibTJTableCache-8.0')
 
+-- Table cache helpers
+local CT = TableCache.Acquire
+local RT = TableCache.Release
+TJ.CT = CT
+TJ.RT = RT
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- TJ sandboxing
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Sandbox:New(addonName)
 Sandbox:Use(addonName)
-Sandbox:AllowPassthrough(addonName, 'ThousandJabsDB', 'ThousandJabsInfoFrameDialogBG', 'ThousandJabsInfoFrameTitleBG')
-
--- Debug log helper
-_G['DBG'] = DBG
-
--- Set 'devMode' in the sandbox table
-_G['devMode'] = devMode
-
--- Table cache helpers
-_G['CT'] = TableCache.Acquire
-_G['RT'] = TableCache.Release
+Sandbox:AllowPassthrough(addonName, 'ThousandJabsDB', addonName..'InfoFrameDialogBG', addonName..'InfoFrameTitleBG')
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Event/Callback notifications:
@@ -111,7 +109,7 @@ _G['RT'] = TableCache.Release
 --   TIME_SLICE -- Run every 0.05 seconds or so, the standard ThousandJabs execution throttling time.
 --
 -- Available external callbacks:
---   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired
+--   LOGIN_COMPLETED -- When VARIABLES_LOADED and PLAYER_ENTERING_WORLD have both fired, and all of the internal ThousandJabs LOGIN_COMPLETED callbacks have fired
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
     local mixins = { 'RegisterCallback', 'UnregisterCallback', 'RegisterEvent', 'UnregisterEvent', 'InvokeCallbacks', 'InvokeExternalCallbacks' }
@@ -506,7 +504,7 @@ end
 -- Information Export Dialog Frame
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 do
-    LSM:Register('font', 'Iosevka Tzarc', [[Interface\AddOns\ThousandJabs\Assets\iosevka-tzarc\iosevka-tzarc-regular.ttf]])
+    LSM:Register('font', 'Iosevka Tzarc', ([[Interface\AddOns\%s\Assets\iosevka-tzarc\iosevka-tzarc-regular.ttf]]):format(addonName))
 
     local infoFrame
 
@@ -568,17 +566,11 @@ do
     TJ:RegisterCommandHandler('_dbg', 'Enables debugging overlay.', function()
         local newValue = not doDebug
         Config:Set(newValue, 'doDebug')
-        if newValue then
-            TJ:ShowDebugLog()
-        else
-            TJ:HideDebugLog()
-        end
     end)
 
     TJ:RegisterCommandHandler('_prof', 'Toggles profiling.', function()
         local newValue = not doProfiling
         Config:Set(newValue, 'doProfiling')
-        PRF:EnableProfiling(newValue)
     end)
 
     TJ:RegisterCommandHandler('_db', 'Dumps SavedVariables.', function()
@@ -599,12 +591,12 @@ do
     end)
 
     local logFont = LSM:Fetch('font', 'Iosevka Tzarc')
-    local logFrame = CreateFrame('Frame', 'ThousandJabsLog', UIParent)
+    local logFrame = CreateFrame('Frame', addonName..'Log', UIParent)
     logFrame:ClearAllPoints()
     logFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 550, -20)
     logFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -20, 20)
 
-    local logFrameText = logFrame:CreateFontString('ThousandJabsLogText', 'OVERLAY', 'GameFontHighlightSmall')
+    local logFrameText = logFrame:CreateFontString(addonName..'LogText', 'OVERLAY', 'GameFontHighlightSmall')
     logFrameText:SetJustifyH('LEFT')
     logFrameText:SetJustifyV('TOP')
     logFrameText:SetPoint('TOPLEFT', 8, -8)
@@ -618,7 +610,7 @@ do
 
     function TJ:AddDebugLog(...)
         if doDebug and logFrame:IsVisible() then
-            if #logData == 0 then logData[1] = self:Format('|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):') end
+            if #logData == 0 then logData[1] = self:Format('|cFFFFFFFF%s Debug log|r (|cFF00FFFFhide with %s _dbg|r):', addonName, SLASH_TJ1) end
             local a = ...
             if type(a) == 'table' and select('#', ...) == 1 then
                 logData[1+#logData] = self:Format('|cFFFFFF99%s|r', LSD(a))
@@ -633,10 +625,12 @@ do
     end
 
     function TJ:ShowDebugLog()
+        self:DevPrint('Showing debug log')
         logFrame:Show()
     end
 
     function TJ:HideDebugLog()
+        self:DevPrint('Hiding debug log')
         logFrame:Hide()
     end
 

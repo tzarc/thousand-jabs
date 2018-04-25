@@ -34,7 +34,7 @@ for ver in ${versions_list[@]} ; do
 
 		pushd "$script_dir/simc/dbc_extract3" >/dev/null 2>&1
 		cat live.conf | sed -e "s#^output_base.*#output_base = $code_output_dir#g" -e "s#\.inc]#.$ver.h]#g" > tj.conf
-		./dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --prefix=$ver --type output tj.conf || true
+		./dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --type output tj.conf || true
 		rm tj.conf
 		popd >/dev/null 2>&1
 	fi

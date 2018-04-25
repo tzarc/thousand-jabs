@@ -69,12 +69,12 @@ end)
 -- Debugging
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local logFont = LSM:Fetch('font', 'Iosevka Tzarc')
-local logFrame = CreateFrame('Frame', 'ThousandJabsLog', UIParent)
+local logFrame = CreateFrame('Frame', 'ThousandJabsMonitorLog', UIParent)
 logFrame:ClearAllPoints()
 logFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 10, -10)
 logFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 10)
 
-local logFrameText = logFrame:CreateFontString('ThousandJabsLogText', 'OVERLAY', 'GameFontHighlightSmall')
+local logFrameText = logFrame:CreateFontString('ThousandJabsMonitorLogText', 'OVERLAY', 'GameFontHighlightSmall')
 logFrameText:SetJustifyH('LEFT')
 logFrameText:SetJustifyV('BOTTOM')
 logFrameText:SetPoint('TOPLEFT', 8, -8)
@@ -123,9 +123,9 @@ function TJM:UpdateUsageStatistics()
             Stats.updateTime = TimedUpdateUsageStats()
             Stats.lastCheckDelta = now - Stats.lastCheck
             Stats.lastMemAmount = Stats.currMemAmount
-            Stats.currMemAmount = GetAddOnMemoryUsage('ThousandJabs')
+            Stats.currMemAmount = GetAddOnMemoryUsage('ThousandJabs8')
             Stats.lastCpuAmount = Stats.currCpuAmount
-            Stats.currCpuAmount = GetAddOnCPUUsage('ThousandJabs')
+            Stats.currCpuAmount = GetAddOnCPUUsage('ThousandJabs8')
             Stats.lastCheck = now
 
             DBG('Usage stats update time: %12.3f ms', Stats.updateTime)

@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
+local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, TJ.CT, TJ.RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -67,7 +67,7 @@ do
     end
 
     local function copiesExport()
-        if not devMode then return nil end
+        if not TJ.devMode then return nil end
         local s = ''
         local t1 = CT()
         for filename,list in TJ:OrderedPairsTC(TJ.errors.globalReadNames, t1) do
@@ -103,7 +103,7 @@ do
             },
             equippedItems = equippedItems(),
             internals = {
-                devMode = devMode,
+                devMode = TJ.devMode,
                 savedVariables = ThousandJabsDB,
                 tableCache = TableCache.GetMetrics(),
                 globalReadNames = copiesExport(),

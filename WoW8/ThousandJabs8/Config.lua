@@ -9,7 +9,7 @@ end
 -- Module init.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local addonName, TJ, _ = ...
-local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, CT, RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
+local LibStub, DBG, CT, RT, Config, UI, UnitCache, SpellBook = LibStub, TJ.DBG, TJ.CT, TJ.RT, TJ.Config, TJ.UI, TJ.UnitCache, TJ.SpellBook
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Locals
@@ -61,7 +61,7 @@ local defaultConf = {
 -- Functions
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function Config:OpenDialog()
-    LoadAddOn('ThousandJabs_Config')
+    LoadAddOn(addonName..'_Config')
     local ACD = LibStub('AceConfigDialog-3.0')
     ACD:Open('Thousand Jabs')
     ACD:SelectGroup('Thousand Jabs', 'general')
