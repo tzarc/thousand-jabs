@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Run the resulting simulationcraft binary with:
+# ./simc spell_query=run_tj
+
 set -e
 umask 022
 
@@ -134,4 +137,4 @@ rm code.patch engine/tj.cpp
 popd >/dev/null 2>&1
 
 # Copy the new binary over
-cp "$simc_dir/engine/simc" .
+cp "$simc_dir/engine/simc" "$script_dir/simc" && chmod 755 "$script_dir/simc"
