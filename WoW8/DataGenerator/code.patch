@@ -1,0 +1,23 @@
+--- a/engine/sc_main.cpp
++++ b/engine/sc_main.cpp
+@@ -256,6 +256,9 @@ int sim_t::main( const std::vector<std::string>& args )
+     errmsg = e.what();
+     setup_success = false;
+   }
++
++  extern int run_tj(sim_t* sim);
++  return run_tj(this);
+
+   if ( !git_info::available() )
+   {
+--- a/source_files/engine_main_make
++++ b/source_files/engine_main_make
+@@ -2,4 +2,5 @@
+ # To change the list of source files, update the QT_ files and run synchronize.py
+
+ SRC += \
+-    sc_main.cpp \
+\ No newline at end of file
++    sc_main.cpp \
++    tj.cpp \
+\ No newline at end of file

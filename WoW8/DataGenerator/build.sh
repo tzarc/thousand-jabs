@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run the resulting simulationcraft binary with:
-# ./simc spell_query=run_tj
+# ./datagenerator
 
 set -e
 umask 022
@@ -74,51 +74,7 @@ fi
 
 # Copy the source file..
 cp "$script_dir/tj.cpp" "$simc_dir/engine/tj.cpp"
-
-# Patch for the code...
-cat << EOF > "$simc_dir/code.patch"
---- a/engine/dbc/sc_const_data.cpp
-+++ b/engine/dbc/sc_const_data.cpp
-@@ -222,7 +222,7 @@ const std::vector<class_passives_entry_t> _class_passives {
-
- int dbc::build_level( bool ptr )
- {
--  return maybe_ptr( ptr ) ? 25753 : 26095;
-+  return maybe_ptr( ptr ) ? 25753 : ${build_id};
- }
-
- const char* dbc::wow_version( bool ptr )
--{ return maybe_ptr( ptr ) ? "7.3.5" : "8.0.1"; }
-+{ return maybe_ptr( ptr ) ? "7.3.5" : "${base_version}"; }
-
- const char* dbc::wow_ptr_status( bool ptr )
---- a/engine/sc_main.cpp
-+++ b/engine/sc_main.cpp
-@@ -268,6 +268,13 @@ int sim_t::main( const std::vector<std::string>& args )
-       SC_VERSION, dbc.wow_version(), dbc.wow_ptr_status(), util::to_string(dbc.build_level()).c_str(), git_info::branch(), git_info::revision());
-   }
-
-+  for ( auto&& arg : args )
-+  {
-+    extern int exec_tj(sim_t& sim);
-+    if ( arg == "spell_query=run_tj" )
-+      return exec_tj(*this);
-+  }
-+
-   if ( display_hotfixes )
-   {
-     std::cout << hotfix::to_str( dbc.ptr );
---- a/source_files/engine_main_make
-+++ b/source_files/engine_main_make
-@@ -2,4 +2,5 @@
- # To change the list of source files, update the QT_ files and run synchronize.py
-
- SRC += \\
--    sc_main.cpp \\
-\\ No newline at end of file
-+    sc_main.cpp \\
-+    tj.cpp \\
-EOF
+cp "$script_dir/code.patch" "$simc_dir/code.patch"
 
 # Apply the patch...
 pushd "$simc_dir" >/dev/null 2>&1
@@ -137,4 +93,4 @@ rm code.patch engine/tj.cpp
 popd >/dev/null 2>&1
 
 # Copy the new binary over
-cp "$simc_dir/engine/simc" "$script_dir/simc" && chmod 755 "$script_dir/simc"
+cp "$simc_dir/engine/simc" "$script_dir/datagenerator" && chmod 755 "$script_dir/datagenerator"
