@@ -21,3 +21,14 @@
 +    sc_main.cpp \
 +    tj.cpp \
 \ No newline at end of file
+--- a/engine/Makefile
++++ b/engine/Makefile
+@@ -55,7 +55,7 @@ endif
+
+ MKDIR      = mkdir
+ CXX        = g++
+-CPP_FLAGS  = -Wall -Wextra -W -I. -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++11 -O3 -MMD -MP \
++CPP_FLAGS  = -Wall -Wextra -W -I. -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++17 -O3 -MMD -MP \
+ -Wpedantic \
+ -Wcast-qual \
+ -Wconversion-null \

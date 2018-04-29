@@ -68,7 +68,7 @@ echo
 # Convert all the DB2 files to simulationcraft-usable data
 if [[ -n "$perform_update" ]] ; then
     pushd "$simc_dir/dbc_extract3" >/dev/null 2>&1
-    ./dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --type output live.conf || true
+    python3 dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --type output live.conf || true
     popd >/dev/null 2>&1
 fi
 
@@ -83,7 +83,7 @@ popd >/dev/null 2>&1
 
 # Build a new copy of simulationcraft
 pushd "$simc_dir/engine" >/dev/null 2>&1
-make -j$(cat /proc/cpuinfo | grep rocessor | wc -l) CC=clang CXX=clang++ CPP=clang++ || true # If the build fails, continue and reverse the patch
+make -j$(cat /proc/cpuinfo | grep rocessor | wc -l) || true # If the build fails, continue and reverse the patch
 popd >/dev/null 2>&1
 
 # Clean up...
