@@ -245,7 +245,6 @@ classData.spells[{:d}] = {{
                 os << fmt::format("  }},\n");
             }
 
-#ifdef _DEBUG
             if(spell->effect_count() > 0)
             {
                 os << fmt::format("  spell_effects = {{\n");
@@ -278,7 +277,6 @@ classData.spells[{:d}] = {{
                 }
                 os << fmt::format("  }},\n");
             }
-#endif
 
             os << "}\n";
         }
@@ -292,7 +290,7 @@ int run_tj(sim_t* sim)
 {
     try
     {
-        for(auto&& playerClass : classes_to_output)
+        for(auto&& playerClass : {MONK}) // classes_to_output )
         {
             const class_info info{playerClass};
             fmt::print("Generating generated-{:s}.lua\n", info.ClassName);
