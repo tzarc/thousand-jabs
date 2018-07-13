@@ -1,34 +1,87 @@
+diff --git a/engine/Makefile b/engine/Makefile
+index 4eb9839..a9ddd61 100644
+--- a/engine/Makefile
++++ b/engine/Makefile
+@@ -55,7 +55,7 @@ endif
+ 
+ MKDIR      = mkdir
+ CXX        = g++
+-CPP_FLAGS  = -Wall -Wextra -W -I. -I./util -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++11 -O3 -MMD -MP \
++CPP_FLAGS  = -Wall -Wextra -W -I. -I./util -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++17 -O3 -MMD -MP \
+ -Wpedantic \
+ -Wcast-qual \
+ -Wconversion-null \
+diff --git a/engine/sc_main.cpp b/engine/sc_main.cpp
+index 7eed68b..53048bb 100644
 --- a/engine/sc_main.cpp
 +++ b/engine/sc_main.cpp
-@@ -256,6 +256,9 @@ int sim_t::main( const std::vector<std::string>& args )
-     errmsg = e.what();
-     setup_success = false;
-   }
+@@ -239,6 +239,9 @@ void print_exception(const std::exception& e, int level =  0)
+ 
+ // sim_t::main ==============================================================
+ 
++bool do_tj_hook = false;
++extern int run_tj_hook(sim_t *sim);
 +
-+  extern int run_tj(sim_t* sim);
-+  return run_tj(this);
-
-   if ( !git_info::available() )
-   {
+ int sim_t::main( const std::vector<std::string>& args )
+ {
+   try
+@@ -278,6 +281,11 @@ int sim_t::main( const std::vector<std::string>& args )
+     // begins
+     hotfix::apply();
+ 
++    if(do_tj_hook)
++    {
++        return run_tj_hook(this);
++    }
++
+     try
+     {
+       setup( &control );
+@@ -371,7 +379,7 @@ int sim_t::main( const std::vector<std::string>& args )
+ // MAIN
+ // ==========================================================================
+ 
+-int main( int argc, char** argv )
++int run_simc( int argc, char** argv )
+ {
+   std::locale::global( std::locale( "C" ) );
+ #if defined( SC_VS ) && SC_VS < 13
+@@ -379,8 +387,25 @@ int main( int argc, char** argv )
+   _set_output_format( _TWO_DIGIT_EXPONENT );
+ #endif
+ 
++  if (argc > 1 && util::str_compare_ci(argv[1], "tj"))
++  {
++      do_tj_hook = true;
++      argv[1] = argv[0];
++      argv = &argv[1];
++      --argc;
++  }
++
+   sim_t sim;
+   sim_signal_handler_t::global_sim = &sim;
+ 
+   return sim.main( io::utf8_args( argc, argv ) );
+ }
++
++extern int run_tj(void);
++
++int main( int argc, char** argv )
++{
++    if (argc > 1 && util::str_compare_ci(argv[1], "tj"))
++        return run_tj();
++    return run_simc(argc, argv);
++}
+diff --git a/source_files/engine_main_make b/source_files/engine_main_make
+index f85e1ab..a1d6198 100644
 --- a/source_files/engine_main_make
 +++ b/source_files/engine_main_make
 @@ -2,4 +2,5 @@
  # To change the list of source files, update the QT_ files and run synchronize.py
-
+ 
  SRC += \
 -    sc_main.cpp \
 \ No newline at end of file
 +    sc_main.cpp \
 +    tj.cpp \
 \ No newline at end of file
---- a/engine/Makefile
-+++ b/engine/Makefile
-@@ -55,7 +55,7 @@ endif
-
- MKDIR      = mkdir
- CXX        = g++
--CPP_FLAGS  = -Wall -Wextra -W -I. -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++11 -O3 -MMD -MP \
-+CPP_FLAGS  = -Wall -Wextra -W -I. -DSC_SHARED_DATA=\"$(SHARED_DATA)\" --std=c++17 -O3 -MMD -MP \
- -Wpedantic \
- -Wcast-qual \
- -Wconversion-null \

@@ -10,4 +10,7 @@
 
 ## Dependencies: ThousandJabs8
 
+Libs\LibStub\LibStub.lua
+Libs\LibSharedMedia-3.0\lib.xml
+
 Monitor.lua

@@ -8,9 +8,27 @@ umask 022
 
 # Check if we want to perform an update
 unset perform_update
-if [[ "$1" == "-u" ]] ; then
-    perform_update=1
-fi
+unset no_patch
+unset no_unpatch
+while [[ -n "$1" ]] ; do
+    case "$1" in
+        -u)
+            perform_update=1
+            shift
+            ;;
+        -n)
+            no_patch=1
+            shift
+            ;;
+        -x)
+            no_unpatch=1
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
 
 simc_branch="bfa-dev"
 
@@ -27,70 +45,101 @@ echo "   simc_dir=$simc_dir"
 echo "   temp_dir=$temp_dir"
 echo
 
-# Update the simulationcraft sources
-if [[ -d "$simc_dir/.git" ]] ; then
-    if [[ -n "$perform_update" ]] ; then
-            { cd "$simc_dir" ; git checkout -- . ; git clean -xfd ; git checkout "$simc_branch" ; git reset --hard "origin/$simc_branch" ; git pull ; }
+# Exit code handling
+export script_rc=1
+_internal_cleanup() {
+	# Clean up...
+	pushd "$simc_dir" >/dev/null 2>&1
+	if [[ -f code.patch ]] && [[ -z $no_unpatch ]] ; then
+		patch -Rp1 < code.patch
+		rm code.patch engine/tj.*
+	fi
+	popd >/dev/null 2>&1
+	exit $script_rc
+}
+trap _internal_cleanup EXIT HUP INT
+
+update_simc() {
+    # Update the simulationcraft sources
+    if [[ -d "$simc_dir/.git" ]] ; then
+        if [[ -n "$perform_update" ]] ; then
+            { cd "$simc_dir" ; git checkout -- . ; git checkout "$simc_branch" ; git reset --hard "origin/$simc_branch" ; git fetch --depth=1 ; git reset --hard "origin/$simc_branch" ; }
+        fi
+    else
+        git clone -b "$simc_branch" --depth=1 http://github.com/simulationcraft/simc "$simc_dir"
     fi
-else
-    git clone -b "$simc_branch" http://github.com/simulationcraft/simc "$simc_dir"
-fi
+}
 
-# Set up output directory for the dbfiles
-dbfiles_cache="$temp_dir/DBFilesCache"
-dbfiles_location="$temp_dir/DBFilesClient"
-if [[ -d "$dbfiles_location" ]] ; then
-    if [[ -n "$perform_update" ]] ; then
-        rm -rf "$dbfiles_location"
+update_dbfiles() {
+    # Set up output directory for the dbfiles
+    dbfiles_cache="$temp_dir/DBFilesCache"
+    dbfiles_location="$temp_dir/DBFilesClient"
+    if [[ -d "$dbfiles_location" ]] ; then
+        if [[ -n "$perform_update" ]] ; then
+            rm -rf "$dbfiles_location"
+        fi
     fi
-fi
-[[ ! -d "$dbfiles_location" ]] && mkdir -p "$dbfiles_location" || true
+    [[ ! -d "$dbfiles_location" ]] && mkdir -p "$dbfiles_location" || true
 
-# Download all the DB2 files from the CDN
-if [[ -n "$perform_update" ]] ; then
-    pushd "$simc_dir/casc_extract" >/dev/null 2>&1
-    python3 casc_extract.py --dbfile dbfile --cdn --output "$dbfiles_location" --mode batch --beta --cache "$dbfiles_cache" || true
-    find "$simc_dir/engine/dbc/generated" -type f -name '*.inc' -exec unix2dos '{}' \;
+    # Download all the DB2 files from the CDN
+    if [[ -n "$perform_update" ]] ; then
+        pushd "$simc_dir/casc_extract" >/dev/null 2>&1
+        python3 casc_extract.py --dbfile dbfile --cdn --output "$dbfiles_location" --mode batch --beta --cache "$dbfiles_cache" || true
+        find "$simc_dir/engine/dbc/generated" -type f -name '*.inc' -exec unix2dos '{}' \;
+        popd >/dev/null 2>&1
+    fi
+}
+
+extract_dbcs() {
+    casc_output_dir=$(ls -1d "$dbfiles_location/"* || true)
+    build_version=$(basename "$casc_output_dir")
+    base_version=$(basename "$casc_output_dir" | cut -d'.' -f1-3)
+    build_id=$(basename "$casc_output_dir" | cut -d '.' -f4)
+    echo
+    echo "casc_output_dir=$casc_output_dir"
+    echo "  build_version=$build_version"
+    echo "   base_version=$base_version"
+    echo "       build_id=$build_id"
+    echo
+
+    # Convert all the DB2 files to simulationcraft-usable data
+    if [[ -n "$perform_update" ]] ; then
+        pushd "$simc_dir/dbc_extract3" >/dev/null 2>&1
+        python3 dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --type output live.conf || true
+        popd >/dev/null 2>&1
+    fi
+}
+
+build_generator() {
+    # Copy the source file..
+    cp "$script_dir/tj.cpp" "$simc_dir/engine/tj.cpp"
+    cp "$script_dir/code.patch" "$simc_dir/code.patch"
+
+    # Apply the patch...
+    pushd "$simc_dir" >/dev/null 2>&1
+    if [[ -z $no_patch ]] ; then
+        patch -p1 < code.patch
+    fi
     popd >/dev/null 2>&1
-fi
 
-casc_output_dir=$(ls -1d "$dbfiles_location/"* || true)
-build_version=$(basename "$casc_output_dir")
-base_version=$(basename "$casc_output_dir" | cut -d'.' -f1-3)
-build_id=$(basename "$casc_output_dir" | cut -d '.' -f4)
-echo
-echo "casc_output_dir=$casc_output_dir"
-echo "  build_version=$build_version"
-echo "   base_version=$base_version"
-echo "       build_id=$build_id"
-echo
-
-# Convert all the DB2 files to simulationcraft-usable data
-if [[ -n "$perform_update" ]] ; then
-    pushd "$simc_dir/dbc_extract3" >/dev/null 2>&1
-    python3 dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_id --type output live.conf || true
+    # Build a new copy of simulationcraft
+    pushd "$simc_dir/engine" >/dev/null 2>&1
+    make -j$(cat /proc/cpuinfo | grep rocessor | wc -l) CC=clang CXX=clang++ CPP=clang || true # If the build fails, continue and reverse the patch
     popd >/dev/null 2>&1
-fi
 
-# Copy the source file..
-cp "$script_dir/tj.cpp" "$simc_dir/engine/tj.cpp"
-cp "$script_dir/code.patch" "$simc_dir/code.patch"
+    # Copy the new binary over
+    cp "$simc_dir/engine/simc" "$script_dir/datagenerator" && chmod 755 "$script_dir/datagenerator"
+}
 
-# Apply the patch...
-pushd "$simc_dir" >/dev/null 2>&1
-patch -p1 < code.patch
-popd >/dev/null 2>&1
+generate_all() {
+    "$script_dir/datagenerator" tj
+}
 
-# Build a new copy of simulationcraft
-pushd "$simc_dir/engine" >/dev/null 2>&1
-make -j$(cat /proc/cpuinfo | grep rocessor | wc -l) || true # If the build fails, continue and reverse the patch
-popd >/dev/null 2>&1
+update_simc
+update_dbfiles
+extract_dbcs
+build_generator
+generate_all
 
-# Clean up...
-pushd "$simc_dir" >/dev/null 2>&1
-patch -Rp1 < code.patch
-rm code.patch engine/tj.cpp
-popd >/dev/null 2>&1
-
-# Copy the new binary over
-cp "$simc_dir/engine/simc" "$script_dir/datagenerator" && chmod 755 "$script_dir/datagenerator"
+# If we got this far... we're okay.
+script_rc=0
