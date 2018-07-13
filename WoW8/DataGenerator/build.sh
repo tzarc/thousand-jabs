@@ -52,7 +52,7 @@ _internal_cleanup() {
 	pushd "$simc_dir" >/dev/null 2>&1
 	if [[ -f code.patch ]] && [[ -z $no_unpatch ]] ; then
 		patch -Rp1 < code.patch
-		rm code.patch engine/tj.*
+		rm code.patch engine/tj_* engine/wow_version_def.h
 	fi
 	popd >/dev/null 2>&1
 	exit $script_rc
@@ -102,6 +102,8 @@ extract_dbcs() {
     echo "       build_id=$build_id"
     echo
 
+    echo "#define WOW_BUILD_VERSION \"$build_version\"" > "$simc_dir/engine/wow_version_def.h"
+
     # Convert all the DB2 files to simulationcraft-usable data
     if [[ -n "$perform_update" ]] ; then
         pushd "$simc_dir/dbc_extract3" >/dev/null 2>&1
@@ -112,7 +114,7 @@ extract_dbcs() {
 
 build_generator() {
     # Copy the source file..
-    cp "$script_dir/tj.cpp" "$simc_dir/engine/tj.cpp"
+    cp "$script_dir/"tj_*.cpp "$simc_dir/engine"
     cp "$script_dir/code.patch" "$simc_dir/code.patch"
 
     # Apply the patch...
