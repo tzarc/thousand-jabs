@@ -11,6 +11,7 @@ use Cwd qw/abs_path/;
 our $script_dir = dirname($script_path);
 mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
+our $addonName = "ThousandJabs";
 our $cachetime = 86400;
 our $verbose   = 0;
 ${cfg::verbose} = 1 if(scalar(@ARGV) > 0 && $ARGV[0] eq "-v");
@@ -91,7 +92,7 @@ sub get_url {
 package simc;
 
 our $branch    = "legion-dev";
-our $directory = "${cfg::script_dir}/simc";
+our $directory = "${cfg::script_dir}/../simc-$branch";
 
 my $last_branch = "";
 if(-d ${directory}) {
@@ -107,21 +108,12 @@ sub update {
 
     common::header("Updating simulationcraft:");
 
-    my $cloned = 0;
     if(!-d "${simc::directory}/.git") {
-        common::exec("git clone --depth=1 https://github.com/simulationcraft/simc '${simc::directory}'");
-        $cloned = 1;
-    }
-    else {
-        common::exec("cd '${simc::directory}' && git pull");
+        common::exec("git clone -b ${requested_branch} --depth=1 https://github.com/simulationcraft/simc '${simc::directory}'");
     }
 
-    if($requested_branch ne $last_branch) {
-        common::exec("cd '${simc::directory}' && git reset --hard HEAD && git clean -xfd && git checkout '${requested_branch}' && git pull");
-        $last_branch = common::exec("cd '${simc::directory}' && git rev-parse --abbrev-ref HEAD", 1);
-        die unless (($cloned == 1) || ($last_branch eq $requested_branch));
-    }
-
+    common::exec(
+        "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1 && git reset --hard origin/${requested_branch} && git checkout -- .");
     common::exec("cd '${simc::directory}/engine' && make -j5 OS=UNIX");
 }
 
@@ -310,12 +302,13 @@ sub create_action_lists {
     for my $cls (sort keys %{$profiles}) {
         my $classID                = $exportedSpecData->{$cls}->{classID};
         my $ucls                   = uc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/${cfg::addonName}/Class_${cls}/Generated-Actions.lua";
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
+        print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) >= 80000 then return end\n\n";
         print {$outfile} "if select(3, UnitClass('player')) ~= ${classID} then return end\n\n";
-        print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n\n";
+        print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n\n";
         close($outfile);
     }
 
@@ -324,7 +317,7 @@ sub create_action_lists {
         my $classID                = $exportedSpecData->{$cls}->{classID};
         my $className              = $exportedSpecData->{$cls}->{name};
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/${cfg::addonName}/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (@{ $customprofiles->{$cls} }) {
@@ -353,7 +346,7 @@ sub create_action_lists {
         my $classID                = $exportedSpecData->{$cls}->{classID};
         my $className              = $exportedSpecData->{$cls}->{name};
         my $lcls                   = lc $cls;
-        my $class_lua_actions_file = "${cfg::script_dir}/ThousandJabs/Class_${cls}/Generated-Actions.lua";
+        my $class_lua_actions_file = "${cfg::script_dir}/${cfg::addonName}/Class_${cls}/Generated-Actions.lua";
         open(my $outfile, ">>", $class_lua_actions_file);
 
         for my $spec (sort keys %{ $profiles->{$cls} }) {
@@ -422,7 +415,7 @@ sub validate_actions_files {
         $tn =~ s/${cfg::script_dir}//g;
         $tn =~ s/\//_/g;
         print(" - ${dn}/${bn}\n");
-        common::exec("{ cd '${cfg::script_dir}/ThousandJabs/' && lua Simc-Expressions.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
+        common::exec("{ cd '${cfg::script_dir}/${cfg::addonName}/' && lua Simc-Expressions.lua < '${file}' > '${cfg::script_dir}/Temp/${tn}.parsed' 2> '${cfg::script_dir}/Temp/${tn}.errors' ;}");
         unlink("${cfg::script_dir}/Temp/${tn}.errors") if -z "${cfg::script_dir}/Temp/${tn}.errors";
 
         if(-f "${cfg::script_dir}/Temp/${tn}.errors") {
@@ -435,14 +428,15 @@ sub validate_actions_files {
 
 sub create_equipped_mapping {
     common::header("Generating equipped item mapping:");
-    my $equipped_file = "${cfg::script_dir}/ThousandJabs/Generated-EquippedItems.lua";
+    my $equipped_file = "${cfg::script_dir}/${cfg::addonName}/Generated-EquippedItems.lua";
     open(my $outfile, ">", $equipped_file);
-    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n";
+    print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) >= 80000 then return end\n\n";
+    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n";
     print {$outfile} "local Core = TJ:GetModule('Core')\n";
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
     print {$outfile} "TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}\n\n";
 
-    my @files = <"${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua">;
+    my @files = <"${cfg::script_dir}/${cfg::addonName}/Class_*/Generated-Actions.lua">;
     my %items;
     for my $file (sort @files) {
         open(my $infile, "<", $file);
@@ -486,9 +480,10 @@ sub create_equipped_mapping {
 
 sub create_itemset_bonuses {
     common::header("Generating set bonus listing:");
-    my $setbonus_file = "${cfg::script_dir}/ThousandJabs/Generated-ItemSets.lua";
+    my $setbonus_file = "${cfg::script_dir}/${cfg::addonName}/Generated-ItemSets.lua";
     open(my $outfile, ">", $setbonus_file);
-    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')\n";
+    print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) >= 80000 then return end\n\n";
+    print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n";
     print {$outfile} "local Core = TJ:GetModule('Core')\n";
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
     print {$outfile} "TJ.Generated.ItemSets = TJ.Generated.ItemSets or {}\n\n";
@@ -574,6 +569,6 @@ generator::create_action_lists();
 generator::create_equipped_mapping();
 generator::create_itemset_bonuses();
 generator::validate_actions_files("${cfg::script_dir}/Temp/*.simc");
-generator::validate_actions_files("${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
-generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Actions.xml",  "${cfg::script_dir}/ThousandJabs/Class_*/Generated-Actions.lua");
-generator::create_xml_wrapper("${cfg::script_dir}/ThousandJabs/Generated-Profiles.xml", "${cfg::script_dir}/ThousandJabs/Class_*/Profile*.lua");
+generator::validate_actions_files("${cfg::script_dir}/${cfg::addonName}/Class_*/Generated-Actions.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/${cfg::addonName}/Generated-Actions.xml",  "${cfg::script_dir}/${cfg::addonName}/Class_*/Generated-Actions.lua");
+generator::create_xml_wrapper("${cfg::script_dir}/${cfg::addonName}/Generated-Profiles.xml", "${cfg::script_dir}/${cfg::addonName}/Class_*/Profile*.lua");

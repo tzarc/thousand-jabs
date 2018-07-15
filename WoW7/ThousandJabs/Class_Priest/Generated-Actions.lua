@@ -1,11 +1,5 @@
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Legion only.
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if select(4, GetBuildInfo()) >= 80000 then
-    return
-end
+if GetBuildInfo and select(4,GetBuildInfo()) >= 80000 then return end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 if select(3, UnitClass('player')) ~= 5 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
@@ -105,3 +99,4 @@ actions.vf+=/shadow_word_pain,if=active_enemies>1&!talent.misery.enabled&!tickin
 actions.vf+=/mind_flay,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2&(action.void_bolt.usable|(current_insanity_drain*gcd.max>insanity&(insanity-(current_insanity_drain*gcd.max)+30)<100&cooldown.shadow_word_death.charges>=1))
 actions.vf+=/shadow_word_pain
 ]])
+

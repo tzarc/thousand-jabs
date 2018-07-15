@@ -1,11 +1,5 @@
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Legion only.
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if select(4, GetBuildInfo()) >= 80000 then
-    return
-end
+if GetBuildInfo and select(4,GetBuildInfo()) >= 80000 then return end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 if select(3, UnitClass('player')) ~= 6 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
@@ -157,6 +151,7 @@ actions.obliteration+=/frost_strike,if=!buff.rime.up|rune.time_to_1>=gcd|runic_p
 actions.obliteration+=/howling_blast,if=buff.rime.up
 actions.obliteration+=/obliterate
 actions.standard=frost_strike,if=talent.icy_talons.enabled&buff.icy_talons.remains<=gcd
+actions.standard+=/sindragosas_fury,if=(equipped.consorts_cold_core|buff.pillar_of_frost.up)&buff.unholy_strength.react&debuff.razorice.stack=5&rune.time_to_3>gcd&!talent.gathering_storm.enabled&talent.shattering_strikes.enabled
 actions.standard+=/frost_strike,if=talent.shattering_strikes.enabled&debuff.razorice.stack=5&buff.gathering_storm.stack<2&!buff.rime.up
 actions.standard+=/remorseless_winter,if=(buff.rime.up&equipped.perseverance_of_the_ebon_martyr)|talent.gathering_storm.enabled
 actions.standard+=/obliterate,if=(equipped.koltiras_newfound_will&talent.frozen_pulse.enabled&set_bonus.tier19_2pc=1)|rune.time_to_4<gcd&buff.hungering_rune_weapon.up
@@ -243,3 +238,4 @@ actions.valkyr+=/festering_strike,if=debuff.festering_wound.stack<=4
 actions.valkyr+=/scourge_strike,if=debuff.festering_wound.up
 actions.valkyr+=/clawing_shadows,if=debuff.festering_wound.up
 ]])
+
