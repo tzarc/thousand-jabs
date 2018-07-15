@@ -21,92 +21,82 @@ if not Core:MatchesBuild('8.0.0', '8.0.9') then return end
 
 -- exported with /tj _esd
 local destruction_abilities_exported = {
-    backdraft = { TalentID = 22039, },
+    backdraft = { SpellIDs = { 196406 }, },
     banish = { SpellIDs = { 710 }, },
     berserking = { SpellIDs = { 26297 }, },
-    burning_presence = { SpellIDs = { 171011 }, },
-    burning_rush = { SpellIDs = { 111400 }, TalentID = 19291, },
-    cataclysm = { SpellIDs = { 152108 }, TalentID = 22480, },
-    cauterize_master = { SpellIDs = { 119899 }, },
-    channel_demonfire = { SpellIDs = { 196447 }, TalentID = 22482, },
+    blood_pact = { SpellIDs = { 6307 }, },
+    burning_rush = { SpellIDs = { 111400 }, TalentID = 19285, },
+    cataclysm = { SpellIDs = { 152108 }, TalentID = 23143, },
+    channel_demonfire = { SpellIDs = { 196447 }, TalentID = 23144, },
     chaos_bolt = { SpellIDs = { 116858 }, },
     conflagrate = { SpellIDs = { 17962 }, },
     consuming_shadows = { SpellIDs = { 3716 }, },
     create_healthstone = { SpellIDs = { 6201 }, },
     create_soulwell = { SpellIDs = { 29893 }, },
-    cripple = { SpellIDs = { 170995 }, },
-    dark_pact = { SpellIDs = { 108416 }, TalentID = 19288, },
-    demon_skin = { TalentID = 22047, },
-    demonic_circle = { SpellIDs = { 48018 }, TalentID = 19280, },
+    dark_pact = { SpellIDs = { 108416 }, TalentID = 19286, },
+    dark_soul_instability = { SpellIDs = { 113858 }, TalentID = 23092, },
+    darkfury = { TalentID = 22047, },
+    demon_skin = { TalentID = 19280, },
+    demonic_circle = { SpellIDs = { 48018 }, TalentID = 19288, },
+    demonic_circle_teleport = { SpellIDs = { 48020 }, },
     demonic_gateway = { SpellIDs = { 111771 }, },
     devour_magic = { SpellIDs = { 19505 }, },
-    dimensional_rift = { SpellIDs = { 196586 }, },
-    doom_bolt = { SpellIDs = { 85692 }, },
     drain_life = { SpellIDs = { 234153 }, },
-    empowered_life_tap = { TalentID = 22088, },
     enslave_demon = { SpellIDs = { 1098 }, },
-    eradication = { TalentID = 21695, },
+    eradication = { TalentID = 22090, },
     eye_of_kilrogg = { SpellIDs = { 126 }, },
     fear = { SpellIDs = { 5782 }, },
     fire_and_brimstone = { TalentID = 22043, },
     firebolt = { SpellIDs = { 3110 }, },
+    flashover = { TalentID = 22038, },
     flee = { SpellIDs = { 89792 }, },
-    grimoire_felhunter = { SpellIDs = { 111897 }, },
-    grimoire_imp = { SpellIDs = { 111859 }, },
     grimoire_of_sacrifice = { SpellIDs = { 108503 }, TalentID = 19295, },
-    grimoire_of_service = { TalentID = 19294, },
-    grimoire_of_supremacy = { TalentID = 21182, },
-    grimoire_succubus = { SpellIDs = { 111896 }, },
-    grimoire_voidwalker = { SpellIDs = { 111895 }, },
+    grimoire_of_supremacy = { TalentID = 23156, },
     havoc = { SpellIDs = { 80240 }, },
     health_funnel = { SpellIDs = { 755 }, },
     immolate = { SpellIDs = { 348 }, },
-    immolation = { SpellIDs = { 19483 }, },
     incinerate = { SpellIDs = { 29722 }, },
+    inferno = { TalentID = 22480, },
+    internal_combustion = { TalentID = 21695, },
     lash_of_pain = { SpellIDs = { 7814 }, },
     lesser_invisibility = { SpellIDs = { 7870 }, },
-    life_tap = { SpellIDs = { 1454 }, },
-    meteor_strike = { SpellIDs = { 171017, 171152 }, },
-    mortal_coil = { SpellIDs = { 6789 }, TalentID = 19285, },
+    mortal_coil = { SpellIDs = { 6789 }, TalentID = 19291, },
     rain_of_fire = { SpellIDs = { 5740 }, },
-    reverse_entropy = { TalentID = 21181, },
+    reverse_entropy = { TalentID = 23148, },
     ritual_of_summoning = { SpellIDs = { 698 }, },
-    roaring_blaze = { TalentID = 22048, },
-    seduction = { SpellIDs = { 6358 }, },
-    seethe = { SpellIDs = { 171014 }, },
+    roaring_blaze = { TalentID = 23155, },
+    seduction = { SpellIDs = { 6358, 119909 }, },
     shadow_bite = { SpellIDs = { 54049 }, },
     shadow_bulwark = { SpellIDs = { 17767 }, },
-    shadow_lock = { SpellIDs = { 171138 }, },
-    shadow_shield = { SpellIDs = { 115232 }, },
-    shadowburn = { SpellIDs = { 17877 }, TalentID = 22052, },
-    shadowfury = { SpellIDs = { 30283 }, TalentID = 19286, },
+    shadow_shield = { SpellIDs = { 264993 }, },
+    shadowburn = { SpellIDs = { 17877 }, TalentID = 23157, },
+    shadowfury = { SpellIDs = { 30283 }, },
     singe_magic = { SpellIDs = { 89808 }, },
-    soul_conduit = { TalentID = 19293, },
-    soul_harvest = { SpellIDs = { 196098 }, TalentID = 22046, },
+    soul_conduit = { TalentID = 19284, },
+    soul_fire = { SpellIDs = { 6353 }, TalentID = 22040, },
     soul_leech = { SpellIDs = { 108370 }, },
     soul_shards = { SpellIDs = { 246985 }, },
     soulstone = { SpellIDs = { 20707 }, },
     spell_lock = { SpellIDs = { 19647 }, },
-    suffering = { SpellIDs = { 17735, 119907 }, },
-    summon_doomguard = { SpellIDs = { 18540, 157757 }, },
+    suffering = { SpellIDs = { 17735 }, },
     summon_felhunter = { SpellIDs = { 691 }, },
     summon_imp = { SpellIDs = { 688 }, },
-    summon_infernal = { SpellIDs = { 1122, 157898 }, },
+    summon_infernal = { SpellIDs = { 1122 }, },
     summon_succubus = { SpellIDs = { 712 }, },
     summon_voidwalker = { SpellIDs = { 697 }, },
     threatening_presence = { SpellIDs = { 112042 }, },
-    torch_magic = { SpellIDs = { 171021 }, },
     unending_breath = { SpellIDs = { 5697 }, },
     unending_resolve = { SpellIDs = { 104773 }, },
-    void_reflexes = { SpellIDs = { 117225 }, },
-    whiplash = { SpellIDs = { 6360, 119909 }, },
-    wreak_havoc = { TalentID = 22481, },
+    whiplash = { SpellIDs = { 6360 }, },
 }
 
 local destruction_base_overrides = {
     pet = {
         doomguard_active = function(spell, env)
             return env.doom_bolt.in_spellbook
+        end,
+        infernal_active = function(spell, env)
+            return env.summon_infernal.time_since_last_cast < 30 and true or false
         end,
     },
     immolate = {
@@ -116,6 +106,11 @@ local destruction_base_overrides = {
         AuraApplyLength = 18,
         spell_tick_time = 2, --TODO
         aura_duration = function(spell, env) return spell.aura_remains and spell.AuraApplyLength or 0 end,
+        spell_refreshable = function(spell, env)
+            if spell.aura_down then return true end
+            if spell.aura_remains <= spell.aura_duration * 0.3 then return true end
+            return false
+        end,
         PerformCast = function(spell, env)
             -- We need to handle Pandemic manually
             if spell.aura_remains == 0 then
@@ -186,11 +181,12 @@ local destruction_base_overrides = {
     },
     havoc = {
         expirationTime = 0,
-        aura_duration = function(spell, env)
-            return env.wreak_havoc.talent_enabled and 20 or 8
-        end,
+        aura_duration = 10,
         aura_remains = function(spell, env)
             return math.max(0, spell.expirationTime - env.currentTime)
+        end,
+        CanCast = function(spell, env)
+            return env.active_enemies > 1 and true or false
         end,
         PerformCast = function(spell, env)
             spell.expirationTime = env.currentTime + spell.aura_duration
@@ -287,9 +283,8 @@ local destruction_events = {
 local destruction_hooks = {
     hooks = {
         OnStateInit = function(env)
-            local havocLength = env.wreak_havoc.talent_enabled and 20 or 8
             env.havoc.expirationTime = (havocTarget.timeApplied > 0)
-                and havocTarget.timeApplied + havocLength
+                and havocTarget.timeApplied + 10
                 or 0
 
             env.roaring_blaze.roaringBlazeStacks = {}

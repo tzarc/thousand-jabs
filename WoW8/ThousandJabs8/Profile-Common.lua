@@ -128,6 +128,7 @@ Core.Environment.common = {
         time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end,
         is_casting = false,
         is_interruptible = false,
+        curr = true,
     },
     player = {
         is_casting = false,
@@ -140,6 +141,9 @@ Core.Environment.common = {
     variable = {
     },
     sequence = {
+    },
+    sim = {
+        target = true, -- seems like allowing for focusing on the main target
     },
     adds = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
