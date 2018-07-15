@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local TableCache = TJ:GetModule('TableCache')
 
@@ -137,6 +137,7 @@ local blacklistedExportedAbilities = {
     'the_codex_of_xerrath',
     'the_quick_and_the_dead',
     'time_is_money',
+    'vindicaar_matrix_crystal',
     'weapon_skills',
     'windwalking',
     'wisdom_of_the_four_winds',

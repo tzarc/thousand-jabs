@@ -22,7 +22,7 @@ local wipe = wipe
 local IsLoadedByWoW = _G.GetSpellInfo and true or false
 if IsLoadedByWoW then
     local LibStub = LibStub
-    TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+    TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
     Core = TJ:GetModule('Core')
     Debug = function(...) Core:Debug(...) end
     fmt = function(...) Core:Format(...) end

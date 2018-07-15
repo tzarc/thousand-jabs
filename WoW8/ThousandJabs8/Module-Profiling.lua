@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Profiling = TJ:GetModule('Profiling')
 local TableCache = TJ:GetModule('TableCache')
@@ -71,7 +71,7 @@ function Profiling:ProfilingProlog(...)
 
     if do_mem then
         UpdateAddOnMemoryUsage()
-        e.mem = GetAddOnMemoryUsage('ThousandJabs') or 0
+        e.mem = GetAddOnMemoryUsage('ThousandJabs8') or 0
     end
 
     p_push(e)
@@ -85,7 +85,7 @@ function Profiling:ProfilingEpilog(...)
     local mem = 0
     if do_mem then
         UpdateAddOnMemoryUsage()
-        mem = GetAddOnMemoryUsage('ThousandJabs') or 0
+        mem = GetAddOnMemoryUsage('ThousandJabs8') or 0
     end
 
     local e = p_pop()

@@ -1,7 +1,7 @@
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
-local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs")
+local L = LibStub("AceLocale-3.0"):GetLocale("ThousandJabs8")
 local UI = TJ:GetModule("UI")
 
 local AC = LibStub('AceConfig-3.0')

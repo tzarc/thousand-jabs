@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
@@ -48,7 +48,7 @@ local defaultConf = {
 }
 
 function Config:OpenDialog()
-    LoadAddOn("ThousandJabs_Config")
+    LoadAddOn("ThousandJabs8_Config")
     local ACD = LibStub('AceConfigDialog-3.0')
     ACD:Open('Thousand Jabs')
     ACD:SelectGroup('Thousand Jabs', "general")
@@ -93,15 +93,15 @@ local function setconf(value, tbl, ...)
 end
 
 function Config:Get(...)
-    ThousandJabsDB = ThousandJabsDB or {}
-    local res = getconf(ThousandJabsDB, ...)
+    ThousandJabs8DB = ThousandJabs8DB or {}
+    local res = getconf(ThousandJabs8DB, ...)
     if type(res) == "nil" then res = getconf(defaultConf, ...) end
     return res
 end
 
 function Config:Set(value, ...)
-    ThousandJabsDB = ThousandJabsDB or {}
-    setconf(value, ThousandJabsDB, ...)
+    ThousandJabs8DB = ThousandJabs8DB or {}
+    setconf(value, ThousandJabs8DB, ...)
 end
 
 function Config:GetSpecGeneric(...)

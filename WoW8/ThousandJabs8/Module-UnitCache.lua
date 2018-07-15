@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local TableCache = TJ:GetModule('TableCache')
 local Profiling = TJ:GetModule('Profiling')
@@ -17,6 +17,7 @@ local ct = function() return TableCache:Acquire() end
 local rt = function(tbl) TableCache:Release(tbl) end
 
 local CheckInteractDistance = CheckInteractDistance
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local CreateFrame = CreateFrame
 local GetTime = GetTime
 local IsItemInRange = IsItemInRange
@@ -82,7 +83,7 @@ end
 local function GetAuraValues(unit, idx, filter)
     local _
     local v = ct()
-    v.name, v.rank, v.icon, v.count, v.dispelType, v.duration, v.expires, v.caster, v.isStealable, v.nameplateShowPersonal, v.spellID, v.canApplyAura, v.isBossDebuff, _, v.nameplateShowAll, v.timeMod, v.value1, v.value2, v.value3 = UnitAura(unit, idx, filter, filter)
+    v.name, v.icon, v.count, v.dispelType, v.duration, v.expires, v.caster, v.isStealable, v.nameplateShowPersonal, v.spellID, v.canApplyAura, v.isBossDebuff, _, v.nameplateShowAll, v.timeMod, v.value1, v.value2, v.value3 = UnitAura(unit, idx, filter, filter)
     v.unit = unit
     v.unitGUID = UnitGUID(unit)
     v.unitCasterGUID = v.caster and UnitGUID(v.caster) or nil
@@ -246,7 +247,8 @@ function UnitCache:PLAYER_TARGET_CHANGED(eventName)
     self:UpdateUnitCache('target', true)
 end
 
-function UnitCache:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15)
+function UnitCache:COMBAT_LOG_EVENT_UNFILTERED()
+    local timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15 = CombatLogGetCurrentEventInfo()
     if (sourceGUID == playerGUID or sourceGUID == targetGUID or destGUID == playerGUID or destGUID == targetGUID) and combatEvent:sub(1,11) == 'SPELL_AURA_' then
         forceUpdate = true
     end

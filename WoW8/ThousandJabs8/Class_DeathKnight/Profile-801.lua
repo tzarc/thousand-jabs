@@ -9,11 +9,11 @@ end
 if select(2, UnitClass('player')) ~= 'DEATHKNIGHT' then return end
 
 local addonName, internal = ...
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
-if not Core:MatchesBuild('7.3.2', '7.3.9') then return end
+if not Core:MatchesBuild('8.0.0', '8.0.9') then return end
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Blood profile definition

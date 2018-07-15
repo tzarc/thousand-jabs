@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Profiling = TJ:GetModule('Profiling')
 local TableCache = TJ:GetModule('TableCache')
@@ -385,7 +385,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     end
 
     -- Set the initial parameters
-    env.ptr = Core:MatchesBuild('7.3.3', '9.0.0')
+    env.ptr = Core:MatchesBuild('8.0.0', '8.0.9')
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets
@@ -403,11 +403,11 @@ local function StateResetPrototype(self, targetCount, seenTargets)
 
     -- Determine if player/target are casting things
     local pName = (UnitCastingInfo("player") or UnitChannelInfo("player"))
-    local pInterruptible = (pName and not (select(9,UnitCastingInfo("player")) or select(8,UnitChannelInfo("player")))) and true or false
+    local pInterruptible = (pName and not (select(8,UnitCastingInfo("player")) or select(7,UnitChannelInfo("player")))) and true or false
     local tName = (UnitCastingInfo("target") or UnitChannelInfo("target"))
-    local tInterruptible = (tName and not (select(9,UnitCastingInfo("target")) or select(8,UnitChannelInfo("target")))) and true or false
+    local tInterruptible = (tName and not (select(8,UnitCastingInfo("target")) or select(7,UnitChannelInfo("target")))) and true or false
     local mName = (UnitCastingInfo("pet") or UnitChannelInfo("pet"))
-    local mInterruptible = (mName and not (select(9,UnitCastingInfo("pet")) or select(8,UnitChannelInfo("pet")))) and true or false
+    local mInterruptible = (mName and not (select(8,UnitCastingInfo("pet")) or select(7,UnitChannelInfo("pet")))) and true or false
     env.player.is_casting = pName and true or false
     env.player.casting_spell = pName
     env.player.is_interruptible = pInterruptible
@@ -490,13 +490,13 @@ local function StatePredictNextActionPrototype(self)
     local start, duration = GetSpellCooldown(61304)
 
     -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
-    local cname, _, _, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
+    local cname, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
     local performPostCastAction = false
     if cname then
         performPostCastAction = true
         Core:Debug("Currently casting: %s", tostring(spellCastID))
     else
-        cname, _, _, _, cstart, cend = UnitChannelInfo('player')
+        cname, _, _, cstart, cend = UnitChannelInfo('player')
     end
     if cname then
         start = cstart * 0.001

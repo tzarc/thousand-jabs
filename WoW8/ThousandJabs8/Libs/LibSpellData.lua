@@ -314,7 +314,7 @@ do
         local b = 'SPELL_RECAST_TIME_' .. v:upper()
         if _G[b] then
             local t = _G[b]
-            t = t:gsub('%%.3g', '([.,%%d]+)')
+            t = t:gsub('%%.2g', '([.,%%d]+)')
             t = removeLNS(t)
 
             local A, B
@@ -332,7 +332,7 @@ do
         b = 'SPELL_RECAST_TIME_CHARGES_' .. v:upper()
         if _G[b] then
             local t = _G[b]
-            t = t:gsub('%%.3g', '([.,%%d]+)')
+            t = t:gsub('%%.2g', '([.,%%d]+)')
             t = removeLNS(t)
 
             local placeholder = '____PLACEHOLDER____'

@@ -13,7 +13,7 @@ local devMode = false
 ------------------------------------------------------------------------------------------------------------------------
 
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):NewAddon('ThousandJabs', 'AceConsole-3.0', 'AceEvent-3.0')
+local TJ = LibStub('AceAddon-3.0'):NewAddon('ThousandJabs8', 'AceConsole-3.0', 'AceEvent-3.0')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Module definitions
@@ -91,7 +91,7 @@ local debugLines = {}
 local otherErrors = {}
 local globalReads = {}
 local globalWrites = {}
-local globalExcludes = { 'UIParent', 'ThousandJabsDB' }
+local globalExcludes = { 'UIParent', 'ThousandJabs8DB' }
 local localCopies = {}
 local printedOnce = {}
 local tableNames = {}
@@ -348,7 +348,7 @@ local disableDebugOutput = false
 function Core:Debug(...)
     if disableDebugOutput then return end
     if Config:Get("do_debug") then
-        if #debugLines == 0 then debugLines[1] = Core:Format("|cFFFFFFFFThousandJabs Debug log|r (|cFF00FFFFhide with /tj _dbg|r):") end
+        if #debugLines == 0 then debugLines[1] = Core:Format("|cFFFFFFFFThousandJabs8 Debug log|r (|cFF00FFFFhide with /tj _dbg|r):") end
         local a = ...
         if type(a) == 'table' and select('#', ...) == 1 then
             debugLines[1+#debugLines] = Core:Format('|cFFFFFF99%s|r', LSD(a))
@@ -370,7 +370,7 @@ function Core:DebugString()
 end
 
 function Core:OpenDebugWindow(title, data)
-    LoadAddOn("ThousandJabs_Config") -- Ensure AceGUI has been loaded
+    LoadAddOn("ThousandJabs8_Config") -- Ensure AceGUI has been loaded
     local GUI = LibStub("AceGUI-3.0")
     local f = GUI:Create("Frame")
     f:SetCallback("OnClose",function(widget) GUI:Release(widget) end)
@@ -390,7 +390,7 @@ end
 
 function Core:ShowLoggingFrame()
     if not self.log_frame then
-        self.log_frame = CreateFrame("Frame", "ThousandJabsLog", UIParent)
+        self.log_frame = CreateFrame("Frame", "ThousandJabs8Log", UIParent)
         self.log_frame:ClearAllPoints()
         self.log_frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 550, -20)
         self.log_frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -20, 20)
@@ -453,9 +453,9 @@ function Core:UpdateUsageStatistics()
                 Broker.updateTime = TimedUpdateUsageStats()
                 Stats.lastCheckDelta = now - Stats.lastCheck
                 Stats.lastMemAmount = Stats.currMemAmount
-                Stats.currMemAmount = GetAddOnMemoryUsage('ThousandJabs')
+                Stats.currMemAmount = GetAddOnMemoryUsage('ThousandJabs8')
                 Stats.lastCpuAmount = Stats.currCpuAmount
-                Stats.currCpuAmount = GetAddOnCPUUsage('ThousandJabs')
+                Stats.currCpuAmount = GetAddOnCPUUsage('ThousandJabs8')
                 Stats.lastCheck = now
             end
             Core:Debug("Usage stats update time: %12.3f ms", Broker.updateTime)
@@ -543,7 +543,7 @@ end
 function Core:GenerateDebuggingInformation()
     local totalAllocated, totalAcquired, totalReleased = TableCache:GetMetrics()
     local export = {
-        ['!tj_version'] = GetAddOnMetadata('ThousandJabs', "Version"),
+        ['!tj_version'] = GetAddOnMetadata('ThousandJabs8', "Version"),
         ['!wow_build'] = tconcat({ GetBuildInfo() }, ' | '),
         ['!wow_locale'] = GetLocale(),
         base = {
@@ -568,7 +568,7 @@ function Core:GenerateDebuggingInformation()
         equippedItems = equippedItems(),
         internals = {
             devMode = devMode,
-            savedVariables = ThousandJabsDB,
+            savedVariables = ThousandJabs8DB,
             tableCache = {
                 allocated = totalAllocated,
                 acquired = totalAcquired,
@@ -599,6 +599,6 @@ function Core:ExportDebuggingInformation()
         Core:Print("In combat, cannot open debug information window.")
     else
         local export = Core:GenerateDebuggingInformation()
-        Core:OpenDebugWindow('ThousandJabs Diagnostic Information', Core:Format("ThousandJabs Diagnostic Information:\n%s", LSD(export)))
+        Core:OpenDebugWindow('ThousandJabs8 Diagnostic Information', Core:Format("ThousandJabs8 Diagnostic Information:\n%s", LSD(export)))
     end
 end

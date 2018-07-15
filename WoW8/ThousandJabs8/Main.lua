@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local Profiling = TJ:GetModule('Profiling')
@@ -250,7 +250,7 @@ function TJ:PerformUpdate()
         local start, duration = GetSpellCooldown(61304)
 
         -- ....unless we're currently channeling something (i.e. fists of fury), in which case use the rest of its channel time
-        local channelName, _, _, _, channelStart, channelEnd = UnitChannelInfo('player')
+        local channelName, _, _, channelStart, channelEnd = UnitChannelInfo('player')
         if channelName then
             start = (channelStart * 0.001)
             duration = (channelEnd - channelStart) * 0.001
@@ -315,8 +315,8 @@ function TJ:ActivateProfile()
         TJ:RegisterEvent('ACTIONBAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('PET_BAR_UPDATE', 'GENERIC_EVENT_UPDATE_HANDLER')
         TJ:RegisterEvent('PET_BAR_UPDATE_COOLDOWN', 'GENERIC_EVENT_UPDATE_HANDLER')
-        TJ:RegisterEvent('UNIT_POWER')
-        TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER')
+        TJ:RegisterEvent('UNIT_POWER_UPDATE')
+        TJ:RegisterEvent('UNIT_POWER_FREQUENT', 'UNIT_POWER_UPDATE')
         TJ:RegisterEvent('UNIT_PET')
         TJ:RegisterEvent('UNIT_AURA')
         TJ:RegisterEvent('SPELL_ACTIVATION_OVERLAY_GLOW_SHOW', 'GENERIC_EVENT_UPDATE_HANDLER')
@@ -345,7 +345,7 @@ function TJ:DeactivateProfile()
     TJ:UnregisterEvent('UNIT_AURA')
     TJ:UnregisterEvent('UNIT_PET')
     TJ:UnregisterEvent('UNIT_POWER_FREQUENT')
-    TJ:UnregisterEvent('UNIT_POWER')
+    TJ:UnregisterEvent('UNIT_POWER_UPDATE')
     TJ:UnregisterEvent('PET_BAR_UPDATE_COOLDOWN')
     TJ:UnregisterEvent('PET_BAR_UPDATE')
     TJ:UnregisterEvent('ACTIONBAR_UPDATE_COOLDOWN')
@@ -376,7 +376,7 @@ function TJ:ExportCurrentProfile()
     if TJ.currentProfile and self.state then
         local actionsTable = self.state:ExportActionsTable()
         local dbg = Core:GenerateDebuggingInformation()
-        Core:OpenDebugWindow('ThousandJabs Current profile', 'zzzz='..LSD({
+        Core:OpenDebugWindow('ThousandJabs8 Current profile', 'zzzz='..LSD({
             ['!dbg'] = dbg,
             ['actions'] = actionsTable,
             ['parsed'] = self.state:ExportParsedTable(),
@@ -676,7 +676,7 @@ function TJ:ConsoleCommand(args)
         Core:Print(' - Total allocated: %d, total acquired: %d, total released: %d, total in-use: %d',
             TableCache.TableCache.TotalAllocated, TableCache.TableCache.TotalAcquired, TableCache.TableCache.TotalReleased, TableCache.TableCache.TotalAcquired - TableCache.TableCache.TotalReleased)
     elseif argv[1] == '_dbe' then
-        Core:OpenDebugWindow('Thousand Jabs SavedVariables Export', LSD(ThousandJabsDB))
+        Core:OpenDebugWindow('Thousand Jabs SavedVariables Export', LSD(ThousandJabs8DB))
     elseif argv[1] == '_prof' then
         Core:Print(Profiling:GetProfilingString())
     elseif argv[1] == '_duc' then
@@ -685,7 +685,7 @@ function TJ:ConsoleCommand(args)
         DevTools_Dump{unitCache=UnitCache.unitCache}
     elseif argv[1] == '_mem' then
         UpdateAddOnMemoryUsage()
-        Core:Print('Memory usage: %d kB', GetAddOnMemoryUsage('ThousandJabs'))
+        Core:Print('Memory usage: %d kB', GetAddOnMemoryUsage('ThousandJabs8'))
     elseif argv[1] == '_esd' then
         self:ExportAbilitiesFromSpellBook()
     elseif argv[1] == '_est' then

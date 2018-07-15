@@ -7,13 +7,14 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 
 local bit_and = bit.band
 local bit_or = bit.bor
 local COMBATLOG_OBJECT_AFFILIATION_OUTSIDER = COMBATLOG_OBJECT_AFFILIATION_OUTSIDER
 local COMBATLOG_OBJECT_REACTION_FRIENDLY = COMBATLOG_OBJECT_REACTION_FRIENDLY
+local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetSpellCooldown = GetSpellCooldown
 local GetTime = GetTime
 local pairs = pairs
@@ -150,7 +151,7 @@ function TJ:GENERIC_RELOAD_PROFILE_HANDLER(eventName, ...)
     TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, ...)
 end
 
-function TJ:UNIT_POWER(eventName, unitID, powerType)
+function TJ:UNIT_POWER_UPDATE(eventName, unitID, powerType)
     if unitID == 'player' then
         -- Notify the profile
         TJ:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, powerType)
@@ -164,12 +165,12 @@ function TJ:UNIT_AURA(eventName, unitID, powerType)
     end
 end
 
-function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, spell, rank, lineID, spellID)
+function TJ:UNIT_SPELLCAST_SUCCEEDED(eventName, unitID, lineID, spellID)
     if unitID == 'player' or unitID == 'pet' then
         local now = GetTime()
         TJ:SpellCastSuccess(spellID, unitID)
         -- Notify the profile
-        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, spell, rank, lineID, spellID)
+        self:GENERIC_EVENT_UPDATE_HANDLER(eventName, unitID, lineID, spellID)
     end
 end
 
@@ -200,9 +201,9 @@ function TJ:PLAYER_REGEN_DISABLED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
+function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp)
     local now = GetTime()
-    local combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = ...
+    local timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = CombatLogGetCurrentEventInfo()
 
     -- Any HP drops are treated as damage taken
     local currHP = UnitHealth('player')
@@ -256,7 +257,7 @@ function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp, ...)
     if TJ.currentProfile then
         local handler = rawget(TJ.currentProfile, eventName)
         if handler then
-            handler(TJ.currentProfile, eventName, timeStamp, ...)
+            handler(TJ.currentProfile, eventName)
         end
     end
 

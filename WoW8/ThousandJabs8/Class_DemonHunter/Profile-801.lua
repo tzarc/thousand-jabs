@@ -9,11 +9,11 @@ end
 if select(2, UnitClass('player')) ~= 'DEMONHUNTER' then return end
 
 local addonName, internal = ...
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
-if not Core:MatchesBuild('7.3.2', '7.3.9') then return end
+if not Core:MatchesBuild('8.0.0', '8.0.9') then return end
 
 local mmax = math.max
 local mmin = math.min
@@ -29,51 +29,49 @@ local mfloor = math.floor
 local vengeance_abilities_exported = {
     abyssal_strike = { TalentID = 22502, },
     agonizing_flames = { TalentID = 22503, },
-    blade_turning = { TalentID = 22513, },
     burning_alive = { TalentID = 22507, },
+    chaos_brand = { SpellIDs = { 281242 }, },
+    charred_flesh = { TalentID = 22541, },
     concentrated_sigils = { TalentID = 22546, },
-    consume_magic = { SpellIDs = { 183752 }, },
+    consume_magic = { SpellIDs = { 278326 }, },
     demon_spikes = { SpellIDs = { 203720 }, },
-    demonic_infusion = { SpellIDs = { 236189 }, TalentID = 22548, },
     demonic_wards = { SpellIDs = { 203513 }, },
-    empower_wards = { SpellIDs = { 218256 }, },
+    disrupt = { SpellIDs = { 183752 }, },
     fallout = { TalentID = 22766, },
     feast_of_souls = { TalentID = 22505, },
-    feed_the_demon = { TalentID = 22508, },
-    fel_devastation = { SpellIDs = { 212084 }, TalentID = 22512, },
-    fel_eruption = { SpellIDs = { 211881 }, TalentID = 22540, },
-    felblade = { SpellIDs = { 232893 }, TalentID = 22324, },
+    feed_the_demon = { TalentID = 22509, },
+    fel_devastation = { SpellIDs = { 212084 }, TalentID = 22768, },
+    felblade = { SpellIDs = { 232893 }, TalentID = 22540, },
     fiery_brand = { SpellIDs = { 204021 }, },
-    flame_crash = { TalentID = 22541, },
-    fracture = { SpellIDs = { 209795 }, TalentID = 22509, },
+    flame_crash = { TalentID = 22324, },
+    fracture = { SpellIDs = { 263642 }, TalentID = 22770, },
     glide = { SpellIDs = { 131347 }, },
+    gluttony = { TalentID = 22512, },
     immolation_aura = { SpellIDs = { 178740 }, },
     imprison = { SpellIDs = { 217832 }, },
     infernal_strike = { SpellIDs = { 189110 }, },
     last_resort = { TalentID = 22543, },
     mastery_fel_blood = { SpellIDs = { 203747 }, },
     metamorphosis = { SpellIDs = { 187827 }, },
-    quickened_sigils = { TalentID = 22511, },
+    quickened_sigils = { TalentID = 22510, },
     razor_spikes = { TalentID = 22504, },
-    sever = { SpellIDs = { 235964 }, },
     shattered_souls = { SpellIDs = { 204254 }, },
     shear = { SpellIDs = { 203782 }, },
-    sigil_of_chains = { SpellIDs = { 202138 }, TalentID = 22510, },
+    sigil_of_chains = { SpellIDs = { 202138 }, TalentID = 22511, },
     sigil_of_flame = { SpellIDs = { 204513, 204596 }, },
     sigil_of_misery = { SpellIDs = { 202140, 207684 }, },
     sigil_of_silence = { SpellIDs = { 202137, 207682 }, },
-    soul_barrier = { SpellIDs = { 227225 }, TalentID = 21902, },
-    soul_carver = { SpellIDs = { 207407 }, },
+    soul_barrier = { SpellIDs = { 263648 }, TalentID = 21902, },
     soul_cleave = { SpellIDs = { 228477 }, },
-    soul_rending = { TalentID = 22770, },
+    soul_rending = { TalentID = 22508, },
     spectral_sight = { SpellIDs = { 188501 }, },
-    spirit_bomb = { SpellIDs = { 247454 }, TalentID = 22768, },
+    spirit_bomb = { SpellIDs = { 247454 }, TalentID = 22513, },
     throw_glaive = { SpellIDs = { 204157 }, },
     torment = { SpellIDs = { 185245 }, },
+    void_reaver = { TalentID = 22548, },
 }
-
 local vengeance_base_overrides = {
-    consume_magic = {
+    disrupt = {
         spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
             return env.target.is_casting and env.target.is_interruptible
@@ -298,7 +296,9 @@ TJ:RegisterPlayerClass({
         vengeance_sigil_overrides,
         vengeance_hooks,
     },
-    blacklisted = {},
+    blacklisted = {
+        'consume_magic',
+    },
     config_checkboxes = {
         fiery_demise_selected = false,
     },
@@ -319,49 +319,53 @@ TJ:RegisterPlayerClass({
 local havoc_abilities_exported = {
     annihilation = { SpellIDs = { 201427 }, },
     blade_dance = { SpellIDs = { 188499 }, },
-    blind_fury = { TalentID = 22416, },
-    bloodlet = { TalentID = 21862, },
+    blind_fury = { TalentID = 21854, },
     blur = { SpellIDs = { 198589 }, },
-    chaos_blades = { SpellIDs = { 247938 }, TalentID = 21900, },
-    chaos_cleave = { TalentID = 22909, },
+    chaos_brand = { SpellIDs = { 255260 }, },
     chaos_nova = { SpellIDs = { 179057 }, },
     chaos_strike = { SpellIDs = { 162794 }, },
-    consume_magic = { SpellIDs = { 183752 }, },
+    consume_magic = { SpellIDs = { 278326 }, },
+    cycle_of_hatred = { TalentID = 21866, },
+    dark_slash = { SpellIDs = { 258860 }, TalentID = 21868, },
     darkness = { SpellIDs = { 196718 }, },
     death_sweep = { SpellIDs = { 210152 }, },
     demon_blades = { SpellIDs = { 203555 }, TalentID = 22765, },
-    demon_reborn = { TalentID = 22767, },
-    demonic = { TalentID = 22547, },
-    demonic_appetite = { TalentID = 22799, },
+    demonic = { TalentID = 21900, },
+    demonic_appetite = { TalentID = 22493, },
+    demonic_wards = { SpellIDs = { 278386 }, },
     demons_bite = { SpellIDs = { 162243 }, },
     desperate_instincts = { TalentID = 21864, },
+    disrupt = { SpellIDs = { 183752 }, },
     eye_beam = { SpellIDs = { 198013 }, },
-    fel_barrage = { SpellIDs = { 211053 }, TalentID = 21901, },
-    fel_eruption = { SpellIDs = { 211881 }, TalentID = 21867, },
-    fel_mastery = { TalentID = 21854, },
+    fel_barrage = { SpellIDs = { 258925 }, TalentID = 21862, },
+    fel_eruption = { SpellIDs = { 211881 }, TalentID = 22767, },
+    fel_mastery = { TalentID = 22494, },
     fel_rush = { SpellIDs = { 195072 }, },
-    felblade = { SpellIDs = { 232893 }, TalentID = 22493, },
-    first_blood = { TalentID = 22494, },
-    fury_of_the_illidari = { SpellIDs = { 201467 }, },
+    felblade = { SpellIDs = { 232893 }, TalentID = 22416, },
+    first_blood = { TalentID = 21867, },
     glide = { SpellIDs = { 131347 }, },
+    immolation_aura = { SpellIDs = { 258920 }, TalentID = 22799, },
     imprison = { SpellIDs = { 217832 }, },
-    master_of_the_glaive = { TalentID = 21869, },
+    insatiable_hunger = { TalentID = 21857, },
+    master_of_the_glaive = { TalentID = 21870, },
     mastery_demonic_presence = { SpellIDs = { 185164 }, },
     metamorphosis = { SpellIDs = { 191427 }, },
-    momentum = { TalentID = 21866, },
-    nemesis = { SpellIDs = { 206491 }, TalentID = 21868, },
-    netherwalk = { SpellIDs = { 196555 }, TalentID = 21863, },
-    prepared = { TalentID = 21857, },
+    momentum = { TalentID = 21901, },
+    nemesis = { SpellIDs = { 206491 }, TalentID = 22547, },
+    netherwalk = { SpellIDs = { 196555 }, TalentID = 21865, },
     shattered_souls = { SpellIDs = { 178940 }, },
-    soul_rending = { TalentID = 21865, },
+    soul_rending = { TalentID = 21863, },
     spectral_sight = { SpellIDs = { 188501 }, },
     throw_glaive = { SpellIDs = { 185123 }, },
-    unleashed_power = { TalentID = 21870, },
+    torment = { SpellIDs = { 281854 }, },
+    trail_of_ruin = { TalentID = 22909, },
+    unleashed_power = { TalentID = 21869, },
     vengeful_retreat = { SpellIDs = { 198793 }, },
+    vindicaar_matrix_crystal = { SpellIDs = { 251463 }, },
 }
 
 local havoc_base_overrides = {
-    consume_magic = {
+    disrupt = {
         spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
             return env.target.is_casting and env.target.is_interruptible

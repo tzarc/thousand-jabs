@@ -1,5 +1,5 @@
-## Interface: 70300
-## Title: ThousandJabs: Config
+## Interface: 80000
+## Title: ThousandJabs8: Config
 ## Notes: Simulationcraft -> In-game rotation
 ## Author: Tzarc
 ## X-License: UNLICENSE
@@ -8,7 +8,7 @@
 ## X-Repository: https://github.com/tzarc/thousand-jabs
 ## Version: @project-version@
 ## LoadOnDemand: 1
-## Dependencies: ThousandJabs
+## Dependencies: ThousandJabs8
 
 Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceGUI-3.0\AceGUI-3.0.xml

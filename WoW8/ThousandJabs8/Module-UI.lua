@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local UI = TJ:GetModule('UI')
@@ -151,7 +151,7 @@ local function CreateSingleIconFrame(name, parent, sizeType, sizeIndex)
 
     local MSQ = LibStub('Masque', true)
     if MSQ then
-        local group = MSQ:Group('ThousandJabs', 'Actions')
+        local group = MSQ:Group('ThousandJabs8', 'Actions')
         group:AddButton(button, {Icon = button.icon, Name=button.overlayText})
         if group.db.disabled then
             ApplyDefaultTheming(button)
@@ -164,7 +164,7 @@ end
 function UI:OnInitialize()
     -- LDB object
     if LDB then
-        Core.Broker.dataObj = LDB:NewDataObject('ThousandJabs', {
+        Core.Broker.dataObj = LDB:NewDataObject('ThousandJabs8', {
             icon  = "Interface\\Icons\\ability_monk_jab",
             label = "Thousand Jabs",
             text  = "Thousand Jabs",
@@ -194,9 +194,9 @@ function UI:OnInitialize()
     -- Masque theming
     local MSQ = LibStub('Masque', true)
     if MSQ then
-        MSQ:Register('ThousandJabs', function(_, group, skinID, gloss, backdrop, colours, isDisabled)
+        MSQ:Register('ThousandJabs8', function(_, group, skinID, gloss, backdrop, colours, isDisabled)
             if isDisabled then
-                for btn in pairs(MSQ:Group('ThousandJabs', group).Buttons) do
+                for btn in pairs(MSQ:Group('ThousandJabs8', group).Buttons) do
                     ApplyDefaultTheming(btn)
                 end
             end
@@ -362,7 +362,7 @@ function UI:ReapplyLayout(skipMasque)
         -- Reapply masque skin if appropriate
         local MSQ = LibStub("Masque", true)
         if MSQ then
-            MSQ:Group('ThousandJabs', "Actions"):ReSkin()
+            MSQ:Group('ThousandJabs8', "Actions"):ReSkin()
         end
     end
 
@@ -385,7 +385,7 @@ function UI:CreateFrames()
     if actionFrames.baseFrame then return end
 
     -- Create the backdrop
-    actionFrames.backdrop = CreateFrame('Frame', 'ThousandJabsBackdrop', UIParent)
+    actionFrames.backdrop = CreateFrame('Frame', 'ThousandJabs8Backdrop', UIParent)
     actionFrames.backdrop:SetBackdropColor(0, 0, 0, Config:Get("backgroundOpacity"))
     actionFrames.backdrop:SetPoint('CENTER', UIParent)
     actionFrames.backdrop:Show()
@@ -400,7 +400,7 @@ function UI:CreateFrames()
     local orientation = false -- true = vertical -- todo, make this an option?
 
     -- Create the base frame
-    actionFrames.baseFrame = CreateContainer(orientation, actionFrames.backdrop, 'ThousandJabs')
+    actionFrames.baseFrame = CreateContainer(orientation, actionFrames.backdrop, 'ThousandJabs8')
 
     -- Create the icon frame containers
     actionFrames.containers[UI.SINGLE_TARGET] = CreateContainer(orientation, actionFrames.baseFrame)
@@ -413,13 +413,13 @@ function UI:CreateFrames()
     actionFrames.baseFrame:AddElement(actionFrames.containers[UI.SINGLE_TARGET])
 
     -- Create the cooldown frame beforehand
-    actionFrames.cooldown = CreateFrame('Cooldown', 'ThousandJabs_ST1Cooldown', actionFrames.containers[UI.SINGLE_TARGET], 'CooldownFrameTemplate')
+    actionFrames.cooldown = CreateFrame('Cooldown', 'ThousandJabs8_ST1Cooldown', actionFrames.containers[UI.SINGLE_TARGET], 'CooldownFrameTemplate')
     actionFrames.cooldown:SetDrawBling(Config:Get("showSpellFlash"))
 
     -- Create the ST icons
     for i=1,8 do
         local parent = actionFrames.containers[UI.SINGLE_TARGET]
-        local button = CreateSingleIconFrame(('ThousandJabs_ST%d'):format(i), parent, "singleTargetSize", i)
+        local button = CreateSingleIconFrame(('ThousandJabs8_ST%d'):format(i), parent, "singleTargetSize", i)
         actionFrames.containers[UI.SINGLE_TARGET]:AddElement(button)
         actionFrames.actions[UI.SINGLE_TARGET][i] = button
     end
@@ -427,7 +427,7 @@ function UI:CreateFrames()
     -- Create the cleave icons
     for i=1,8 do
         local parent = actionFrames.containers[UI.CLEAVE]
-        local button = CreateSingleIconFrame(('ThousandJabs_Cleave%d'):format(i), parent, "cleaveSize", i)
+        local button = CreateSingleIconFrame(('ThousandJabs8_Cleave%d'):format(i), parent, "cleaveSize", i)
         actionFrames.containers[UI.CLEAVE]:AddElement(button)
         actionFrames.actions[UI.CLEAVE][i] = button
     end
@@ -435,7 +435,7 @@ function UI:CreateFrames()
     -- Create the AoE icons
     for i=1,8 do
         local parent = actionFrames.containers[UI.AOE]
-        local button = CreateSingleIconFrame(('ThousandJabs_AoE%d'):format(i), parent, "aoeSize", i)
+        local button = CreateSingleIconFrame(('ThousandJabs8_AoE%d'):format(i), parent, "aoeSize", i)
         actionFrames.containers[UI.AOE]:AddElement(button)
         actionFrames.actions[UI.AOE][i] = button
     end

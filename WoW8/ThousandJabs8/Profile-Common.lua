@@ -7,7 +7,7 @@ end
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local UnitCache = TJ:GetModule('UnitCache')
@@ -20,16 +20,6 @@ local mfloor = math.floor
 local mmax = math.max
 local mmin = math.min
 local select = select
-local SPELL_POWER_CHI = SPELL_POWER_CHI
-local SPELL_POWER_ENERGY = SPELL_POWER_ENERGY
-local SPELL_POWER_FURY = SPELL_POWER_FURY
-local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
-local SPELL_POWER_MAELSTROM = SPELL_POWER_MAELSTROM
-local SPELL_POWER_MANA = SPELL_POWER_MANA
-local SPELL_POWER_PAIN = SPELL_POWER_PAIN
-local SPELL_POWER_RAGE = SPELL_POWER_RAGE
-local SPELL_POWER_RUNIC_POWER = SPELL_POWER_RUNIC_POWER
-local SPELL_POWER_SOUL_SHARDS = SPELL_POWER_SOUL_SHARDS
 local tinsert = table.insert
 local tremove = table.remove
 local tsort = table.sort
@@ -43,6 +33,26 @@ local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 local UnitRace = UnitRace
 local wipe = wipe
+
+local Enum_PowerType_Mana = Enum.PowerType.Mana
+local Enum_PowerType_Mana = Enum.PowerType.Mana
+local Enum_PowerType_Rage = Enum.PowerType.Rage
+local Enum_PowerType_Focus = Enum.PowerType.Focus
+local Enum_PowerType_Energy = Enum.PowerType.Energy
+local Enum_PowerType_ComboPoints = Enum.PowerType.ComboPoints
+local Enum_PowerType_Runes = Enum.PowerType.Runes
+local Enum_PowerType_RunicPower = Enum.PowerType.RunicPower
+local Enum_PowerType_SoulShards = Enum.PowerType.SoulShards
+local Enum_PowerType_LunarPower = Enum.PowerType.LunarPower
+local Enum_PowerType_HolyPower = Enum.PowerType.HolyPower
+local Enum_PowerType_Alternate = Enum.PowerType.Alternate
+local Enum_PowerType_Maelstrom = Enum.PowerType.Maelstrom
+local Enum_PowerType_Chi = Enum.PowerType.Chi
+local Enum_PowerType_ArcaneCharges = Enum.PowerType.ArcaneCharges
+local Enum_PowerType_Fury = Enum.PowerType.Fury
+local Enum_PowerType_Pain = Enum.PowerType.Pain
+local Enum_PowerType_Insanity = Enum.PowerType.Insanity
+
 
 Core:Safety()
 
@@ -298,51 +308,51 @@ end
 
 Core.Environment.resources = {
     mana = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_MANA) or 0) end,
+        sampled = function(power, env) return (UnitPower('player', Enum_PowerType_Mana) or 0) end,
         regen = function(power, env) return GetPowerRegen() end,
         spent = 0,
         gained = 0,
         curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_MANA) or 0) end,
+        max = function(power, env) return (UnitPowerMax('player', Enum_PowerType_Mana) or 0) end,
         time_to_max = function(power, env) return (power.max - power.curr) / power.regen end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     soul_shards = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_SOUL_SHARDS) or 0) end,
+        sampled = function(power, env) return (UnitPower('player', Enum_PowerType_SoulShards) or 0) end,
         spent = 0,
         gained = 0,
         curr = function(power, env) return power.sampled - power.spent + power.gained end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_SOUL_SHARDS) or 0) end,
+        max = function(power, env) return (UnitPowerMax('player', Enum_PowerType_SoulShards) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     energy = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_ENERGY) or 0) end,
+        sampled = function(power, env) return (UnitPower('player', Enum_PowerType_Energy) or 0) end,
         regen = function(power, env) return GetPowerRegen() end,
         spent = 0,
         gained = 0,
         curr = function(power, env) return power.sampled + power.gained - power.spent + power.regen * env.predictionOffset end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_ENERGY) or 0) end,
+        max = function(power, env) return (UnitPowerMax('player', Enum_PowerType_Energy) or 0) end,
         time_to_max = function(power, env) return (power.max - power.curr) / power.regen end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     chi = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_CHI) or 0) end,
+        sampled = function(power, env) return (UnitPower('player', Enum_PowerType_Chi) or 0) end,
         spent = 0,
         gained = 0,
         curr = function(power, env) return power.sampled - power.spent + power.gained end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_CHI) or 0) end,
+        max = function(power, env) return (UnitPowerMax('player', Enum_PowerType_Chi) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     rage = {
-        sampled = function(power, env) return (UnitPower('player', SPELL_POWER_RAGE) or 0) end,
+        sampled = function(power, env) return (UnitPower('player', Enum_PowerType_Rage) or 0) end,
         spent = 0,
         gained = 0,
         gained_from_autoattacks = function(spell,env)
@@ -357,23 +367,23 @@ Core.Environment.resources = {
             return 0
         end,
         curr = function(power, env) return power.sampled + power.gained + power.gained_from_autoattacks - power.spent end,
-        max = function(power, env) return (UnitPowerMax('player', SPELL_POWER_RAGE) or 0) end,
+        max = function(power, env) return (UnitPowerMax('player', Enum_PowerType_Rage) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     pain = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_PAIN) or 0) end,
+        sampled = function(power,env) return (UnitPower('player', Enum_PowerType_Pain) or 0) end,
         gained = 0,
         spent = 0,
         curr = function(power,env) return power.sampled - power.spent + power.gained end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_PAIN) or 0) end,
+        max = function(power,env) return (UnitPowerMax('player', Enum_PowerType_Pain) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     fury = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_FURY) or 0) end,
+        sampled = function(power,env) return (UnitPower('player', Enum_PowerType_Fury) or 0) end,
         spent = 0,
         gained = 0,
         gained_from_autoattacks = function(spell,env)
@@ -391,7 +401,7 @@ Core.Environment.resources = {
             return 0
         end,
         curr = function(power,env) return power.sampled - power.spent + power.gained + power.gained_from_autoattacks end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_FURY) or 0) end,
+        max = function(power,env) return (UnitPowerMax('player', Enum_PowerType_Fury) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
@@ -442,31 +452,31 @@ Core.Environment.resources = {
         perform_spend = generic_perform_spend,
     },
     runic_power = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_RUNIC_POWER) or 0) end,
+        sampled = function(power,env) return (UnitPower('player', Enum_PowerType_RunicPower) or 0) end,
         gained = 0,
         spent = 0,
         curr = function(power,env) return power.sampled - power.spent + power.gained + ((env.rune.spent-env.rune.skipped) * 10) end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_RUNIC_POWER) or 0) end,
+        max = function(power,env) return (UnitPowerMax('player', Enum_PowerType_RunicPower) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     maelstrom = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_MAELSTROM) or 0) end,
+        sampled = function(power,env) return (UnitPower('player', Enum_PowerType_Maelstrom) or 0) end,
         gained = 0,
         spent = 0,
         curr = function(power,env) return power.sampled - power.spent + power.gained end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_MAELSTROM) or 0) end,
+        max = function(power,env) return (UnitPowerMax('player', Enum_PowerType_Maelstrom) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,
     },
     holy_power = {
-        sampled = function(power,env) return (UnitPower('player', SPELL_POWER_HOLY_POWER) or 0) end,
+        sampled = function(power,env) return (UnitPower('player', Enum_PowerType_HolyPower) or 0) end,
         gained = 0,
         spent = 0,
         curr = function(power,env) return power.sampled - power.spent + power.gained end,
-        max = function(power,env) return (UnitPowerMax('player', SPELL_POWER_HOLY_POWER) or 0) end,
+        max = function(power,env) return (UnitPowerMax('player', Enum_PowerType_HolyPower) or 0) end,
         deficit = function(power,env) return power.max - power.curr end,
         can_spend = generic_can_spend,
         perform_spend = generic_perform_spend,

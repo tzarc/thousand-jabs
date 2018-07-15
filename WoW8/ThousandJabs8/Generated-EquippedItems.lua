@@ -1,3 +1,5 @@
+if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end
+
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs8')
 local Core = TJ:GetModule('Core')
 TJ.Generated = TJ.Generated or {}

@@ -1,5 +1,5 @@
 ## Interface: 80000
-## Title: ThousandJabs
+## Title: ThousandJabs8
 ## Notes: Simulationcraft -> In-game rotation
 ## Author: Tzarc
 ## X-License: UNLICENSE
@@ -10,7 +10,7 @@
 
 ## OptionalDeps: LibStub, CallbackHandler-1.0, Ace3, LibSharedMedia-3.0, LibDataBroker-1.1, Masque
 
-## SavedVariables: ThousandJabsDB
+## SavedVariables: ThousandJabs8DB
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
