@@ -68,6 +68,8 @@ Core.Environment.globalBlacklist = {
     'flask',
     'augmentation',
     'snapshot_stats',
+    'lights_judgment',
+    'sequence', -- TODO...maybe.
     'strict_sequence', -- TODO...maybe.
 }
 
@@ -136,6 +138,8 @@ Core.Environment.common = {
         is_interruptible = false,
     },
     variable = {
+    },
+    sequence = {
     },
     adds = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
