@@ -15,6 +15,11 @@ local Config = TJ:GetModule('Config')
 
 if not Core:MatchesBuild('8.0.0', '8.0.9') then return end
 
+local mmin = math.min
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Destruction
+
 -- When exporting Warlock, summon each pet then re-run /tj _esd
 -- Do this for both with and without both Grimoire of Supremacy/Grimoire of Service.
 -- Only bother copy/pasting here once all pet abilities have been collected.
@@ -328,4 +333,136 @@ TJ:RegisterPlayerClass({
         { "soul_shard", "soul_shards" },
         { "soul_shardss", "soul_shards" },
     }
+})
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Demonology
+
+-- When exporting Warlock, summon each pet then re-run /tj _esd
+-- Do this for both with and without both Grimoire of Supremacy/Grimoire of Service.
+-- Only bother copy/pasting here once all pet abilities have been collected.
+
+-- exported with /tj _esd
+local demonology_abilities_exported = {
+    ancient_history = { SpellIDs = { 255663 }, },
+    arcane_pulse = { SpellIDs = { 260364 }, },
+    banish = { SpellIDs = { 710 }, },
+    bilescourge_bombers = { SpellIDs = { 267211 }, TalentID = 23138, },
+    burning_rush = { SpellIDs = { 111400 }, TalentID = 19285, },
+    call_dreadstalkers = { SpellIDs = { 104316 }, },
+    cantrips = { SpellIDs = { 255661 }, },
+    create_healthstone = { SpellIDs = { 6201 }, },
+    create_soulwell = { SpellIDs = { 29893 }, },
+    dark_pact = { SpellIDs = { 108416 }, TalentID = 19286, },
+    darkfury = { TalentID = 22047, },
+    demon_skin = { TalentID = 19280, },
+    demonbolt = { SpellIDs = { 264178 }, },
+    demonic_calling = { TalentID = 22045, },
+    demonic_circle = { SpellIDs = { 48018 }, TalentID = 19288, },
+    demonic_circle_teleport = { SpellIDs = { 48020 }, },
+    demonic_consumption = { TalentID = 22479, },
+    demonic_core = { SpellIDs = { 267102 }, },
+    demonic_gateway = { SpellIDs = { 111771 }, },
+    demonic_strength = { SpellIDs = { 267171 }, TalentID = 22048, },
+    doom = { SpellIDs = { 265412 }, TalentID = 23158, },
+    drain_life = { SpellIDs = { 234153 }, },
+    dreadlash = { TalentID = 19290, },
+    enslave_demon = { SpellIDs = { 1098 }, },
+    eye_of_kilrogg = { SpellIDs = { 126 }, },
+    fear = { SpellIDs = { 5782 }, },
+    from_the_shadows = { TalentID = 22477, },
+    grimoire_felguard = { SpellIDs = { 111898 }, TalentID = 21717, },
+    hand_of_guldan = { SpellIDs = { 105174 }, },
+    health_funnel = { SpellIDs = { 755 }, },
+    implosion = { SpellIDs = { 196277 }, },
+    inner_demons = { TalentID = 23146, },
+    magical_affinity = { SpellIDs = { 255665 }, },
+    mastery_master_demonologist = { SpellIDs = { 77219 }, },
+    mortal_coil = { SpellIDs = { 6789 }, TalentID = 19291, },
+    nether_portal = { SpellIDs = { 267217 }, TalentID = 23091, },
+    power_siphon = { SpellIDs = { 264130 }, TalentID = 21694, },
+    ritual_of_summoning = { SpellIDs = { 698 }, },
+    sacrificed_souls = { TalentID = 23161, },
+    shadow_bolt = { SpellIDs = { 686 }, },
+    shadowfury = { SpellIDs = { 30283 }, },
+    soul_conduit = { TalentID = 23147, },
+    soul_leech = { SpellIDs = { 108370 }, },
+    soul_link = { SpellIDs = { 108415 }, },
+    soul_shards = { SpellIDs = { 246985 }, },
+    soul_strike = { SpellIDs = { 264057 }, TalentID = 22042, },
+    soulstone = { SpellIDs = { 20707 }, },
+    summon_demonic_tyrant = { SpellIDs = { 265187 }, },
+    summon_felguard = { SpellIDs = { 30146 }, },
+    summon_felhunter = { SpellIDs = { 691 }, },
+    summon_imp = { SpellIDs = { 688 }, },
+    summon_succubus = { SpellIDs = { 712 }, },
+    summon_vilefiend = { SpellIDs = { 264119 }, TalentID = 23160, },
+    summon_voidwalker = { SpellIDs = { 697 }, },
+    unending_breath = { SpellIDs = { 5697 }, },
+    unending_resolve = { SpellIDs = { 104773 }, },
+}
+
+local demonology_abilities_common = {
+    shadow_bolt = {
+        PerformCast = function(spell, env)
+            env.soul_shards.gained = env.soul_shards.gained + mmin(1, env.soul_shards.deficit)
+        end,
+    },
+    demonbolt = {
+        PerformCast = function(spell, env)
+            env.soul_shards.gained = env.soul_shards.gained + mmin(2, env.soul_shards.deficit)
+        end,
+    },
+    hand_of_guldan = {
+        cost_type = 'soul_shards',
+        soul_shards_cost = function(spell, env)
+            return max(1, min(3, env.soul_shards.curr))
+        end,
+    },
+    dreadstalkers = {
+        aura_remains = function(spell, env)
+            return (env.call_dreadstalkers.time_since_last_cast + 12) - env.currentTime
+        end,
+        aura_up = function(spell, env) return (spell.aura_remains > 0) and true or false end,
+        aura_down = function(spell, env) return (not spell.aura_up) and true or false end,
+        aura_ticking = function(spell, env) return spell.aura_up and true or false end,
+        aura_react = function(spell, env) return spell.aura_up and true or false end,
+    },
+    demonic_core = {
+        AuraID = 264173,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    summon_demonic_tyrant = {
+        AuraApplied = 'demonic_power',
+        AuraApplyLength = 15,
+    },
+    demonic_power = {
+        AuraID = 265273,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+TJ:RegisterPlayerClass({
+    name = 'Demonology',
+    class_id = 9,
+    spec_id = 2,
+    default_action_profile = 'simc::warlock::demonology',
+    resources = { 'mana', 'mana_per_time_no_base', 'soul_shards' },
+    events = destruction_events,
+    actions = {
+        demonology_abilities_exported,
+        demonology_abilities_common,
+    },
+    blacklisted = {
+        'summon_pet',
+        'summon_doomguard',
+        'summon_felhunter',
+        'summon_imp',
+        'summon_infernal',
+        'summon_succubus',
+        'summon_voidwalker',
+        'doom_bolt', -- uses energy, not set up to retrieve anything for pets at this stage
+    },
 })

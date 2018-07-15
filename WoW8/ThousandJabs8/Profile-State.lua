@@ -490,7 +490,7 @@ local function StatePredictNextActionPrototype(self)
     local start, duration = GetSpellCooldown(61304)
 
     -- ....unless we're currently casting/channeling something (i.e. fists of fury), in which case use it instead
-    local cname, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
+    local cname, _, _, cstart, cend, _, _, _, spellCastID = UnitCastingInfo('player')
     local performPostCastAction = false
     if cname then
         performPostCastAction = true
