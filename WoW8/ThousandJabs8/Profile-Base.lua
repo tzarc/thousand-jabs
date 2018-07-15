@@ -83,6 +83,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
 
     -- Single-word conversions
     if keyword == "target" then keyword = "target.curr" end
+    if keyword == "time_to_die" then keyword = "target.time_to_die" end
     if keyword == "refreshable" then keyword = "spell.THIS_SPELL.refreshable" end
     if keyword == "time" then keyword = "time_since_combat_start" end
     if keyword == "cooldown" then keyword = "cooldown.THIS_SPELL.remains" end
@@ -96,6 +97,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
     if keyword == "charges" then keyword = "spell.THIS_SPELL.charges" end
     if keyword == "charges_fractional" then keyword = "spell.THIS_SPELL.charges_fractional" end
     if keyword == "max_charges" then keyword = "spell.THIS_SPELL.max_charges" end
+    if keyword == "full_recharge_time" then keyword = "spell.THIS_SPELL.recharge_time" end -- TODO -- Check this?
     if keyword == "recharge_time" then keyword = "spell.THIS_SPELL.recharge_time" end
     if keyword == "execute_time" then keyword = "spell.THIS_SPELL.execute_time" end
     if keyword == "level" then keyword = "level.curr" end
