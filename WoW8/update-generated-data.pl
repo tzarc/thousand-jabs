@@ -11,7 +11,7 @@ use Cwd qw/abs_path/;
 our $script_dir = dirname($script_path);
 mkdir("$script_dir/Temp") if !-d "$script_dir/Temp";
 
-our $addonName = "ThousandJabs8";
+our $addonName = "ThousandJabs";
 our $cachetime = 86400;
 our $verbose   = 0;
 ${cfg::verbose} = 1 if(scalar(@ARGV) > 0 && $ARGV[0] eq "-v");
@@ -114,7 +114,7 @@ sub update {
 
     common::exec(
         "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1 && git reset --hard origin/${requested_branch} && git checkout -- .");
-    common::exec("cd '${simc::directory}/engine' && make -j5 OS=UNIX");
+    common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
 }
 
 package generator;

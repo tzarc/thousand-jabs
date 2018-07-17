@@ -6,20 +6,20 @@ optional-dependencies:
     - masque
 
 externals:
-    WoW8/ThousandJabs8/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
-    WoW8/ThousandJabs8/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
-    WoW8/ThousandJabs8/Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
-    WoW8/ThousandJabs8/Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
-    WoW8/ThousandJabs8/Libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
-    WoW8/ThousandJabs8/Libs/LibSharedMedia-3.0: svn://svn.curseforge.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
-    WoW8/ThousandJabs8/Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
-    WoW8/ThousandJabs8_Config/Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
-    WoW8/ThousandJabs8_Config/Libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
-    WoW8/ThousandJabs8_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
+    WoW8/ThousandJabs/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
+    WoW8/ThousandJabs/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+    WoW8/ThousandJabs/Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
+    WoW8/ThousandJabs/Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
+    WoW8/ThousandJabs/Libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
+    WoW8/ThousandJabs/Libs/LibSharedMedia-3.0: svn://svn.curseforge.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
+    WoW8/ThousandJabs/Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
+    WoW8/ThousandJabs_Config/Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
+    WoW8/ThousandJabs_Config/Libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
+    WoW8/ThousandJabs_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
 
 move-folders:
-    ThousandJabs/WoW8/ThousandJabs8: ThousandJabs8
-    ThousandJabs/WoW8/ThousandJabs8_Config: ThousandJabs8_Config
+    ThousandJabs/WoW8/ThousandJabs: ThousandJabs
+    ThousandJabs/WoW8/ThousandJabs_Config: ThousandJabs_Config
 
 ignore:
     - build-datagenerator.sh
