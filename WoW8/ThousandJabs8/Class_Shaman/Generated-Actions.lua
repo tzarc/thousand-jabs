@@ -26,7 +26,7 @@ actions+=/berserking,if=!talent.ascendance.enabled|buff.ascendance.up
 actions+=/run_action_list,name=aoe,if=active_enemies>2&(spell_targets.chain_lightning>2|spell_targets.lava_beam>2)
 actions+=/run_action_list,name=single_target
 actions.aoe=stormkeeper
-actions.aoe+=/ascendance
+actions.aoe+=/ascendance,if=talent.storm_elemental.enabled&cooldown.storm_elemental.remains<120&cooldown.storm_elemental.remains>15|!talent.storm_elemental.enabled
 actions.aoe+=/liquid_magma_totem
 actions.aoe+=/flame_shock,if=spell_targets.chain_lightning<4,target_if=refreshable
 actions.aoe+=/earthquake
@@ -44,10 +44,11 @@ actions.single_target+=/elemental_blast,if=talent.master_of_the_elements.enabled
 actions.single_target+=/stormkeeper,if=raid_event.adds.count<3|raid_event.adds.in>50
 actions.single_target+=/liquid_magma_totem,if=raid_event.adds.count<3|raid_event.adds.in>50
 actions.single_target+=/earthquake,if=buff.echoes_of_the_great_sundering.up
+actions.single_target+=/lightning_bolt,if=debuff.exposed_elements.up&maelstrom>=60&!buff.ascendance.up
 actions.single_target+=/earth_shock,if=talent.master_of_the_elements.enabled&(buff.master_of_the_elements.up|maelstrom>=92)|!talent.master_of_the_elements.enabled
 actions.single_target+=/lava_burst,if=cooldown_react|buff.ascendance.up
 actions.single_target+=/flame_shock,target_if=refreshable
-actions.single_target+=/totem_mastery,if=buff.resonance_totem.remains<10|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
+actions.single_target+=/totem_mastery,if=buff.resonance_totem.remains<6|(buff.resonance_totem.remains<(buff.ascendance.duration+cooldown.ascendance.remains)&cooldown.ascendance.remains<15)
 actions.single_target+=/frost_shock,if=buff.icefury.up
 actions.single_target+=/icefury
 actions.single_target+=/lava_beam,if=active_enemies>1&spell_targets.lava_beam>1

@@ -11,6 +11,7 @@ actions.precombat+=/food
 actions.precombat+=/summon_pet
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
+actions.precombat+=/aspect_of_the_wild
 actions=auto_shot
 actions+=/counter_shot,if=equipped.sephuzs_secret&target.debuff.casting.react&cooldown.buff_sephuzs_secret.up&!buff.sephuzs_secret.up
 actions+=/use_items
@@ -40,7 +41,6 @@ TJ:RegisterActionProfileList('simc::hunter::marksmanship', 'Simulationcraft Hunt
 actions.precombat=flask
 actions.precombat+=/augmentation
 actions.precombat+=/food
-actions.precombat+=/summon_pet,if=active_enemies<3
 actions.precombat+=/snapshot_stats
 actions.precombat+=/potion
 actions.precombat+=/hunters_mark
@@ -66,7 +66,6 @@ actions+=/arcane_shot,if=active_enemies<3&buff.precise_shots.up&cooldown.aimed_s
 actions+=/aimed_shot,if=buff.precise_shots.down&buff.double_tap.down&(active_enemies>2&buff.trick_shots.up|active_enemies<3&full_recharge_time<cast_time+gcd)
 actions+=/rapid_fire,if=active_enemies<3|buff.trick_shots.up
 actions+=/explosive_shot
-actions+=/serpent_sting,if=refreshable
 actions+=/barrage
 actions+=/piercing_shot
 actions+=/a_murder_of_crows
@@ -74,6 +73,7 @@ actions+=/multishot,if=active_enemies>2&buff.trick_shots.down
 actions+=/aimed_shot,if=buff.precise_shots.down&(focus>70|buff.steady_focus.down)
 actions+=/multishot,if=active_enemies>2&(focus>90|buff.precise_shots.up&(focus>70|buff.steady_focus.down&focus>45))
 actions+=/arcane_shot,if=active_enemies<3&(focus>70|buff.steady_focus.down&(focus>60|buff.precise_shots.up))
+actions+=/serpent_sting,if=refreshable
 actions+=/steady_shot
 ]])
 
