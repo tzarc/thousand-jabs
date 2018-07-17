@@ -402,6 +402,9 @@ local demonology_abilities_exported = {
     unending_resolve = { SpellIDs = { 104773 }, },
 }
 
+local wild_imp_spawn_times = {}
+local wild_imp_despawn_times = {}
+
 local demonology_abilities_common = {
     shadow_bolt = {
         PerformCast = function(spell, env)
@@ -410,7 +413,14 @@ local demonology_abilities_common = {
     },
     demonbolt = {
         PerformCast = function(spell, env)
+            env.in_combat = true
             env.soul_shards.gained = env.soul_shards.gained + mmin(2, env.soul_shards.deficit)
+            if env.demonic_core.aura_stack > 0 then
+                env.demonic_core.aura_stack = env.demonic_core.aura_stack - 1
+            end
+            if env.demonic_core.aura_stack == 0 then
+                env.demonic_core.expirationTime = 0
+            end
         end,
     },
     hand_of_guldan = {
@@ -428,6 +438,48 @@ local demonology_abilities_common = {
         aura_ticking = function(spell, env) return spell.aura_up and true or false end,
         aura_react = function(spell, env) return spell.aura_up and true or false end,
     },
+    wild_imps = {
+        AuraID = 279910,
+        AuraUnit = 'player',
+        AuraMine = true,
+        spawn_times = {},
+        despawn_times = {},
+        wild_imp_default_lifetime = 20,
+        aura_stack = function(spell, env)
+            local totalCount = 0
+            local lastSpawn = 0
+
+            -- Clear out any despawned imps
+            for guid,time in pairs(spell.despawn_times) do
+                if time < env.currentTime then
+                    spell.spawn_times[guid] = nil
+                    spell.despawn_times[guid] = nil
+                else
+                    totalCount = totalCount + 1
+                end
+            end
+
+            -- Work out the last spawn time
+            for guid,time in pairs(spell.spawn_times) do
+                if lastSpawn < time then lastSpawn = time end
+            end
+
+            if env.inner_demons.talent_enabled and lastSpawn + env.inner_demons.auto_spawn_frequency < env.currentTime then
+                spell.spawn_times['dummy'] = lastSpawn + env.inner_demons.auto_spawn_frequency
+                spell.despawn_times['dummy'] = lastSpawn + env.inner_demons.auto_spawn_frequency + spell.wild_imp_default_lifetime
+                totalCount = totalCount + 1
+            end
+            return totalCount
+        end
+    },
+    vilefiend = {
+    },
+    doom = {
+        AuraID = 264173,
+        AuraUnit = 'target',
+        AuraMine = true,
+        aura_duration = 30,
+    },
     demonic_core = {
         AuraID = 264173,
         AuraUnit = 'player',
@@ -436,11 +488,67 @@ local demonology_abilities_common = {
     summon_demonic_tyrant = {
         AuraApplied = 'demonic_power',
         AuraApplyLength = 15,
+        demon_lifetime_extension = 15,
+        PerformCast = function(spell, env)
+            local dt = env.wild_imps.despawn_times
+            for guid,time in pairs(dt) do
+                dt[guid] = time + spell.demon_lifetime_extension
+            end
+        end,
+    },
+    inner_demons = {
+        auto_spawn_frequency = 12,
     },
     demonic_power = {
         AuraID = 265273,
         AuraUnit = 'player',
         AuraMine = true,
+    },
+}
+
+local demonology_events = {
+    COMBAT_LOG_EVENT_UNFILTERED = function(classModule, eventName)
+        local now = GetTime()
+        local timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = CombatLogGetCurrentEventInfo()
+        if combatEvent == 'SPELL_SUMMON' and arg12 == classModule.actions.wild_imps.AuraID then
+            wild_imp_spawn_times[destGUID] = now
+            wild_imp_despawn_times[destGUID] = now + classModule.actions.wild_imps.wild_imp_default_lifetime
+        end
+        if combatEvent == 'SPELL_CAST_SUCCESS' and arg12 == classModule.actions.summon_demonic_tyrant.SpellIDs[1] then
+            for guid,time in pairs(wild_imp_despawn_times) do
+                wild_imp_despawn_times[guid] = time + classModule.actions.summon_demonic_tyrant.demon_lifetime_extension
+            end
+        end
+    end
+}
+
+local demonology_hooks = {
+    hooks = {
+        OnStateInit = function(env)
+            local now = GetTime()
+
+            -- Handle Wild Imp despawning
+            wipe(env.wild_imps.spawn_times)
+            wipe(env.wild_imps.despawn_times)
+            for guid,time in pairs(wild_imp_spawn_times) do
+                env.wild_imps.spawn_times[guid] = time
+            end
+            for guid,time in pairs(wild_imp_despawn_times) do
+                if time <= now then
+                    -- Handle Wild Imp despawns
+                    wild_imp_spawn_times[guid] = nil
+                    wild_imp_despawn_times[guid] = nil
+                else
+                    -- Copy across Wild Imps to the current state
+                    env.wild_imps.despawn_times[guid] = time
+                end
+            end
+        end,
+        OnPredictActionAtOffset = function(env)
+            Core:Debug("Current imp count: %d", env.wild_imps.aura_stack)
+            Core:Debug(env.wild_imps.spawn_times)
+            Core:Debug(env.wild_imps.despawn_times)
+        end,
     },
 }
 
@@ -450,8 +558,9 @@ TJ:RegisterPlayerClass({
     spec_id = 2,
     default_action_profile = 'simc::warlock::demonology',
     resources = { 'mana', 'mana_per_time_no_base', 'soul_shards' },
-    events = destruction_events,
+    events = demonology_events,
     actions = {
+        demonology_hooks,
         demonology_abilities_exported,
         demonology_abilities_common,
     },

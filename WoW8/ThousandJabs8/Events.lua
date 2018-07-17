@@ -18,6 +18,7 @@ local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo
 local GetSpellCooldown = GetSpellCooldown
 local GetTime = GetTime
 local pairs = pairs
+local print = print
 local rawget = rawget
 local tContains = tContains
 local tostring = tostring
@@ -201,9 +202,11 @@ function TJ:PLAYER_REGEN_DISABLED(eventName)
     self:GENERIC_EVENT_UPDATE_HANDLER(eventName)
 end
 
-function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName, timeStamp)
+function TJ:COMBAT_LOG_EVENT_UNFILTERED(eventName)
     local now = GetTime()
     local timeStamp, combatEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20, arg21, arg22, arg23, arg24 = CombatLogGetCurrentEventInfo()
+
+    -- print('|cFFFF6600timeStamp|r', timeStamp, '|cFFFF6600combatEvent|r', combatEvent, '|cFFFF6600hideCaster|r', hideCaster, '|cFFFF6600sourceGUID|r', sourceGUID, '|cFFFF6600sourceName|r', sourceName, '|cFFFF6600sourceFlags|r', sourceFlags, '|cFFFF6600sourceRaidFlags|r', sourceRaidFlags, '|cFFFF6600destGUID|r', destGUID, '|cFFFF6600destName|r', destName, '|cFFFF6600destFlags|r', destFlags, '|cFFFF6600destRaidFlags|r', destRaidFlags, '|cFFFF6600arg12|r', arg12, '|cFFFF6600arg13|r', arg13, '|cFFFF6600arg14|r', arg14, '|cFFFF6600arg15|r', arg15, '|cFFFF6600arg16|r', arg16, '|cFFFF6600arg17|r', arg17, '|cFFFF6600arg18|r', arg18, '|cFFFF6600arg19|r', arg19, '|cFFFF6600arg20|r', arg20, '|cFFFF6600arg21|r', arg21, '|cFFFF6600arg22|r', arg22, '|cFFFF6600arg23|r', arg23, '|cFFFF6600arg24|r', arg24)
 
     -- Any HP drops are treated as damage taken
     local currHP = UnitHealth('player')

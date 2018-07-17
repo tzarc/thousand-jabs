@@ -269,14 +269,14 @@ local function addActionAuraFields(action)
             action.aura_remains = rawget(action, 'aura_remains') or function(spell, env)
                 return mmax(0, spell.expirationTime - env.currentTime)
             end
-            action.aura_up = function(spell, env) return (spell.aura_remains > 0) and true or false end
-            action.aura_down = function(spell, env) return (not spell.aura_up) and true or false end
-            action.aura_ticking = function(spell, env) return spell.aura_up and true or false end
-            action.aura_react = function(spell, env) return spell.aura_up and true or false end
-            action.aura_stack = function(spell, env) return spell.auraCount or 0 end
+            action.aura_up = rawget(action, 'aura_up') or function(spell, env) return (spell.aura_remains > 0) and true or false end
+            action.aura_down = rawget(action, 'aura_down') or function(spell, env) return (not spell.aura_up) and true or false end
+            action.aura_ticking = rawget(action, 'aura_ticking') or function(spell, env) return spell.aura_up and true or false end
+            action.aura_react = rawget(action, 'aura_react') or function(spell, env) return spell.aura_up and true or false end
+            action.aura_stack = rawget(action, 'aura_stack') or function(spell, env) return spell.auraCount or 0 end
 
-            action.spell_tick_time = function(spell, env) return (spell.aura_up) and 1 or 0 end -- TBD
-            action.aura_tick_time_remains = function(spell, env) return (spell.aura_up) and spell.spell_tick_time or 0 end -- TBD
+            action.spell_tick_time = rawget(action, 'spell_tick_time') or function(spell, env) return (spell.aura_up) and 1 or 0 end -- TBD
+            action.aura_tick_time_remains = rawget(action, 'aura_tick_time_remains') or function(spell, env) return (spell.aura_up) and spell.spell_tick_time or 0 end -- TBD
 
             action.ticking = action.aura_ticking
         end
