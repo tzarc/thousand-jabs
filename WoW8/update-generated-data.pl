@@ -113,7 +113,7 @@ sub update {
     }
 
     common::exec(
-        "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1000 && git reset --hard origin/${requested_branch}^^ && git checkout -- .");
+        "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1000 && git reset --hard origin/${requested_branch} && git checkout -- .");
     common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
 }
 

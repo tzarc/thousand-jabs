@@ -18,7 +18,7 @@ actions.precombat+=/potion
 actions.precombat+=/arcane_blast
 actions=counterspell,if=target.debuff.casting.react
 actions+=/time_warp,if=time=0&buff.bloodlust.down
-actions+=/variable,name=pressure_rotation,op=set,value=(azerite.arcane_pressure.rank>=2|(talent.resonance.enabled&active_enemies>=2))&target.health.pct<=35
+actions+=/variable,name=pressure_rotation,op=set,value=(azerite.arcane_pressure.rank>=2|(azerite.arcane_pressure.rank>=1&talent.resonance.enabled&active_enemies>=2))&target.health.pct<=35
 actions+=/call_action_list,name=burn,if=burn_phase|target.time_to_die<variable.average_burn_length|(cooldown.arcane_power.remains=0&cooldown.evocation.remains<=variable.average_burn_length&(buff.arcane_charge.stack=buff.arcane_charge.max_stack|(talent.charged_up.enabled&cooldown.charged_up.remains=0)))
 actions+=/call_action_list,name=conserve,if=!burn_phase
 actions+=/call_action_list,name=movement
@@ -42,6 +42,7 @@ actions.burn+=/arcane_barrage,if=(active_enemies>=3|(active_enemies>=2&talent.re
 actions.burn+=/arcane_explosion,if=active_enemies>=3|(active_enemies>=2&talent.resonance.enabled)
 actions.burn+=/arcane_barrage,if=variable.pressure_rotation&buff.arcane_charge.stack=buff.arcane_charge.max_stack
 actions.burn+=/arcane_missiles,if=(buff.clearcasting.react&mana.pct<=95)&variable.pressure_rotation=0,chain=1
+actions.burn+=/arcane_explosion,if=variable.pressure_rotation&buff.arcane_charge.stack<1
 actions.burn+=/arcane_blast
 actions.burn+=/variable,name=average_burn_length,op=set,value=(variable.average_burn_length*variable.total_burns-variable.average_burn_length+(burn_phase_duration))%variable.total_burns
 actions.burn+=/evocation,interrupt_if=mana.pct>=97|(buff.clearcasting.react&mana.pct>=92)
@@ -57,6 +58,7 @@ actions.conserve+=/arcane_missiles,if=mana.pct<=95&buff.clearcasting.react&varia
 actions.conserve+=/arcane_barrage,if=((buff.arcane_charge.stack=buff.arcane_charge.max_stack)&(mana.pct<=variable.conserve_mana|variable.pressure_rotation)|(talent.arcane_orb.enabled&cooldown.arcane_orb.remains<=gcd&cooldown.arcane_power.remains>10))|mana.pct<=(variable.conserve_mana-10)
 actions.conserve+=/supernova,if=mana.pct<=95
 actions.conserve+=/arcane_explosion,if=active_enemies>=3&(mana.pct>=variable.conserve_mana|buff.arcane_charge.stack=3)
+actions.conserve+=/arcane_explosion,if=variable.pressure_rotation&buff.arcane_charge.stack<1
 actions.conserve+=/arcane_blast
 actions.conserve+=/arcane_barrage
 actions.movement=shimmer,if=movement.distance>=10

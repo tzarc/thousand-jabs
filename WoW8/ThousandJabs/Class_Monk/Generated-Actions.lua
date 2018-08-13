@@ -16,18 +16,15 @@ actions+=/call_action_list,name=ooc,if=!in_combat
 actions+=/call_action_list,name=oh_shit,if=incoming_damage_5s>=health.max*0.65|health.pct<35
 actions+=/call_action_list,name=normal,if!talent.blackout_combo.enabled
 actions+=/call_action_list,name=bocombo,if!talent.blackout_combo.enabled
-
 actions.ooc+=/purifying_brew,if=stagger.any
 actions.ooc+=/expel_harm,if=variable.heal_threshold
 actions.ooc+=/vivify,if=variable.heal_threshold
-
 actions.oh_shit=fortifying_brew
 actions.oh_shit+=/ironskin_brew,if=buff.ironskin_brew.down
 actions.oh_shit+=/purifying_brew,if=stagger.heavy|stagger.moderate
 actions.oh_shit+=/healing_elixir,if=talent.healing_elixir.enabled
 actions.oh_shit+=/expel_harm
 actions.oh_shit+=/black_ox_brew,if=spell.ironskin_brew.charges=0
-
 actions.normal=keg_smash
 actions.normal+=/blackout_strike
 actions.normal+=/breath_of_fire,if=debuff.keg_smash.up
@@ -37,7 +34,6 @@ actions.normal+=/tiger_palm,if=buff.eye_of_the_tiger.down|buff.eye_of_the_tiger.
 actions.normal+=/chi_burst,if=talent.chi_burst.enabled
 actions.normal+=/chi_wave,if=talent.chi_wave.enabled
 actions.normal+=/expel_harm,if=charges=3&variable.heal_threshold
-
 actions.bocombo=keg_smash
 actions.bocombo+=/blackout_strike
 actions.bocombo+=/tiger_palm,if=buff.blackout_combo.up
@@ -179,3 +175,4 @@ actions.st+=/chi_burst,if=energy.time_to_max>1&talent.serenity.enabled
 actions.st+=/tiger_palm,target_if=min:debuff.mark_of_the_crane.remains,if=!prev_gcd.1.tiger_palm&!prev_gcd.1.energizing_elixir&(chi.max-chi>=2|energy.time_to_max<3)&!buff.serenity.up
 actions.st+=/chi_burst,if=chi.max-chi>=3&energy.time_to_max>1&!talent.serenity.enabled
 ]])
+
