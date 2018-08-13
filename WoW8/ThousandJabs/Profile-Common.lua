@@ -69,6 +69,8 @@ Core.Environment.globalBlacklist = {
     'augmentation',
     'snapshot_stats',
     'lights_judgment',
+    'fireblood',
+    'ancestral_call',
     'sequence', -- TODO...maybe.
     'strict_sequence', -- TODO...maybe.
 }

@@ -23,54 +23,234 @@ local mmin = math.min
 
 -- exported with /tj _esd
 local brewmaster_abilities_exported = {
-    black_ox_brew = { SpellIDs = { 115399 }, TalentID = 22097, },
-    blackout_combo = { TalentID = 22104, },
+    black_ox_brew = { SpellIDs = { 115399 }, TalentID = 19992, },
+    blackout_combo = { TalentID = 22108, },
     blackout_strike = { SpellIDs = { 205523 }, },
+    bob_and_weave = { TalentID = 20174, },
     breath_of_fire = { SpellIDs = { 115181 }, },
     brewmasters_balance = { SpellIDs = { 245013 }, },
-    celerity = { TalentID = 19302, },
-    chi_burst = { SpellIDs = { 123986 }, TalentID = 19823, },
-    chi_torpedo = { SpellIDs = { 115008 }, TalentID = 19304, },
-    chi_wave = { SpellIDs = { 115098 }, TalentID = 20185, },
+    celerity = { TalentID = 19304, },
+    chi_burst = { SpellIDs = { 123986 }, TalentID = 20185, },
+    chi_torpedo = { SpellIDs = { 115008 }, TalentID = 19818, },
+    chi_wave = { SpellIDs = { 115098 }, TalentID = 19820, },
     crackling_jade_lightning = { SpellIDs = { 117952 }, },
     dampen_harm = { SpellIDs = { 122278 }, TalentID = 20175, },
     detox = { SpellIDs = { 218164 }, },
-    effuse = { SpellIDs = { 116694 }, },
-    elusive_dance = { TalentID = 22106, },
     expel_harm = { SpellIDs = { 115072 }, },
-    exploding_keg = { SpellIDs = { 214326 }, },
-    eye_of_the_tiger = { TalentID = 22091, },
+    eye_of_the_tiger = { TalentID = 23106, },
     fortifying_brew = { SpellIDs = { 115203 }, },
-    gift_of_the_mists = { TalentID = 22096, },
     gift_of_the_ox = { SpellIDs = { 124502 }, },
-    healing_elixir = { SpellIDs = { 122281 }, TalentID = 20174, },
-    high_tolerance = { TalentID = 22108, },
-    invoke_niuzao_the_black_ox = { SpellIDs = { 132578 }, TalentID = 22101, },
+    guard = { TalentID = 22104, },
+    healing_elixir = { SpellIDs = { 122281 }, TalentID = 23363, },
+    high_tolerance = { TalentID = 22106, },
+    invoke_niuzao_the_black_ox = { SpellIDs = { 132578 }, TalentID = 22103, },
     ironskin_brew = { SpellIDs = { 115308 }, },
     keg_smash = { SpellIDs = { 121253 }, },
-    leg_sweep = { SpellIDs = { 119381 }, TalentID = 19995, },
-    light_brewing = { TalentID = 22098, },
+    leg_sweep = { SpellIDs = { 119381 }, },
+    light_brewing = { TalentID = 22099, },
     mastery_elusive_brawler = { SpellIDs = { 117906 }, },
-    mystic_vitality = { TalentID = 22917, },
+    mystic_touch = { SpellIDs = { 8647 }, },
     paralysis = { SpellIDs = { 115078 }, },
     provoke = { SpellIDs = { 115546 }, },
     purifying_brew = { SpellIDs = { 119582 }, },
     resuscitate = { SpellIDs = { 115178 }, },
-    ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19993, },
+    ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19995, },
     roll = { SpellIDs = { 109132 }, },
-    rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 19819, },
+    rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 20184, },
     spear_hand_strike = { SpellIDs = { 116705 }, },
-    special_delivery = { TalentID = 22102, },
+    special_delivery = { TalentID = 19819, },
+    spitfire = { TalentID = 22097, },
     stagger = { SpellIDs = { 115069 }, },
     summon_black_ox_statue = { SpellIDs = { 115315 }, TalentID = 19994, },
     tiger_palm = { SpellIDs = { 100780 }, },
-    tigers_lust = { SpellIDs = { 116841 }, TalentID = 19818, },
+    tiger_tail_sweep = { TalentID = 19993, },
+    tigers_lust = { SpellIDs = { 116841 }, TalentID = 19302, },
     transcendence = { SpellIDs = { 101643 }, },
     transcendence_transfer = { SpellIDs = { 119996 }, },
+    vivify = { SpellIDs = { 116670 }, },
+    zen_flight = { SpellIDs = { 125883 }, },
     zen_meditation = { SpellIDs = { 115176 }, },
 }
 
+local function RemoveBlackoutCombo(env)
+    -- Remove Blackout Combo
+    if env.blackout_combo.talent_enabled then
+        env.blackout_combo.expirationTime = 0
+    end
+end
+
 local brewmaster_base_overrides = {
+    blackout_strike = {
+        AuraApplied = 'elusive_brawler',
+        AuraApplyLength = 10,
+    },
+    breath_of_fire = {
+        PerformCast = function(spell, env)
+            RemoveBlackoutCombo(env)
+        end
+    },
+    expel_harm = {
+        ChargesUseSpellCount = true,
+        PerformCast = function(spell, env)
+            spell.rechargeSpent = spell.rechargeSpent + spell.spell_charges
+        end,
+    },
+    fortifying_brew = {
+        AuraID = 115203, -- TBD
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'fortifying_brew',
+        AuraApplyLength = 15,
+    },
+    ironskin_brew = {
+        AuraID = 215479,
+        AuraUnit = 'player',
+        AuraMine = true,
+        AuraApplied = 'ironskin_brew',
+        AuraApplyLength = 6,
+
+        PerformCast = function(spell,env)
+            RemoveBlackoutCombo(env)
+
+            -- Need to also decrement the number of charges for Purifying Brew
+            env.purifying_brew.rechargeSpent = env.purifying_brew.rechargeSpent+1
+        end,
+    },
+    keg_smash = {
+        AuraID = 121253,
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'keg_smash',
+        AuraApplyLength = 15,
+        PerformCast = function(spell, env)
+            RemoveBlackoutCombo(env)
+        end
+    },
+    leg_sweep = {
+        AuraID = 119381,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'leg_sweep',
+        AuraApplyLength = 3,
+    },
+    paralysis = {
+        AuraID = 115078,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'paralysis',
+        AuraApplyLength = 60,
+    },
+    provoke = {
+        AuraID = 116189,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'provoke',
+        AuraApplyLength = 2,
+    },
+    purifying_brew = {
+        PerformCast = function(spell,env)
+            RemoveBlackoutCombo(env)
+
+            -- Need to also decrement the number of charges for Ironskin Brew
+            env.ironskin_brew.rechargeSpent = env.ironskin_brew.rechargeSpent+1
+
+            -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
+            if env.stagger_heavy.aura_up then
+                env.stagger_moderate.expirationTime = env.stagger_heavy.expirationTime
+                env.stagger_heavy.expirationTime = 0
+            elseif env.stagger_moderate.aura_up then
+                env.stagger_light.expirationTime = env.stagger_moderate.expirationTime
+                env.stagger_moderate.expirationTime = 0
+            end
+        end,
+    },
+    spear_hand_strike = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
+    tiger_palm = {
+        PerformCast = function(spell, env)
+            RemoveBlackoutCombo(env)
+
+            if env.eye_of_the_tiger.talent_enabled then
+                env.eye_of_the_tiger.expirationTime = env.currentTime + 8
+            end
+            -- TODO: Remove 1 second from CDs of brews
+        end
+    },
+}
+
+local brewmaster_procs = {
+    elusive_brawler = {
+        AuraID = 195630,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger = {
+        any = function(spell, env) return spell.light or spell.moderate or spell.heavy or false end,
+        light = function(spell, env) return (env.stagger_light.aura_remains > 0) and true or false end,
+        moderate = function(spell, env) return (env.stagger_moderate.aura_remains > 0) and true or false end,
+        heavy = function(spell, env) return (env.stagger_heavy.aura_remains > 0) and true or false end,
+    },
+    stagger_light = {
+        AuraID = 124275,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_moderate = {
+        AuraID = 124274,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_heavy = {
+        AuraID = 124273,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+
+local brewmaster_talent_overrides = {
+    eye_of_the_tiger = {
+        AuraID = 196608,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    black_ox_brew = {
+        PerformCast = function(spell, env)
+        -- TODO: Fix up energy/brew charges
+        end
+    },
+    dampen_harm = {
+        AuraID = 122278,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'dampen_harm',
+        AuraApplyLength = 10,
+    },
+    guard = {
+        AuraID = 115295,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'guard',
+        AuraApplyLength = 8,
+    },
+    blackout_combo = {
+        AuraID = 228563,
+        AuraMine = true,
+        AuraUnit = 'player',
+    },
+}
+
+local zzz = {
     spear_hand_strike = {
         spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
@@ -187,19 +367,6 @@ local brewmaster_base_overrides = {
     },
 }
 
-local brewmaster_talent_overrides = {
-    blackout_combo = {
-        AuraID = 228563,
-        AuraMine = true,
-        AuraUnit = 'player',
-    },
-    eye_of_the_tiger = {
-        AuraID = 196608,
-        AuraUnit = 'player',
-        AuraMine = true,
-    },
-}
-
 TJ:RegisterPlayerClass({
     name = 'Brewmaster',
     class_id = 10,
@@ -209,6 +376,7 @@ TJ:RegisterPlayerClass({
     actions = {
         brewmaster_abilities_exported,
         brewmaster_base_overrides,
+        brewmaster_procs,
         brewmaster_talent_overrides,
     },
     blacklisted = {
