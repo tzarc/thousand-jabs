@@ -17,6 +17,8 @@ actions+=/blood_fury,if=debuff.colossus_smash.up
 actions+=/berserking,if=debuff.colossus_smash.up
 actions+=/arcane_torrent,if=debuff.colossus_smash.down&cooldown.mortal_strike.remains>1.5&rage<50
 actions+=/lights_judgment,if=debuff.colossus_smash.down
+actions+=/fireblood,if=debuff.colossus_smash.up
+actions+=/ancestral_call,if=debuff.colossus_smash.up
 actions+=/avatar,if=cooldown.colossus_smash.remains<8|(talent.warbreaker.enabled&cooldown.warbreaker.remains<8)
 actions+=/sweeping_strikes,if=spell_targets.whirlwind>1
 actions+=/run_action_list,name=five_target,if=spell_targets.whirlwind>4
@@ -30,6 +32,7 @@ actions.execute+=/warbreaker,if=debuff.colossus_smash.down
 actions.execute+=/heroic_leap,if=equipped.weight_of_the_earth&debuff.colossus_smash.down&((cooldown.colossus_smash.remains>8&!prev_gcd.1.colossus_smash)|(talent.warbreaker.enabled&cooldown.warbreaker.remains>8&!prev_gcd.1.warbreaker))
 actions.execute+=/bladestorm,if=debuff.colossus_smash.remains>4.5&rage<70&(!buff.deadly_calm.up|!talent.deadly_calm.enabled)
 actions.execute+=/ravager,if=debuff.colossus_smash.up&(cooldown.deadly_calm.remains>6|!talent.deadly_calm.enabled)
+actions.execute+=/cleave,if=spell_targets.whirlwind>2
 actions.execute+=/mortal_strike,if=buff.overpower.stack=2&(talent.dreadnaught.enabled|equipped.archavons_heavy_hand)
 actions.execute+=/overpower
 actions.execute+=/execute,if=rage>=40|debuff.colossus_smash.up|buff.sudden_death.react|buff.stone_heart.react
@@ -40,6 +43,7 @@ actions.five_target+=/warbreaker,if=debuff.colossus_smash.down
 actions.five_target+=/heroic_leap,if=equipped.weight_of_the_earth&debuff.colossus_smash.down&((cooldown.colossus_smash.remains>8&!prev_gcd.1.colossus_smash)|(talent.warbreaker.enabled&cooldown.warbreaker.remains>8&!prev_gcd.1.warbreaker))
 actions.five_target+=/bladestorm,if=buff.sweeping_strikes.down&debuff.colossus_smash.remains>4.5&(prev_gcd.1.mortal_strike|spell_targets.whirlwind>1)&(!buff.deadly_calm.up|!talent.deadly_calm.enabled)
 actions.five_target+=/ravager,if=debuff.colossus_smash.up&(cooldown.deadly_calm.remains>6|!talent.deadly_calm.enabled)
+actions.five_target+=/cleave
 actions.five_target+=/execute,if=(!talent.cleave.enabled&dot.deep_wounds.remains<2)|(buff.sudden_death.react|buff.stone_heart.react)&(buff.sweeping_strikes.up|cooldown.sweeping_strikes.remains>8)
 actions.five_target+=/mortal_strike,if=(!talent.cleave.enabled&dot.deep_wounds.remains<2)|buff.sweeping_strikes.up&buff.overpower.stack=2&(talent.dreadnaught.enabled|equipped.archavons_heavy_hand)
 actions.five_target+=/whirlwind,if=debuff.colossus_smash.up
@@ -54,6 +58,7 @@ actions.single_target+=/heroic_leap,if=equipped.weight_of_the_earth&debuff.colos
 actions.single_target+=/execute,if=buff.sudden_death.react|buff.stone_heart.react
 actions.single_target+=/bladestorm,if=buff.sweeping_strikes.down&debuff.colossus_smash.remains>4.5&(prev_gcd.1.mortal_strike|spell_targets.whirlwind>1)&(!buff.deadly_calm.up|!talent.deadly_calm.enabled)
 actions.single_target+=/ravager,if=debuff.colossus_smash.up&(cooldown.deadly_calm.remains>6|!talent.deadly_calm.enabled)
+actions.single_target+=/cleave,if=spell_targets.whirlwind>2
 actions.single_target+=/mortal_strike
 actions.single_target+=/overpower
 actions.single_target+=/whirlwind,if=talent.fervor_of_battle.enabled&(rage>=50|debuff.colossus_smash.up)
@@ -75,11 +80,13 @@ actions+=/furious_slash,if=talent.furious_slash.enabled&(buff.furious_slash.stac
 actions+=/bloodthirst,if=equipped.kazzalax_fujiedas_fury&(buff.fujiedas_fury.down|remains<2)
 actions+=/rampage,if=cooldown.recklessness.remains<3
 actions+=/recklessness
-actions+=/whirlwind,if=spell_targets.whirlwind>1&!buff.whirlwind.up
+actions+=/whirlwind,if=spell_targets.whirlwind>1&!buff.meat_cleaver.up
 actions+=/blood_fury,if=buff.recklessness.up
 actions+=/berserking,if=buff.recklessness.up
 actions+=/arcane_torrent,if=rage<40&!buff.recklessness.up
 actions+=/lights_judgment,if=cooldown.recklessness.remains<3
+actions+=/fireblood,if=buff.recklessness.up
+actions+=/ancestral_call,if=buff.recklessness.up
 actions+=/run_action_list,name=single_target
 actions.movement=heroic_leap
 actions.single_target=siegebreaker,if=buff.recklessness.up|cooldown.recklessness.remains>28
@@ -88,8 +95,8 @@ actions.single_target+=/execute,if=buff.enrage.up
 actions.single_target+=/bloodthirst,if=buff.enrage.down
 actions.single_target+=/raging_blow,if=charges=2
 actions.single_target+=/bloodthirst
-actions.single_target+=/bladestorm,if=prev_gcd.1.rampage&(buff.siegebreaker.up|!talent.siegebreaker.enabled)
-actions.single_target+=/dragon_roar,if=buff.enrage.up&(buff.siegebreaker.up|!talent.siegebreaker.enabled)
+actions.single_target+=/bladestorm,if=prev_gcd.1.rampage&(debuff.siegebreaker.up|!talent.siegebreaker.enabled)
+actions.single_target+=/dragon_roar,if=buff.enrage.up&(debuff.siegebreaker.up|!talent.siegebreaker.enabled)
 actions.single_target+=/raging_blow,if=talent.carnage.enabled|(talent.massacre.enabled&rage<80)|(talent.frothing_berserker.enabled&rage<90)
 actions.single_target+=/furious_slash,if=talent.furious_slash.enabled
 actions.single_target+=/whirlwind
@@ -113,7 +120,7 @@ actions.prot+=/avatar
 actions.prot+=/demoralizing_shout
 actions.prot+=/ravager,if=talent.ravager.enabled
 actions.prot+=/shield_block,if=cooldown.shield_slam.remains=0
-actions.prot+=/ignore_pain,if=(!talent.vengeance.enabled&buff.renewed_fury.remains<1.5)|(!talent.vengeance.enabled&rage.deficit>=40)|(buff.vengeance_ignore_pain.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage<30&!buff.revenge.react)
+actions.prot+=/ignore_pain
 actions.prot+=/shield_slam
 actions.prot+=/revenge,if=(!talent.vengeance.enabled)|(talent.vengeance.enabled&buff.revenge.react&!buff.vengeance_ignore_pain.up)|(buff.vengeance_revenge.up)|(talent.vengeance.enabled&!buff.vengeance_ignore_pain.up&!buff.vengeance_revenge.up&rage>=30)
 actions.prot+=/thunder_clap

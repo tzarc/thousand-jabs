@@ -272,6 +272,45 @@ local windwalker_abilities_exported = {
 }
 
 local windwalker_base_overrides = {
+    blackout_kick = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 1 end, -- Gymnastics to deal with Serenity.
+        PerformCast = function(spell, env)
+            if env.bok_proc.aura_up then
+                env.bok_proc.expirationTime = 0
+            end
+        end,
+    },
+    fists_of_fury = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 3 end, -- Gymnastics to deal with Serenity.
+        spell_cast_time = function(spell,env) return env.playerHasteMultiplier * 4 end, -- seems like we can't detect this...
+    },
+    leg_sweep = {
+        AuraID = 119381,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'leg_sweep',
+        AuraApplyLength = 3,
+    },
+    paralysis = {
+        AuraID = 115078,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'paralysis',
+        AuraApplyLength = 60,
+    },
+    provoke = {
+        AuraID = 116189,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'provoke',
+        AuraApplyLength = 2,
+    },
+    rising_sun_kick = {
+        cost_type = 'chi',
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end, -- Gymnastics to deal with Serenity.
+    },
     spear_hand_strike = {
         spell_cast_time = 0.01, -- off GCD!
         CanCast = function(spell, env)
@@ -284,52 +323,12 @@ local windwalker_base_overrides = {
             end
         end,
     },
-    touch_of_death = {
-        AuraID = 115080,
-        AuraMine = true,
-        AuraUnit = 'target',
-        AuraApplied = 'touch_of_death',
-        AuraApplyLength = 8,
-        CanCast = function(spell, env)
-            return spell.aura_down and true or false
-        end,
-        PerformCast = function(spell, env)
-        end,
-    },
-    touch_of_karma = {
-        spell_cast_time = 0.01, -- off GCD!
-    },
-    tiger_palm = {
-        PerformCast = function(spell, env)
-            env.chi.gained = env.chi.gained + 2
-            if env.power_strikes.aura_react then
-                env.chi.gained = env.chi.gained + 1
-            end
-        end,
-    },
-    blackout_kick = {
+    spinning_crane_kick = {
         cost_type = 'chi',
-        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 1 end,
-        PerformCast = function(spell, env)
-            if env.bok_proc.aura_react then
-                if env.set_bonus.tier21_2pc then
-                    env.chi.gained = env.chi.gained + mmin(1, env.chi.deficit)
-                end
-                env.bok_proc.expirationTime = 0 -- remove the buff
-            end
-        end,
-    },
-    fists_of_fury = {
-        cost_type = 'chi',
-        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 3 end,
-        spell_cast_time = function(spell,env) return env.playerHasteMultiplier * 4 end, -- seems like we can't detect this...
-    },
-    energizing_elixir = {
-        PerformCast = function(spell, env)
-            env.chi.gained = env.chi.gained + (env.chi.max - env.chi.curr)
-            env.energy.gained = env.energy.gained + (env.energy.max - env.energy.curr)
-        end,
-        spell_cast_time = 0.01, -- off GCD!
+        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end, -- Gymnastics to deal with Serenity.
+        count = function(spell, env)
+            return env.active_enemies
+        end
     },
     storm_earth_and_fire = {
         AuraID = 137639,
@@ -345,25 +344,106 @@ local windwalker_base_overrides = {
 
         spell_cast_time = 0.01, -- off GCD!
     },
-    bok_proc = {
-        AuraID = 116768,
+    tiger_palm = {
+        CanCast = function(spell, env)
+            -- Make sure we have enough when RJW is active so that we don't accidentally deactivate it
+            if env.rushing_jade_wind.talent_enabled and env.energy.curr < spell.energy_cost + env.rushing_jade_wind.timed_energy_cost + 1 then return false end
+            return true
+        end,
+        PerformCast = function(spell, env)
+            env.chi.gained = env.chi.gained + mmin(2, env.chi.deficit)
+        end,
+    },
+    touch_of_death = {
+        AuraID = 115080,
         AuraMine = true,
-        AuraUnit = 'player',
+        AuraUnit = 'target',
+        AuraApplied = 'touch_of_death',
+        AuraApplyLength = 8,
+        CanCast = function(spell, env)
+            return spell.aura_down and true or false
+        end,
     },
-    spinning_crane_kick = {
-        cost_type = 'chi',
-        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 3 end,
-        count = function(spell, env)
-            return env.active_enemies
-        end
-    },
-    rising_sun_kick = {
-        cost_type = 'chi',
-        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end,
+    touch_of_karma = {
+        AuraID = 122470,
+        AuraMine = true,
+        AuraUnit = 'target',
+        spell_cast_time = 0.01, -- off GCD!
     },
 }
 
 local windwalker_talent_overrides = {
+    eye_of_the_tiger = {
+        AuraID = 196608,
+        AuraMine = true,
+        AuraUnit = 'target',
+        AuraApplied = 'eye_of_the_tiger',
+        AuraApplyLength = 8,
+    },
+    chi_burst = {
+        PerformCast = function(spell, env)
+            local generated = env.active_enemies == 1 and 1 or 2
+            env.chi.gained = env.chi.gained + mmin(env.chi.deficit, generated)
+        end
+    },
+    fist_of_the_white_tiger = {
+        CanCast = function(spell, env)
+            -- Make sure we have enough when RJW is active so that we don't accidentally deactivate it
+            if env.rushing_jade_wind.talent_enabled and env.energy.curr < spell.energy_cost + env.rushing_jade_wind.timed_energy_cost + 1 then return false end
+            return true
+        end,
+        PerformCast = function(spell, env)
+            env.chi.gained = env.chi.gained + mmin(3, env.chi.deficit)
+        end,
+    },
+    energizing_elixir = {
+        PerformCast = function(spell, env)
+            env.energy.gained = env.energy.gained + env.energy.deficit
+            env.chi.gained = env.chi.gained + mmin(2, env.chi.deficit)
+        end
+    },
+    inner_strength = {
+        AuraID = 261769,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'inner_strength',
+        AuraApplyLength = 5,
+    },
+    diffuse_magic = {
+        AuraID = 122783,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'diffuse_magic',
+        AuraApplyLength = 6,
+    },
+    dampen_harm = {
+        AuraID = 122278,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'dampen_harm',
+        AuraApplyLength = 10,
+    },
+    hit_combo = {
+        AuraID = 196741,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'hit_combo',
+        AuraApplyLength = 10,
+    },
+    rushing_jade_wind = {
+        AuraID = 261715,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'rushing_jade_wind',
+        AuraApplyLength = 9999,
+        CanCast = function(spell,env) return spell.aura_down end,
+        timed_energy_cost = 3,
+    },
+    whirling_dragon_punch = {
+        CanCast = function(spell, env)
+            return (env.fists_of_fury.cooldown_remains > 0) and (env.rising_sun_kick.cooldown_remains > 0)
+        end,
+    },
     serenity = {
         AuraID = 152173,
         AuraMine = true,
@@ -372,22 +452,13 @@ local windwalker_talent_overrides = {
         AuraApplyLength = 8,
         spell_cast_time = 0.01, -- off GCD!
     },
-    whirling_dragon_punch = {
-        CanCast = function(spell, env)
-            return (env.fists_of_fury.cooldown_remains > 0) and (env.rising_sun_kick.cooldown_remains > 0)
-        end,
-    },
-    power_strikes = {
-        AuraID = 129914,
-        AuraUnit = 'player',
+}
+
+local windwalker_procs = {
+    bok_proc = { -- tiger palm trigger for free chi cost on BoK
+        AuraID = 116768,
         AuraMine = true,
-    },
-    healing_elixir = {
-        spell_cast_time = 0.01, -- off GCD!
-    },
-    rushing_jade_wind = {
-        AuraApplied = 'mark_of_the_crane',
-        AuraApplyLength = 14,
+        AuraUnit = 'player',
     },
     mark_of_the_crane = { -- from RJW
         AuraID = 228287,
@@ -396,28 +467,9 @@ local windwalker_talent_overrides = {
     }
 }
 
-local windwalker_artifact_overrides = {
-    gale_burst = {
-        artifact_enabled = function(spell,env) return Config:GetSpec("gale_burst_selected") end,
-    },
-    strike_of_the_windlord = {
-        cost_type = 'chi',
-        chi_cost = function(spell, env) return env.serenity.aura_up and 0 or 2 end,
-        artifact_enabled = function(spell,env) return Config:GetSpec("strike_of_the_windlord_selected") end,
-    },
-}
-
 local windwalker_legendaries = {
     the_emperors_capacitor = {
         AuraID = 235053,
-        AuraUnit = 'player',
-        AuraMine = true,
-    }
-}
-
-local windwalker_tiersets = {
-    pressure_point = {
-        AuraID = { 246331, 247255 },
         AuraUnit = 'player',
         AuraMine = true,
     }
@@ -456,9 +508,8 @@ TJ:RegisterPlayerClass({
         windwalker_abilities_exported,
         windwalker_base_overrides,
         windwalker_talent_overrides,
-        windwalker_artifact_overrides,
+        windwalker_procs,
         windwalker_legendaries,
-        windwalker_tiersets,
         windwalker_hooks,
     },
     config_checkboxes = {

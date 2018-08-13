@@ -109,11 +109,11 @@ sub update {
     common::header("Updating simulationcraft:");
 
     if(!-d "${simc::directory}/.git") {
-        common::exec("git clone -b ${requested_branch} --depth=1 https://github.com/simulationcraft/simc '${simc::directory}'");
+        common::exec("git clone -b ${requested_branch} --depth=1000 https://github.com/simulationcraft/simc '${simc::directory}'");
     }
 
     common::exec(
-        "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1 && git reset --hard origin/${requested_branch} && git checkout -- .");
+        "cd '${simc::directory}' && git reset --hard origin/${requested_branch} && git checkout -- . && git fetch --depth=1000 && git reset --hard origin/${requested_branch}^^ && git checkout -- .");
     common::exec("cd '${simc::directory}/engine' && make -j9 OS=UNIX");
 }
 
