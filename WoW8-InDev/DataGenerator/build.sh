@@ -84,7 +84,7 @@ update_dbfiles() {
     # Download all the DB2 files from the CDN
     if [[ -n "$perform_update" ]] ; then
         pushd "$simc_dir/casc_extract" >/dev/null 2>&1
-        python3 casc_extract.py --dbfile dbfile --cdn --output "$dbfiles_location" --mode batch --beta --cache "$dbfiles_cache" || true # --beta
+        python3 casc_extract.py --dbfile dbfile --cdn --output "$dbfiles_location" --mode batch --cache "$dbfiles_cache" || true # --beta
         find "$simc_dir/engine/dbc/generated" -type f -name '*.inc' -exec unix2dos '{}' \;
         popd >/dev/null 2>&1
     fi
