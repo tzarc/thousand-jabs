@@ -28,20 +28,22 @@ namespace
         return WEXITSTATUS(status);
     }
 
-    int run_sim_args(std::initializer_list<const char*> args)
+    int run_sim_args(std::initializer_list<const char*> args, bool do_fork = true)
     {
-        return fork_exec([&]() {
-            std::vector<std::array<char, 1024>> writableArgs;
-            for(auto&& arg : args)
-            {
-                writableArgs.resize(writableArgs.size() + 1);
-                std::strncpy(writableArgs.back().data(), arg, writableArgs.back().size() - 1);
-            }
-            std::vector<char*> argv;
-            for(auto&& arg : writableArgs)
-                argv.push_back(arg.data());
+        std::vector<std::array<char, 1024>> writableArgs;
+        for(auto&& arg : args)
+        {
+            writableArgs.resize(writableArgs.size() + 1);
+            std::strncpy(writableArgs.back().data(), arg, writableArgs.back().size() - 1);
+        }
+        std::vector<char*> argv;
+        for(auto&& arg : writableArgs)
+            argv.push_back(arg.data());
+
+        if(!do_fork)
             return run_simc((int)argv.size(), argv.data());
-        });
+
+        return fork_exec([&]() { return run_simc((int)argv.size(), argv.data()); });
     }
 } // namespace
 
@@ -76,5 +78,5 @@ int run_tj(void)
                        "artifact=16:0:0:0:0:149:1",
                        "save=generated_deathknight_unholy.simc"});
 
-    rc = run_sim_args({"./datagenerator", "tj"});
+    rc = run_sim_args({"./datagenerator", "tj"}, false);
 }

@@ -11,6 +11,8 @@
 
 #include "wow_version_def.h"
 
+#define LEVEL_FOR_GENERATING_DATA 120
+
 // Description/tooltip "parsing"
 //
 // $s2 => use the base value from effect #2
@@ -22,6 +24,16 @@
 // $A1 => radius for effect #1
 // $@spelldesc172 => substitute the spell description for spell 172
 // $146739o1 => looks like total amount of damage (multiply the spellpower coefficient by the # of ticks)
+
+const char* tj_get_class_name(player_e pt);
+const char* tj_get_race_name(unsigned raceID);
+const char* tj_get_target(unsigned targetType);
+const char* tj_get_resource(int resourceID);
+const char* tj_get_attribute(unsigned attributeID);
+const char* tj_get_property_type(unsigned propertyType);
+const char* tj_get_effect_type(unsigned effectType);
+const char* tj_get_subeffect_type(unsigned subeffectType);
+const char* tj_get_mechanic_type(unsigned mechanicType);
 
 namespace
 {
@@ -145,11 +157,19 @@ namespace
             os << '\n' << divider << "\n--[[\n" << spell_info::to_str(sim->dbc, spell, MAX_LEVEL) << "\n]]\n";
 #endif
             os << fmt::format(R"(
+--[[
+{:s}
+{:s}
+{:s}
+--]]
 classData.spells[{:d}] = {{
   spellID = {:d},
   name = {:s},
   slug = {:s},
 )",
+                              spell->name_cstr() ? spell->name_cstr() : "<Unknown Spell Name>",
+                              spell->desc() ? spell->desc() : "<Unknown Spell Description>",
+                              spell->desc_vars() ? spell->desc_vars() : "<Unknown Spell Description Variables>",
                               spell->id(),
                               spell->id(),
                               std::quoted(spell->name_cstr()),
@@ -179,6 +199,9 @@ classData.spells[{:d}] = {{
             if(spell->gcd() > timespan_t::zero())
                 os << fmt::format("  gcd = {:.1f},\n", spell->gcd().total_seconds());
 
+            if(spell->cast_time(LEVEL_FOR_GENERATING_DATA) > timespan_t::zero())
+                os << fmt::format("  cast_time = {:.2f},\n", spell->cast_time(LEVEL_FOR_GENERATING_DATA).total_seconds());
+
             if(spell->cooldown() > timespan_t::zero())
                 os << fmt::format("  cooldown = {:.1f},\n", spell->cooldown().total_seconds());
 
@@ -194,7 +217,7 @@ classData.spells[{:d}] = {{
             if(has_attribute(spell, attribute_periodic_affected_by_haste))
                 os << fmt::format("  haste_affected_ticks = true,\n");
 
-            if(spell->id() == 117952)
+            if(spell->id() == 30451)
                 int i = 0;
 
             if(spell->power_count() > 0)
@@ -205,18 +228,26 @@ classData.spells[{:d}] = {{
                 {
                     auto power = spell->powerN(i);
                     const auto resourceType = power.resource();
-                    const auto amount = power.cost();
-                    const auto amountMax = power.max_cost();
-                    const auto amountPerTick = power.cost_per_tick();
+                    const auto amount = power._cost ? power.cost() : 0;
+                    const auto amountMax = power._cost ? power.max_cost() : 0;
+                    const auto amountPerTick = power._cost ? power.cost_per_tick() : 0;
+                    const auto pct = !power._cost ? power.cost() : 0;
+                    const auto pctMax = !power._cost ? power.max_cost() : 0;
+                    const auto pctPerTick = !power._cost ? power.cost_per_tick() : 0;
                     const auto powerAura = power.aura_id();
-                    os << fmt::format("    [{:d}] = {{ resource = {:s}, amount = {:d}, ",
-                                      i,
-                                      std::quoted(util::resource_type_string(resourceType)),
-                                      static_cast<int>(amount));
-                    if(amountMax > 0)
-                        os << fmt::format("max_amount = {:d}, ", static_cast<int>(amountMax));
-                    if(amountPerTick > 0)
-                        os << fmt::format("per_tick = {:d}, ", static_cast<int>(amountPerTick));
+                    os << fmt::format("    [{:d}] = {{ resource = {:s}, ", i, std::quoted(util::resource_type_string(resourceType)));
+                    if(amount != 0)
+                        os << fmt::format("amount = {:d}, ", static_cast<int>(amount));
+                    if(amountMax != 0)
+                        os << fmt::format("amount_max = {:d}, ", static_cast<int>(amountMax));
+                    if(amountPerTick != 0)
+                        os << fmt::format("amount_per_tick = {:d}, ", static_cast<int>(amountPerTick));
+                    if(pct != 0)
+                        os << fmt::format("percent = {:.2f}, ", 100 * pct);
+                    if(pctMax != 0)
+                        os << fmt::format("percent_max = {:.2f}, ", 100 * pctMax);
+                    if(pctPerTick != 0)
+                        os << fmt::format("percent_per_tick = {:.2f}, ", 100 * pctPerTick);
                     if(powerAura > 0)
                         os << fmt::format("aura = {:d}, ", static_cast<int>(powerAura));
                     os << fmt::format("}},\n");
@@ -243,7 +274,15 @@ classData.spells[{:d}] = {{
                 for(size_t i = 1; i <= spell->effect_count(); ++i)
                 {
                     const auto& e = spell->effectN(i);
-                    os << fmt::format("    [{:2d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:16.3f}, {:7d}, {:7d}, {:4d}, {:9.3f} }},\n",
+
+                    std::string targets = "target =  { ";
+                    if(e.target_1())
+                        targets += fmt::format("'{:s}', ", tj_get_target(e.target_1()));
+                    if(e.target_2())
+                        targets += fmt::format("'{:s}', ", tj_get_target(e.target_2()));
+                    targets += "}";
+
+                    os << fmt::format("    [{:2d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:16.3f}, {:7d}, {:7d}, {:4d}, {:9.3f} }}, -- {:s}: {:s} - {:s}\n",
                                       i,
                                       e.id(),
                                       e.trigger_spell_id(),
@@ -253,7 +292,10 @@ classData.spells[{:d}] = {{
                                       e.misc_value1(),
                                       e.misc_value2(),
                                       0 /*e->die_sides*/,
-                                      e.period().total_seconds());
+                                      e.period().total_seconds(),
+                                      tj_get_effect_type(e.type()),
+                                      tj_get_subeffect_type(e.subtype()),
+                                      (e.target_1() || e.target_2()) ? targets : std::string{});
                 }
                 os << fmt::format("  }},\n");
             }
@@ -280,12 +322,6 @@ int run_tj_hook(sim_t* sim)
             const auto header = fmt::format(R"({:s}
 -- Generated from data for WoW {:s}
 {:s}
--- BfA only.
-{:s}
-if GetBuildInfo and select(4, GetBuildInfo()) < 80000 then
-    return
-end
-{:s}
 -- Class check
 {:s}
 if select(3, UnitClass('player')) ~= {:d} then return end
@@ -298,8 +334,6 @@ classData.spells = classData.spells or {{}}
 )",
                                             divider,
                                             WOW_BUILD_VERSION,
-                                            divider,
-                                            divider,
                                             divider,
                                             divider,
                                             info.ClassId,
@@ -366,8 +400,6 @@ classData.spells = classData.spells or {{}}
             for(auto&& spellID : spellsRequired)
                 dump_spell(sim, divider, f, spellID);
         }
-
-        auto s = dbc::find_spell(sim, 233498);
     }
     catch(const std::exception& e)
     {

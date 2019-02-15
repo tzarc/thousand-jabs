@@ -85,3 +85,87 @@ index bb615189..d1b6410d 100644
 +@@@tj_main@@@
 +@@@tj_hook@@@
 +)
+diff --git a/engine/dbc/sc_spell_info.cpp b/engine/dbc/sc_spell_info.cpp
+index 0c10391c..6bcac7cf 100644
+--- a/engine/dbc/sc_spell_info.cpp
++++ b/engine/dbc/sc_spell_info.cpp
+@@ -2213,3 +2213,79 @@ void spell_info::set_bonus_to_xml( const dbc_t& /* dbc */, const item_set_bonus_
+   node -> add_parm( "spell_id", set_bonus -> spell_id );
+ 
+ }
++
++const char* tj_get_class_name(player_e pt)
++{
++    const auto* ptr = &_class_map[1];
++    while(ptr->name)
++    {
++        if(ptr->pt == pt)
++            return ptr->name;
++        ++ptr;
++    }
++    return "<Unknown Class>";
++}
++
++const char* tj_get_race_name(unsigned raceID)
++{
++    auto it = _race_map.find(raceID);
++    if(it == std::end(_race_map))
++        return "<Unknown Race>";
++    return it->second.c_str();
++}
++
++const char* tj_get_target(unsigned targetType)
++{
++    auto it = _targeting_strings.find(targetType);
++    if(it == std::end(_targeting_strings))
++        return "<Unknown Target>";
++    return it->second.c_str();
++}
++
++const char* tj_get_resource(int resourceID)
++{
++    auto it = _resource_strings.find(resourceID);
++    if(it == std::end(_resource_strings))
++        return "<Unknown Resource>";
++    return it->second.c_str();
++}
++
++const char* tj_get_attribute(unsigned attributeID)
++{
++    auto it = _attribute_strings.find(attributeID);
++    if(it == std::end(_attribute_strings))
++        return "<Unknown Attribute>";
++    return it->second.c_str();
++}
++
++const char* tj_get_property_type(unsigned propertyType)
++{
++    auto it = _property_type_strings.find(propertyType);
++    if(it == std::end(_property_type_strings))
++        return "<Unknown Property>";
++    return it->second.c_str();
++}
++
++const char* tj_get_effect_type(unsigned effectType)
++{
++    auto it = _effect_type_strings.find(effectType);
++    if(it == std::end(_effect_type_strings))
++        return "<Unknown Effect>";
++    return it->second.c_str();
++}
++
++const char* tj_get_subeffect_type(unsigned subeffectType)
++{
++    auto it = _effect_subtype_strings.find(subeffectType);
++    if(it == std::end(_effect_subtype_strings))
++        return "<Unknown Subeffect>";
++    return it->second.c_str();
++}
++
++const char* tj_get_mechanic_type(unsigned mechanicType)
++{
++    auto it = _mechanic_strings.find(mechanicType);
++    if(it == std::end(_mechanic_strings))
++        return "<Unknown Mechanic>";
++    return it->second;
++}
