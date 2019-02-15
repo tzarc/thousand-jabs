@@ -228,7 +228,7 @@ classData.spells[{:d}] = {{
             if(spell->effect_count() > 0)
             {
                 os << fmt::format("  spell_effects = {{\n");
-                os << fmt::format("    --{:>4s}, {:>8s}, {:>8s}, {:>5s}, {:>7s}, {:>11s}, {:>7s}, {:>7s}, {:>4s}, {:>9s}\n",
+                os << fmt::format("    --{:>4s},  {:>8s}, {:>8s}, {:>5s}, {:>7s}, {:>16s}, {:>7s}, {:>7s}, {:>4s}, {:>9s}\n",
                                   "idx",
                                   "effectid",
                                   "trigsp",
@@ -243,7 +243,7 @@ classData.spells[{:d}] = {{
                 for(size_t i = 1; i <= spell->effect_count(); ++i)
                 {
                     const auto& e = spell->effectN(i);
-                    os << fmt::format("    [{:d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:11.3f}, {:7d}, {:7d}, {:4d}, {:9.3f} }},\n",
+                    os << fmt::format("    [{:2d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:16.3f}, {:7d}, {:7d}, {:4d}, {:9.3f} }},\n",
                                       i,
                                       e.id(),
                                       e.trigger_spell_id(),

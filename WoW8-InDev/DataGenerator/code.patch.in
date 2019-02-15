@@ -70,6 +70,18 @@ index f85e1ab..a1d6198 100644
 -    sc_main.cpp \
 \ No newline at end of file
 +    sc_main.cpp \
-+    tj_main.cpp \
-+    tj_hook.cpp \
++    @@@tj_main@@@ \
++    @@@tj_hook@@@ \
 \ No newline at end of file
+diff --git a/source_files/cmake_engine_main.txt b/source_files/cmake_engine_main.txt
+index bb615189..d1b6410d 100644
+--- a/source_files/cmake_engine_main.txt
++++ b/source_files/cmake_engine_main.txt
+@@ -1,3 +1,5 @@
+ set(source_files
+ sc_main.cpp
+-)
+\ No newline at end of file
++@@@tj_main@@@
++@@@tj_hook@@@
++)
