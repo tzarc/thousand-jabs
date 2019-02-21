@@ -10,6 +10,7 @@
 #include "dbc/sc_spell_info.hpp"
 
 #include "wow_version_def.h"
+#include "tj_classinfo.hpp"
 
 #define LEVEL_FOR_GENERATING_DATA 120
 
@@ -24,16 +25,6 @@
 // $A1 => radius for effect #1
 // $@spelldesc172 => substitute the spell description for spell 172
 // $146739o1 => looks like total amount of damage (multiply the spellpower coefficient by the # of ticks)
-
-const char* tj_get_class_name(player_e pt);
-const char* tj_get_race_name(unsigned raceID);
-const char* tj_get_target(unsigned targetType);
-const char* tj_get_resource(int resourceID);
-const char* tj_get_attribute(unsigned attributeID);
-const char* tj_get_property_type(unsigned propertyType);
-const char* tj_get_effect_type(unsigned effectType);
-const char* tj_get_subeffect_type(unsigned subeffectType);
-const char* tj_get_mechanic_type(unsigned mechanicType);
 
 namespace
 {
@@ -60,91 +51,10 @@ namespace
          WARLOCK_AFFLICTION,   WARLOCK_DEMONOLOGY,  WARLOCK_DESTRUCTION, MONK_BREWMASTER,     MONK_MISTWEAVER,    MONK_WINDWALKER,
          DRUID_BALANCE,        DRUID_FERAL,         DRUID_GUARDIAN,      DRUID_RESTORATION,   DEMON_HUNTER_HAVOC, DEMON_HUNTER_VENGEANCE};
 
-    player_e class_from_spec(specialization_e spec)
-    {
-        const talent_data_t* talent = talent_data_t::list();
-        do
-        {
-            if(talent->specialization() == spec)
-            {
-                for(auto&& c : classes_to_output)
-                    if(talent->is_class(c))
-                        return c;
-            }
-            ++talent;
-        } while(talent && talent->id() > 0);
-        return PLAYER_NONE;
-    }
-
-    std::string make_slug(const std::string& name)
-    {
-        std::string ret;
-        for(const auto& c : name)
-        {
-            auto x = std::tolower(c);
-            if(std::isalnum(x))
-                ret += x;
-            else if(std::isspace(x))
-                ret += '_';
-        }
-        return ret;
-    }
-
-    struct class_info
-    {
-        player_e Class;
-
-        int ClassId;
-
-        std::string ClassName;
-
-        class_info(player_e playerClass)
-        {
-            Class = playerClass;
-            ClassId = util::class_id(Class);
-            ClassName = util::player_type_string(Class);
-        }
-
-        static std::string to_string(const class_info& spec) { return fmt::format("{:s} (classID={:d})", spec.ClassName, spec.ClassId); }
-    };
-
-    struct spec_info : class_info
-    {
-        std::string SpecName;
-
-        int SpecId;
-
-        int SpecIndex;
-
-        spec_info(specialization_e spec) : class_info(class_from_spec(spec))
-        {
-            SpecName = dbc::specialization_string(spec);
-            SpecId = static_cast<int>(spec);
-            SpecIndex = specdata::spec_idx(spec) + 1; // +1 to match in-game GetSpecialization()
-        }
-
-        static std::string to_string(const spec_info& spec)
-        {
-            return fmt::format("{:s} {:s} (classID={:d} specID={:d} specIndex={:d})", spec.SpecName, spec.ClassName, spec.ClassId, spec.SpecId, spec.SpecIndex);
-        }
-    };
-
-    static bool has_attribute(const spell_data_t* spell, const unsigned attribute)
-    {
-        const unsigned attributeArrayIdx = attribute / 32;
-        const unsigned attributeMask = 1ull << (attribute % 32);
-        return spell->attribute(attributeArrayIdx) & attributeMask;
-    }
-
-    // taken from sc_spell_info.cpp, _attribute_strings
-    constexpr unsigned attribute_hidden = 7;
-    constexpr unsigned attribute_periodic_affected_by_haste = 173;
-    constexpr unsigned attribute_channeled_1 = 34;
-    constexpr unsigned attribute_channeled_2 = 38;
-
     static std::ostream& dump_spell(sim_t* sim, const std::string& divider, std::ostream& os, uint32_t spellID)
     {
-        const auto spell = dbc::find_spell(sim, spellID);
+        auto spellinfo = tj::spell_info(sim, spellID);
+        auto spell = spellinfo.Spell;
         if(spell)
         {
             if(!spell->ok())
@@ -162,7 +72,7 @@ classData.spells[{:d}] = {{
                               spell->id(),
                               spell->id(),
                               std::quoted(spell->name_cstr()),
-                              std::quoted(make_slug(spell->name_cstr())));
+                              std::quoted(tj::detail::make_slug(spell->name_cstr())));
 
             if(spell->replace_spell_id() > 0)
                 os << fmt::format("  replaces_spell_id = {:d},\n", spell->replace_spell_id());
@@ -200,14 +110,11 @@ classData.spells[{:d}] = {{
             if(spell->internal_cooldown() > timespan_t::zero())
                 os << fmt::format("  internal_cooldown = {:.1f},\n", spell->internal_cooldown().total_seconds());
 
-            if(has_attribute(spell, attribute_channeled_1) || has_attribute(spell, attribute_channeled_2))
+            if(tj::detail::has_attribute(spell, tj::detail::attribute_channeled_1) || tj::detail::has_attribute(spell, tj::detail::attribute_channeled_2))
                 os << fmt::format("  channeled = true,\n");
 
-            if(has_attribute(spell, attribute_periodic_affected_by_haste))
+            if(tj::detail::has_attribute(spell, tj::detail::attribute_periodic_affected_by_haste))
                 os << fmt::format("  haste_affected_ticks = true,\n");
-
-            if(spell->id() == 172)
-                int i = 0;
 
             if(spell->power_count() > 0)
             {
@@ -257,13 +164,13 @@ classData.spells[{:d}] = {{
                 os << fmt::format("  affected_by_spells = {{");
                 for(const auto& a : affecting)
                     os << fmt::format(" {:d}, ", a);
-                os << fmt::format("}}\n");
+                os << fmt::format("}},\n");
             }
 
             if(spell->effect_count() > 0)
             {
                 os << fmt::format("  spell_effects = {{\n");
-                os << fmt::format("    --{:>4s},  {:>8s}, {:>8s}, {:>5s}, {:>7s}, {:>16s}, {:>7s}, {:>7s}, {:>4s}, {:>9s}\n",
+                os << fmt::format("    --{:>4s},  {:>8s}, {:>8s}, {:>5s}, {:>7s}, {:>16s}, {:>7s}, {:>7s}, {:>9s}, {:>6s}, {:>6s}\n",
                                   "idx",
                                   "effectid",
                                   "trigsp",
@@ -272,14 +179,15 @@ classData.spells[{:d}] = {{
                                   "base",
                                   "misc1",
                                   "misc2",
-                                  "roll",
-                                  "period");
+                                  "period",
+                                  "rad",
+                                  "maxrad");
 
                 for(size_t i = 1; i <= spell->effect_count(); ++i)
                 {
                     const auto& e = spell->effectN(i);
-                    if(e.id() == 0)
-                        continue;
+                    //                    if(e.id() == 0)
+                    //                        continue;
 
                     std::string targets = "target =  { ";
                     if(e.target_1())
@@ -288,20 +196,22 @@ classData.spells[{:d}] = {{
                         targets += fmt::format("'{:s}', ", tj_get_target(e.target_2()));
                     targets += "}";
 
-                    os << fmt::format("    [{:2d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:16.3f}, {:7d}, {:7d}, {:4d}, {:9.3f} }}, -- {:s}: {:s} - {:s}\n",
-                                      i,
-                                      e.id(),
-                                      e.trigger_spell_id(),
-                                      e.type(),
-                                      e.subtype(),
-                                      e.base_value(),
-                                      e.misc_value1(),
-                                      e.misc_value2(),
-                                      0 /*e->die_sides*/,
-                                      e.period().total_seconds(),
-                                      tj_get_effect_type(e.type()),
-                                      tj_get_subeffect_type(e.subtype()),
-                                      (e.target_1() || e.target_2()) ? targets : std::string{});
+                    os
+                      << fmt::format("    [{:2d}] = {{ {:8d}, {:8d}, {:5d}, {:7d}, {:16.3f}, {:7d}, {:7d}, {:9.3f}, {:6.1f}, {:6.1f} }}, -- {:s} {:s} - {:s}\n",
+                                     i,
+                                     e.id(),
+                                     e.trigger_spell_id(),
+                                     e.type(),
+                                     e.subtype(),
+                                     e.base_value(),
+                                     e.misc_value1(),
+                                     e.misc_value2(),
+                                     e.period().total_seconds(),
+                                     e.radius(),
+                                     e.radius_max(),
+                                     tj_get_effect_type(e.type()),
+                                     tj_get_subeffect_type(e.subtype()),
+                                     (e.target_1() || e.target_2()) ? targets : std::string{});
 
                     std::set<unsigned> affected;
                     auto affected_spells = sim->dbc.effect_affects_spells(spell->class_family(), &e);
@@ -335,7 +245,10 @@ int run_tj_hook(sim_t* sim)
     {
         for(auto&& playerClass : classes_to_output)
         {
-            const class_info info{playerClass};
+            const tj::class_info info(sim, playerClass);
+            if(!info)
+                continue;
+
             fmt::print("Generating generated-{:s}.lua\n", info.ClassName);
             std::ofstream f(fmt::format("generated-{:s}.lua", info.ClassName));
 
@@ -354,7 +267,9 @@ if not TJ:MatchesBuild('{:s}', '{:s}') then return end
 TJ.ClassData = TJ.ClassData or {{}}
 TJ.ClassData[{:d}] = TJ.ClassData[{:d}] or {{}}
 local classData = TJ.ClassData[{:d}]
+classData.abilities = classData.abilities or {{}}
 classData.spells = classData.spells or {{}}
+
 )",
                                             divider,
                                             WOW_BUILD_VERSION,
@@ -368,73 +283,22 @@ classData.spells = classData.spells or {{}}
                                             info.ClassId,
                                             info.ClassId,
                                             info.ClassId);
-
             f << header;
 
-            auto spell_query = std::unique_ptr<spell_data_expr_t>(spell_data_expr_t::parse(sim, fmt::format("spell.class={:s}", info.ClassName)));
-            spell_query->evaluate();
-
-            std::set<uint32_t> spellsRequired;
-
-            for(auto&& spellID : spell_query->result_spell_list)
+            for(unsigned i = 1; i <= sim->dbc.specialization_max_per_class(); ++i)
             {
-                spellsRequired.insert(spellID);
+                const tj::spec_info spec(sim, playerClass, i);
+                if(spec.Spec == SPEC_NONE)
+                    continue;
+
+                f << fmt::format("{:s}\n-- Abilities: {:s}\n", divider, spec.FullSpecName);
+                f << fmt::format("classData.abilities[{:d}] = {{\n  ", spec.SpecId);
+                for(const auto& a : spec.Abilities)
+                    f << fmt::format("{:d}, ", a);
+                f << fmt::format("\n}}\n\n");
             }
 
-            // Need to loop through the returned spells and work out if any others get triggered, and include those too
-            while(true)
-            {
-                bool found = false;
-                std::set<uint32_t> requiredCopy(spellsRequired.begin(), spellsRequired.end());
-                for(auto&& spellID : requiredCopy)
-                {
-                    const auto spell = dbc::find_spell(sim, spellID);
-                    if(spell->effect_count() > 0)
-                    {
-                        for(size_t i = 1; i <= spell->effect_count(); ++i)
-                        {
-                            const auto& effect = spell->effectN(i);
-
-                            if(effect.spell_id() > 0 && spellsRequired.find(effect.spell_id()) == spellsRequired.end())
-                            {
-                                found = true;
-                                spellsRequired.insert(effect.spell_id());
-                            }
-
-                            if(effect.trigger_spell_id() > 0 && spellsRequired.find(effect.trigger_spell_id()) == spellsRequired.end())
-                            {
-                                found = true;
-                                spellsRequired.insert(effect.trigger_spell_id());
-                            }
-
-                            auto affected_spells = sim->dbc.effect_affects_spells(spell->class_family(), &effect);
-                            for(auto&& as : affected_spells)
-                            {
-                                if(as->id() > 0 && spellsRequired.find(as->id()) == spellsRequired.end())
-                                {
-                                    found = true;
-                                    spellsRequired.insert(as->id());
-                                }
-                            }
-
-                            auto affecting_effects = sim->dbc.effects_affecting_spell(spell);
-                            for(auto&& ae : affecting_effects)
-                            {
-                                if(ae->id() > 0 && ae->spell_id() > 0 && spellsRequired.find(ae->spell_id()) == spellsRequired.end())
-                                {
-                                    found = true;
-                                    spellsRequired.insert(ae->spell_id());
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if(!found)
-                    break;
-            }
-
-            for(auto&& spellID : spellsRequired)
+            for(auto&& spellID : info.AllClassSpells)
                 dump_spell(sim, divider, f, spellID);
         }
     }

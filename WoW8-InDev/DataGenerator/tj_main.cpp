@@ -66,4 +66,6 @@ int run_tj(void)
 #endif
 
     rc = run_sim_args({"./datagenerator", "tj"}, false);
+
+    return rc;
 }
