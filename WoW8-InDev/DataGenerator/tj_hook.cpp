@@ -38,18 +38,18 @@ const char* tj_get_mechanic_type(unsigned mechanicType);
 namespace
 {
     const player_e classes_to_output[] = {
-      DEATH_KNIGHT,
-      DEMON_HUNTER,
-      DRUID,
-      HUNTER,
+      //      DEATH_KNIGHT,
+      //      DEMON_HUNTER,
+      //      DRUID,
+      //      HUNTER,
       MAGE,
-      MONK,
-      PALADIN,
-      PRIEST,
-      ROGUE,
-      SHAMAN,
-      WARLOCK,
-      WARRIOR,
+      //      MONK,
+      //      PALADIN,
+      //      PRIEST,
+      //      ROGUE,
+      //      SHAMAN,
+      //      WARLOCK,
+      //      WARRIOR,
     };
     // copied from simc\engine\dbc\generated\sc_specialization_data.inc
     const specialization_e specs_to_output[]
@@ -149,27 +149,16 @@ namespace
         {
             if(!spell->ok())
                 return os;
-                /*
-                if ( has_attribute( spell, attribute_hidden ) )
-                  return os;
-                */
+
 #ifdef _DEBUG
             os << '\n' << divider << "\n--[[\n" << spell_info::to_str(sim->dbc, spell, MAX_LEVEL) << "\n]]\n";
 #endif
             os << fmt::format(R"(
---[[
-{:s}
-{:s}
-{:s}
---]]
 classData.spells[{:d}] = {{
   spellID = {:d},
   name = {:s},
   slug = {:s},
 )",
-                              spell->name_cstr() ? spell->name_cstr() : "<Unknown Spell Name>",
-                              spell->desc() ? spell->desc() : "<Unknown Spell Description>",
-                              spell->desc_vars() ? spell->desc_vars() : "<Unknown Spell Description Variables>",
                               spell->id(),
                               spell->id(),
                               std::quoted(spell->name_cstr()),
@@ -217,7 +206,7 @@ classData.spells[{:d}] = {{
             if(has_attribute(spell, attribute_periodic_affected_by_haste))
                 os << fmt::format("  haste_affected_ticks = true,\n");
 
-            if(spell->id() == 30451)
+            if(spell->id() == 172)
                 int i = 0;
 
             if(spell->power_count() > 0)
@@ -256,6 +245,21 @@ classData.spells[{:d}] = {{
                 os << fmt::format("  }},\n");
             }
 
+#ifdef _DEBUG
+            std::set<unsigned> affecting;
+            auto affecting_effects = sim->dbc.effects_affecting_spell(spell);
+            for(auto&& ae : affecting_effects)
+                if(ae->id() > 0 && ae->spell_id() > 0)
+                    affecting.insert(ae->spell_id());
+
+            if(affecting.size() > 0)
+            {
+                os << fmt::format("  affected_by_spells = {{");
+                for(const auto& a : affecting)
+                    os << fmt::format(" {:d}, ", a);
+                os << fmt::format("}}\n");
+            }
+
             if(spell->effect_count() > 0)
             {
                 os << fmt::format("  spell_effects = {{\n");
@@ -274,6 +278,8 @@ classData.spells[{:d}] = {{
                 for(size_t i = 1; i <= spell->effect_count(); ++i)
                 {
                     const auto& e = spell->effectN(i);
+                    if(e.id() == 0)
+                        continue;
 
                     std::string targets = "target =  { ";
                     if(e.target_1())
@@ -296,9 +302,24 @@ classData.spells[{:d}] = {{
                                       tj_get_effect_type(e.type()),
                                       tj_get_subeffect_type(e.subtype()),
                                       (e.target_1() || e.target_2()) ? targets : std::string{});
+
+                    std::set<unsigned> affected;
+                    auto affected_spells = sim->dbc.effect_affects_spells(spell->class_family(), &e);
+                    for(auto&& as : affected_spells)
+                        if(as->id() > 0)
+                            affected.insert(as->id());
+
+                    if(affected.size() > 0)
+                    {
+                        os << fmt::format("    -- Applies effect to spells:");
+                        for(const auto& a : affected)
+                            os << fmt::format(" {:d}, ", a);
+                        os << fmt::format("\n");
+                    }
                 }
                 os << fmt::format("  }},\n");
             }
+#endif
 
             os << "}\n";
         }
@@ -323,10 +344,13 @@ int run_tj_hook(sim_t* sim)
 -- Generated from data for WoW {:s}
 {:s}
 -- Class check
-{:s}
 if select(3, UnitClass('player')) ~= {:d} then return end
 {:s}
-local addonName, TJ = ...
+local _, TJ = ...
+{:s}
+-- Version check
+if not TJ:MatchesBuild('{:s}', '{:s}') then return end
+{:s}
 TJ.ClassData = TJ.ClassData or {{}}
 TJ.ClassData[{:d}] = TJ.ClassData[{:d}] or {{}}
 local classData = TJ.ClassData[{:d}]
@@ -335,8 +359,11 @@ classData.spells = classData.spells or {{}}
                                             divider,
                                             WOW_BUILD_VERSION,
                                             divider,
-                                            divider,
                                             info.ClassId,
+                                            divider,
+                                            divider,
+                                            WOW_BASE_VERSION,
+                                            WOW_BASE_VERSION,
                                             divider,
                                             info.ClassId,
                                             info.ClassId,
@@ -380,13 +407,23 @@ classData.spells = classData.spells or {{}}
                                 spellsRequired.insert(effect.trigger_spell_id());
                             }
 
-                            std::vector<const spell_data_t*> affected_spells = sim->dbc.effect_affects_spells(spell->class_family(), &effect);
+                            auto affected_spells = sim->dbc.effect_affects_spells(spell->class_family(), &effect);
                             for(auto&& as : affected_spells)
                             {
                                 if(as->id() > 0 && spellsRequired.find(as->id()) == spellsRequired.end())
                                 {
                                     found = true;
                                     spellsRequired.insert(as->id());
+                                }
+                            }
+
+                            auto affecting_effects = sim->dbc.effects_affecting_spell(spell);
+                            for(auto&& ae : affecting_effects)
+                            {
+                                if(ae->id() > 0 && ae->spell_id() > 0 && spellsRequired.find(ae->spell_id()) == spellsRequired.end())
+                                {
+                                    found = true;
+                                    spellsRequired.insert(ae->spell_id());
                                 }
                             }
                         }

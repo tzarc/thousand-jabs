@@ -7,6 +7,7 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include "dbc/dbc.hpp"
 #include "dbc/sc_spell_info.hpp"
 
 #include "wow_version_def.h"
@@ -50,33 +51,19 @@ namespace
 int run_tj(void)
 {
     int rc;
-    rc = run_sim_args({"./datagenerator",
-                       "deathknight=deathknight_blood",
-                       "default_actions=1",
-                       "level=110",
-                       "spec=blood",
-                       "main_hand=,id=128402",
-                       "artifact=15:0:0:0:0:289:1",
-                       "save=generated_deathknight_blood.simc"});
+    rc = run_sim_args(
+      {"./datagenerator", "mage=mage_frost", "default_actions=1", "level=120", "spec=frost", "main_hand=,id=163956", "save=generated_mage_frost.simc"});
 
+#if SC_USE_PTR
     rc = run_sim_args({"./datagenerator",
-                       "deathknight=deathknight_frost",
+                       "ptr=1",
+                       "mage=mage_frost",
                        "default_actions=1",
-                       "level=110",
+                       "level=120",
                        "spec=frost",
-                       "main_hand=,id=128292",
-                       "off_hand=,id=128293",
-                       "artifact=12:0:0:0:0:122:1",
-                       "save=generated_deathknight_frost.simc"});
-
-    rc = run_sim_args({"./datagenerator",
-                       "deathknight=deathknight_unholy",
-                       "default_actions=1",
-                       "level=110",
-                       "spec=unholy",
-                       "main_hand=,id=128403",
-                       "artifact=16:0:0:0:0:149:1",
-                       "save=generated_deathknight_unholy.simc"});
+                       "main_hand=,id=163956",
+                       "save=generated_mage_frost_ptr.simc"});
+#endif
 
     rc = run_sim_args({"./datagenerator", "tj"}, false);
 }

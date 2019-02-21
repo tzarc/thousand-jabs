@@ -15,6 +15,15 @@ echo "   simc_dir=$simc_dir"
 echo "   temp_dir=$temp_dir"
 echo
 
+BUILD_TARGET="Release"
+while [[ ! -z "$1" ]] ; do
+	case "$1" in
+		-d) BUILD_TARGET="Debug" ;;
+		*) ;;
+	esac
+	shift
+done
+
 # Exit code handling
 export script_rc=1
 _internal_cleanup() {
@@ -25,7 +34,7 @@ trap _internal_cleanup EXIT HUP INT
 build_generator() {
     mkdir -p "$script_dir/compile"
     cd "$script_dir/compile"
-    cmake ..
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TARGET ..
     cmake --build . -- -j $(nproc)
 }
 

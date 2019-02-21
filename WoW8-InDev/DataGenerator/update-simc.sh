@@ -47,20 +47,23 @@ update_dbfiles() {
             rm -rf "$dbfiles_location"
         fi
     fi
-    [[ ! -d "$dbfiles_location" ]] && mkdir -p "$dbfiles_location" || true
+    [[ ! -d "$dbfiles_location/live" ]] && mkdir -p "$dbfiles_location/live" || true
+    [[ ! -d "$dbfiles_location/ptr" ]] && mkdir -p "$dbfiles_location/ptr" || true
 
     # Download all the DB2 files from the CDN
     pushd "$simc_dir/casc_extract" >/dev/null 2>&1
-    python3 casc_extract.py --dbfile dbfile --cdn --output "$dbfiles_location" --mode batch --cache "$dbfiles_cache" || true # --alpha --beta --ptr
+    python3 casc_extract.py --dbfile dbfile --cdn --output "${dbfiles_location}/live" --mode batch --cache "${dbfiles_cache}/live" || true # --alpha --beta --ptr
+#    python3 casc_extract.py --dbfile dbfile --cdn --output "${dbfiles_location}/ptr" --mode batch --cache "${dbfiles_cache}/ptr" --ptr || true # --alpha --beta --ptr
     find "$simc_dir/engine/dbc/generated" -type f -name '*.inc' -exec unix2dos '{}' \;
     popd >/dev/null 2>&1
 }
 
 extract_dbcs() {
-    casc_output_dir=$(ls -1d "$dbfiles_location/"* || true)
-    build_version=$(basename "$casc_output_dir")
-    base_version=$(basename "$casc_output_dir" | cut -d'.' -f1-3)
-    build_id=$(basename "$casc_output_dir" | cut -d '.' -f4)
+	local target=$1
+    local casc_output_dir=$(ls -1d "$dbfiles_location/$target/"* || true)
+    local build_version=$(basename "$casc_output_dir")
+    local base_version=$(basename "$casc_output_dir" | cut -d'.' -f1-3)
+    local build_id=$(basename "$casc_output_dir" | cut -d '.' -f4)
     echo
     echo "casc_output_dir=$casc_output_dir"
     echo "  build_version=$build_version"
@@ -69,14 +72,12 @@ extract_dbcs() {
     echo
 
     echo "#define WOW_BUILD_VERSION \"$build_version\"" > "$simc_dir/engine/wow_version_def.h"
-
-    # Fix up (soon-to-be) duplicated data expressions
-    sed -i 's#__armor_mitigation_constants_data#__armor_mitigation_constants_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data.inc"
-    sed -i 's#__npc_armor_data#__npc_armor_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data.inc"
+    echo "#define WOW_BASE_VERSION \"$base_version\"" >> "$simc_dir/engine/wow_version_def.h"
+    echo "#define WOW_BUILD_ID \"$build_id\"" >> "$simc_dir/engine/wow_version_def.h"
 
     # Convert all the DB2 files to simulationcraft-usable data
     pushd "$simc_dir/dbc_extract3" >/dev/null 2>&1
-    python3 dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_version --type output live.conf || true
+    python3 dbc_extract.py  --path "$casc_output_dir/DBFilesClient" --build $build_version --type output $target.conf || true
     popd >/dev/null 2>&1
 }
 
@@ -95,6 +96,17 @@ patch_simc() {
 
 update_simc
 update_dbfiles
-extract_dbcs
+
+# Fix up (soon-to-be) duplicated data expressions
+sed -i 's#__armor_mitigation_constants_data#__armor_mitigation_constants_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data.inc"
+sed -i 's#__npc_armor_data#__npc_armor_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data.inc"
+sed -i 's#__ptr_armor_mitigation_constants_data#__ptr_armor_mitigation_constants_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data_ptr.inc"
+sed -i 's#__ptr_npc_armor_data#__ptr_npc_armor_data_ORIG#' "$simc_dir/engine/dbc/generated/sc_scale_data_ptr.inc"
+
+# Enable PTR
+#sed -i 's^#define SC_USE_PTR 0^#define SC_USE_PTR 1^' "$simc_dir/engine/dbc/dbc.hpp"
+
+extract_dbcs live
+#extract_dbcs ptr
 patch_simc
 script_rc=0
