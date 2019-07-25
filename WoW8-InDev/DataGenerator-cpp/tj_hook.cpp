@@ -292,10 +292,13 @@ classData.spells = classData.spells or {{}}
                     continue;
 
                 f << fmt::format("{:s}\n-- Abilities: {:s}\n", divider, spec.FullSpecName);
-                f << fmt::format("classData.abilities[{:d}] = {{\n  ", spec.SpecId);
+                f << fmt::format("classData.abilities[{:d}] = {{\n", spec.SpecId);
                 for(const auto& a : spec.Abilities)
-                    f << fmt::format("{:d}, ", a);
-                f << fmt::format("\n}}\n\n");
+                {
+                    const tj::spell_info s(sim, a);
+                    f << fmt::format("  {:7d}, -- {:s} / {:s}\n", a, s.SpellSlug, s.SpellName);
+                }
+                f << fmt::format("}}\n\n");
             }
 
             for(auto&& spellID : info.AllClassSpells)

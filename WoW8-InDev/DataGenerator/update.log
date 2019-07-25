@@ -1,0 +1,1162 @@
+
+this_script=/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/update-simc.sh
+ script_dir=/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator
+   simc_dir=/home/nickb/thousand-jabs/simc-bfa-dev
+   temp_dir=/home/nickb/thousand-jabs/Temp
+
+
+casc_output_dir=/home/nickb/thousand-jabs/Temp/DBFilesClient/8.1.0.29482
+  build_version=8.1.0.29482
+   base_version=8.1.0
+       build_id=29482
+
+========================
+====> ArmorLocation
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ArmorLocation.txt' => 'data.sqlite'
+                                      id: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+========================
+====> Artifact
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Artifact.txt' => 'data.sqlite'
+                                      f1: string
+                                      id: int
+                                      f2: int
+                                      f3: int
+                                   unk_1: int
+                                      f5: int
+                                 id_spec: int
+                                      f7: int
+                                      f8: int
+                                      f9: int
+                                     f10: int
+========================
+====> ArtifactPower
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ArtifactPower.txt' => 'data.sqlite'
+                                 coord_1: real
+                                 coord_2: real
+                                      id: int
+                             id_artifact: int
+                                max_rank: int
+                                   index: int
+                                    type: int
+                                     unk: int
+                               id_parent: int
+========================
+====> ArtifactPowerLink
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ArtifactPowerLink.txt' => 'data.sqlite'
+                                      id: int
+                                      f1: int
+                                      f2: int
+========================
+====> ArtifactPowerRank
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ArtifactPowerRank.txt' => 'data.sqlite'
+                                      id: int
+                                   index: int
+                                id_spell: int
+                                      f5: int
+                                   value: real
+                               id_parent: int
+========================
+====> AzeriteEmpoweredItem
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeriteEmpoweredItem.txt' => 'data.sqlite'
+                                      id: int
+                                 id_item: int
+                  id_azerite_tier_unlock: int
+                            id_power_set: int
+========================
+====> AzeriteItem
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeriteItem.txt' => 'data.sqlite'
+                                      id: int
+                                 id_item: int
+========================
+====> AzeriteItemMilestonePower
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeriteItemMilestonePower.txt' => 'data.sqlite'
+========================
+====> AzeritePower
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeritePower.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                                id_bonus: int
+                      id_spec_set_member: int
+                                   unk_4: int
+========================
+====> AzeritePowerSetMember
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeritePowerSetMember.txt' => 'data.sqlite'
+                                      id: int
+                               unk_28366: int
+                                id_power: int
+                                class_id: int
+                                    tier: int
+                                   index: int
+                               id_parent: int
+========================
+====> AzeriteTierUnlock
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/AzeriteTierUnlock.txt' => 'data.sqlite'
+                                      id: int
+                   item_creation_context: int
+                                    tier: int
+                           azerite_level: int
+                               id_parent: int
+========================
+====> ChatChannels
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ChatChannels.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                                shortcut: string
+                                   flags: int
+                                 faction: int
+========================
+====> ChrSpecialization
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ChrSpecialization.txt' => 'data.sqlite'
+                                   unk_4: string
+                                    name: string
+                                    desc: string
+                                      id: int
+                                class_id: int
+                                   index: int
+                                      f9: int
+                               spec_type: int
+                                   unk_2: int
+                                 id_icon: int
+                                   unk_6: int
+                                   unk_3: int
+                            id_mastery_1: int
+                            id_mastery_2: int
+                               id_parent: int
+========================
+====> ContentTuningDescription
+========================
+====> ContentTuning
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ContentTuning.txt' => 'data.sqlite'
+                                      id: int
+                               min_level: int
+                               max_level: int
+                                   flags: int
+                    id_expected_stat_mod: int
+                                   unk_5: int
+========================
+====> Curve
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Curve.txt' => 'data.sqlite'
+                                      id: int
+                                    type: int
+                                   flags: int
+========================
+====> CurvePoint
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/CurvePoint.txt' => 'data.sqlite'
+                                      id: int
+                                   val_1: real
+                                   val_2: real
+                         id_distribution: int
+                             curve_index: int
+========================
+====> Difficulty
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Difficulty.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                           instance_type: int
+                                   index: int
+                                   unk_4: int
+                  id_fallback_difficulty: int
+                             min_players: int
+                             max_players: int
+                                   flags: int
+                            item_context: int
+                    id_toggle_difficulty: int
+                                  unk_11: int
+                                  unk_12: int
+                                  unk_13: int
+========================
+====> ExpectedStat
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ExpectedStat.txt' => 'data.sqlite'
+                                      id: int
+                            id_expansion: int
+                         creature_health: real
+                           player_health: real
+                creature_auto_attack_dps: real
+                          creature_armor: real
+                             player_mana: real
+                     player_primary_stat: real
+                   player_secondary_stat: real
+                          armor_constant: real
+                   creature_spell_damage: real
+                               id_parent: int
+========================
+====> ExpectedStatMod
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ExpectedStatMod.txt' => 'data.sqlite'
+                                      id: int
+                     mod_creature_health: real
+                       mod_player_health: real
+            mod_creature_auto_attack_dps: real
+                      mod_creature_armor: real
+                         mod_player_mana: real
+                 mod_player_primary_stat: real
+               mod_player_secondary_stat: real
+                      mod_armor_constant: real
+               mod_creature_spell_damage: real
+========================
+====> GemProperties
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/GemProperties.txt' => 'data.sqlite'
+                                      id: int
+                              id_enchant: int
+                                   color: int
+                              min_ilevel: int
+========================
+====> GlyphProperties
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/GlyphProperties.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                                   unk_1: int
+                                   flags: int
+                   id_exclusive_category: int
+========================
+====> Item
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Item.txt' => 'data.sqlite'
+                                      id: int
+                                  classs: int
+                                subclass: int
+                                material: int
+                                type_inv: int
+                                  sheath: int
+                                   unk_2: int
+                                   unk_1: int
+                                   unk_3: int
+========================
+====> ItemSparse
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSparse.txt' => 'data.sqlite'
+                                      id: int
+                               race_mask: int
+                                    desc: string
+                                    pad2: int
+                                    pad1: int
+                                    pad0: int
+                                    name: string
+                               dmg_range: real
+                                duration: int
+                    item_damage_modifier: real
+                              bag_family: int
+                        ranged_mod_range: real
+                       stat_socket_mul_1: real
+                       stat_socket_mul_2: real
+                       stat_socket_mul_3: real
+                       stat_socket_mul_4: real
+                       stat_socket_mul_5: real
+                       stat_socket_mul_6: real
+                       stat_socket_mul_7: real
+                       stat_socket_mul_8: real
+                       stat_socket_mul_9: real
+                      stat_socket_mul_10: real
+                            stat_alloc_1: int
+                            stat_alloc_2: int
+                            stat_alloc_3: int
+                            stat_alloc_4: int
+                            stat_alloc_5: int
+                            stat_alloc_6: int
+                            stat_alloc_7: int
+                            stat_alloc_8: int
+                            stat_alloc_9: int
+                           stat_alloc_10: int
+                               stackable: int
+                               max_count: int
+                               req_spell: int
+                              sell_price: int
+                               buy_price: int
+                                   unk_3: int
+                                   unk_2: real
+                                   unk_1: real
+                                 flags_1: int
+                                 flags_2: int
+                                 flags_3: int
+                                 flags_4: int
+                         faction_conv_id: int
+                            id_name_desc: int
+                               unk_l72_1: int
+                              id_holiday: int
+                     item_limit_category: int
+                               gem_props: int
+                            socket_bonus: int
+                          totem_category: int
+                                     map: int
+                                    area: int
+                                item_set: int
+                             rand_suffix: int
+                               rand_prop: int
+                                 id_lock: int
+                             start_quest: int
+                               page_text: int
+                                   delay: int
+                         scale_stat_dist: int
+                         req_rep_faction: int
+                          req_skill_rank: int
+                               req_skill: int
+                                  ilevel: int
+                              class_mask: int
+                                   unk_9: int
+                             id_artifact: int
+                                   unk_6: int
+                                   unk_7: int
+                          socket_color_1: int
+                          socket_color_2: int
+                          socket_color_3: int
+                                  sheath: int
+                                material: int
+                                page_mat: int
+                                 id_lang: int
+                                 bonding: int
+                             damage_type: int
+                             stat_type_1: int
+                             stat_type_2: int
+                             stat_type_3: int
+                             stat_type_4: int
+                             stat_type_5: int
+                             stat_type_6: int
+                             stat_type_7: int
+                             stat_type_8: int
+                             stat_type_9: int
+                            stat_type_10: int
+                         container_slots: int
+                            req_rep_rank: int
+                                   unk_5: int
+                                   unk_4: int
+                               req_level: int
+                                inv_type: int
+                                 quality: int
+========================
+====> ItemAppearance
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemAppearance.txt' => 'data.sqlite'
+                                      id: int
+                                      f4: int
+                         id_display_info: int
+                                 id_icon: int
+                                      f3: int
+========================
+====> ItemArmorQuality
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemArmorQuality.txt' => 'data.sqlite'
+                                      id: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+========================
+====> ItemArmorShield
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemArmorShield.txt' => 'data.sqlite'
+                                      id: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+                                  ilevel: int
+========================
+====> ItemArmorTotal
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemArmorTotal.txt' => 'data.sqlite'
+                                      id: int
+                                  ilevel: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+========================
+====> ItemBonus
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemBonus.txt' => 'data.sqlite'
+                                      id: int
+                                   val_1: int
+                                   val_2: int
+                                   val_3: int
+                                 id_node: int
+                                    type: int
+                                   index: int
+                               id_parent: int
+========================
+====> ItemBonusTreeNode
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemBonusTreeNode.txt' => 'data.sqlite'
+                                      id: int
+                                   index: int
+                                id_child: int
+                                 id_node: int
+                                     unk: int
+                               id_parent: int
+========================
+====> ItemChildEquipment
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemChildEquipment.txt' => 'data.sqlite'
+                                      id: int
+                                 id_item: int
+                                id_child: int
+                                   unk_2: int
+                               id_parent: int
+========================
+====> ItemDamageOneHand
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemDamageOneHand.txt' => 'data.sqlite'
+                                      id: int
+                                  ilevel: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+========================
+====> ItemDamageOneHandCaster
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemDamageOneHandCaster.txt' => 'data.sqlite'
+                                      id: int
+                                  ilevel: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+========================
+====> ItemDamageTwoHand
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemDamageTwoHand.txt' => 'data.sqlite'
+                                      id: int
+                                  ilevel: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+========================
+====> ItemDamageTwoHandCaster
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemDamageTwoHandCaster.txt' => 'data.sqlite'
+                                      id: int
+                                  ilevel: int
+                                     v_1: real
+                                     v_2: real
+                                     v_3: real
+                                     v_4: real
+                                     v_5: real
+                                     v_6: real
+                                     v_7: real
+========================
+====> ItemEffect
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemEffect.txt' => 'data.sqlite'
+                                      id: int
+                                   index: int
+                            trigger_type: int
+                        cooldown_charges: int
+                       cooldown_duration: int
+                 cooldown_group_duration: int
+                          cooldown_group: int
+                                id_spell: int
+                       id_specialization: int
+                               id_parent: int
+========================
+====> ItemLimitCategory
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemLimitCategory.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                                quantity: int
+                                   flags: int
+========================
+====> ItemModifiedAppearance
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemModifiedAppearance.txt' => 'data.sqlite'
+                                      id: int
+                                 id_item: int
+                                      f3: int
+                           id_appearance: int
+                                      f5: int
+                                      f6: int
+                               id_parent: int
+========================
+====> ItemNameDescription
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemNameDescription.txt' => 'data.sqlite'
+                                      id: int
+                                    desc: string
+                                   flags: int
+========================
+====> ItemRandomProperties
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemRandomProperties.txt' => 'data.sqlite'
+                                      id: int
+                            property_str: string
+                                    f2_1: int
+                                    f2_2: int
+                                    f2_3: int
+                                    f2_4: int
+                                    f2_5: int
+========================
+====> ItemRandomSuffix
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemRandomSuffix.txt' => 'data.sqlite'
+========================
+====> ItemSet
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSet.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                                   unk_1: int
+                            id_req_skill: int
+                           val_req_skill: int
+                               id_item_1: int
+                               id_item_2: int
+                               id_item_3: int
+                               id_item_4: int
+                               id_item_5: int
+                               id_item_6: int
+                               id_item_7: int
+                               id_item_8: int
+                               id_item_9: int
+                              id_item_10: int
+                              id_item_11: int
+                              id_item_12: int
+                              id_item_13: int
+                              id_item_14: int
+                              id_item_15: int
+                              id_item_16: int
+                              id_item_17: int
+========================
+====> ItemSetSpell
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSetSpell.txt' => 'data.sqlite'
+                                      id: int
+                                 id_spec: int
+                                id_spell: int
+                             n_req_items: int
+                               id_parent: int
+========================
+====> ItemSpec
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSpec.txt' => 'data.sqlite'
+                                      id: int
+                               min_level: int
+                               max_level: int
+                               item_type: int
+                            primary_stat: int
+                          secondary_stat: int
+                                 id_spec: int
+                               id_parent: int
+========================
+====> ItemSpecOverride
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSpecOverride.txt' => 'data.sqlite'
+                                      id: int
+                                 id_spec: int
+                               id_parent: int
+========================
+====> ItemClass
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemClass.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                                id_class: int
+                          price_modifier: real
+                                   flags: int
+========================
+====> ItemSubClass
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemSubClass.txt' => 'data.sqlite'
+                                      id: int
+                            display_name: string
+                            verbose_name: string
+                                id_class: int
+                            id_sub_class: int
+                auction_house_sort_order: int
+                prerequisite_proficiency: int
+                                   flags: int
+                           display_flags: int
+                       weapon_swing_size: int
+               postrequisite_proficiency: int
+                               id_parent: int
+========================
+====> ItemUpgrade
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemUpgrade.txt' => 'data.sqlite'
+                                      id: int
+                           upgrade_group: int
+                          upgrade_ilevel: int
+                                 prev_id: int
+                        id_currency_type: int
+                                    cost: int
+========================
+====> ItemXBonusTree
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ItemXBonusTree.txt' => 'data.sqlite'
+                                      id: int
+                                 id_tree: int
+                               id_parent: int
+========================
+====> JournalEncounter
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalEncounter.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+                                    desc: string
+                                 coord_1: real
+                                 coord_2: real
+                     id_journal_instance: int
+                             order_index: int
+                        first_section_id: int
+                               ui_map_id: int
+                map_display_condition_id: int
+                                   flags: int
+                         difficulty_mask: int
+========================
+====> JournalEncounterCreature
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalEncounterCreature.txt' => 'data.sqlite'
+                                    name: string
+                                    desc: string
+                                      id: int
+                    id_journal_encounter: int
+                id_creature_display_info: int
+                            id_data_file: int
+                             order_index: int
+                       id_ui_model_scene: int
+                               id_parent: int
+========================
+====> JournalEncounterItem
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalEncounterItem.txt' => 'data.sqlite'
+                                      id: int
+                            id_encounter: int
+                                 id_item: int
+                                 flags_2: int
+                                   unk_1: int
+                                 flags_1: int
+                               id_parent: int
+========================
+====> JournalEncounterSection
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalEncounterSection.txt' => 'data.sqlite'
+                                      id: int
+                                   title: string
+                               body_text: string
+                    id_journal_encounter: int
+                             order_index: int
+                       id_parent_section: int
+                  id_first_child_section: int
+                 id_next_sibling_section: int
+                                    type: int
+           id_icon_creature_display_info: int
+                       id_ui_model_scene: int
+                                id_spell: int
+                       id_icon_file_data: int
+                                   flags: int
+                              icon_flags: int
+                         difficulty_mask: int
+========================
+====> JournalEncounterXDifficulty
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalEncounterXDifficulty.txt' => 'data.sqlite'
+                                      id: int
+                           id_difficulty: int
+                               id_parent: int
+========================
+====> JournalInstance
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalInstance.txt' => 'data.sqlite'
+                                    name: string
+                                    desc: string
+                                      id: int
+                                     map: int
+                 id_background_file_data: int
+                     id_button_file_data: int
+               id_button_small_file_data: int
+                       id_lore_file_data: int
+                             order_index: int
+                                   flags: int
+                                 area_id: int
+========================
+====> JournalItemXDifficulty
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalItemXDifficulty.txt' => 'data.sqlite'
+                                      id: int
+                           id_difficulty: int
+                               id_parent: int
+========================
+====> JournalTier
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalTier.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+========================
+====> JournalTierXInstance
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/JournalTierXInstance.txt' => 'data.sqlite'
+                                      id: int
+                         id_journal_tier: int
+                     id_journal_instance: int
+                               id_parent: int
+========================
+====> ManifestInterfaceData
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ManifestInterfaceData.txt' => 'data.sqlite'
+                                      id: int
+                                     unk: string
+                                    name: string
+========================
+====> Map
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Map.txt' => 'data.sqlite'
+                                      id: int
+                               directory: string
+                                    name: string
+                           description_1: string
+                           description_2: string
+                   pvp_short_description: string
+                    pvp_long_description: int
+                                corpse_1: real
+                                corpse_2: real
+                                map_type: int
+                           instance_type: int
+                            id_expansion: int
+                           id_area_table: int
+                       id_loading_screen: int
+                    time_of_day_override: int
+                           id_parent_map: int
+                  id_cosmetic_parent_map: int
+                             time_offset: int
+                      minimap_icon_scale: real
+                           id_corpse_map: int
+                             max_players: int
+                        id_wind_settings: int
+                        id_zmp_file_data: int
+                                 flags_1: int
+                                 flags_2: int
+========================
+====> MinorTalent
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/MinorTalent.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                                   index: int
+                               id_parent: int
+========================
+====> RandPropPoints
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/RandPropPoints.txt' => 'data.sqlite'
+                                      id: int
+                     damage_replace_stat: int
+                           epic_points_1: int
+                           epic_points_2: int
+                           epic_points_3: int
+                           epic_points_4: int
+                           epic_points_5: int
+                           rare_points_1: int
+                           rare_points_2: int
+                           rare_points_3: int
+                           rare_points_4: int
+                           rare_points_5: int
+                           uncm_points_1: int
+                           uncm_points_2: int
+                           uncm_points_3: int
+                           uncm_points_4: int
+                           uncm_points_5: int
+========================
+====> RelicTalent
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/RelicTalent.txt' => 'data.sqlite'
+                                      id: int
+                                     row: int
+                                id_power: int
+                             power_index: int
+                                   unk_3: int
+                                   unk_4: int
+========================
+====> RulesetItemUpgrade
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/RulesetItemUpgrade.txt' => 'data.sqlite'
+========================
+====> ScalingStatDistribution
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/ScalingStatDistribution.txt' => 'data.sqlite'
+                                      id: int
+                                id_curve: int
+                               min_level: int
+                               max_level: int
+========================
+====> SkillLine
+========================
+====> SkillLineAbility
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SkillLineAbility.txt' => 'data.sqlite'
+                               mask_race: int
+                                      id: int
+                                id_skill: int
+                                id_spell: int
+                         req_skill_level: int
+                              mask_class: int
+                              id_replace: int
+                                  unk_13: int
+                         max_learn_skill: int
+                                   unk_7: int
+                                  unk_14: int
+                     reward_skill_points: int
+                                   index: int
+                               id_filter: int
+                                  unk_15: int
+                               id_parent: int
+========================
+====> SpecializationSpells
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpecializationSpells.txt' => 'data.sqlite'
+                                   unk_1: int
+                                      id: int
+                                 spec_id: int
+                                spell_id: int
+                        replace_spell_id: int
+                                   unk_2: int
+                               id_parent: int
+========================
+====> SpecSetMember
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpecSetMember.txt' => 'data.sqlite'
+                                      id: int
+                                 id_spec: int
+                               id_parent: int
+========================
+====> Spell
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Spell.txt' => 'data.sqlite'
+                                      id: int
+                                    rank: string
+                                    desc: string
+                                      tt: string
+========================
+====> SpellAuraOptions
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellAuraOptions.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_1: int
+                            stack_amount: int
+                       internal_cooldown: int
+                             proc_chance: int
+                            proc_charges: int
+                                  id_ppm: int
+                            proc_flags_1: int
+                            proc_flags_2: int
+                               id_parent: int
+========================
+====> SpellCastTimes
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellCastTimes.txt' => 'data.sqlite'
+                                      id: int
+                               cast_time: int
+                     cast_time_per_level: int
+                           min_cast_time: int
+========================
+====> SpellCastingRequirements
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellCastingRequirements.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                            facing_flags: int
+                                   unk_2: int
+                                   unk_6: int
+                                   unk_3: int
+                                   unk_8: int
+                                   unk_4: int
+========================
+====> SpellCategories
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellCategories.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_1: int
+                       cooldown_category: int
+                               dmg_class: int
+                                  dispel: int
+                                mechanic: int
+                         type_prevention: int
+                 start_recovery_category: int
+                         charge_category: int
+                               id_parent: int
+========================
+====> SpellCategory
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellCategory.txt' => 'data.sqlite'
+                                      id: int
+                                category: string
+                                   unk_1: int
+                                   unk_2: int
+                                 charges: int
+                         charge_cooldown: int
+                                   unk_3: int
+========================
+====> SpellClassOptions
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellClassOptions.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                        modal_next_spell: int
+                                  family: int
+                                 flags_1: int
+                                 flags_2: int
+                                 flags_3: int
+                                 flags_4: int
+========================
+====> SpellCooldowns
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellCooldowns.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_1: int
+                       category_cooldown: int
+                                cooldown: int
+                            gcd_cooldown: int
+                               id_parent: int
+========================
+====> SpellDescriptionVariables
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellDescriptionVariables.txt' => 'data.sqlite'
+                                      id: int
+                                    desc: string
+========================
+====> SpellDuration
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellDuration.txt' => 'data.sqlite'
+                                      id: int
+                              duration_1: int
+                              duration_3: int
+                              duration_2: int
+========================
+====> SpellEffect
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellEffect.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_3: int
+                                   index: int
+                                    type: int
+                                 val_mul: real
+                                   unk_2: int
+                                sub_type: int
+                               amplitude: int
+                          sp_coefficient: real
+                          dmg_multiplier: real
+                            chain_target: int
+                               item_type: int
+                             id_mechanic: int
+                 points_per_combo_points: real
+                                   unk_1: real
+                                real_ppl: real
+                           trigger_spell: int
+                          ap_coefficient: real
+                         pvp_coefficient: real
+                             coefficient: real
+                                   delta: real
+                                   bonus: real
+                                  unk_24: real
+                              base_value: real
+                            misc_value_1: int
+                            misc_value_2: int
+                             id_radius_1: int
+                             id_radius_2: int
+                            class_mask_1: int
+                            class_mask_2: int
+                            class_mask_3: int
+                            class_mask_4: int
+                       implicit_target_1: int
+                       implicit_target_2: int
+                               id_parent: int
+========================
+====> SpellEffectAutoDescription
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellEffectAutoDescription.txt' => 'data.sqlite'
+                                      id: int
+                                    desc: string
+                                      tt: string
+                                   unk_3: int
+                                   unk_4: int
+                                   unk_5: int
+                                   unk_6: int
+                                  school: int
+                                    type: int
+                                sub_type: int
+========================
+====> SpellEquippedItems
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellEquippedItems.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                              item_class: int
+                           mask_inv_type: int
+                          mask_sub_class: int
+========================
+====> SpellItemEnchantment
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellItemEnchantment.txt' => 'data.sqlite'
+                                      id: int
+                                    desc: string
+                                  desc_2: string
+                           id_property_1: int
+                           id_property_2: int
+                           id_property_3: int
+                                 coeff_1: real
+                                 coeff_2: real
+                                 coeff_3: real
+                                  unk_20: int
+                                   unk_5: int
+                                   unk_6: int
+                                amount_1: int
+                                amount_2: int
+                                amount_3: int
+                                 id_aura: int
+                                    slot: int
+                               req_skill: int
+                         req_skill_value: int
+                       min_scaling_level: int
+                                 charges: int
+                                  type_1: int
+                                  type_2: int
+                                  type_3: int
+                            scaling_type: int
+                                  unk_19: int
+                                  unk_15: int
+                        req_player_level: int
+                       max_scaling_level: int
+========================
+====> SpellLabel
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellLabel.txt' => 'data.sqlite'
+                                      id: int
+                                   label: int
+                               id_parent: int
+========================
+====> SpellLevels
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellLevels.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_1: int
+                              base_level: int
+                               max_level: int
+                             spell_level: int
+                           req_max_level: int
+                               id_parent: int
+========================
+====> SpellMechanic
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellMechanic.txt' => 'data.sqlite'
+                                      id: int
+                                mechanic: int
+========================
+====> SpellName
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellName.txt' => 'data.sqlite'
+                                      id: int
+                                    name: string
+========================
+====> SpellMisc
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellMisc.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_2: int
+                            id_cast_time: int
+                             id_duration: int
+                                id_range: int
+                                  school: int
+                              proj_speed: real
+                                   unk_3: real
+                                   unk_1: real
+                                 id_icon: int
+                          id_active_icon: int
+                                 flags_1: int
+                                 flags_2: int
+                                 flags_3: int
+                                 flags_4: int
+                                 flags_5: int
+                                 flags_6: int
+                                 flags_7: int
+                                 flags_8: int
+                                 flags_9: int
+                                flags_10: int
+                                flags_11: int
+                                flags_12: int
+                                flags_13: int
+                                flags_14: int
+                               id_parent: int
+========================
+====> SpellPower
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellPower.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_5: int
+                                    cost: int
+                                   unk_6: int
+                         cost_per_second: int
+                                   unk_4: int
+                                   unk_3: int
+                                pct_cost: real
+                            pct_cost_max: real
+                     pct_cost_per_second: real
+                              type_power: int
+                                 aura_id: int
+                                cost_max: int
+                               id_parent: int
+========================
+====> SpellProcsPerMinute
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellProcsPerMinute.txt' => 'data.sqlite'
+                                      id: int
+                                     ppm: real
+                                   flags: int
+========================
+====> SpellProcsPerMinuteMod
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellProcsPerMinuteMod.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_1: int
+                             id_chr_spec: int
+                             coefficient: real
+                               id_parent: int
+========================
+====> SpellRadius
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellRadius.txt' => 'data.sqlite'
+                                      id: int
+                                radius_1: real
+                                   unk_1: real
+                                radius_2: real
+                                radius_3: real
+========================
+====> SpellRange
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellRange.txt' => 'data.sqlite'
+                                      id: int
+                            display_name: string
+                      display_name_short: string
+                                    flag: int
+                             min_range_1: real
+                             min_range_2: real
+                             max_range_1: real
+                             max_range_2: real
+========================
+====> SpellScaling
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellScaling.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                                id_class: int
+                       min_scaling_level: int
+                       max_scaling_level: int
+                      max_scaling_ilevel: int
+========================
+====> SpellShapeshift
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellShapeshift.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                                     unk: int
+                             flags_not_1: int
+                             flags_not_2: int
+                                 flags_1: int
+                                 flags_2: int
+========================
+====> SpellTargetRestrictions
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellTargetRestrictions.txt' => 'data.sqlite'
+                                      id: int
+                                   unk_5: int
+                                    cone: real
+                    max_affected_targets: int
+                        max_target_level: int
+                                   unk_4: int
+                                   flags: int
+                                   width: real
+                               id_parent: int
+========================
+====> SpellXDescriptionVariables
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/SpellXDescriptionVariables.txt' => 'data.sqlite'
+                                      id: int
+                                id_spell: int
+                             id_desc_var: int
+========================
+====> TactKey
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/TactKey.txt' => 'data.sqlite'
+                                      id: int
+                                   key_1: int
+                                   key_2: int
+                                   key_3: int
+                                   key_4: int
+                                   key_5: int
+                                   key_6: int
+                                   key_7: int
+                                   key_8: int
+                                   key_9: int
+                                  key_10: int
+                                  key_11: int
+                                  key_12: int
+                                  key_13: int
+                                  key_14: int
+                                  key_15: int
+                                  key_16: int
+========================
+====> TactKeyLookup
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/TactKeyLookup.txt' => 'data.sqlite'
+                                      id: int
+                              key_name_1: int
+                              key_name_2: int
+                              key_name_3: int
+                              key_name_4: int
+                              key_name_5: int
+                              key_name_6: int
+                              key_name_7: int
+                              key_name_8: int
+========================
+====> Talent
+Importing '/home/nickb/thousand-jabs/WoW8-InDev/DataGenerator/generated/Talent.txt' => 'data.sqlite'
+                                      id: int
+                                    desc: string
+                                     row: int
+                                     pet: int
+                                     col: int
+                                class_id: int
+                                 spec_id: int
+                                id_spell: int
+                              id_replace: int
+                                   unk_1: int
+                                   unk_2: int

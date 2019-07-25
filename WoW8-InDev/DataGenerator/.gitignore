@@ -1,5 +1,1 @@
-compile
-generated*
-code.patch
 .idea
-cmake-build*

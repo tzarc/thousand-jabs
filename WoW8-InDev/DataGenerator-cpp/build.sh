@@ -34,7 +34,7 @@ trap _internal_cleanup EXIT HUP INT
 build_generator() {
     mkdir -p "$script_dir/compile"
     cd "$script_dir/compile"
-    cmake -DCMAKE_BUILD_TYPE=$BUILD_TARGET ..
+    CC=clang CXX=clang++ CPP=clang cmake -DCMAKE_BUILD_TYPE=$BUILD_TARGET ..
     cmake --build . -- -j $(nproc)
 }
 
