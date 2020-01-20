@@ -1,11 +1,11 @@
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 -- BfA only.
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if GetBuildInfo and select(4, GetBuildInfo()) < 80000 then
+------------------------------------------------------------------------------------------------------------------------
+if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then
     return
 end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 local LibStub = LibStub
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
@@ -96,16 +96,6 @@ TJ.seenTargets = {}
 function TJ:OnInitialize()
     -- Upgrade any config entries that need to be updated
     Config:Upgrade()
-
-    -- Notice for 8.1 and non-updates
-    TimerAfter(15, function()
-        Core:PrintOnce("As you've probably noticed, there's no more Thousand Jabs ability queue showing.")
-        Core:PrintOnce("Unfortunately, due to time constraints, Thousand Jabs is currently not being maintained.")
-        Core:PrintOnce("The original author has nowhere near enough free time to continually update each class, as the majority of their characters are under level 100.")
-        Core:PrintOnce("As such, if the AddOn is to live on, new class maintainers are required.")
-        Core:PrintOnce("If you'd like to help out, check out the CurseForge page at: https://wow.curseforge.com/projects/thousand-jabs")
-        Core:PrintOnce("If not, there are plenty of alternatives available on Curse. Good luck!")
-    end)
 end
 
 ------------------------------------------------------------------------------------------------------------------------

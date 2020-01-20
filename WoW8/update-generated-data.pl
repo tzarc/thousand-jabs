@@ -306,7 +306,7 @@ sub create_action_lists {
         my $bn                     = basename($class_lua_actions_file);
         print(" - ${bn}\n");
         open(my $outfile, ">", $class_lua_actions_file);
-        print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end\n\n";
+        print {$outfile} "if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then return end\n\n";
         print {$outfile} "if select(3, UnitClass('player')) ~= ${classID} then return end\n\n";
         print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n\n";
         close($outfile);
@@ -430,7 +430,7 @@ sub create_equipped_mapping {
     common::header("Generating equipped item mapping:");
     my $equipped_file = "${cfg::script_dir}/${cfg::addonName}/Generated-EquippedItems.lua";
     open(my $outfile, ">", $equipped_file);
-    print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end\n\n";
+    print {$outfile} "if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then return end\n\n";
     print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n";
     print {$outfile} "local Core = TJ:GetModule('Core')\n";
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";
@@ -482,7 +482,7 @@ sub create_itemset_bonuses {
     common::header("Generating set bonus listing:");
     my $setbonus_file = "${cfg::script_dir}/${cfg::addonName}/Generated-ItemSets.lua";
     open(my $outfile, ">", $setbonus_file);
-    print {$outfile} "if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end\n\n";
+    print {$outfile} "if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then return end\n\n";
     print {$outfile} "local TJ = LibStub('AceAddon-3.0'):GetAddon('${cfg::addonName}')\n";
     print {$outfile} "local Core = TJ:GetModule('Core')\n";
     print {$outfile} "TJ.Generated = TJ.Generated or {}\n";

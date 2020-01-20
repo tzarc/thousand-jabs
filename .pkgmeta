@@ -22,10 +22,10 @@ move-folders:
     ThousandJabs/WoW8/ThousandJabs_Config: ThousandJabs_Config
 
 ignore:
-    - build-datagenerator.sh
-    - cleanup.sh
-    - download-db2.sh
-    - tag-repo.sh
-    - WoW7
     - WoW8
-    - WoW8-InDev
+    - .gitignore
+    - .gitattributes
+    - cleanup.sh
+    - tag-repo.sh
+    - README.md
+    - TODO.md

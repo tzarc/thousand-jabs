@@ -1,12 +1,20 @@
-if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end
+if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 TJ.Generated = TJ.Generated or {}
 TJ.Generated.ItemSets = TJ.Generated.ItemSets or {}
 
+TJ.Generated.ItemSets.gift_of_the_loa = {
+    165512, 165567,
+}
+
 TJ.Generated.ItemSets.journey_through_time = {
     137419, 137487,
+}
+
+TJ.Generated.ItemSets.keepsakes = {
+    165566, 165604,
 }
 
 TJ.Generated.ItemSets.march_of_the_legion = {
@@ -112,5 +120,13 @@ TJ.Generated.ItemSets.tier21 = {
     152162, 152163, 152164, 152165, 152166, 152167, 152168, 152169, 152170, 152171,
     152172, 152173, 152174, 152175, 152176, 152177, 152178, 152179, 152180, 152181,
     152182, 152183,
+}
+
+TJ.Generated.ItemSets.titanic_empowerment = {
+    174500, 174528,
+}
+
+TJ.Generated.ItemSets.waycrests_legacy = {
+    158362, 159631,
 }
 

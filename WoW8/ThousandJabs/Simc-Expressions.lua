@@ -1,7 +1,7 @@
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 -- BfA only.
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-if GetBuildInfo and select(4, GetBuildInfo()) < 80000 then
+------------------------------------------------------------------------------------------------------------------------
+if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then
     return
 end
 
@@ -64,12 +64,15 @@ do
         { 'floor(', 'floor' },
         { 'min(', 'min' },
         { 'max(', 'max' },
+        { '>?', 'binarymin' },
+        { '<?', 'binarymax' },
         { '(', 'lparen' },
         { ')', 'rparen' },
         { '&&', 'and' },
         { '&', 'and' },
         { '||', 'or' },
         { '|', 'or' },
+        { '^', 'xor' },
         { '>=', 'gte' },
         { '>', 'gt' },
         { '<=', 'lte' },
@@ -169,14 +172,15 @@ do
         return t
     end
 
+    -- precedences match sc_expressions.cpp, precedence() function
     local precedences = {
         ['lparen'] = 1000,
         ['rparen'] = 1000,
-        ['min'] = 999,
-        ['max'] = 999,
-        ['ceil'] = 998,
-        ['floor'] = 998,
-        ['primary'] = 1,
+        ['min'] = 5,
+        ['max'] = 5,
+        ['ceil'] = 9,
+        ['floor'] = 9,
+        ['primary'] = 0,
     }
 
     local prefixParsers = {
@@ -257,6 +261,19 @@ do
         precedences[token] = precedence
     end
 
+    local function defineRightAssocInvokeExpression(token, precedence)
+
+        local function createRightAssocExpression(parser, lhs, token)
+            local rhs = parser:ParseExpression(precedence - 1)
+            local t = ct()
+            t.token, t.operator, t.lhs, t.rhs = "infixinvoke", token.operator, lhs, rhs
+            return t
+        end
+
+        infixParsers[token] = createRightAssocExpression
+        precedences[token] = precedence
+    end
+
     local function simcExpressionParser__NextToken(parser)
         local tok = parser.tokens[parser.nextIndex]
         parser.nextIndex = parser.nextIndex + 1
@@ -296,25 +313,30 @@ do
         return result
     end
 
-    definePrefixExpression("plus", 91)
-    definePrefixExpression("minus", 91)
-    definePrefixExpression("abs", 91)
-    definePrefixExpression("not", 91)
+    -- precedences match sc_expressions.cpp, precedence() function
+    definePrefixExpression("plus", 8)
+    definePrefixExpression("minus", 8)
+    definePrefixExpression("not", 8)
+    definePrefixExpression("abs", 8)
 
-    defineLeftAssocExpression("multiply", 80)
-    defineLeftAssocExpression("divide", 80)
-    defineLeftAssocExpression("plus", 70)
-    defineLeftAssocExpression("minus", 70)
+    defineLeftAssocExpression("multiply", 7)
+    defineLeftAssocExpression("divide", 7)
+    defineLeftAssocExpression("plus", 6)
+    defineLeftAssocExpression("minus", 6)
 
-    defineRightAssocExpression("equal", 30)
-    defineRightAssocExpression("notequal", 30)
-    defineRightAssocExpression("gte", 30)
-    defineRightAssocExpression("gt", 30)
-    defineRightAssocExpression("lte", 30)
-    defineRightAssocExpression("lt", 30)
+    defineRightAssocInvokeExpression("binarymin", 5)
+    defineRightAssocInvokeExpression("binarymax", 5)
 
-    defineRightAssocExpression("and", 20)
-    defineRightAssocExpression("or", 10)
+    defineRightAssocExpression("equal", 4)
+    defineRightAssocExpression("notequal", 4)
+    defineRightAssocExpression("gte", 4)
+    defineRightAssocExpression("gt", 4)
+    defineRightAssocExpression("lte", 4)
+    defineRightAssocExpression("lt", 4)
+
+    defineRightAssocExpression("and", 3)
+    defineRightAssocExpression("xor", 2)
+    defineRightAssocExpression("or", 1)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -329,8 +351,11 @@ do
         ['floor'] = 'math.floor',
         ['min'] = 'math.min',
         ['max'] = 'math.max',
+        ['binarymin'] = 'math.min',
+        ['binarymax'] = 'math.max',
         ['and'] = 'and',
         ['or'] = 'or',
+        ['xor'] = '~',
         ['not'] = 'not',
         ['gte'] = '>=',
         ['gt'] = '>',
@@ -345,11 +370,15 @@ do
     }
 
     local convertNumbers = {
-        'gte', 'gt', 'lte', 'lt', 'plus', 'minus', 'multiply', 'divide'
+        'gte', 'gt', 'lte', 'lt', 'plus', 'minus', 'multiply', 'divide', 'binarymin', 'binarymax'
     }
 
     local convertBoolean = {
         'not', 'and', 'or'
+    }
+
+    local convertXor = {
+        'xor'
     }
 
     local convertPrefixArgToFunctionCall = {
@@ -372,7 +401,7 @@ do
             end
         elseif result.token == "invoke" then
             return Core:Format("%s(%s)", equivalentLuaOperators[result.operator], render(result.inner, primaryModifier))
-        elseif result.token == "infix" then
+        elseif result.token == "infixinvoke" then
             local lhs = render(result.lhs, primaryModifier)
             local rhs = render(result.rhs, primaryModifier)
             if tContains(convertNumbers, result.operator) then
@@ -382,7 +411,25 @@ do
                 if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', boolConverter, lhs) end
                 if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', boolConverter, rhs) end
             end
-            return Core:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            return Core:Format("%s(%s, %s)", equivalentLuaOperators[result.operator], lhs, rhs)
+        elseif result.token == "infix" then
+            local lhs = render(result.lhs, primaryModifier)
+            local rhs = render(result.rhs, primaryModifier)
+            if tContains(convertNumbers, result.operator) then
+                if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', numConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', numConverter, rhs) end
+                return Core:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            elseif tContains(convertBoolean, result.operator) then
+                if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', boolConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', boolConverter, rhs) end
+                return Core:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            elseif tContains(convertXor, result.operator) then
+                if lhs:match("[^%d%.]") then lhs = Core:Format('%s(%s)', boolConverter, lhs) end
+                if rhs:match("[^%d%.]") then rhs = Core:Format('%s(%s)', boolConverter, rhs) end
+                return Core:Format("((%s or %s) and not (%s and %s))", lhs, rhs, lhs, rhs)
+            else
+                return Core:Format("(%s %s %s)", lhs, equivalentLuaOperators[result.operator], rhs)
+            end
         end
     end
 
@@ -510,7 +557,7 @@ else
             end
         end
     else
-        result = simcAplParser({'actions=blah,if=-@5|@-5|-+5|!5|6!=5'})
+        result = simcAplParser({'actions=blah,if=-@5|@-5|-+5|!5|6!=5|f<?g<3|f>?g<3|h^i'})
     end
 
     Core:Debug(LSD(result))

@@ -1,15 +1,36 @@
-if GetBuildInfo and select(4,GetBuildInfo()) < 80000 then return end
+if GetBuildInfo and (select(4, GetBuildInfo()) < 80000 or select(4, GetBuildInfo()) >= 90000) then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 TJ.Generated = TJ.Generated or {}
 TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}
 
-TJ.Generated.EquippedMapping.ailuro_pouncers = { 137024, }
-TJ.Generated.EquippedMapping.cold_heart = { 151796, }
-TJ.Generated.EquippedMapping.drinking_horn_cover = { 137097, }
-TJ.Generated.EquippedMapping.hidden_masters_forbidden_touch = { 137057, }
-TJ.Generated.EquippedMapping.kazzalax_fujiedas_fury = { 137053, }
-TJ.Generated.EquippedMapping.luffa_wrappings = { 137056, }
-TJ.Generated.EquippedMapping.the_emerald_dreamcatcher = { 137062, }
-TJ.Generated.EquippedMapping.the_emperors_capacitor = { 144239, }
+TJ.Generated.EquippedMapping.ancient_knot_of_wisdom = { 161417, 166793, }
+TJ.Generated.EquippedMapping.ashvanes_razor_coral = { 169311, }
+TJ.Generated.EquippedMapping.azsharas_font_of_power = { 169314, }
+TJ.Generated.EquippedMapping.azurethos_singed_plumage = { 161377, }
+TJ.Generated.EquippedMapping.balefire_branch = { 159630, }
+TJ.Generated.EquippedMapping.cyclotronic_blast = { }
+TJ.Generated.EquippedMapping.dribbling_inkpod = { 169319, }
+TJ.Generated.EquippedMapping.first_mates_spyglass = { 158163, }
+TJ.Generated.EquippedMapping.gladiators_badge = { 126460, 135691, 135697, 135700, 135703, 135804, 135810, 135813, 135816, 136143, 136149, 136152, 136155, 136256, 136262, 136265, 136268, 142660, 142666, 142669, 142672, 142773, 142779, 142782, 142785, 143112, 143118, 143121, 143124, 143225, 143231, 143234, 143237, 143607, 144730, 144731, 144736, 144737, 144742, 144743, 144976, 144977, 144982, 144983, 144988, 144989, 145572, 145573, 145578, 145579, 145584, 145585, 145818, 145819, 145824, 145825, 145830, 145831, 148105, 148106, 148111, 148112, 148117, 148118, 148351, 148352, 148357, 148358, 148363, 148364, 148598, 148599, 148604, 148605, 148610, 148611, 148844, 148845, 148850, 148851, 148856, 148857, 149090, 149091, 149096, 149097, 149102, 149103, 149336, 149337, 149342, 149343, 149348, 149349, 161902, 165058, 167380, 172669, 97531, 97532, 97936, }
+TJ.Generated.EquippedMapping.gladiators_medallion = { 100006, 100031, 100056, 100057, 100058, 100124, 100568, 100591, 100616, 100617, 100618, 100684, 102483, 102625, 102672, 102738, 102822, 102869, 102935, 103333, 103334, 103335, 103530, 103531, 103532, 111229, 111230, 111231, 115756, 115757, 115758, 118065, 120151, 122706, 122707, 124863, 124864, 124865, 124866, 125342, 125343, 125977, 125978, 125979, 125980, 126456, 126457, 127123, 127124, 127125, 127126, 161674, 165055, 167377, 172666, 70390, 72411, 73534, 73535, 73536, 73537, 73538, 73539, 84450, 84451, 84452, 84453, 84454, 84455, 84931, 84932, 84933, 84943, 84944, 84945, 91329, 91330, 91331, 91332, 91333, 91334, 91682, 91683, 91684, 91685, 91686, 91687, 94338, 94361, 94386, 94387, 94388, 94454, 97533, 97845, 97935, 98875, 98876, 98877, 98878, 98879, 98880, }
+TJ.Generated.EquippedMapping.grongs_primal_rage = { 165574, }
+TJ.Generated.EquippedMapping.hyperthread_wristwraps = { 168989, }
+TJ.Generated.EquippedMapping.ignition_mages_fuse = { 159615, }
+TJ.Generated.EquippedMapping.jes_howler = { 159627, }
+TJ.Generated.EquippedMapping.lurkers_insidious_gift = { 167866, }
+TJ.Generated.EquippedMapping.lustrous_golden_plumage = { 159617, }
+TJ.Generated.EquippedMapping.manifesto_of_madness = { 174103, }
+TJ.Generated.EquippedMapping.neural_synapse_enhancer = { 168973, }
+TJ.Generated.EquippedMapping.notorious_gladiators_badge = { 167380, }
+TJ.Generated.EquippedMapping.notorious_gladiators_medallion = { 167377, }
+TJ.Generated.EquippedMapping.pocketsized_computation_device = { }
+TJ.Generated.EquippedMapping.ramping_amplitude_gigavolt_engine = { 165580, }
+TJ.Generated.EquippedMapping.shockbiters_fang = { 169318, }
+TJ.Generated.EquippedMapping.sinister_gladiators_badge = { 165058, }
+TJ.Generated.EquippedMapping.sinister_gladiators_medallion = { 165055, }
+TJ.Generated.EquippedMapping.tzanes_barkspines = { }
+TJ.Generated.EquippedMapping.variable_intensity_gigavolt_oscillating_reactor = { 165572, }
+TJ.Generated.EquippedMapping.vial_of_animated_blood = { 159625, }
+TJ.Generated.EquippedMapping.vision_of_demise = { 169307, }
