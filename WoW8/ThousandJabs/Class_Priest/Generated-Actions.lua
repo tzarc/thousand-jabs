@@ -26,6 +26,7 @@ actions+=/run_action_list,name=single,if=active_enemies=1
 actions.cds=memory_of_lucid_dreams,if=(buff.voidform.stack>20&insanity<=50)|buff.voidform.stack>(26+7*buff.bloodlust.up)|(current_insanity_drain*((gcd.max*2)+action.mind_blast.cast_time))>insanity
 actions.cds+=/blood_of_the_enemy
 actions.cds+=/guardian_of_azeroth,if=buff.voidform.stack>15
+actions.cds+=/use_item,name=manifesto_of_madness,if=spell_targets.mind_sear>=2|raid_event.adds.in>60
 actions.cds+=/focused_azerite_beam,if=spell_targets.mind_sear>=2|raid_event.adds.in>60
 actions.cds+=/purifying_blast,if=spell_targets.mind_sear>=2|raid_event.adds.in>60
 actions.cds+=/concentrated_flame,line_cd=6,if=time<=10|(buff.chorus_of_insanity.stack>=15&buff.voidform.up)|full_recharge_time<gcd|target.time_to_die<5

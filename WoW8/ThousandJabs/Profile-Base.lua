@@ -208,6 +208,7 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
             action.cooldown_down = function(spell, env) return (not spell.cooldown_ready) and true or false end
             action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
             action.spell_charges = function(spell, env) return spell.cooldown_ready and 1 or 0 end
+            action.cooldown_full_recharge_time = function(spell, env) return spell.cooldown_remains and 1 or 0 end
         end
     end
 end
@@ -247,6 +248,10 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
             action.spell_recharge_time = function(spell, env)
                 local remains = (spell.blacklisted and 999) or (spell.rechargeStartTime + spell.rechargeDuration - env.currentTime)
                 return (spell.spell_charges > 0) and 0 or remains
+            end
+
+            action.cooldown_full_recharge_time = function(spell, env)
+                return mmax(0, (spell.spell_max_charges - spell.spell_charges_fractional)*spell.rechargeDuration)
             end
 
             local cooldown_remains_override = rawget(action, 'cooldown_remains_override')
