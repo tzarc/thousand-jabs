@@ -266,6 +266,7 @@ local vengeance_hooks = {
     }
 }
 
+--[[
 TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
@@ -292,3 +293,4 @@ TJ:RegisterPlayerClass({
         { "sigil_placed", "any_flame_sigil.placed" },
     },
 })
+]]
