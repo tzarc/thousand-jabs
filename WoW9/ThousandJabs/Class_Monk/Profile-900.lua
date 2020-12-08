@@ -18,6 +18,33 @@ local mmin = math.min
 local mfloor = math.floor
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Common profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- Runeforges
+local runeforging_overrides = {
+    charred_passions = {
+        runeforge_equipped = false, -- TODO
+    },
+}
+
+-- Covenants
+local covenant_overrides = {
+    weapons_of_order = { -- Kyrian
+        SpellIDs = { 310454 }, -- TODO, add aura IDs
+    },
+    fallen_order = { -- Venthyr
+        SpellIDs = { 326860 }, -- TODO, add aura IDs
+    },
+    bonedust_brew = { -- Necrolord
+        SpellIDs = { 325216 }, -- TODO, add aura IDs
+    },
+    faeline_stomp = { -- Night Fae
+        SpellIDs = { 327104 }, -- TODO, add aura IDs
+    },
+}
+
+------------------------------------------------------------------------------------------------------------------------
 -- Brewmaster profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -87,10 +114,85 @@ local brewmaster_base_overrides = {
             end
         end,
     },
+    invoke_niuzao_the_black_ox = {
+        CanCast = function(spell, env)
+            return env.target.exists
+        end,
+    },
+    touch_of_death = {
+        CanCast = function(spell, env)
+            return env.target.exists
+        end,
+    },
+    purifying_brew = {
+        PerformCast = function(spell,env)
+            -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
+            if env.stagger_heavy.aura_up then
+                env.stagger_moderate.expirationTime = env.stagger_heavy.expirationTime
+                env.stagger_heavy.expirationTime = 0
+            elseif env.stagger_moderate.aura_up then
+                env.stagger_light.expirationTime = env.stagger_moderate.expirationTime
+                env.stagger_moderate.expirationTime = 0
+            end
+        end,
+    },
+    elusive_brawler = {
+        AuraID = 195630,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
 }
 
 local brewmaster_talent_overrides = {
     }
+
+local brewmaster_stagger_overrides = {
+    stagger = {
+        any = function(spell, env) return spell.light or spell.moderate or spell.heavy or false end,
+        light = function(spell, env) return (env.stagger_light.aura_remains > 0) and true or false end,
+        moderate = function(spell, env) return (env.stagger_moderate.aura_remains > 0) and true or false end,
+        heavy = function(spell, env) return (env.stagger_heavy.aura_remains > 0) and true or false end,
+        total_damage_staggered = function(spell, env)
+            return UnitStagger('player') or 0
+        end,
+        ticks_remain = function(spell, env)
+            return mfloor(spell.aura_remains * 2) -- every 0.5 secs, so double the
+        end,
+        damage_per_tick = function(spell, env)
+            local ticks = spell.ticks_remain
+            if ticks <= 0 then return 0 end
+            return spell.total_damage_staggered / ticks
+        end,
+        aura_remains = function(spell, env)
+            return spell.heavy and env.stagger_heavy.aura_remains
+                or spell.moderate and env.stagger_moderate.aura_remains
+                or spell.light and env.stagger_light.aura_remains
+                or 0
+        end,
+    },
+    stagger_light = {
+        AuraID = 124275,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_moderate = {
+        AuraID = 124274,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    stagger_heavy = {
+        AuraID = 124273,
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+}
+
+-- Stagger tick damage accumulator
+for i = 1,20 do
+    brewmaster_stagger_overrides.stagger['last_tick_damage_'..i] = function(spell, env)
+        return spell.damage_per_tick * i
+    end
+end
 
 TJ:RegisterPlayerClass({
     name = 'Brewmaster',
@@ -99,9 +201,12 @@ TJ:RegisterPlayerClass({
     default_action_profile = 'simc::monk::brewmaster',
     resources = { 'energy', 'chi' },
     actions = {
+        runeforging_overrides,
+        covenant_overrides,
         brewmaster_abilities_exported,
         brewmaster_base_overrides,
-        brewmaster_talent_overrides
+        brewmaster_talent_overrides,
+        brewmaster_stagger_overrides
     },
     blacklisted = {
     },

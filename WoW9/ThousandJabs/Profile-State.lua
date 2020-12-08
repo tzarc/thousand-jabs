@@ -383,7 +383,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     end
 
     -- Set the initial parameters
-    env.ptr = Core:MatchesBuild('8.0.0', '8.0.9')
+    env.ptr = Core:MatchesBuild('9.1.0', '9.9.9')
     env.sampleTime = GetTime()
     env.active_enemies = self.numTargets
     env.spell_targets = self.numTargets

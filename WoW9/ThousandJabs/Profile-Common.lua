@@ -125,6 +125,7 @@ Core.Environment.common = {
     },
     target = {
         exists = function(self,state) return UnitExists('target'), true end,
+        hostile = function(self,state) return (UnitReaction('target','player') or 4) <= 4 end,
         time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end,
         is_casting = false,
         is_interruptible = false,
@@ -235,15 +236,15 @@ Core.Environment.common = {
             return (env.movement.distance > 5) and true or false
         end,
     },
-    concordance_of_the_legionfall = {
-        AuraID = { 242583, 242584, 242586, 243096 },
-        AuraUnit = 'player',
-        AuraMine = true,
-    },
-    stoneform = {
+
+    -- Racials
+    stoneform = { -- Dwarf
         AuraID = { 20594 },
         AuraUnit = 'player',
         AuraMine = true,
+    },
+    bag_of_tricks = { -- Vulpera
+        SpellIDs = { 312411 },
     },
 }
 Core.Environment.common.exhaustion = Core.Environment.common.sated

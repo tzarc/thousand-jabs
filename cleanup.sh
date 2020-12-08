@@ -43,7 +43,7 @@ tjfind -type f | parallel "chmod -x '{1}'"
 tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
 
 # Make sure everything has Unix line endings
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "dos2unix '{1}' >/dev/null 2>&1"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' -or -iname '*.md' | parallel "dos2unix '{1}' >/dev/null 2>&1"
 
 # Remove trailing whitespace
 tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
