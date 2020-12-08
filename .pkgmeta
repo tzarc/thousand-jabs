@@ -29,3 +29,4 @@ ignore:
     - tag-repo.sh
     - README.md
     - TODO.md
+    - LICENSE
