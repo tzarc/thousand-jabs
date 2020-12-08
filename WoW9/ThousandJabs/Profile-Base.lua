@@ -80,6 +80,7 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
     if keyword == "gcd.remains" then keyword = "gcd_remains" end
 
     -- Single-word conversions
+    if keyword == "health" then keyword = "health.curr" end
     if keyword == "target" then keyword = "target.curr" end
     if keyword == "time_to_die" then keyword = "target.time_to_die" end
     if keyword == "refreshable" then keyword = "spell.THIS_SPELL.refreshable" end
