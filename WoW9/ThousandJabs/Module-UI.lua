@@ -12,6 +12,7 @@ local UI = TJ:GetModule('UI')
 
 local LDB = LibStub("LibDataBroker-1.1")
 
+local BackdropTemplateMixin = BackdropTemplateMixin
 local CreateFrame = CreateFrame
 local InCombatLockdown = InCombatLockdown
 local IsRightAltKeyDown = IsRightAltKeyDown

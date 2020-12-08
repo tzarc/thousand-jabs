@@ -266,7 +266,7 @@ function TJ:PerformUpdate()
     -- Run any commands in the queue
     self:RunFuncCoroutines()
 end
---Profiling:ProfileFunction(TJ, 'PerformUpdate')
+Profiling:ProfileFunction(TJ, 'PerformUpdate')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Profile activation/deactivation
@@ -281,7 +281,7 @@ end
 
 function TJ:ActivateProfile()
     -- Ensure logging has a separate line entry, and doesn't contribute to other metrics
-    --Profiling:ProfileFunction(Core, 'UpdateLog', 'Core:UpdateLog')
+    Profiling:ProfileFunction(Core, 'UpdateLog', 'Core:UpdateLog')
 
     -- Set up a base GCD, this will change during combat
     self.currentGCD = 1
@@ -326,7 +326,7 @@ function TJ:ActivateProfile()
 
     self:QueueUpdate()
 end
---Profiling:ProfileFunction(TJ, 'ActivateProfile')
+Profiling:ProfileFunction(TJ, 'ActivateProfile')
 
 function TJ:DeactivateProfile()
     -- Clear the update timer
@@ -365,7 +365,7 @@ function TJ:DeactivateProfile()
 
     self:QueueUpdate()
 end
---Profiling:ProfileFunction(TJ, 'DeactivateProfile')
+Profiling:ProfileFunction(TJ, 'DeactivateProfile')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Queued profile actions
@@ -444,7 +444,7 @@ function TJ:ExecuteAllActionProfiles()
         end
     end
 end
---Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
+Profiling:ProfileFunction(TJ, 'ExecuteAllActionProfiles')
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Addon enable/disable handlers

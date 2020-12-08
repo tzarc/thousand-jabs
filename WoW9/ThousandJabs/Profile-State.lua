@@ -758,37 +758,37 @@ function TJ:CreateNewState(numTargets)
     state.set_bonus = CreateSetBonusTable(state, profile)
 
     state.Reset = StateResetPrototype
-    --Profiling:ProfileFunction(state, 'Reset', 'state:Reset')
+    Profiling:ProfileFunction(state, 'Reset', 'state:Reset')
 
     state.Defer = StateDeferPrototype
-    --Profiling:ProfileFunction(state, 'Defer', 'state:Defer')
+    Profiling:ProfileFunction(state, 'Defer', 'state:Defer')
 
     state.CastAction = StateCastActionPrototype
-    --Profiling:ProfileFunction(state, 'CastAction', 'state:CastAction')
+    Profiling:ProfileFunction(state, 'CastAction', 'state:CastAction')
 
     -- Base action prediction for the current time, or just after the current cast finishes
     state.PredictNextAction = StatePredictNextActionPrototype
-    --Profiling:ProfileFunction(state, 'PredictNextAction', 'state:PredictNextAction')
+    Profiling:ProfileFunction(state, 'PredictNextAction', 'state:PredictNextAction')
 
     -- Prediction of the action following the one specified, mocing the prediction time accordingly
     state.PredictActionFollowing = StatePredictActionFollowingPrototype
-    --Profiling:ProfileFunction(state, 'PredictActionFollowing', 'state:PredictActionFollowing')
+    Profiling:ProfileFunction(state, 'PredictActionFollowing', 'state:PredictActionFollowing')
 
     -- Prediction at the supplied time offset
     state.PredictActionAtOffset = StatePredictActionAtOffsetPrototype
-    --Profiling:ProfileFunction(state, 'PredictActionAtOffset', 'state:PredictActionAtOffset')
+    Profiling:ProfileFunction(state, 'PredictActionAtOffset', 'state:PredictActionAtOffset')
 
     -- Execute an action profile list and get the resulting action
     state.ExecuteActionProfileList = StateExecuteActionProfileListPrototype
-    --Profiling:ProfileFunction(state, 'ExecuteActionProfileList', 'state:ExecuteActionProfileList')
+    Profiling:ProfileFunction(state, 'ExecuteActionProfileList', 'state:ExecuteActionProfileList')
 
     -- Export the actions table
     state.ExportActionsTable = StateExportActionsTablePrototype
-    --Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
+    Profiling:ProfileFunction(state, 'ExportActionsTable', 'state:ExportActionsTable')
 
     -- Export the parsed results table
     state.ExportParsedTable = StateExportParsedTablePrototype
-    --Profiling:ProfileFunction(state, 'ExportParsedTable', 'state:ExportParsedTable')
+    Profiling:ProfileFunction(state, 'ExportParsedTable', 'state:ExportParsedTable')
 
     -- Reset the state by default, populating with initial data
     state:Reset(1)

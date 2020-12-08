@@ -149,7 +149,7 @@ function UnitCache:GetAura(unitID, spellID, mine)
         end
     end
 end
---Profiling:ProfileFunction(UnitCache, 'GetAura', 'unitcache:GetAura')
+Profiling:ProfileFunction(UnitCache, 'GetAura', 'unitcache:GetAura')
 
 function UnitCache:UpdateUnitCache(unitID, forceUpdate)
     if UnitExists(unitID) then
@@ -166,7 +166,7 @@ function UnitCache:UpdateUnitCache(unitID, forceUpdate)
     end
     return nil
 end
---Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
+Profiling:ProfileFunction(UnitCache, 'UpdateUnitCache', 'unitcache:UpdateUnitCache')
 
 function UnitCache:PurgeExpiredUnitCaches()
     local now = GetTime()
@@ -177,7 +177,7 @@ function UnitCache:PurgeExpiredUnitCaches()
         end
     end
 end
---Profiling:ProfileFunction(UnitCache, 'PurgeExpiredUnitCaches', 'unitcache:PurgeExpiredUnitCaches')
+Profiling:ProfileFunction(UnitCache, 'PurgeExpiredUnitCaches', 'unitcache:PurgeExpiredUnitCaches')
 
 function UnitCache:UpdateTimeToDie(unitID)
     local theGUID = UnitGUID(unitID)
@@ -208,7 +208,7 @@ function UnitCache:UpdateTimeToDie(unitID)
     local deltaHealth = ttdData.midHealth - ttdData.initHealth
     ttdData.ttd = (deltaHealth == 0) and 99999 or mabs(currHealth * (ttdData.initTime - ttdData.midTime) / deltaHealth)
 end
---Profiling:ProfileFunction(UnitCache, 'UpdateTimeToDie', 'unitcache:UpdateTimeToDie')
+Profiling:ProfileFunction(UnitCache, 'UpdateTimeToDie', 'unitcache:UpdateTimeToDie')
 
 function UnitCache:UnitTimeToDie(unitID)
     local theGUID = UnitGUID(unitID)
@@ -262,7 +262,7 @@ function UnitCache:COMBAT_LOG_EVENT_UNFILTERED()
         UnitCache:PurgeExpiredUnitCaches()
     end
 end
---Profiling:ProfileFunction(UnitCache, 'COMBAT_LOG_EVENT_UNFILTERED', 'unitcache:COMBAT_LOG_EVENT_UNFILTERED')
+Profiling:ProfileFunction(UnitCache, 'COMBAT_LOG_EVENT_UNFILTERED', 'unitcache:COMBAT_LOG_EVENT_UNFILTERED')
 
 updateFrame:SetScript("OnEvent", function(self, eventName, ...) UnitCache[eventName](UnitCache, eventName, ...) end)
 updateFrame:RegisterEvent('UNIT_AURA')
