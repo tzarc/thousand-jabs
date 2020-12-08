@@ -30,6 +30,7 @@ local UnitLevel = UnitLevel
 local UnitPower = UnitPower
 local UnitPowerMax = UnitPowerMax
 local UnitRace = UnitRace
+local UnitReaction = UnitReaction
 local wipe = wipe
 
 local Enum_PowerType_Mana = Enum.PowerType.Mana

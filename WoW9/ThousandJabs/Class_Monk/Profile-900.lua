@@ -125,6 +125,9 @@ local brewmaster_base_overrides = {
         end,
     },
     purifying_brew = {
+        CanCast = function(spell, env)
+            return env.stagger.total_damage_staggered > 0
+        end,
         PerformCast = function(spell,env)
             -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
             if env.stagger_heavy.aura_up then
@@ -141,10 +144,36 @@ local brewmaster_base_overrides = {
         AuraUnit = 'player',
         AuraMine = true,
     },
+    keg_smash = {
+        AuraID = 121253,
+        AuraUnit = 'target',
+        AuraMine = true,
+        AuraApplied = 'keg_smash',
+        AuraApplyLength = 15,
+    },
+    breath_of_fire = {
+        AuraApplied = 'breath_of_fire_dot',
+        AuraApplyLength = 12,
+    },
+    breath_of_fire_dot = {
+        AuraID = 123725,
+        AuraUnit = 'target',
+        AuraMine = true,
+        aura_refreshable = function(spell, env)
+            return spell.aura_remains < (env.breath_of_fire.AuraApplyLength / 2) and true or false -- Half of the dot in order to deal with time extension
+        end,
+    },
 }
 
 local brewmaster_talent_overrides = {
-    }
+    diffuse_magic = { -- No longer Brewmaster ability?
+        AuraID = 122783,
+        AuraMine = true,
+        AuraUnit = 'player',
+        AuraApplied = 'diffuse_magic',
+        AuraApplyLength = 6,
+    },
+}
 
 local brewmaster_stagger_overrides = {
     stagger = {
@@ -199,7 +228,7 @@ TJ:RegisterPlayerClass({
     class_id = 10,
     spec_id = 1,
     default_action_profile = 'simc::monk::brewmaster',
-    resources = { 'energy', 'chi' },
+    resources = { 'energy', 'energy_per_time', 'chi' },
     actions = {
         runeforging_overrides,
         covenant_overrides,
