@@ -126,14 +126,14 @@ local brewmaster_base_overrides = {
     },
     purifying_brew = {
         CanCast = function(spell, env)
-            return env.stagger.total_damage_staggered > 0
+            return env.stagger.total_damage_staggered > (env.health.max * 0.03) -- Skip stagger that's too small.
         end,
         PerformCast = function(spell,env)
             -- Swap stagger urgency to be down one level, to approximate purification (heavy->moderate, moderate->light)
-            if env.stagger_heavy.aura_up then
+            if env.stagger.heavy then
                 env.stagger_moderate.expirationTime = env.stagger_heavy.expirationTime
                 env.stagger_heavy.expirationTime = 0
-            elseif env.stagger_moderate.aura_up then
+            elseif env.stagger.moderate then
                 env.stagger_light.expirationTime = env.stagger_moderate.expirationTime
                 env.stagger_moderate.expirationTime = 0
             end
@@ -238,6 +238,7 @@ TJ:RegisterPlayerClass({
         brewmaster_stagger_overrides
     },
     blacklisted = {
+        'gift_of_the_ox'
     },
     config_checkboxes = {
     },

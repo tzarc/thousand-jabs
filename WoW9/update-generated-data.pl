@@ -243,7 +243,7 @@ my $exportedSpecData = {
 my $customprofiles = {
 
     #    DeathKnight => ["blood"],
-    #    Monk        => ["brewmaster"],
+    Monk => ["brewmaster"],
 };
 
 my $profiles = {

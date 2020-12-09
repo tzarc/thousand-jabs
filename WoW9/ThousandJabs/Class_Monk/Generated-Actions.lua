@@ -4,6 +4,40 @@ if select(3, UnitClass('player')) ~= 10 then return end
 
 local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 
+TJ:RegisterActionProfileList('custom::monk::brewmaster', 'Thousand Jabs Custom Monk Profile: Brewmaster', 10, 1, [[
+actions=auto_attack
+actions+=/spear_hand_strike
+actions+=/variable,name=heal_threshold,value=health.pct<80
+actions+=/purifying_brew,if=stagger.heavy
+actions+=/celestial_brew
+actions+=/chi_wave,if=talent.chi_wave.enabled&variable.heal_threshold
+actions+=/call_action_list,name=ooc,if=!in_combat
+actions+=/call_action_list,name=oh_shit,if=incoming_damage_5s>=health.max*0.65|health.pct<50
+actions+=/call_action_list,name=normal
+actions.ooc+=/purifying_brew,if=stagger.any
+actions.ooc+=/expel_harm,if=variable.heal_threshold
+actions.ooc+=/vivify,if=variable.heal_threshold
+actions.oh_shit=fortifying_brew
+actions.oh_shit+=/purifying_brew,if=stagger.heavy|stagger.moderate
+actions.oh_shit+=/healing_elixir
+actions.oh_shit+=/expel_harm
+actions.oh_shit+=/dampen_harm
+actions.normal=touch_of_death
+actions.normal+=/invoke_niuzao_the_black_ox,if=time>5&target.time_to_die>25
+actions.normal+=/weapons_of_order
+actions.normal+=/keg_smash
+actions.normal+=/blackout_kick,if=spell_targets<=2
+actions.normal+=/breath_of_fire,if=dot.breath_of_fire_dot.refreshable
+actions.normal+=/blackout_kick,if=spell_targets>2
+actions.normal+=/rushing_jade_wind
+actions.normal+=/chi_burst
+actions.normal+=/chi_wave
+actions.normal+=/expel_harm,if=health.pct<80
+actions.normal+=/healing_elixir,if=health.pct<80
+actions.normal+=/tiger_palm,if=energy>65&spell_targets<=2
+actions.normal+=/spinning_crane_kick,if=energy>65&spell_targets>2
+]])
+
 TJ:RegisterActionProfileList('simc::monk::brewmaster', 'Simulationcraft Monk Profile: Brewmaster', 10, 1, [[
 actions.precombat=flask
 actions.precombat+=/food
@@ -41,6 +75,8 @@ actions+=/breath_of_fire,if=buff.charred_passions.down&runeforge.charred_passion
 actions+=/blackout_kick
 actions+=/keg_smash
 actions+=/faeline_stomp
+actions+=/expel_harm,if=buff.gift_of_the_ox.stack>=3
+actions+=/touch_of_death
 actions+=/rushing_jade_wind,if=buff.rushing_jade_wind.down
 actions+=/spinning_crane_kick,if=buff.charred_passions.up
 actions+=/breath_of_fire,if=buff.blackout_combo.down&(buff.bloodlust.down|(buff.bloodlust.up&dot.breath_of_fire_dot.refreshable))
