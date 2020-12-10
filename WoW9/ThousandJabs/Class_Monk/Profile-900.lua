@@ -116,12 +116,12 @@ local brewmaster_base_overrides = {
     },
     invoke_niuzao_the_black_ox = {
         CanCast = function(spell, env)
-            return env.target.exists
+            return env.target.hostile
         end,
     },
     touch_of_death = {
         CanCast = function(spell, env)
-            return env.target.exists
+            return env.target.hostile and env.target.curr_health < env.health.curr
         end,
     },
     purifying_brew = {

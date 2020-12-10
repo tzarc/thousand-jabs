@@ -125,8 +125,9 @@ Core.Environment.common = {
         target_percent = function(self,state) return UnitExists('target') and (100 * UnitHealth('target') / UnitHealthMax('target')) or 0, true end,
     },
     target = {
+        curr_health = function(self,state) return UnitHealth('target') or 0 end,
         exists = function(self,state) return UnitExists('target'), true end,
-        hostile = function(self,state) return (UnitReaction('target','player') or 4) <= 4 end,
+        hostile = function(self,state) return self.exists and (UnitReaction('target','player') or 4) <= 4 end,
         time_to_die = function(self,state) return UnitCache:UnitTimeToDie('target') or 99999 end,
         is_casting = false,
         is_interruptible = false,
