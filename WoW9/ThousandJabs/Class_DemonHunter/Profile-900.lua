@@ -258,7 +258,7 @@ local vengeance_hooks = {
     --[[
     OnPredictActionAtOffset = function(env)
     local state = getmetatable(env).__state
-    for k,v in pairs(state.castQueue) do
+    for k,v in Core:OrderedPairs(state.castQueue) do
     Core:Debug("|cFFFF6600%30s | %12.3f | %8.3f|r", v.ability, v.time, v.time - GetTime())
     end
     end,

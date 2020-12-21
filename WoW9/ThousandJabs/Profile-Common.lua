@@ -119,9 +119,12 @@ Core.Environment.common = {
         curr = function(self,state) return UnitLevel('player') or 0 end,
     },
     health = {
-        curr = function(self,state) return UnitHealth('player') or 0 end,
+        curr = function(self,state) return self.sampled + self.gained - self.lost end,
+        gained = 0,
+        lost = 0,
+        sampled = function(self,state) return UnitHealth('player') or 0 end,
         max = function(self,state) return UnitHealthMax('player') or 0 end,
-        percent = function(self,state) return UnitExists('player') and (100 * UnitHealth('player') / UnitHealthMax('player')) or 0, true end,
+        percent = function(self,state) return UnitExists('player') and (100 * self.curr / UnitHealthMax('player')) or 0, true end,
         target_percent = function(self,state) return UnitExists('target') and (100 * UnitHealth('target') / UnitHealthMax('target')) or 0, true end,
     },
     target = {
@@ -152,6 +155,7 @@ Core.Environment.common = {
         raid_event_exists = function(self,state) return (state.active_enemies > 1) and true or false end,
         raid_event_up = function(self,state) return self.raid_event_exists end,
         raid_event_in = 180,
+        raid_event_remains = 0,
         raid_event_count = 0,
     },
     potion = {
@@ -248,6 +252,14 @@ Core.Environment.common = {
     bag_of_tricks = { -- Vulpera
         SpellIDs = { 312411 },
     },
+
+    -- Covenants
+    covenant = {
+        kyrian = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 1) and true or false end,
+        venthyr = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 2) and true or false end,
+        night_fae = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 3) and true or false end,
+        necrolord = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 4) and true or false end,
+    }
 }
 Core.Environment.common.exhaustion = Core.Environment.common.sated
 

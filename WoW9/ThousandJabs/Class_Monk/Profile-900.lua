@@ -26,12 +26,21 @@ local runeforging_overrides = {
     charred_passions = {
         runeforge_equipped = false, -- TODO
     },
+    recently_rushing_tiger_palm = {
+        runeforge_equipped = false, -- TODO
+        AuraID = { 337341 },
+        AuraUnit = "player",
+        AuraMine = true,
+    },
 }
 
 -- Covenants
 local covenant_overrides = {
     weapons_of_order = { -- Kyrian
-        SpellIDs = { 310454 }, -- TODO, add aura IDs
+        SpellIDs = { 310454 },
+        AuraID = { 310454 },
+        AuraUnit = "player",
+        AuraMine = true,
     },
     fallen_order = { -- Venthyr
         SpellIDs = { 326860 }, -- TODO, add aura IDs
@@ -43,6 +52,190 @@ local covenant_overrides = {
         SpellIDs = { 327104 }, -- TODO, add aura IDs
     },
 }
+
+-- Aliases
+covenant_overrides.weapons_of_order_ww = covenant_overrides.weapons_of_order
+
+
+-- Conduits
+local conduit_overrides = {
+    calculated_strikes = {
+        conduit_enabled = false -- TODO
+    },
+}
+
+-- Legendaries
+local legendary_overrides = {
+    chi_energy = {
+        AuraID = { 337571 },
+        AuraUnit = "player",
+        AuraMine = true,
+    },
+    the_emperors_capacitor = {
+        AuraID = { 337291 },
+        AuraUnit = "player",
+        AuraMine = true,
+    },
+}
+
+------------------------------------------------------------------------------------------------------------------------
+-- Windwalker profile definition
+------------------------------------------------------------------------------------------------------------------------
+
+-- exported with /tj _esd
+local windwalker_abilities_exported = {
+    afterlife = { SpellIDs = { 116092 }, },
+    ascension = { TalentID = 22098, },
+    blackout_kick = { SpellIDs = { 100784 }, },
+    celerity = { TalentID = 19304, },
+    chi_burst = { SpellIDs = { 123986 }, TalentID = 20185, },
+    chi_torpedo = { SpellIDs = { 115008 }, TalentID = 19818, },
+    chi_wave = { SpellIDs = { 115098 }, TalentID = 19820, },
+    crackling_jade_lightning = { SpellIDs = { 117952 }, },
+    dampen_harm = { SpellIDs = { 122278 }, TalentID = 20175, },
+    dance_of_chiji = { TalentID = 22102, },
+    detox = { SpellIDs = { 218164 }, },
+    diffuse_magic = { SpellIDs = { 122783 }, TalentID = 20173, },
+    disable = { SpellIDs = { 116095 }, },
+    energizing_elixir = { SpellIDs = { 115288 }, TalentID = 22096, },
+    expel_harm = { SpellIDs = { 322101 }, },
+    eye_of_the_tiger = { TalentID = 23106, },
+    fist_of_the_white_tiger = { SpellIDs = { 261947 }, TalentID = 19771, },
+    fists_of_fury = { SpellIDs = { 113656 }, },
+    flying_serpent_kick = { SpellIDs = { 101545 }, },
+    fortifying_brew = { SpellIDs = { 243435 }, },
+    good_karma = { TalentID = 23364, },
+    hit_combo = { TalentID = 22093, },
+    inner_strength = { TalentID = 23258, },
+    invoke_xuen_the_white_tiger = { SpellIDs = { 123904 }, },
+    leg_sweep = { SpellIDs = { 119381 }, },
+    mastery_combo_strikes = { SpellIDs = { 115636 }, },
+    mystic_touch = { SpellIDs = { 8647 }, },
+    paralysis = { SpellIDs = { 115078 }, },
+    provoke = { SpellIDs = { 115546 }, },
+    resuscitate = { SpellIDs = { 115178 }, },
+    ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19995, },
+    rising_sun_kick = { SpellIDs = { 107428 }, },
+    roll = { SpellIDs = { 109132 }, },
+    runes_of_power = { SpellIDs = { 178777 }, },
+    rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 23122, },
+    serenity = { SpellIDs = { 152173 }, TalentID = 21191, },
+    spear_hand_strike = { SpellIDs = { 116705 }, },
+    spinning_crane_kick = { SpellIDs = { 101546 }, },
+    spiritual_focus = { TalentID = 22107, },
+    storm_earth_and_fire = { SpellIDs = { 137639 }, },
+    summon_steward = { SpellIDs = { 324739 }, },
+    tiger_palm = { SpellIDs = { 100780 }, },
+    tiger_tail_sweep = { TalentID = 19993, },
+    tigers_lust = { SpellIDs = { 116841 }, TalentID = 19302, },
+    touch_of_death = { SpellIDs = { 322109 }, },
+    touch_of_karma = { SpellIDs = { 122470 }, },
+    trading_pact = { SpellIDs = { 170200 }, },
+    transcendence = { SpellIDs = { 101643 }, },
+    transcendence_transfer = { SpellIDs = { 119996 }, },
+    vivify = { SpellIDs = { 116670 }, },
+    weapons_of_order = { SpellIDs = { 310454 }, },
+    whirling_dragon_punch = { SpellIDs = { 152175 }, TalentID = 22105, },
+    zen_flight = { SpellIDs = { 125883 }, },
+}
+
+local windwalker_base_overrides = {
+    spear_hand_strike = {
+        spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return env.target.is_casting and env.target.is_interruptible
+        end,
+        PerformCast = function(spell, env)
+            if env.target.is_interruptible then
+                env.target.is_casting = false
+                env.target.is_interruptible = false
+            end
+        end,
+    },
+    pet = {
+        xuen_the_white_tiger_active = function(spell, env)
+            return env.invoke_xuen_the_white_tiger.time_since_last_cast < 24
+        end
+    },
+    bok_proc = {
+        AuraID = { 116768 },
+        AuraUnit = "player",
+        AuraMine = true,
+    },
+    storm_earth_and_fire = {
+        Icon = 136038, -- When we cast this, it changes to the "return to player" icon... hard-setting it here prevents that.
+        CanCast = function(spell, env)
+            return spell.time_since_last_cast > (15 - env.gcd)
+        end,
+    },
+}
+
+local windwalker_talent_overrides = {
+    combo_strike = {
+    -- Filled in by metatable in the hooks below...
+    },
+    hit_combo = {
+        AuraID = { 196741 },
+        AuraUnit = "player",
+        AuraMine = true,
+    },
+    whirling_dragon_punch = {
+        CanCast = function(spell, env)
+            return env.fists_of_fury.cooldown_down and env.rising_sun_kick.cooldown_down
+        end,
+    },
+}
+
+local windwalker_hooks = {
+    hooks = {
+        OnStateInit = function(env)
+            --[[
+            Combo Strike has a special lua table -- instead of using the safety check which logs unknown accesses,
+            we need to query the sim state to see whether the last cast matches the ability in question.
+            Override the metatable and use it as a way to check if the last cast matched, returning accordingly.
+            ]]--
+            setmetatable(env.combo_strike, {
+                __index = function(tbl, index)
+                    local state = getmetatable(env).__state
+                    if #state.castQueue == 0 then return true end
+                    return (tostring(index) ~= state.castQueue[#state.castQueue].ability) and true or false
+                end
+            })
+        end,
+        OnPredictActionAtOffset = function(env)
+            local state = getmetatable(env).__state
+            for k,v in Core:OrderedPairs(state.castQueue) do
+                Core:Debug("|cFFFF6600%30s | %12.3f | %8.3f|r", v.ability, v.time, v.time - GetTime())
+            end
+        end,
+    }
+}
+
+TJ:RegisterPlayerClass({
+    name = 'Windwalker',
+    class_id = 10,
+    spec_id = 3,
+    default_action_profile = 'simc::monk::windwalker',
+    resources = { 'energy', 'energy_per_time', 'chi' },
+    actions = {
+        runeforging_overrides,
+        covenant_overrides,
+        conduit_overrides,
+        legendary_overrides,
+        windwalker_abilities_exported,
+        windwalker_base_overrides,
+        windwalker_talent_overrides,
+        windwalker_hooks,
+    },
+    blacklisted = {
+        'flying_serpent_kick'
+    },
+    config_checkboxes = {
+    },
+    conditional_substitutions_pre = {
+        { "combo_strike", "combo_strike.THIS_SPELL" }
+    },
+})
 
 ------------------------------------------------------------------------------------------------------------------------
 -- Brewmaster profile definition
@@ -163,6 +356,16 @@ local brewmaster_base_overrides = {
             return spell.aura_remains < (env.breath_of_fire.AuraApplyLength / 2) and true or false -- Half of the dot in order to deal with time extension
         end,
     },
+    expel_harm = {
+        PerformCast = function(spell, env)
+            env.health.gained = env.health.gained + (env.health.max * 0.05)
+        end,
+    },
+    healing_elixir = {
+        PerformCast = function(spell, env)
+            env.health.gained = env.health.gained + (env.health.max * 0.2)
+        end,
+    },
 }
 
 local brewmaster_talent_overrides = {
@@ -232,6 +435,8 @@ TJ:RegisterPlayerClass({
     actions = {
         runeforging_overrides,
         covenant_overrides,
+        conduit_overrides,
+        legendary_overrides,
         brewmaster_abilities_exported,
         brewmaster_base_overrides,
         brewmaster_talent_overrides,

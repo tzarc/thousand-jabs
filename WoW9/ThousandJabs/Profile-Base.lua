@@ -193,6 +193,7 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
             end
 
             action.spell_cooldown = function(spell, env) return spell.CooldownTime end
+            action.cooldown_duration = action.spell_cooldown -- TBD?
             action.spell_recharge_time = function(spell, env) return spell.CooldownTime end
 
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'

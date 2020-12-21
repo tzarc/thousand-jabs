@@ -415,6 +415,7 @@ local function StateResetPrototype(self, targetCount, seenTargets)
     env.pet.is_casting = mName and true or false
     env.pet.is_interruptible = mInterruptible
     env.pet.casting_spell = mName
+    env.fight_remains = 180
 
     -- Reset the prev_gcd/equipped tables
     env.prev_gcd = self.prev_gcd
