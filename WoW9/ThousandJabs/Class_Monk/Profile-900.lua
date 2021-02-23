@@ -102,7 +102,6 @@ local legendary_overrides = {
 -- Windwalker profile definition
 ------------------------------------------------------------------------------------------------------------------------
 
-
 -- exported with /tj _esd
 local windwalker_abilities_exported = {
     afterlife = { SpellIDs = { 116092 }, },
@@ -199,7 +198,7 @@ local windwalker_base_overrides = {
         end,
     },
     storm_earth_and_fire_fixate = {
-        Icon = 916,
+        Icon = 236188,
         SpellIDs = windwalker_abilities_exported.storm_earth_and_fire.SpellIDs,
         CanCast = function(spell, env)
             return spell.time_since_last_cast < 15
