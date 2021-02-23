@@ -503,8 +503,8 @@ sub create_itemset_bonuses {
     while(<$infile>) {
         chomp $_;
         next if $_ =~ /^\s*#/;
-        $_ =~ s/#.*//g;
-        $_ =~ s/'/"/g;
+        $_         =~ s/#.*//g;
+        $_         =~ s/'/"/g;
         if($mode == 0 && $_ =~ /\s*set_bonus_map/) {
             $mode = 1;
             $text .= "[\n";

@@ -50,6 +50,10 @@ local function expressionPrimaryModifier(keyword, profileSubstitutionsPre, profi
         end
     end
 
+    -- Fixup doublets -> triplets
+    keyword = keyword:gsub('^talent%.([%w_]+)$', 'talent.%1.enabled')
+    keyword = keyword:gsub('^runeforge%.([%w_]+)$', 'runeforge.%1.equipped')
+
     -- Selectors starting with a digit...
     keyword = keyword:gsub('([^%d])%.([%d]+)$', '%1[%2]') -- any trailing digit selectors with no following field (i.e.  something.1) we change to array indexing
     keyword = keyword:gsub('([^%d])%.([%d]+)%.', '%1[%2].') -- any trailing digit selectors with following field (i.e.  something.1.field) we change to array indexing
@@ -194,7 +198,7 @@ local function addActionCooldownFields(action, fullCooldownSecs, isCooldownAffec
 
             action.spell_cooldown = function(spell, env) return spell.CooldownTime end
             action.cooldown_duration = action.spell_cooldown -- TBD?
-            action.spell_recharge_time = function(spell, env) return spell.CooldownTime end
+            action.spell_recharge_time = action.spell_cooldown -- TBD?
 
             action.spell_can_cast_funcsrc = action.spell_can_cast_funcsrc .. ' and (spell.cooldown_remains == 0)'
             action.perform_cast_funcsrc = action.perform_cast_funcsrc .. '; spell.cooldownStart = env.currentTime; spell.cooldownDuration = spell.CooldownTime'
@@ -264,6 +268,7 @@ local function addActionChargesFields(action, fullRechargeSecs, isRechargeAffect
             action.cooldown_react = function(spell, env) return spell.cooldown_ready and true or false end
             action.cooldown_charges_fractional = function(spell, env) return spell.spell_charges_fractional end
             action.cooldown_charges = function(spell, env) return spell.spell_charges end
+            action.cooldown_full_recharge_time = action.cooldown_remains
         end
     end
 end

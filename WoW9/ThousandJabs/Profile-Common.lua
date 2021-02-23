@@ -506,6 +506,13 @@ Core.Environment.resources = {
     },
 }
 
+for i=1,150 do
+    Core.Environment.resources.energy["time_to_"..i] = function(power, env)
+        if (i - power.curr) <= 0 then return 0 end
+        return (i - power.curr) / power.regen
+    end
+end
+
 -- Set up the per-time resources to match the base resources
 Core.Environment.resources.mana_per_time = Core.Environment.resources.mana
 Core.Environment.resources.mana_per_time_no_base = Core.Environment.resources.mana

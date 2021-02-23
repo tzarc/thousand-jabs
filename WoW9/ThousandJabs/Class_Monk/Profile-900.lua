@@ -26,6 +26,9 @@ local runeforging_overrides = {
     charred_passions = {
         runeforge_equipped = false, -- TODO
     },
+    fatal_touch = {
+        runeforge_equipped = false, -- TODO
+    },
     recently_rushing_tiger_palm = {
         runeforge_equipped = false, -- TODO
         AuraID = { 337341 },
@@ -60,6 +63,9 @@ covenant_overrides.weapons_of_order_ww = covenant_overrides.weapons_of_order
 -- Conduits
 local conduit_overrides = {
     calculated_strikes = {
+        conduit_enabled = false -- TODO
+    },
+    coordinated_offensive = {
         conduit_enabled = false -- TODO
     },
 }
@@ -152,10 +158,21 @@ local windwalker_base_overrides = {
             end
         end,
     },
+    tiger_palm = {
+        PerformCast = function(spell, env)
+            env.chi.gained = env.chi.gained + mmin(2, env.chi.deficit)
+        end,
+    },
     pet = {
         xuen_the_white_tiger_active = function(spell, env)
             return env.invoke_xuen_the_white_tiger.time_since_last_cast < 24
         end
+    },
+    touch_of_death = {
+        CanCast = function(spell, env)
+            return env.target.hostile and env.target.curr_health < env.health.curr
+                or env.health.target_percent < 15
+        end,
     },
     bok_proc = {
         AuraID = { 116768 },
@@ -166,6 +183,13 @@ local windwalker_base_overrides = {
         Icon = 136038, -- When we cast this, it changes to the "return to player" icon... hard-setting it here prevents that.
         CanCast = function(spell, env)
             return spell.time_since_last_cast > (15 - env.gcd)
+        end,
+    },
+    storm_earth_and_fire_fixate = {
+        Icon = 916,
+        SpellIDs = windwalker_abilities_exported.storm_earth_and_fire.SpellIDs,
+        CanCast = function(spell, env)
+            return spell.time_since_last_cast < 15
         end,
     },
 }
@@ -228,12 +252,12 @@ TJ:RegisterPlayerClass({
         windwalker_hooks,
     },
     blacklisted = {
-        'flying_serpent_kick'
+        'flying_serpent_kick',
     },
     config_checkboxes = {
     },
     conditional_substitutions_pre = {
-        { "combo_strike", "combo_strike.THIS_SPELL" }
+        { "combo_strike", "combo_strike.THIS_SPELL" },
     },
 })
 
@@ -315,6 +339,7 @@ local brewmaster_base_overrides = {
     touch_of_death = {
         CanCast = function(spell, env)
             return env.target.hostile and env.target.curr_health < env.health.curr
+                or env.health.target_percent < 15
         end,
     },
     purifying_brew = {
