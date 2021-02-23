@@ -17,8 +17,10 @@ local rt = function(tbl) TableCache:Release(tbl) end
 
 local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
+local C_Soulbinds = C_Soulbinds
 local co_yield = coroutine.yield
 local GetActiveSpecGroup = GetActiveSpecGroup
+local GetItemInfo = GetItemInfo
 local GetLocale = GetLocale
 local GetMaxTalentTier = GetMaxTalentTier
 local GetSpecialization = GetSpecialization
@@ -29,6 +31,7 @@ local IsRightAltKeyDown = IsRightAltKeyDown
 local IsRightControlKeyDown = IsRightControlKeyDown
 local IsRightShiftKeyDown = IsRightShiftKeyDown
 local LearnTalent = LearnTalent
+local UnitClass = UnitClass
 local mfloor = math.floor
 local pairs = pairs
 local GetBuildInfo = GetBuildInfo
@@ -303,7 +306,26 @@ function TJ:ShowSpellExportWindow()
 
     -- Ability IDs
     addline("-- exported with /tj _esd")
-    addline("local %s_abilities_exported = {", select(2, GetSpecializationInfo(GetSpecialization())):lower())
+    addline("local %s_conduits_exported = {", slug(select(1, UnitClass('player')):lower()))
+    local conduitIDs = {}
+    for i=0,2 do
+        local conduits = C_Soulbinds.GetConduitCollection(i)
+        for k,v in pairs(conduits) do
+            local conduitID = v.conduitID
+            local name = select(1, GetItemInfo(v.conduitItemID))
+            local slug_name = slug(name)
+            conduitIDs[slug_name] = conduitID
+        end
+    end
+    for k,v in Core:OrderedPairs(conduitIDs) do
+        if not tContains(blacklistedExportedAbilities, k) then
+            addline(Core:Format("    %s = { ConduitID = %d },", k, v))
+        end
+    end
+    addline("}")
+    addline("")
+    addline("-- exported with /tj _esd")
+    addline("local %s_abilities_exported = {", slug(select(2, GetSpecializationInfo(GetSpecialization())):lower()))
     for k,v in Core:OrderedPairs(definedAbilities) do
         if not tContains(blacklistedExportedAbilities, k) then
             local line = Core:Format('    %s = { ', k)

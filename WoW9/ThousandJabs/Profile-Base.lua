@@ -17,6 +17,7 @@ local rt = function(tbl) TableCache:Release(tbl) end
 
 local BOOKTYPE_PET = BOOKTYPE_PET
 local BOOKTYPE_SPELL = BOOKTYPE_SPELL
+local C_Soulbinds = C_Soulbinds
 local GetSpecialization = GetSpecialization
 local GetSpellInfo = GetSpellInfo
 local GetSpellLevelLearned = GetSpellLevelLearned
@@ -35,6 +36,7 @@ local UnitClass = UnitClass
 local UnitSpellHaste = UnitSpellHaste
 local unpack = unpack
 local wipe = wipe
+local Enum_SoulbindNodeState_Selected = Enum.SoulbindNodeState.Selected
 
 Core:Safety()
 
@@ -544,6 +546,17 @@ function TJ:RegisterPlayerClass(config)
             v.OverallSpellID = spellIDs and (type(spellIDs) == "table" and rawget(spellIDs, 1) or spellIDs)
                 or auraIDs and (type(auraIDs) == "table" and rawget(auraIDs, 1) or auraIDs)
                 or talentID and select(6, GetTalentInfoByID(talentID))
+
+            local conduitID = rawget(v, 'ConduitID')
+            if conduitID then
+                v.conduit_enabled = function(conduit, env)
+                    local isInstalled = C_Soulbinds.IsConduitInstalledInSoulbind(C_Soulbinds.GetActiveSoulbindID(), conduitID)
+                    if not isInstalled then return false end
+                    local nodeID = C_Soulbinds.FindNodeIDActuallyInstalled(C_Soulbinds.GetActiveSoulbindID(), conduitID)
+                    local nodeData =  C_Soulbinds.GetNode(nodeID)
+                    return (nodeData.state == Enum_SoulbindNodeState_Selected) and true or false
+                end
+            end
 
             addActionTalentFields(v)
 

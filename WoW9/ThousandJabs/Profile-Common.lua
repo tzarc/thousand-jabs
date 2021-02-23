@@ -10,6 +10,7 @@ local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local UnitCache = TJ:GetModule('UnitCache')
 
+local C_Covenants = C_Covenants
 local GetPowerRegen = GetPowerRegen
 local GetRuneCooldown = GetRuneCooldown
 local GetSpecialization = GetSpecialization

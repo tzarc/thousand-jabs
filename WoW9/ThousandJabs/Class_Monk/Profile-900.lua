@@ -59,15 +59,29 @@ local covenant_overrides = {
 -- Aliases
 covenant_overrides.weapons_of_order_ww = covenant_overrides.weapons_of_order
 
-
 -- Conduits
-local conduit_overrides = {
-    calculated_strikes = {
-        conduit_enabled = false -- TODO
-    },
-    coordinated_offensive = {
-        conduit_enabled = false -- TODO
-    },
+-- exported with /tj _esd
+local monk_conduits_exported = {
+    calculated_strikes = { ConduitID = 19 },
+    celestial_effervescence = { ConduitID = 47 },
+    coordinated_offensive = { ConduitID = 22 },
+    dizzying_tumble = { ConduitID = 37 },
+    evasive_stride = { ConduitID = 56 },
+    fortifying_ingredients = { ConduitID = 33 },
+    grounding_breath = { ConduitID = 25 },
+    harm_denial = { ConduitID = 15 },
+    inner_fury = { ConduitID = 16 },
+    jade_bond = { ConduitID = 28 },
+    lingering_numbness = { ConduitID = 35 },
+    nourishing_chi = { ConduitID = 54 },
+    resplendent_mist = { ConduitID = 31 },
+    rising_sun_revival = { ConduitID = 44 },
+    scalding_brew = { ConduitID = 46 },
+    strike_with_clarity = { ConduitID = 59 },
+    swift_transference = { ConduitID = 41 },
+    tumbling_technique = { ConduitID = 42 },
+    walk_with_the_ox = { ConduitID = 57 },
+    xuens_bond = { ConduitID = 24 },
 }
 
 -- Legendaries
@@ -87,6 +101,7 @@ local legendary_overrides = {
 ------------------------------------------------------------------------------------------------------------------------
 -- Windwalker profile definition
 ------------------------------------------------------------------------------------------------------------------------
+
 
 -- exported with /tj _esd
 local windwalker_abilities_exported = {
@@ -123,7 +138,6 @@ local windwalker_abilities_exported = {
     ring_of_peace = { SpellIDs = { 116844 }, TalentID = 19995, },
     rising_sun_kick = { SpellIDs = { 107428 }, },
     roll = { SpellIDs = { 109132 }, },
-    runes_of_power = { SpellIDs = { 178777 }, },
     rushing_jade_wind = { SpellIDs = { 116847 }, TalentID = 23122, },
     serenity = { SpellIDs = { 152173 }, TalentID = 21191, },
     spear_hand_strike = { SpellIDs = { 116705 }, },
@@ -136,7 +150,6 @@ local windwalker_abilities_exported = {
     tigers_lust = { SpellIDs = { 116841 }, TalentID = 19302, },
     touch_of_death = { SpellIDs = { 322109 }, },
     touch_of_karma = { SpellIDs = { 122470 }, },
-    trading_pact = { SpellIDs = { 170200 }, },
     transcendence = { SpellIDs = { 101643 }, },
     transcendence_transfer = { SpellIDs = { 119996 }, },
     vivify = { SpellIDs = { 116670 }, },
@@ -244,8 +257,8 @@ TJ:RegisterPlayerClass({
     actions = {
         runeforging_overrides,
         covenant_overrides,
-        conduit_overrides,
         legendary_overrides,
+        monk_conduits_exported,
         windwalker_abilities_exported,
         windwalker_base_overrides,
         windwalker_talent_overrides,
@@ -460,8 +473,8 @@ TJ:RegisterPlayerClass({
     actions = {
         runeforging_overrides,
         covenant_overrides,
-        conduit_overrides,
         legendary_overrides,
+        monk_conduits_exported,
         brewmaster_abilities_exported,
         brewmaster_base_overrides,
         brewmaster_talent_overrides,
