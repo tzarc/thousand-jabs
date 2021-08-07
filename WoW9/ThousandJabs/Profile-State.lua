@@ -16,6 +16,8 @@ local SpellData = LibStub('LibSpellData')
 local ct = function() return TableCache:Acquire() end
 local rt = function(tbl) TableCache:Release(tbl) end
 
+local C_Soulbinds = C_Soulbinds
+local Enum_SoulbindNodeState_Selected = Enum.SoulbindNodeState.Selected
 local GetInventoryItemID = GetInventoryItemID
 local getmetatable = getmetatable
 local GetSpellCharges = GetSpellCharges
@@ -371,6 +373,21 @@ local function StateResetPrototype(self, targetCount, seenTargets)
                 v.rechargeDuration = 0
                 v.rechargeSpent = 0
                 v.rechargeGained = 0
+            end
+
+            -- Memoise conduit data
+            local conduitID = rawget(entry, 'ConduitID')
+            if conduitID then
+                local isInstalled = C_Soulbinds.IsConduitInstalledInSoulbind(C_Soulbinds.GetActiveSoulbindID(), conduitID)
+                if isInstalled then
+                    local nodeID = C_Soulbinds.FindNodeIDActuallyInstalled(C_Soulbinds.GetActiveSoulbindID(), conduitID)
+                    local nodeData =  C_Soulbinds.GetNode(nodeID)
+                    v.conduit_enabled = (nodeData.state == Enum_SoulbindNodeState_Selected) and true or false
+                else
+                    v.conduit_enabled = false
+                end
+            else
+                v.conduit_enabled = false
             end
         else
             env[k] = nil

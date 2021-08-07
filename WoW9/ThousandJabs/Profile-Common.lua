@@ -10,7 +10,7 @@ local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 local UnitCache = TJ:GetModule('UnitCache')
 
-local C_Covenants = C_Covenants
+local C_Covenants_GetActiveCovenantID = C_Covenants.GetActiveCovenantID
 local GetPowerRegen = GetPowerRegen
 local GetRuneCooldown = GetRuneCooldown
 local GetSpecialization = GetSpecialization
@@ -256,11 +256,23 @@ Core.Environment.common = {
 
     -- Covenants
     covenant = {
-        kyrian = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 1) and true or false end,
-        venthyr = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 2) and true or false end,
-        night_fae = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 3) and true or false end,
-        necrolord = function(spell, env) return (C_Covenants.GetActiveCovenantID() == 4) and true or false end,
-    }
+        kyrian = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 1) and true or false end,
+        venthyr = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 2) and true or false end,
+        night_fae = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 3) and true or false end,
+        necrolord = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 4) and true or false end,
+    },
+    kyrian = {
+        covenant_enabled = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 1) and true or false end,
+    },
+    venthyr = {
+        covenant_enabled = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 2) and true or false end,
+    },
+    night_fae = {
+        covenant_enabled = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 3) and true or false end,
+    },
+    necrolord = {
+        covenant_enabled = function(spell, env) return (C_Covenants_GetActiveCovenantID() == 4) and true or false end,
+    },
 }
 Core.Environment.common.exhaustion = Core.Environment.common.sated
 

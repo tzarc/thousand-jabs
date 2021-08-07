@@ -11,7 +11,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
-if not Core:MatchesBuild('9.0.0', '9.0.9') then return end
+if not Core:MatchesBuild('9.1.0', '9.1.9') then return end
 
 local mmax = math.max
 local mmin = math.min
@@ -22,13 +22,18 @@ local mfloor = math.floor
 ------------------------------------------------------------------------------------------------------------------------
 
 -- When exporting Vengeance DH, run '/tj _esd' for both with and without the Meta buff applied. Need to make sure we pick up any abilities that exist only in Meta.
+
+-- exported with /tj _esd
+local demon_hunter_conduits_exported = {
+    }
+
 -- exported with /tj _esd
 local vengeance_abilities_exported = {
     abyssal_strike = { TalentID = 22502, },
     agonizing_flames = { TalentID = 22503, },
     bulk_extraction = { SpellIDs = { 320341 }, TalentID = 21902, },
     burning_alive = { TalentID = 22507, },
-    chaos_brand = { SpellIDs = { 281242 }, },
+    chaos_brand = { SpellIDs = { 255260 }, },
     charred_flesh = { TalentID = 22541, },
     concentrated_sigils = { TalentID = 22546, },
     consume_magic = { SpellIDs = { 278326 }, },
@@ -70,6 +75,7 @@ local vengeance_abilities_exported = {
     void_reaver = { TalentID = 22512, },
     worldvein_resonance = { SpellIDs = { 295186 }, },
 }
+
 local vengeance_base_overrides = {
     disrupt = {
         spell_cast_time = 0.01, -- off GCD!
@@ -77,7 +83,7 @@ local vengeance_base_overrides = {
             return env.target.is_casting and env.target.is_interruptible
         end,
         PerformCast = function(spell, env)
-            env.pain.gained = env.pain.gained + 50
+            env.fury.gained = env.fury.gained + 30
             if env.target.is_interruptible then
                 env.target.is_casting = false
                 env.target.is_interruptible = false
@@ -91,17 +97,20 @@ local vengeance_base_overrides = {
         AuraApplied = 'demon_spikes',
         AuraApplyLength = 6,
         spell_cast_time = 0.01, -- off GCD!
+        CanCast = function(spell, env)
+            return spell.expirationTime <= env.currentTime
+        end
     },
     fiery_brand = {
         AuraID = { 204021, 204022, 207744, 207771 },
         AuraMine = true,
         AuraUnit = 'target',
         AuraApplied = 'fiery_brand',
-        AuraApplyLength = 8,
+        AuraApplyLength = 10,
         spell_cast_time = 0.01, -- off GCD!
     },
     immolation_aura = {
-        AuraID = 178740,
+        AuraID = { 178740, 258920 },
         AuraMine = true,
         AuraUnit = 'player',
         AuraApplied = 'immolation_aura',
@@ -110,9 +119,9 @@ local vengeance_base_overrides = {
     infernal_strike = {
         in_flight = false,
         travel_time = 1,
-        aura_duration = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.aura_duration or 0 end,
-        spell_delay = function(spell,env) return env.flame_crash.talent_enabled and env.sigil_of_flame.spell_delay or 0 end,
-        aura_remains = function(spell,env) return env.flame_crash.talent_enabled and mmax(0, spell.aura_duration - spell.time_since_last_cast or 0) end,
+        aura_duration = function(spell,env) return env.abyssal_strike.talent_enabled and env.sigil_of_flame.aura_duration or 0 end,
+        spell_delay = function(spell,env) return env.abyssal_strike.talent_enabled and env.sigil_of_flame.spell_delay or 0 end,
+        aura_remains = function(spell,env) return env.abyssal_strike.talent_enabled and mmax(0, spell.aura_duration - spell.time_since_last_cast or 0) end,
         spell_cast_time = 0.01, -- off GCD!
 
         SpellIDs = { 189110, 189111 }, -- Why does this use a different spellID?!
@@ -127,14 +136,12 @@ local vengeance_base_overrides = {
     shear = {
         fragment_delay = 2.1, -- Guessed from recorded video!
         PerformCast = function(spell, env, state)
-            env.pain.gained = env.pain.gained + 10
-
-            local targetTime = env.currentTime + spell.fragment_delay
-            state:Defer(targetTime, 'fracture', 'add_fragments', 1)
+            env.fury.gained = env.fury.gained + 10
+            state:Defer(env.currentTime + spell.fragment_delay, 'fracture', 'add_fragments', 1)
         end,
         HistoricalCast = function(spell, env, state, originalCastTime)
             local delta = env.currentTime-originalCastTime
-            if delta < spell.fragment_delay then state:Defer(originalCastTime + spell.fragment_delay, 'fracture', 'add_fragments', 2) end
+            if delta < spell.fragment_delay then state:Defer(originalCastTime + spell.fragment_delay, 'fracture', 'add_fragments', 1) end
         end,
         Deferred = function(spell, env, state, triggerTime, ...)
             local cmd, amount = ...
@@ -145,7 +152,7 @@ local vengeance_base_overrides = {
         end,
     },
     soul_cleave = {
-        cost_type = 'pain',
+        cost_type = 'fury',
         PerformCast = function(spell, env)
             env.soul_fragments.spent = env.soul_fragments.spent + mmin(env.soul_fragments.curr,2)
         end,
@@ -155,13 +162,13 @@ local vengeance_base_overrides = {
 local vengeance_talent_overrides = {
     felblade = {
         PerformCast = function(spell, env)
-            env.pain.gained = env.pain.gained + 30
+            env.fury.gained = env.fury.gained + 40
         end,
     },
     fracture = {
         fragment_delay = 2.1, -- Guessed from recorded video!
         PerformCast = function(spell, env, state)
-            env.pain.gained = env.pain.gained + 25
+            env.fury.gained = env.fury.gained + 25
 
             local targetTime = env.currentTime + spell.fragment_delay
             state:Defer(targetTime, 'fracture', 'add_fragments', 2)
@@ -228,13 +235,13 @@ local vengeance_sigil_overrides = {
                 or env.sigil_of_misery.placed
                 or env.sigil_of_silence.placed
                 or (env.sigil_of_chains.talent_enabled and env.sigil_of_chains.placed)
-                or (env.flame_crash.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.abyssal_strike.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     spell_any_flame_sigil = {
         placed = function(spell, env)
             return env.sigil_of_flame.placed
-                or (env.flame_crash.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
+                or (env.abyssal_strike.talent_enabled and env.infernal_strike.time_since_last_cast < env.infernal_strike.aura_duration)
         end,
     },
     sigil_of_flame = sigilInitialiser(),
@@ -246,11 +253,33 @@ local vengeance_sigil_overrides = {
 -- Hmm, dodgy.
 vengeance_base_overrides.infernal_strike.spell_any_flame_sigil = vengeance_sigil_overrides.spell_any_flame_sigil
 
-local vengeance_azerite_overrides = {
-    memory_of_lucid_dreams = {},
-    worldvein_resonance = {},
-    heart_essence = {},
-    concentrated_flame = {},
+local vengeance_runecarving_overrides = {
+    fel_bombardment = {
+        AuraIDs = { 337775 },
+        AuraUnit = 'player',
+        AuraMine = true,
+    },
+    razelikhs_defilement = {
+        runeforge_equipped = false,
+    },
+}
+
+local vengeance_covenant_overrides = {
+    sinful_brand = {
+        AuraIDs = { 317009 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    the_hunt = {
+        AuraIDs = { 323639, 345396, 345422, 345335 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
+    elysian_decree = {
+        AuraIDs = { 306830, 307046, 327839, 339894, 312941, 339893 },
+        AuraUnit = 'target',
+        AuraMine = true,
+    },
 }
 
 local vengeance_hooks = {
@@ -266,19 +295,19 @@ local vengeance_hooks = {
     }
 }
 
---[[
 TJ:RegisterPlayerClass({
     name = 'Vengeance',
     class_id = 12,
     spec_id = 2,
     default_action_profile = 'simc::demonhunter::vengeance',
-    resources = { 'pain', 'soul_fragments' },
+    resources = { 'fury', 'soul_fragments' },
     actions = {
         vengeance_abilities_exported,
         vengeance_base_overrides,
         vengeance_talent_overrides,
         vengeance_sigil_overrides,
-        vengeance_azerite_overrides,
+        vengeance_runecarving_overrides,
+        vengeance_covenant_overrides,
         vengeance_hooks,
     },
     blacklisted = {
@@ -293,4 +322,3 @@ TJ:RegisterPlayerClass({
         { "sigil_placed", "any_flame_sigil.placed" },
     },
 })
-]]

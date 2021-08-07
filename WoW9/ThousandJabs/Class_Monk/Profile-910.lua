@@ -11,7 +11,7 @@ local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
 local Core = TJ:GetModule('Core')
 local Config = TJ:GetModule('Config')
 
-if not Core:MatchesBuild('9.0.0', '9.0.9') then return end
+if not Core:MatchesBuild('9.1.0', '9.1.9') then return end
 
 local mmax = math.max
 local mmin = math.min
@@ -201,7 +201,7 @@ local windwalker_base_overrides = {
         Icon = 236188,
         SpellIDs = windwalker_abilities_exported.storm_earth_and_fire.SpellIDs,
         CanCast = function(spell, env)
-            return spell.time_since_last_cast < 15
+            return env.storm_earth_and_fire.time_since_last_cast < 15
         end,
     },
 }
