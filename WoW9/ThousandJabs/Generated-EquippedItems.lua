@@ -1,12 +1,116 @@
-if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then return end
+if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then
+	return
+end
 
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
-local Core = TJ:GetModule('Core')
+local TJ = LibStub("AceAddon-3.0"):GetAddon("ThousandJabs")
+local Core = TJ:GetModule("Core")
 TJ.Generated = TJ.Generated or {}
 TJ.Generated.EquippedMapping = TJ.Generated.EquippedMapping or {}
 
-TJ.Generated.EquippedMapping.gladiators_badge = { 135691, 135697, 135700, 135703, 135804, 135810, 135813, 135816, 136143, 136149, 136155, 136256, 136262, 136268, 142660, 142666, 142669, 142672, 142773, 142779, 142782, 142785, 143112, 143118, 143121, 143124, 143225, 143231, 143234, 143237, 143607, 144730, 144731, 144736, 144737, 144742, 144743, 144976, 144977, 144982, 144983, 144988, 144989, 145572, 145573, 145578, 145579, 145584, 145585, 145818, 145819, 145824, 145825, 145830, 145831, 148105, 148106, 148111, 148112, 148117, 148118, 148351, 148352, 148357, 148358, 148363, 148364, 148598, 148599, 148604, 148605, 148610, 148611, 148844, 148845, 148850, 148851, 148856, 148857, 149090, 149091, 149096, 149097, 149102, 149103, 149336, 149337, 149342, 149343, 149348, 149349, 161902, 165058, 167380, 172669, 175725, 175921, 185197, 97531, 97532, 97936, }
-TJ.Generated.EquippedMapping.inscrutable_quantum_device = { 179350, }
-TJ.Generated.EquippedMapping.overcharged_anima_battery = { 180116, }
-TJ.Generated.EquippedMapping.shadowgrasp_totem = { 179356, }
-TJ.Generated.EquippedMapping.wrathstone = { 156000, 45263, }
+TJ.Generated.EquippedMapping.gladiators_badge = {
+	135691,
+	135697,
+	135700,
+	135703,
+	135804,
+	135810,
+	135813,
+	135816,
+	136143,
+	136149,
+	136155,
+	136256,
+	136262,
+	136268,
+	142660,
+	142666,
+	142669,
+	142672,
+	142773,
+	142779,
+	142782,
+	142785,
+	143112,
+	143118,
+	143121,
+	143124,
+	143225,
+	143231,
+	143234,
+	143237,
+	143607,
+	144730,
+	144731,
+	144736,
+	144737,
+	144742,
+	144743,
+	144976,
+	144977,
+	144982,
+	144983,
+	144988,
+	144989,
+	145572,
+	145573,
+	145578,
+	145579,
+	145584,
+	145585,
+	145818,
+	145819,
+	145824,
+	145825,
+	145830,
+	145831,
+	148105,
+	148106,
+	148111,
+	148112,
+	148117,
+	148118,
+	148351,
+	148352,
+	148357,
+	148358,
+	148363,
+	148364,
+	148598,
+	148599,
+	148604,
+	148605,
+	148610,
+	148611,
+	148844,
+	148845,
+	148850,
+	148851,
+	148856,
+	148857,
+	149090,
+	149091,
+	149096,
+	149097,
+	149102,
+	149103,
+	149336,
+	149337,
+	149342,
+	149343,
+	149348,
+	149349,
+	161902,
+	165058,
+	167380,
+	172669,
+	175725,
+	175921,
+	185197,
+	97531,
+	97532,
+	97936
+}
+TJ.Generated.EquippedMapping.inscrutable_quantum_device = {179350}
+TJ.Generated.EquippedMapping.overcharged_anima_battery = {180116}
+TJ.Generated.EquippedMapping.shadowgrasp_totem = {179356}
+TJ.Generated.EquippedMapping.wrathstone = {156000, 45263}

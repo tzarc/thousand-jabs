@@ -1,0 +1,5 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/simc",
+    "cmake.buildDirectory": "${workspaceFolder}/simc-build",
+    "cmake.configureArgs": ["-DBUILD_GUI=OFF"]
+}

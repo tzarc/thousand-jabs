@@ -1,0 +1,12 @@
+## Interface: 100000
+## Title: ThousandJabs
+## Notes: Simulationcraft -> In-game rotation
+## Author: Tzarc
+## X-License: UNLICENSE
+## X-Category: Combat
+## X-Repository: https://github.com/tzarc/thousand-jabs
+## Version: @project-version@
+## LoadOnDemand: 1
+## Dependencies: ThousandJabs
+
+dummy.lua

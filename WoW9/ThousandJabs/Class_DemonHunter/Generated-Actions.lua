@@ -1,10 +1,19 @@
-if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then return end
+if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then
+	return
+end
 
-if select(3, UnitClass('player')) ~= 12 then return end
+if select(3, UnitClass("player")) ~= 12 then
+	return
+end
 
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub("AceAddon-3.0"):GetAddon("ThousandJabs")
 
-TJ:RegisterActionProfileList('simc::demonhunter::havoc', 'Simulationcraft Demon Hunter Profile: Havoc', 12, 1, [[
+TJ:RegisterActionProfileList(
+	"simc::demonhunter::havoc",
+	"Simulationcraft Demon Hunter Profile: Havoc",
+	12,
+	1,
+	[[
 actions.precombat=flask
 actions.precombat+=/augmentation
 actions.precombat+=/food
@@ -77,9 +86,15 @@ actions.normal+=/felblade,if=movement.distance>15|buff.out_of_range.up
 actions.normal+=/fel_rush,if=movement.distance>15|(buff.out_of_range.up&!talent.momentum.enabled)
 actions.normal+=/vengeful_retreat,if=movement.distance>15
 actions.normal+=/throw_glaive,if=talent.demon_blades.enabled
-]])
+]]
+)
 
-TJ:RegisterActionProfileList('simc::demonhunter::vengeance', 'Simulationcraft Demon Hunter Profile: Vengeance', 12, 2, [[
+TJ:RegisterActionProfileList(
+	"simc::demonhunter::vengeance",
+	"Simulationcraft Demon Hunter Profile: Vengeance",
+	12,
+	2,
+	[[
 actions.precombat=flask
 actions.precombat+=/augmentation
 actions.precombat+=/food
@@ -114,5 +129,5 @@ actions.normal+=/fracture,if=((talent.spirit_bomb.enabled&soul_fragments<=3)|(!t
 actions.normal+=/sigil_of_flame,if=!(covenant.kyrian.enabled&runeforge.razelikhs_defilement)
 actions.normal+=/shear
 actions.normal+=/throw_glaive
-]])
-
+]]
+)

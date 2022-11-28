@@ -1,10 +1,19 @@
-if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then return end
+if GetBuildInfo and (select(4, GetBuildInfo()) < 90000 or select(4, GetBuildInfo()) >= 100000) then
+	return
+end
 
-if select(3, UnitClass('player')) ~= 10 then return end
+if select(3, UnitClass("player")) ~= 10 then
+	return
+end
 
-local TJ = LibStub('AceAddon-3.0'):GetAddon('ThousandJabs')
+local TJ = LibStub("AceAddon-3.0"):GetAddon("ThousandJabs")
 
-TJ:RegisterActionProfileList('custom::monk::brewmaster', 'Thousand Jabs Custom Monk Profile: Brewmaster', 10, 1, [[
+TJ:RegisterActionProfileList(
+	"custom::monk::brewmaster",
+	"Thousand Jabs Custom Monk Profile: Brewmaster",
+	10,
+	1,
+	[[
 actions=auto_attack
 actions+=/spear_hand_strike
 actions+=/variable,name=heal_threshold,value=health.pct<80
@@ -36,9 +45,15 @@ actions.normal+=/expel_harm,if=health.pct<80
 actions.normal+=/healing_elixir,if=health.pct<80
 actions.normal+=/tiger_palm,if=energy>65&spell_targets<=2
 actions.normal+=/spinning_crane_kick,if=energy>65&spell_targets>2
-]])
+]]
+)
 
-TJ:RegisterActionProfileList('simc::monk::brewmaster', 'Simulationcraft Monk Profile: Brewmaster', 10, 1, [[
+TJ:RegisterActionProfileList(
+	"simc::monk::brewmaster",
+	"Simulationcraft Monk Profile: Brewmaster",
+	10,
+	1,
+	[[
 actions.precombat=flask
 actions.precombat+=/food
 actions.precombat+=/augmentation
@@ -86,9 +101,15 @@ actions+=/spinning_crane_kick,if=active_enemies>=3&cooldown.keg_smash.remains>gc
 actions+=/tiger_palm,if=!talent.blackout_combo&cooldown.keg_smash.remains>gcd&(energy+(energy.regen*(cooldown.keg_smash.remains+gcd)))>=65
 actions+=/arcane_torrent,if=energy<31
 actions+=/rushing_jade_wind
-]])
+]]
+)
 
-TJ:RegisterActionProfileList('simc::monk::windwalker', 'Simulationcraft Monk Profile: Windwalker', 10, 3, [[
+TJ:RegisterActionProfileList(
+	"simc::monk::windwalker",
+	"Simulationcraft Monk Profile: Windwalker",
+	10,
+	3,
+	[[
 actions.precombat=flask
 actions.precombat+=/food
 actions.precombat+=/augmentation
@@ -214,5 +235,5 @@ actions.weapons_of_order+=/tiger_palm,target_if=min:debuff.mark_of_the_crane.rem
 actions.weapons_of_order+=/chi_wave
 actions.weapons_of_order+=/blackout_kick,target_if=min:debuff.mark_of_the_crane.remains,if=chi>=3|buff.weapons_of_order_ww.up
 actions.weapons_of_order+=/flying_serpent_kick,interrupt=1
-]])
-
+]]
+)

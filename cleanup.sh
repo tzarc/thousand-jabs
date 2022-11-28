@@ -8,51 +8,50 @@ cd "${SCRIPT_DIR}"
 nsudo() { [[ ${EUID} -ne 0 ]] && echo "sudo" ; true ; }
 havecmd()  { command command type "${1}" >/dev/null 2>&1 || return 1 ; }
 
-if [[ $(uname -s) == "Linux" ]] ; then
-  if havecmd apt-get ; then # Debian / Ubuntu etc.
-    if ! havecmd dos2unix ; then
-      $(nsudo) apt-get install dos2unix
-    fi
-    if ! havecmd luarocks ; then
-      $(nsudo) apt-get install luarocks
-    fi
-    if ! havecmd parallel ; then
-      $(nsudo) apt-get install parallel
-    fi
-    if ! havecmd perltidy ; then
-      $(nsudo) apt-get install perltidy
-    fi
-  fi
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
-  if ! havecmd luaformatter ; then
-    luarocks install --local checks
-    luarocks install --local formatter
-  fi
+check_dependencies() {
+	if [[ "$(uname -s)" == "Linux" ]] ; then
+		if havecmd dnf ; then # Debian / Ubuntu etc.
+			if ! havecmd parallel ; then $(nsudo) dnf install -y parallel; fi
+			if ! havecmd dos2unix ; then $(nsudo) dnf install -y dos2unix; fi
+			if ! havecmd perltidy ; then $(nsudo) dnf install -y perltidy; fi
 
-  export PATH=$PATH:${HOME}/.luarocks/bin
-fi
+			nvm use --lts
+			if ! havecmd luafmt ; then npm install -g lua-fmt; fi
+		fi
+	fi
+
+	if ! havecmd dos2unix || ! havecmd parallel || ! havecmd luafmt ; then
+		echo_fail "Aborting cleanup, missing dependencies."
+		exit 1
+	fi
+}
 
 tjfind() {
-    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -and -not -path '*/DataGenerator/build*' -and -not -path '*/DataGenerator/3rdparty*' -and -not -path '*/DataGenerator/generated*' -and -not -name 'simc' -and -not -name 'datagenerator' -print | sort
+    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -and -not -name 'simc' -print | sort
 }
+
+check_dependencies
 
 # Remove executable flag on all files
 tjfind -type f | parallel "chmod -x '{1}'"
 
 # Make sure scripts are executable
-tjfind -iname '*.sh' -or -iname '*.pl' | parallel "chmod +x '{1}'"
+tjfind -iname '*.sh' -or -iname '*.pl' -or -iname '*.py' | parallel "chmod +x '{1}'"
 
 # Make sure everything has Unix line endings
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' -or -iname '*.md' | parallel "dos2unix '{1}' >/dev/null 2>&1"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.xml' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' -or -iname '*.md' | parallel "dos2unix '{1}' >/dev/null 2>&1"
 
 # Remove trailing whitespace
-tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
+tjfind -iname '*.toc' -or -iname '*.lua' -or -iname '*.sh' -or -iname '*.pl' -or -iname '*.py' -or -iname '*.simc' -or -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "sed -i 's/[ \t]*\$//' '{1}'"
 
 # Reformat perl scripts
 tjfind -iname '*.pl' | parallel "echo \"Formatting '{1}'\" && perltidy -pt=2 -dws -nsak='if for while' -l=200 '{1}' && cat '{1}.tdy' > '{1}' && rm '{1}.tdy'"
 
 # Reformat lua files
-tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luaformatter -a -s4 '{1}'"
+tjfind -iname '*.lua' | parallel "echo \"Formatting '{1}'\" && luafmt --quotemark=single --use-tabs -w replace '{1}'"
 
 # Reformat cpp files
 tjfind -iname '*.cpp' -or -iname '*.h' -or -iname '*.hpp' -or -iname '*.inl' | parallel "echo \"Formatting '{1}'\" && clang-format -i '{1}'"
