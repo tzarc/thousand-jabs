@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 cd "${SCRIPT_DIR}"
@@ -27,10 +27,17 @@ check_dependencies() {
 		echo_fail "Aborting cleanup, missing dependencies."
 		exit 1
 	fi
+
+	if [[ ! -d "${SCRIPT_DIR}/.packager/.git" ]] ; then
+		git clone https://github.com/BigWigsMods/packager.git "${SCRIPT_DIR}/.packager"
+	fi
+	pushd "${SCRIPT_DIR}/.packager" >/dev/null 2>&1 \
+		&& (pwd && git pull --ff-only || true) \
+		&& popd >/dev/null 2>&1
 }
 
 tjfind() {
-    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './Temp*' -and -not -name 'simc' -print | sort
+    find . \( "$@" \) -and -not -path './.git/*' -and -not -path './simc*' -and -not -path './.release/*' -and -not -path './.packager/*' -and -not -name 'simc' -print | sort
 }
 
 check_dependencies

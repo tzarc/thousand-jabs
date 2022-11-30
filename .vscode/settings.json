@@ -1,5 +1,27 @@
 {
     "cmake.sourceDirectory": "${workspaceFolder}/simc",
     "cmake.buildDirectory": "${workspaceFolder}/simc-build",
-    "cmake.configureArgs": ["-DBUILD_GUI=OFF"]
+    "cmake.configureArgs": [
+        "-DBUILD_GUI=OFF"
+    ],
+    "files.associations": {
+        "*.inc": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "bitset": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "functional": "cpp",
+        "iomanip": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "regex": "cpp",
+        "tuple": "cpp"
+    }
 }

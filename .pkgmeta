@@ -3,33 +3,38 @@ package-as: ThousandJabs
 enable-nolib-creation: no
 
 optional-dependencies:
-    - masque
+  - masque
 
 externals:
-    WoW10/ThousandJabs/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
-    WoW10/ThousandJabs/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
-    WoW10/ThousandJabs/Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
-    WoW10/ThousandJabs/Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
-    WoW10/ThousandJabs/Libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
-    WoW10/ThousandJabs/Libs/LibSharedMedia-3.0: svn://svn.curseforge.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
-    WoW10/ThousandJabs/Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
-    WoW10/ThousandJabs_Config/Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
-    WoW10/ThousandJabs_Config/Libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
-    WoW10/ThousandJabs_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
+  WoW10/ThousandJabs/Libs/LibStub: svn://svn.curseforge.com/wow/libstub/mainline/trunk
+  WoW10/ThousandJabs/Libs/CallbackHandler-1.0: svn://svn.curseforge.com/wow/callbackhandler/mainline/trunk/CallbackHandler-1.0
+  WoW10/ThousandJabs/Libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
+  WoW10/ThousandJabs/Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
+  WoW10/ThousandJabs/Libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
+  WoW10/ThousandJabs/Libs/LibSharedMedia-3.0: svn://svn.curseforge.com/wow/libsharedmedia-3-0/mainline/trunk/LibSharedMedia-3.0
+  WoW10/ThousandJabs/Libs/LibDataBroker-1.1: http://github.com/tekkub/libdatabroker-1-1.git
+  WoW10/ThousandJabs_Config/Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
+  WoW10/ThousandJabs_Config/Libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
+  WoW10/ThousandJabs_Config/Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
 
 move-folders:
-    ThousandJabs/WoW10/ThousandJabs: ThousandJabs
-    ThousandJabs/WoW10/ThousandJabs_Config: ThousandJabs_Config
+  ThousandJabs/WoW10/ThousandJabs: ThousandJabs
+  ThousandJabs/WoW10/ThousandJabs_Config: ThousandJabs_Config
 
 ignore:
-    - WoW9
-    - WoW10
-    - .github
-    - .gitignore
-    - .gitattributes
-    - .vscode
-    - cleanup.sh
-    - tag-repo.sh
-    - README.md
-    - TODO.md
-    - LICENSE
+  - .gitattributes
+  - .github
+  - .gitignore
+  - .packager
+  - .release
+  - cleanup.sh
+  - LICENSE
+  - README.md
+  - simc
+  - simc-build
+  - Support
+  - tag-repo.sh
+  - test-package.sh
+  - TODO.md
+  - update-simc.sh
+  - WoW9

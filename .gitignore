@@ -1,6 +1,9 @@
-simc/
-simc-*/
-Temp/
-datacache.sqlitedb
 **/._*
 **/.DS_Store
+/.packager/
+/.release/
+/simc-*/
+/simc/
+datacache.sqlitedb
+Temp/
+/Support/Generated/
